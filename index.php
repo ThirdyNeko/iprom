@@ -1,9 +1,10 @@
 <?php
+session_start(); // make sure session is started
+$current_page = basename($_SERVER['PHP_SELF']); // e.g., "index.php"
+
 include 'config/db.php';
 include 'partials/header.php';
 include 'partials/sidebar.php';
-
-$current_page = basename($_SERVER['PHP_SELF']); // e.g., "index.php"
 
 $pdo = qa_db();
 
