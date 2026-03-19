@@ -1,5 +1,31 @@
-<?php include 'partials/header.php'; ?>
-<?php include 'partials/sidebar.php'; ?>
+<?php
+include 'config/db.php';
+include 'partials/header.php';
+include 'partials/sidebar.php';
+
+$current_page = basename($_SERVER['PHP_SELF']); // e.g., "index.php"
+
+$pdo = qa_db();
+
+/* ==============================
+   DASHBOARD COUNTS
+============================== */
+
+// Total promodizers
+$stmt = $pdo->query("SELECT COUNT(*) AS total FROM employee_info");
+$total = $stmt->fetch()['total'] ?? 0;
+
+// Assigned (has branch + brand)
+$stmt = $pdo->query("
+    SELECT COUNT(*) AS assigned 
+    FROM employee_info 
+    WHERE branch IS NOT NULL AND brand IS NOT NULL
+");
+$assigned = $stmt->fetch()['assigned'] ?? 0;
+
+// Unassigned
+$unassigned = $total - $assigned;
+?>
 
 <div class="content">
 
@@ -17,7 +43,7 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h6 class="text-muted">Total Promodizers</h6>
-                        <h3>120</h3>
+                        <h3><?= $total ?></h3>
                     </div>
                 </div>
             </div>
@@ -26,7 +52,7 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h6 class="text-muted">Assigned</h6>
-                        <h3>95</h3>
+                        <h3><?= $assigned ?></h3>
                     </div>
                 </div>
             </div>
@@ -35,7 +61,7 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h6 class="text-muted">Unassigned</h6>
-                        <h3>25</h3>
+                        <h3><?= $unassigned ?></h3>
                     </div>
                 </div>
             </div>

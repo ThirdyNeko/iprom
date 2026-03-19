@@ -1,35 +1,50 @@
 <div class="sidebar d-flex flex-column p-3">
 
-    <!-- Top -->
-    <div>
-        <h5 class="text-white text-center mb-4">PM</h5>
+    <!-- Logo / Title -->
+    <h5 class="text-white text-center mb-4">PM</h5>
 
-        <ul class="nav nav-pills flex-column mb-auto">
+    <!-- Menu -->
+    <ul class="nav nav-pills flex-column mb-3">
 
-            <li class="nav-item mb-1">
-                <a href="dashboard.php" class="nav-link px-3 py-2">Dashboard</a>
-            </li>
+        <li class="nav-item">
+            <a href="index.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'index.php' ? 'active' : '' ?>">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
 
-            <li class="mb-1">
-                <a href="promodizers.php" class="nav-link px-3 py-2">Promodizers</a>
-            </li>
+        <li>
+            <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'promodizers.php' ? 'active' : '' ?>">
+                <i class="bi bi-people"></i>
+                <span>Promodizers</span>
+            </a>
+        </li>
 
-            <li class="mb-1">
-                <a href="assignments.php" class="nav-link px-3 py-2">Assignments</a>
-            </li>
+        <li>
+            <a href="assignments.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'assignments.php' ? 'active' : '' ?>">
+                <i class="bi bi-diagram-3"></i>
+                <span>Assignments</span>
+            </a>
+        </li>
 
-            <li class="mb-1">
-                <a href="users.php" class="nav-link px-3 py-2">Users</a>
-            </li>
+        <li>
+            <a href="users.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'users.php' ? 'active' : '' ?>">
+                <i class="bi bi-person-gear"></i>
+                <span>Users</span>
+            </a>
+        </li>
+    </ul>
 
-        </ul>
-    </div>
+    <!-- Spacer pushes bottom down -->
+    <div class="flex-grow-1"></div>
 
-    <!-- Bottom (sticks) -->
-    <div class="mt-auto pt-3 border-top border-secondary">
+    <!-- Bottom Section -->
+    <div class="pt-3 border-top border-secondary">
         <div class="text-light small">
             <div class="text-muted">Logged in as</div>
-            <div class="fw-semibold text-white">Admin</div>
+            <div class="fw-semibold text-white">
+                <?= $_SESSION['username'] ?? 'Admin' ?>
+            </div>
         </div>
     </div>
 
