@@ -70,13 +70,6 @@ $unassigned = $result['unassigned'] ?? 0;
 
 <!-- JS -->
 <script src="assets/js/bootstrap.bundle.min.js"></script>
-
-<script>
-function toggleSidebar() {
-    document.body.classList.toggle('collapsed');
-}
-</script>
-
 <?php include 'modals/change_password_modal.php'; ?>
 
 

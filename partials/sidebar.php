@@ -43,17 +43,16 @@
     <div class="flex-grow-1"></div>
 
     <!-- Bottom Section -->
-    <div class="pt-3 border-top border-secondary">
-        <div class="text-light small mb-2">
-            <div class="text-muted">Logged in as</div>
-            <div class="fw-semibold text-white">
-                <?= $_SESSION['username'] ?? 'Admin' ?>
-            </div>
+    <div class="mt-auto pt-3 border-top border-secondary">
+        <div class="text-light small mb-2 d-flex align-items-center gap-2">
+            <i class="bi bi-person-circle"></i>
+            <span class="sidebar-text"><?= $_SESSION['username'] ?? 'Admin' ?></span>
         </div>
 
         <!-- Logout Button -->
-        <a href="auth/logout.php" class="btn btn-danger w-100">
-            <i class="bi bi-box-arrow-right"></i> Logout
+        <a href="auth/logout.php" onclick="localStorage.removeItem('sidebarCollapsed')" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-box-arrow-right"></i>
+            <span class="sidebar-text">Logout</span>
         </a>
     </div>
 

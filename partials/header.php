@@ -72,6 +72,16 @@
         .collapsed .sidebar .nav-link {
             justify-content: center;
         }
+        /* Hide text when sidebar is collapsed */
+        .collapsed .sidebar-text {
+            display: none;
+        }
+
+        /* Center icons when collapsed */
+        .collapsed .btn, 
+        .collapsed .d-flex.align-items-center.gap-2 {
+            justify-content: center !important;
+        }
 
         /* Optional: center logo */
         .collapsed .sidebar h5 {
@@ -114,3 +124,36 @@
     <button class="btn btn-outline-secondary" onclick="toggleSidebar()">☰</button>
     <span class="ms-3 fw-semibold">Promodizer Manager</span>
 </nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const body = document.body;
+
+    // Get stored sidebar state
+    const collapsed = localStorage.getItem('sidebarCollapsed');
+
+    if (collapsed === '1') {
+        // User previously collapsed sidebar → restore collapsed
+        body.classList.add('collapsed');
+    } else if (collapsed === '0' || collapsed === null) {
+        // Default to expanded
+        body.classList.remove('collapsed');
+        // Optional: explicitly store 0 if first login
+        localStorage.setItem('sidebarCollapsed', '0');
+    }
+
+    // Attach toggle event
+    const toggleBtn = document.querySelector('.btn-outline-secondary');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('collapsed');
+
+            // Save new state
+            localStorage.setItem(
+                'sidebarCollapsed',
+                body.classList.contains('collapsed') ? '1' : '0'
+            );
+        });
+    }
+});
+</script>
