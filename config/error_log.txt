@@ -65,3 +65,9 @@
 [2026-03-19 17:01:10] Error [2]: Undefined variable $current_page in C:\xampp\htdocs\iprom\partials\sidebar.php on line 31
 [2026-03-21 15:10:18] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
 [2026-03-21 15:10:18] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-21 15:56:34] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-21 15:56:34] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-21 15:59:16] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-21 15:59:16] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-21 15:59:29] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-21 15:59:29] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36

@@ -1,11 +1,9 @@
 <?php
-session_name('Bingo');
 session_start();
 require_once '../config/db.php';
 
 header('Content-Type: application/json');
 
-// Make sure user is logged in
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'danger', 'message' => 'You must be logged in.']);
     exit;
@@ -16,34 +14,38 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Trim inputs
 $currentPassword = trim($_POST['current_password'] ?? '');
 $newPassword = trim($_POST['new_password'] ?? '');
 $confirmPassword = trim($_POST['confirm_password'] ?? '');
 
-// Validate fields
-if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+if (!$currentPassword || !$newPassword || !$confirmPassword) {
     echo json_encode(['status' => 'danger', 'message' => 'All fields are required.']);
     exit;
 }
 
 if ($newPassword !== $confirmPassword) {
-    echo json_encode(['status' => 'danger', 'message' => 'New password and confirmation do not match.']);
+    echo json_encode(['status' => 'danger', 'message' => 'Passwords do not match.']);
     exit;
 }
 
 try {
-    // Use id_number because your session stores it
-    $stmt = $pdo->prepare("SELECT password FROM users WHERE username = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $user = $stmt->fetch();
+    // ✅ Use username from session
+    $stmt = $pdo->prepare("
+        EXEC get_user_password_by_username @username = :username
+    ");
+
+    $stmt->execute([
+        ':username' => $_SESSION['username']
+    ]);
+
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
         echo json_encode(['status' => 'danger', 'message' => 'User not found.']);
         exit;
     }
 
-    // Verify current password (hashed)
+    // Verify current password
     if (!password_verify($currentPassword, $user['password'])) {
         echo json_encode(['status' => 'danger', 'message' => 'Current password is incorrect.']);
         exit;
@@ -52,14 +54,22 @@ try {
     // Hash new password
     $newHashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
-    // Update in database
-    $update = $pdo->prepare("UPDATE users SET password = ? WHERE id_number = ?");
-    $update->execute([$newHashedPassword, $_SESSION['user_id']]);
+    // ✅ Update using stored procedure
+    $update = $pdo->prepare("
+        EXEC update_user_password 
+            @username = :username,
+            @password = :password
+    ");
+
+    $update->execute([
+        ':username' => $_SESSION['username'],
+        ':password' => $newHashedPassword
+    ]);
 
     echo json_encode(['status' => 'success', 'message' => 'Password changed successfully!']);
     exit;
 
 } catch (PDOException $e) {
-    echo json_encode(['status' => 'danger', 'message' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'danger', 'message' => 'Database error']);
     exit;
 }

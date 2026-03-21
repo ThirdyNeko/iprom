@@ -97,5 +97,8 @@ $(document).ready(function() {
 });
 </script>
 
+<?php include 'modals/change_password_modal.php'; ?>
+
+
 </body>
 </html>

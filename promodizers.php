@@ -88,5 +88,6 @@ $(document).ready(function() {
 });
 </script>
 <?php include 'modals/add_employee_modal.php'; ?>
+<?php include 'modals/change_password_modal.php'; ?>
 </body>
 </html>

@@ -27,6 +27,16 @@
             </a>
         </li>
 
+        <!-- Change Password Sidebar Link (Modal Trigger) -->
+        <li>
+            <a href="#" 
+            class="nav-link d-flex align-items-center gap-2 text-light"
+            data-bs-toggle="modal" 
+            data-bs-target="#changePasswordModal">
+                <i class="bi bi-key"></i>
+                <span>Change Password</span>
+            </a>
+        </li>
     </ul>
 
     <!-- Spacer pushes bottom down -->

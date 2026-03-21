@@ -77,5 +77,8 @@ function toggleSidebar() {
 }
 </script>
 
+<?php include 'modals/change_password_modal.php'; ?>
+
+
 </body>
 </html>
