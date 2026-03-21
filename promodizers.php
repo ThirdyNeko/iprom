@@ -69,9 +69,9 @@ $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
-<!-- Bootstrap JS -->
- <script src="assets/js/datatables.min.js"></script>
+<!-- JS -->
 <script src="assets/js/jquery-4.0.0.min.js"></script>
+<script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 
 <script>

@@ -68,7 +68,7 @@ $unassigned = $result['unassigned'] ?? 0;
 
 </div>
 
-<!-- Bootstrap JS -->
+<!-- JS -->
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 
 <script>
