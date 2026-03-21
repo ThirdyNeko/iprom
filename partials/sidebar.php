@@ -46,7 +46,7 @@
     <div class="mt-auto pt-3 border-top border-secondary">
         <div class="text-light small mb-2 d-flex align-items-center gap-2">
             <i class="bi bi-person-circle"></i>
-            <span class="sidebar-text"><?= $_SESSION['username'] ?? 'Admin' ?></span>
+            <span class="sidebar-text text-uppercase"><?= $_SESSION['role'] ?? 'Guest' ?></span>
         </div>
 
         <!-- Logout Button -->
