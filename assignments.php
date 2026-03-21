@@ -12,19 +12,10 @@ $pdo = qa_db();
 /* =========================
    FETCH ASSIGNMENTS
 ========================= */
-$sql = "
-    SELECT 
-        id,
-        branch_name,
-        brand_name,
-        required_count,
-        assigned_count
-    FROM assignment
-    ORDER BY branch_name, brand_name
-";
+$stmt = $pdo->prepare("EXEC get_assignments");
+$stmt->execute();
 
-$stmt = $pdo->query($sql);
-$assignments = $stmt->fetchAll();
+$assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="content">
