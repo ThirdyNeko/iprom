@@ -5,33 +5,30 @@ include 'config/db.php';
 include 'partials/header.php';
 include 'partials/sidebar.php';
 
-$current_page = basename($_SERVER['PHP_SELF']);
 $pdo = qa_db();
 
 /* =========================
    FETCH PROMODIZERS
 ========================= */
-$sql = "SELECT 
-            id,
-            first_name,
-            last_name,
-            branch,
-            brand,
-            status,
-            last_assigned_by,
-            assignment_date
-        FROM employee_info
-        ORDER BY last_name, first_name";
+$stmt = $pdo->prepare("EXEC get_promodizers @status = :status, @branch = :branch");
 
-$stmt = $pdo->query($sql);
-$promodizers = $stmt->fetchAll();
+$stmt->execute([
+    ':status' => $status ?? null,
+    ':branch' => $branch ?? null
+]);
+
+$promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="content">
     <div class="container-fluid">
         <div class="row mb-3">
-            <div class="col">
-                <h4 class="fw-bold">Promodizers</h4>
+            <div class="col d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold mb-0">Promodizers</h4>
+
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                    + Add Employee
+                </button>
             </div>
         </div>
 
@@ -90,5 +87,6 @@ $(document).ready(function() {
     });
 });
 </script>
+<?php include 'modals/add_employee_modal.php'; ?>
 </body>
 </html>

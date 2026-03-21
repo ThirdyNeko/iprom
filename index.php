@@ -13,19 +13,14 @@ $pdo = qa_db();
 ============================== */
 
 // Total promodizers
-$stmt = $pdo->query("SELECT COUNT(*) AS total FROM employee_info");
-$total = $stmt->fetch()['total'] ?? 0;
+$stmt = $pdo->prepare("EXEC get_dashboard_counts");
+$stmt->execute();
 
-// Assigned (has branch + brand)
-$stmt = $pdo->query("
-    SELECT COUNT(*) AS assigned 
-    FROM employee_info 
-    WHERE branch IS NOT NULL AND brand IS NOT NULL
-");
-$assigned = $stmt->fetch()['assigned'] ?? 0;
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Unassigned
-$unassigned = $total - $assigned;
+$total = $result['total'] ?? 0;
+$assigned = $result['assigned'] ?? 0;
+$unassigned = $result['unassigned'] ?? 0;
 ?>
 
 <div class="content">
