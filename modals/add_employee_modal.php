@@ -21,23 +21,10 @@
                         <input type="text" name="last_name" class="form-control" required>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Branch</label>
-                        <input type="text" name="branch" class="form-control">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Brand</label>
-                        <input type="text" name="brand" class="form-control">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-control">
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                    </div>
+                    <!-- Hidden fields for default values -->
+                    <input type="hidden" name="branch" value="Unassigned">
+                    <input type="hidden" name="brand" value="Unassigned">
+                    <input type="hidden" name="status" value="Inactive">
 
                 </div>
 

@@ -27,12 +27,6 @@
             </a>
         </li>
 
-        <li>
-            <a href="users.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'users.php' ? 'active' : '' ?>">
-                <i class="bi bi-person-gear"></i>
-                <span>Users</span>
-            </a>
-        </li>
     </ul>
 
     <!-- Spacer pushes bottom down -->
@@ -40,12 +34,17 @@
 
     <!-- Bottom Section -->
     <div class="pt-3 border-top border-secondary">
-        <div class="text-light small">
+        <div class="text-light small mb-2">
             <div class="text-muted">Logged in as</div>
             <div class="fw-semibold text-white">
                 <?= $_SESSION['username'] ?? 'Admin' ?>
             </div>
         </div>
+
+        <!-- Logout Button -->
+        <a href="auth/logout.php" class="btn btn-danger w-100">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
     </div>
 
 </div>
