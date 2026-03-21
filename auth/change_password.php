@@ -34,7 +34,7 @@ if ($newPassword !== $confirmPassword) {
 
 try {
     // Use id_number because your session stores it
-    $stmt = $pdo->prepare("SELECT password FROM users WHERE id_number = ?");
+    $stmt = $pdo->prepare("SELECT password FROM users WHERE username = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch();
 

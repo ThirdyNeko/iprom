@@ -6,19 +6,29 @@ $error = '';
 $pdo = qa_db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id_number = trim($_POST['id_number']);
-    $password  = trim($_POST['password']);
+    $id_number = trim($_POST['id_number'] ?? '');
+    $password  = trim($_POST['password'] ?? '');
 
     if ($id_number === '' || $password === '') {
         $error = "Please enter both ID and password.";
     } else {
-        // Fetch user
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = :id_number");
-        $stmt->execute([':id_number' => $id_number]);
-        $user = $stmt->fetch();
 
+        $stmt = $pdo->prepare("
+            EXEC get_user_by_username @username = :username
+        ");
+
+        $stmt->execute([
+            ':username' => $id_number
+        ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // 🔐 Always check user first
         if ($user && password_verify($password, $user['password'])) {
-            // Login success
+
+            // 🔥 Regenerate session ID (VERY IMPORTANT)
+            session_regenerate_id(true);
+
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
@@ -27,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             header("Location: ../index.php");
             exit;
+
         } else {
             $error = "Invalid ID or password.";
         }
