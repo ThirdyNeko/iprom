@@ -31,7 +31,7 @@ if ($newPassword !== $confirmPassword) {
 try {
     // ✅ Use username from session
     $stmt = $pdo->prepare("
-        EXEC get_user_password_by_username @username = :username
+        EXEC get_user_by_username @username = :username
     ");
 
     $stmt->execute([
