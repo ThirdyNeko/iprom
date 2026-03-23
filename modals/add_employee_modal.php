@@ -11,7 +11,7 @@
 
                 <div class="modal-body">
 
-                    <div id="employeeAlert"></div>
+                    <div id="employeeAlert"></div> <!-- Alert container -->
 
                     <div class="mb-3">
                         <label class="form-label">First Name</label>
@@ -23,10 +23,17 @@
                         <input type="text" name="last_name" class="form-control" required>
                     </div>
 
-                    <!-- Hidden fields -->
-                    <input type="hidden" name="branch" value="Unassigned">
-                    <input type="hidden" name="brand" value="Unassigned">
-                    <input type="hidden" name="status" value="Inactive">
+                    <div class="mb-3">
+                        <label class="form-label">Branch</label>
+                        <input type="text" name="branch" class="form-control" placeholder="Unassigned">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Brand</label>
+                        <input type="text" name="brand" class="form-control" placeholder="Unassigned">
+                    </div>
+
+                    <input type="hidden" name="status" id="employeeStatus" value="">
 
                 </div>
 
@@ -46,9 +53,15 @@ document.getElementById('addEmployeeForm').addEventListener('submit', function(e
     e.preventDefault();
 
     const form = this;
-    const formData = new FormData(form);
     const btn = form.querySelector('button[type="submit"]');
     const alertDiv = document.getElementById('employeeAlert');
+    const formData = new FormData(form);
+
+    // 👇 Determine status
+    const branch = form.querySelector('input[name="branch"]').value.trim();
+    const brand  = form.querySelector('input[name="brand"]').value.trim();
+    const status = (branch && brand) ? 'Active' : 'Inactive';
+    formData.set('status', status); // dynamically set status
 
     btn.disabled = true;
 
@@ -58,20 +71,20 @@ document.getElementById('addEmployeeForm').addEventListener('submit', function(e
     })
     .then(res => res.json())
     .then(data => {
-        alertDiv.innerHTML = `
-            <div class="alert alert-${data.status}">
-                ${data.message}
-            </div>
-        `;
+        alertDiv.innerHTML = `<div class="alert alert-${data.status}">${data.message}</div>`;
 
         if(data.status === 'success'){
             form.reset();
 
-            // Optional: reload page or table
-            setTimeout(() => location.reload(), 1000);
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
+            modal.hide();
+
+            // Reload table or page
+            setTimeout(() => location.reload(), 500);
         }
 
-        setTimeout(() => alertDiv.innerHTML = '', 4000);
+        setTimeout(() => alertDiv.innerHTML = '', 3000);
     })
     .catch(err => console.error(err))
     .finally(() => btn.disabled = false);
