@@ -18,9 +18,13 @@ $stmt->execute();
 
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$total = $result['total'] ?? 0;
-$assigned = $result['assigned'] ?? 0;
-$unassigned = $result['unassigned'] ?? 0;
+$total = $result['total_promodizers'];
+$assigned = $result['assigned_promodizers'];
+$unassigned = $result['unassigned_promodizers'];
+
+$totalAssignments = $result['total_assignments'];
+$completeAssignments = $result['complete_assignments'];
+$pendingAssignments = $result['pending_assignments'];
 ?>
 
 <div class="content">
@@ -58,6 +62,37 @@ $unassigned = $result['unassigned'] ?? 0;
                     <div class="card-body">
                         <h6 class="text-muted">Unassigned</h6>
                         <h3><?= $unassigned ?></h3>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row g-3 mt-3">
+
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted">Total Plantilla</h6>
+                        <h3><?= $totalAssignments ?></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted">Complete</h6>
+                        <h3><?= $completeAssignments ?></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted">Pending</h6>
+                        <h3><?= $pendingAssignments ?></h3>
                     </div>
                 </div>
             </div>
