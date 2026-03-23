@@ -15,7 +15,13 @@ $pdo = qa_db();
 // Call stored procedure that returns all counts
 $stmt = $pdo->prepare("EXEC get_dashboard_counts");
 $stmt->execute();
+
+// First result set → dashboard counts
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Move to second result set → branch-level data
+$stmt->nextRowset();
+$branchStats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Promodizers
 $total = $result['total_promodizers'];
@@ -94,7 +100,9 @@ $cards = [
 
         <!-- Charts Section -->
         <div class="row g-3 mt-4">
-            <div class="col-md-6">
+
+            <!-- Promodizer Status Chart -->
+            <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h6 class="text-muted mb-3">Promodizer Status</h6>
@@ -103,7 +111,18 @@ $cards = [
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <!-- Branch Assignments Chart -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Branch Assignments (Complete vs Excess)</h6>
+                        <canvas id="branchAssignmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignments Status Chart -->
+            <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h6 class="text-muted mb-3">Assignments Status</h6>
@@ -111,7 +130,21 @@ $cards = [
                     </div>
                 </div>
             </div>
+
         </div>
+
+        <?php
+        // Prepare branch-level arrays for Chart.js
+        $branches = [];
+        $completeData = [];
+        $excessData = [];
+
+        foreach ($branchStats as $row) {
+            $branches[] = $row['branch_name'];
+            $completeData[] = (int)$row['complete_count'];
+            $excessData[] = (int)$row['excess_count'];
+        }
+        ?>
 
     </div>
 </div>
@@ -144,13 +177,51 @@ $cards = [
         data: {
             labels: ['Complete', 'Lacking', 'Excess'],
             datasets: [{
-                data: [<?= $completeAssignments ?>, <?= $lackingAssignments ?>, <?= $excessAssignments ?>],
-                backgroundColor: ['#198754', '#dc3545', '#ffc107']
+                data: [<?= $completeAssignments ?>, <?= $lackingAssignments ?>],
+                backgroundColor: ['#198754', '#dc3545']
             }]
         },
         options: {
             responsive: true,
             plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    const ctx = document.getElementById('branchAssignmentChart').getContext('2d');
+
+    const branchAssignmentChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode($branches) ?>,
+            datasets: [
+                {
+                    label: 'Complete',
+                    data: <?= json_encode($completeData) ?>,
+                    backgroundColor: '#198754'
+                },
+                {
+                    label: 'Excess',
+                    data: <?= json_encode($excessData) ?>,
+                    backgroundColor: '#ffc107'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    title: { display: true, text: 'Branches' }
+                },
+                y: {
+                    stacked: true,
+                    title: { display: true, text: 'Number of Promodizers' },
+                    beginAtZero: true
+                }
+            }
         }
     });
 </script>
