@@ -25,6 +25,11 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="col">
                 <h4 class="fw-bold">Assignments</h4>
             </div>
+            <div class="col text-end">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal">
+                    <i class="bi bi-plus-circle"></i> Add Plantilla
+                </button>
+            </div>
         </div>
 
         <!-- Table -->
@@ -97,6 +102,7 @@ $(document).ready(function() {
 });
 </script>
 
+<?php include 'modals/add_plantilla_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 
 

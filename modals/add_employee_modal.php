@@ -2,7 +2,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
 
-            <form method="POST" action="functions/add_employee.php">
+            <form id="addEmployeeForm">
                 
                 <div class="modal-header">
                     <h5 class="modal-title">Add Employee</h5>
@@ -10,6 +10,8 @@
                 </div>
 
                 <div class="modal-body">
+
+                    <div id="employeeAlert"></div>
 
                     <div class="mb-3">
                         <label class="form-label">First Name</label>
@@ -21,7 +23,7 @@
                         <input type="text" name="last_name" class="form-control" required>
                     </div>
 
-                    <!-- Hidden fields for default values -->
+                    <!-- Hidden fields -->
                     <input type="hidden" name="branch" value="Unassigned">
                     <input type="hidden" name="brand" value="Unassigned">
                     <input type="hidden" name="status" value="Inactive">
@@ -38,3 +40,40 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('addEmployeeForm').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    const form = this;
+    const formData = new FormData(form);
+    const btn = form.querySelector('button[type="submit"]');
+    const alertDiv = document.getElementById('employeeAlert');
+
+    btn.disabled = true;
+
+    fetch('functions/add_employee.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        alertDiv.innerHTML = `
+            <div class="alert alert-${data.status}">
+                ${data.message}
+            </div>
+        `;
+
+        if(data.status === 'success'){
+            form.reset();
+
+            // Optional: reload page or table
+            setTimeout(() => location.reload(), 1000);
+        }
+
+        setTimeout(() => alertDiv.innerHTML = '', 4000);
+    })
+    .catch(err => console.error(err))
+    .finally(() => btn.disabled = false);
+});
+</script>
