@@ -73,7 +73,7 @@ $pendingAssignments = $result['pending_assignments'];
             <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-muted">Total Plantilla</h6>
+                        <h6 class="text-muted">Total Assignments</h6>
                         <h3><?= $totalAssignments ?></h3>
                     </div>
                 </div>
@@ -91,7 +91,7 @@ $pendingAssignments = $result['pending_assignments'];
             <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-muted">Pending</h6>
+                        <h6 class="text-muted">Excess/Lacking</h6>
                         <h3><?= $pendingAssignments ?></h3>
                     </div>
                 </div>
