@@ -64,6 +64,10 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <span class="badge bg-danger">
                                                 Needs <?= $shortage ?>
                                             </span>
+                                        <?php elseif ($shortage < 0): ?>
+                                            <span class="badge bg-danger">
+                                                Excess <?= -1 * $shortage ?>
+                                            </span>
                                         <?php else: ?>
                                             <span class="badge bg-success">
                                                 Complete
