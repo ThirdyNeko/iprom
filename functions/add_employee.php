@@ -1,4 +1,5 @@
 <?php
+session_start(); // Make sure session is started
 require_once '../config/db.php';
 $pdo = qa_db();
 
@@ -7,20 +8,22 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $stmt = $pdo->prepare("
-            EXEC add_employee 
+            EXEC add_employee
                 @first_name = :first_name,
                 @last_name  = :last_name,
                 @branch     = :branch,
                 @brand      = :brand,
-                @status     = :status
+                @status     = :status,
+                @assigned_by = :assigned_by
         ");
 
         $stmt->execute([
-            ':first_name' => $_POST['first_name'],
-            ':last_name'  => $_POST['last_name'],
-            ':branch'     => $_POST['branch'] ?: null,
-            ':brand'      => $_POST['brand'] ?: null,
-            ':status'     => $_POST['status'] ?: null,
+            ':first_name'  => $_POST['first_name'],
+            ':last_name'   => $_POST['last_name'],
+            ':branch'      => $_POST['branch'] ?: null,
+            ':brand'       => $_POST['brand'] ?: null,
+            ':status'      => $_POST['status'] ?: null,
+            ':assigned_by' => $_SESSION['username'] ?? 'system' // fallback
         ]);
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
