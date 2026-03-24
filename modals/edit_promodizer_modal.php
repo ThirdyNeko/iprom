@@ -138,16 +138,58 @@ async function sendAction(data) {
 }
 
 // Save changes
-document.getElementById('saveBtn').addEventListener('click', () => {
-    const formData = new FormData();
-    formData.set('id', document.getElementById('editPromodizerId').value);
-    formData.set('first_name', document.getElementById('editFirstName').value.trim());
-    formData.set('last_name', document.getElementById('editLastName').value.trim());
-    formData.set('branch', document.getElementById('editBranch').value || null);
-    formData.set('brand', document.getElementById('editBrand').value || null);
-    formData.set('status', document.getElementById('editBranch').value && document.getElementById('editBrand').value ? 'Active' : 'Inactive');
+document.getElementById('saveBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveBtn');
 
-    sendAction(formData);
+    const id = document.getElementById('editPromodizerId').value;
+    const firstName = document.getElementById('editFirstName').value.trim();
+    const lastName  = document.getElementById('editLastName').value.trim();
+    const branch    = document.getElementById('editBranch').value;
+    const brand     = document.getElementById('editBrand').value;
+
+    const formData = new FormData();
+    formData.set('id', id);
+    formData.set('first_name', firstName);
+    formData.set('last_name', lastName);
+    formData.set('branch', branch || null);
+    formData.set('brand', brand || null);
+
+    try {
+        btn.disabled = true;
+
+        // 🔍 VALIDATE ASSIGNMENT FIRST
+        const res = await fetch('functions/check_assignment.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ branch, brand })
+        });
+
+        const data = await res.json();
+
+        if (!data.exists && branch && brand) {
+            alertDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    No assignment exists for the selected Branch & Brand.
+                </div>`;
+            setTimeout(() => alertDiv.innerHTML = '', 3000);
+            btn.disabled = false;
+            return;
+        }
+
+        // ✅ SET STATUS DYNAMICALLY
+        const status = (branch && brand) ? 'Active' : 'Inactive';
+        formData.set('status', status);
+
+        // 🚀 PROCEED TO SAVE
+        await sendAction(formData);
+
+    } catch (err) {
+        console.error(err);
+        alertDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Try again.</div>`;
+        setTimeout(() => alertDiv.innerHTML = '', 3000);
+    } finally {
+        btn.disabled = false;
+    }
 });
 
 // Unassign
