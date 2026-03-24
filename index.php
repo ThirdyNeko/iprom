@@ -25,8 +25,8 @@ $branchStats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Promodizers
 $total = $result['total_promodizers'];
-$assigned = $result['assigned_promodizers'];
-$unassigned = $result['unassigned_promodizers'];
+$assigned = $result['active_promodizers'];
+$unassigned = $result['inactive_promodizers'];
 
 // Assignments
 $totalAssignments = $result['total_assignments'];

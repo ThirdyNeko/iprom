@@ -128,3 +128,155 @@
 [2026-03-24 10:51:28] Error [2]: Undefined variable $status in C:\xampp\htdocs\iprom\assignments.php on line 33
 [2026-03-24 10:51:29] Error [2]: Undefined variable $status in C:\xampp\htdocs\iprom\assignments.php on line 33
 [2026-03-24 10:55:17] Error [2]: Undefined variable $status in C:\xampp\htdocs\iprom\assignments.php on line 33
+[2026-03-24 15:37:36] Error [2]: Undefined array key "assigned_promodizers" in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:37:36] Error [2]: Undefined array key "unassigned_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:37:36] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:37:36] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:37:36] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:37:36] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:38:13] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:38:13] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:38:13] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:38:13] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:38:30] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:38:30] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:38:30] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:38:30] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:38:31] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:38:31] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:38:31] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:38:31] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:38:31] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:38:31] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:38:31] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:38:31] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:38:31] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:38:31] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:38:31] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:38:31] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:05] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:05] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:05] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:05] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:06] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:06] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:06] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:06] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:06] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:06] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:06] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:06] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:06] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:06] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:06] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:06] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:57] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:57] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:57] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:57] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:57] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:57] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:57] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:57] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:57] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:57] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:57] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:57] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:41:57] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:41:57] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:41:57] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:41:57] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:19] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:47:19] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:19] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:19] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:19] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:47:19] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:20] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:47:20] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 30
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:47:20] Error [2]: Undefined variable $result in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:20] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\index.php on line 36
+[2026-03-24 15:47:20] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:47:20] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 160
+[2026-03-24 15:49:11] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:49:11] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:49:11] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:49:11] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:49:31] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:49:31] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:49:31] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:49:31] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:49:32] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:49:32] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:49:32] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:49:32] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:49:32] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:49:32] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:49:32] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:49:32] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:49:32] Error [2]: Undefined array key "total_assignments" in C:\xampp\htdocs\iprom\index.php on line 32
+[2026-03-24 15:49:32] Error [2]: Undefined array key "complete_assignments" in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-24 15:49:32] Error [2]: Undefined array key "lacking_assignments" in C:\xampp\htdocs\iprom\index.php on line 34
+[2026-03-24 15:49:32] Error [2]: Undefined array key "excess_assignments" in C:\xampp\htdocs\iprom\index.php on line 35
+[2026-03-24 15:54:51] Error [2]: Undefined array key "active_promodizers" in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:54:51] Error [2]: Undefined array key "inactive_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:54:52] Error [2]: Undefined array key "active_promodizers" in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:54:52] Error [2]: Undefined array key "inactive_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:54:53] Error [2]: Undefined array key "active_promodizers" in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:54:53] Error [2]: Undefined array key "inactive_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:54:53] Error [2]: Undefined array key "active_promodizers" in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:54:53] Error [2]: Undefined array key "inactive_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 15:57:10] Error [2]: Undefined array key "active_promodizers" in C:\xampp\htdocs\iprom\index.php on line 28
+[2026-03-24 15:57:10] Error [2]: Undefined array key "inactive_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
