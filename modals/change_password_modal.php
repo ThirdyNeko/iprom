@@ -50,6 +50,8 @@
   </div>
 </div>
 
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
+
 <script>
 document.querySelectorAll('.toggle-password').forEach(span => {
     span.addEventListener('click', () => {
@@ -65,7 +67,7 @@ document.querySelectorAll('.toggle-password').forEach(span => {
     });
 });
 
-// AJAX form submission
+// AJAX form submission with SweetAlert
 document.getElementById('changePasswordForm').addEventListener('submit', function(e){
     e.preventDefault();
     const formData = new FormData(this);
@@ -75,14 +77,24 @@ document.getElementById('changePasswordForm').addEventListener('submit', functio
     fetch('functions/change_password.php', { method: 'POST', body: formData })
     .then(res => res.json())
     .then(data => {
-        const alertDiv = document.getElementById('passwordAlert');
-        alertDiv.innerHTML = `<div class="alert alert-${data.status}" role="alert">${data.message}</div>`;
-        if(data.status === 'success') this.reset();
+        Swal.fire({
+            icon: data.status === 'success' ? 'success' : 'error',
+            title: data.status === 'success' ? 'Password Changed!' : 'Oops...',
+            text: data.message,
+            confirmButtonText: 'OK'
+        });
 
-        // auto-hide alert after 5 seconds
-        setTimeout(() => alertDiv.innerHTML = '', 5000);
+        if(data.status === 'success') this.reset();
     })
-    .catch(err => console.error(err))
+    .catch(err => {
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+            confirmButtonText: 'OK'
+        });
+    })
     .finally(() => submitBtn.disabled = false);
 });
 </script>

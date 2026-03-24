@@ -82,9 +82,11 @@
     </div>
 </div>
 
+<!-- Include SweetAlert2 CDN -->
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
+
 <script>
 const modalEl = document.getElementById('editPromodizerModal');
-const alertDiv = document.getElementById('editAlert');
 
 // Populate modal when clicking a row
 document.querySelectorAll('.clickable-row').forEach(row => {
@@ -92,46 +94,70 @@ document.querySelectorAll('.clickable-row').forEach(row => {
         const id = row.dataset.id;
         const modal = new bootstrap.Modal(modalEl);
 
-        // Fetch employee data
-        const res = await fetch(`functions/get_employee.php?id=${id}`);
-        const p = await res.json();
-        if (!p || !p.id) return alert('Employee not found');
+        try {
+            const res = await fetch(`functions/get_employee.php?id=${id}`);
+            const p = await res.json();
 
-        // Fill table fields
-        document.getElementById('editPromodizerId').value = p.id;
-        document.getElementById('editFirstName').value = p.first_name;
-        document.getElementById('editLastName').value = p.last_name;
-        document.getElementById('editBranch').value = p.branch || '';
-        document.getElementById('editBrand').value = p.brand || '';
-        document.getElementById('editStatus').textContent = p.status || '-';
-        document.getElementById('editLastAssignedBy').textContent = p.last_assigned_by || '-';
-        document.getElementById('editAssignmentDate').textContent = p.assignment_date ? new Date(p.assignment_date).toLocaleDateString() : '-';
-        document.getElementById('editDateHired').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString() : '-';
-        document.getElementById('editDateReturn').textContent = p.date_of_return ? new Date(p.date_of_return).toLocaleDateString() : '-';
-        document.getElementById('editDateSeparated').textContent = p.date_separated ? new Date(p.date_separated).toLocaleDateString() : '-';
+            if (!p || !p.id) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Employee not found' });
+                return;
+            }
 
-        modal.show();
+            // Fill table fields
+            document.getElementById('editPromodizerId').value = p.id;
+            document.getElementById('editFirstName').value = p.first_name;
+            document.getElementById('editLastName').value = p.last_name;
+            document.getElementById('editBranch').value = p.branch || '';
+            document.getElementById('editBrand').value = p.brand || '';
+            document.getElementById('editStatus').textContent = p.status || '-';
+            document.getElementById('editLastAssignedBy').textContent = p.last_assigned_by || '-';
+            document.getElementById('editAssignmentDate').textContent = p.assignment_date ? new Date(p.assignment_date).toLocaleDateString() : '-';
+            document.getElementById('editDateHired').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString() : '-';
+            document.getElementById('editDateReturn').textContent = p.date_of_return ? new Date(p.date_of_return).toLocaleDateString() : '-';
+            document.getElementById('editDateSeparated').textContent = p.date_separated ? new Date(p.date_separated).toLocaleDateString() : '-';
+
+            modal.show();
+        } catch(err) {
+            console.error(err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load employee data' });
+        }
     });
 });
 
-// Helper function to send AJAX POST
-async function sendAction(data) {
+// Helper function to send AJAX POST and show SweetAlert
+async function sendAction(data, actionName = 'Save') {
     const btns = modalEl.querySelectorAll('button');
     btns.forEach(b => b.disabled = true);
 
     try {
         const res = await fetch('functions/update_promodizer.php', { method: 'POST', body: data });
         const result = await res.json();
-        alertDiv.innerHTML = `<div class="alert alert-${result.status}">${result.message}</div>`;
+
         if(result.status === 'success') {
+            await Swal.fire({
+                icon: 'success',
+                title: `${actionName} Successful`,
+                text: result.message,
+                confirmButtonText: 'OK'
+            });
             bootstrap.Modal.getInstance(modalEl).hide();
-            setTimeout(() => location.reload(), 500);
+            location.reload(); // refresh table
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: `${actionName} Failed`,
+                text: result.message,
+                confirmButtonText: 'OK'
+            });
         }
-        setTimeout(() => alertDiv.innerHTML = '', 3000);
     } catch(err) {
         console.error(err);
-        alertDiv.innerHTML = `<div class="alert alert-danger">An error occurred</div>`;
-        setTimeout(() => alertDiv.innerHTML = '', 3000);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred. Try again.',
+            confirmButtonText: 'OK'
+        });
     } finally {
         btns.forEach(b => b.disabled = false);
     }
@@ -139,8 +165,6 @@ async function sendAction(data) {
 
 // Save changes
 document.getElementById('saveBtn').addEventListener('click', async () => {
-    const btn = document.getElementById('saveBtn');
-
     const id = document.getElementById('editPromodizerId').value;
     const firstName = document.getElementById('editFirstName').value.trim();
     const lastName  = document.getElementById('editLastName').value.trim();
@@ -155,40 +179,32 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     formData.set('brand', brand || null);
 
     try {
-        btn.disabled = true;
-
-        // 🔍 VALIDATE ASSIGNMENT FIRST
-        const res = await fetch('functions/check_assignment.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ branch, brand })
-        });
-
-        const data = await res.json();
-
-        if (!data.exists && branch && brand) {
-            alertDiv.innerHTML = `
-                <div class="alert alert-danger">
-                    No assignment exists for the selected Branch & Brand.
-                </div>`;
-            setTimeout(() => alertDiv.innerHTML = '', 3000);
-            btn.disabled = false;
-            return;
+        // Validate assignment if both branch & brand are selected
+        if(branch && brand){
+            const res = await fetch('functions/check_assignment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ branch, brand })
+            });
+            const data = await res.json();
+            if(!data.exists){
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Assignment',
+                    text: 'No assignment exists for the selected Branch & Brand.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
         }
 
-        // ✅ SET STATUS DYNAMICALLY
         const status = (branch && brand) ? 'Active' : 'Inactive';
         formData.set('status', status);
 
-        // 🚀 PROCEED TO SAVE
-        await sendAction(formData);
-
-    } catch (err) {
+        await sendAction(formData, 'Save Changes');
+    } catch(err) {
         console.error(err);
-        alertDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Try again.</div>`;
-        setTimeout(() => alertDiv.innerHTML = '', 3000);
-    } finally {
-        btn.disabled = false;
+        Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred. Try again.', confirmButtonText: 'OK' });
     }
 });
 
@@ -201,7 +217,7 @@ document.getElementById('unassignBtn').addEventListener('click', () => {
     formData.set('branch', 'Unassigned');
     formData.set('brand', 'Unassigned');
     formData.set('status', 'Inactive');
-    sendAction(formData);
+    sendAction(formData, 'Unassign');
 });
 
 // Terminate
@@ -213,6 +229,6 @@ document.getElementById('terminateBtn').addEventListener('click', () => {
     formData.set('branch', 'Unassigned');
     formData.set('brand', 'Unassigned');
     formData.set('status', 'Terminated');
-    sendAction(formData);
+    sendAction(formData, 'Terminate');
 });
 </script>

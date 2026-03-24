@@ -38,6 +38,15 @@ $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="content">
+    <style>
+    .clickable-row {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .clickable-row:hover {
+        background-color: #f1f1f1; /* light gray on hover */
+    }
+    </style>
     <div class="container-fluid">
         <div class="row mb-3">
             <div class="col d-flex justify-content-between align-items-center">

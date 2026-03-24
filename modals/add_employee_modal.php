@@ -70,22 +70,24 @@
     </div>
 </div>
 
+<!-- Use CDN for reliability -->
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
+
 <script>
 document.getElementById('addEmployeeForm').addEventListener('submit', async function(e){
     e.preventDefault();
 
     const form = this;
     const btn = form.querySelector('button[type="submit"]');
-    const alertDiv = document.getElementById('employeeAlert');
     const formData = new FormData(form);
 
     const branch = form.querySelector('select[name="branch"]').value.trim();
     const brand  = form.querySelector('select[name="brand"]').value.trim();
 
-    // Validate that branch + brand exist in assignment table
     try {
         btn.disabled = true;
 
+        // 1️⃣ Validate that branch + brand exist
         const res = await fetch('functions/check_assignment.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -94,38 +96,58 @@ document.getElementById('addEmployeeForm').addEventListener('submit', async func
         const data = await res.json();
 
         if (!data.exists) {
-            alertDiv.innerHTML = `<div class="alert alert-danger">No assignment exists for the selected Branch & Brand.</div>`;
-            setTimeout(() => alertDiv.innerHTML = '', 3000);
-            btn.disabled = false;
-            return; // stop form submission
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid Selection',
+                text: 'No assignment exists for the selected Branch & Brand.',
+                confirmButtonText: 'OK'
+            });
+            return;
         }
 
-        // Determine status dynamically
+        // 2️⃣ Set status
         const status = (branch && brand) ? 'Active' : 'Inactive';
         formData.set('status', status);
+        formData.set('assigned_by', '<?= $_SESSION["username"] ?>'); // Pass session username
 
-        // Submit employee
+        // 3️⃣ Submit employee
         const submitRes = await fetch('functions/add_employee.php', {
             method: 'POST',
             body: formData
         });
+
+        // ✅ Always expect a JSON response from add_employee.php
         const submitData = await submitRes.json();
 
-        alertDiv.innerHTML = `<div class="alert alert-${submitData.status}">${submitData.message}</div>`;
-
         if(submitData.status === 'success'){
-            form.reset();
-            const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
-            modal.hide();
-            setTimeout(() => location.reload(), 500);
+            Swal.fire({
+                icon: 'success',
+                title: 'Employee Added!',
+                text: submitData.message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                form.reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
+                modal.hide();
+                location.reload(); // update table
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: submitData.message,
+                confirmButtonText: 'OK'
+            });
         }
-
-        setTimeout(() => alertDiv.innerHTML = '', 3000);
 
     } catch(err) {
         console.error(err);
-        alertDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Try again.</div>`;
-        setTimeout(() => alertDiv.innerHTML = '', 3000);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'An unexpected error occurred. Try again.',
+            confirmButtonText: 'OK'
+        });
     } finally {
         btn.disabled = false;
     }

@@ -43,43 +43,62 @@
     </div>
 </div>
 
+<!-- Include SweetAlert2 CDN if not already included -->
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
+
 <script>
-document.getElementById('addPlantillaForm').addEventListener('submit', function(e){
+document.getElementById('addPlantillaForm').addEventListener('submit', async function(e){
     e.preventDefault();
 
     const form = this;
     const formData = new FormData(form);
     const btn = form.querySelector('button[type="submit"]');
-    const alertDiv = document.getElementById('plantillaAlert');
 
-    btn.disabled = true;
+    try {
+        btn.disabled = true;
 
-    fetch('functions/add_plantilla.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        alertDiv.innerHTML = `
-            <div class="alert alert-${data.status}">
-                ${data.message}
-            </div>
-        `;
+        const res = await fetch('functions/add_plantilla.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
 
         if(data.status === 'success'){
+            await Swal.fire({
+                icon: 'success',
+                title: 'Plantilla Added!',
+                text: data.message,
+                confirmButtonText: 'OK'
+            });
+
             form.reset();
 
-            // 🔥 Close modal after success
+            // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('addPlantillaModal'));
             modal.hide();
 
-            // 🔥 Reload table/page
-            setTimeout(() => location.reload(), 500);
+            // Reload table/page
+            location.reload();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: data.message,
+                confirmButtonText: 'OK'
+            });
         }
 
-        setTimeout(() => alertDiv.innerHTML = '', 3000);
-    })
-    .catch(err => console.error(err))
-    .finally(() => btn.disabled = false);
+    } catch(err) {
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'An unexpected error occurred. Please try again.',
+            confirmButtonText: 'OK'
+        });
+    } finally {
+        btn.disabled = false;
+    }
 });
 </script>

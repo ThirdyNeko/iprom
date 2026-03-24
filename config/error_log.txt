@@ -280,3 +280,5 @@
 [2026-03-24 15:54:53] Error [2]: Undefined array key "inactive_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
 [2026-03-24 15:57:10] Error [2]: Undefined array key "active_promodizers" in C:\xampp\htdocs\iprom\index.php on line 28
 [2026-03-24 15:57:10] Error [2]: Undefined array key "inactive_promodizers" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-24 16:28:42] Error [2]: Undefined array key "assigned_by" in C:\xampp\htdocs\iprom\functions\add_employee.php on line 24
+[2026-03-24 16:29:18] Error [2]: Undefined array key "assigned_by" in C:\xampp\htdocs\iprom\functions\add_employee.php on line 24
