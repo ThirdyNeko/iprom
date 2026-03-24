@@ -1,6 +1,6 @@
 <?php
 session_start();
-$current_page = basename($_SERVER['PHP_SELF']); // e.g., "index.php"
+$current_page = basename($_SERVER['PHP_SELF']);
 include 'config/db.php';
 include 'partials/header.php';
 include 'partials/sidebar.php';
@@ -10,13 +10,9 @@ $pdo = qa_db();
 /* =========================
    FETCH PROMODIZERS
 ========================= */
-$stmt = $pdo->prepare("EXEC get_promodizers @status = :status, @branch = :branch");
-
-$stmt->execute([
-    ':status' => $status ?? null,
-    ':branch' => $branch ?? null
-]);
-
+// Call SP without any parameters
+$stmt = $pdo->prepare("EXEC get_promodizers");
+$stmt->execute();
 $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 

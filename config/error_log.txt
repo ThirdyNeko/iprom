@@ -112,3 +112,15 @@
 [2026-03-23 13:49:24] Error [2]: Undefined variable $branches in C:\xampp\htdocs\iprom\index.php on line 175
 [2026-03-23 13:49:24] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 179
 [2026-03-23 13:49:24] Error [2]: Undefined variable $excessData in C:\xampp\htdocs\iprom\index.php on line 184
+[2026-03-24 10:17:06] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\assignments.php on line 54
+[2026-03-24 10:17:06] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\assignments.php on line 54
+[2026-03-24 10:17:06] Error [2]: Undefined array key "branch_name" in C:\xampp\htdocs\iprom\assignments.php on line 58
+[2026-03-24 10:17:06] Error [2]: Undefined array key "brand_name" in C:\xampp\htdocs\iprom\assignments.php on line 59
+[2026-03-24 10:17:06] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\assignments.php on line 60
+[2026-03-24 10:17:06] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\assignments.php on line 61
+[2026-03-24 10:17:08] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\assignments.php on line 54
+[2026-03-24 10:17:08] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\assignments.php on line 54
+[2026-03-24 10:17:08] Error [2]: Undefined array key "branch_name" in C:\xampp\htdocs\iprom\assignments.php on line 58
+[2026-03-24 10:17:08] Error [2]: Undefined array key "brand_name" in C:\xampp\htdocs\iprom\assignments.php on line 59
+[2026-03-24 10:17:08] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\assignments.php on line 60
+[2026-03-24 10:17:08] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\assignments.php on line 61
