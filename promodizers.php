@@ -67,7 +67,10 @@ $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </thead>
                         <tbody>
                             <?php foreach($promodizers as $index => $p): ?>
-                                <tr>
+                                <tr class="clickable-row" 
+                                    data-id="<?= $p['id'] ?>" 
+                                    data-branch="<?= htmlspecialchars($p['branch']) ?>" 
+                                    data-brand="<?= htmlspecialchars($p['brand']) ?>">
                                     <td><?= $index + 1 ?></td>
                                     <td><?= $p['first_name'] ?> <?= $p['last_name'] ?></td>
                                     <td><?= $p['branch'] ?? '-' ?></td>
@@ -104,6 +107,17 @@ $(document).ready(function() {
     });
 });
 </script>
+<?php
+// Fetch branches & brands
+$branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
+                ->fetchAll(PDO::FETCH_COLUMN);
+
+$brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
+             ->fetchAll(PDO::FETCH_COLUMN);
+
+// Include modal
+include 'modals/edit_promodizer_modal.php';
+?>
 <?php include 'modals/add_employee_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 </body>
