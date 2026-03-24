@@ -12,10 +12,34 @@ $pdo = qa_db();
 /* =========================
    FETCH ASSIGNMENTS
 ========================= */
-$stmt = $pdo->prepare("EXEC get_assignments");
-$stmt->execute();
+$branch = $_GET['branch'] ?? null;
+$brand  = $_GET['brand'] ?? null;
+$id     = $_GET['id'] ?? null;
+$status = $_GET['status'] ?? null; // <<< add this
 
+$stmt = $pdo->prepare("EXEC get_assignments 
+    @branch_name = :branch,
+    @brand_name = :brand,
+    @assignment_id = :id
+");
+
+$stmt->bindValue(':branch', $branch);
+$stmt->bindValue(':brand', $brand);
+$stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+$stmt->execute();
 $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Filter by status if requested (complete/lacking/excess)
+if($status){
+    $assignments = array_filter($assignments, function($a) use($status){
+        $shortage = $a['required_count'] - $a['assigned_count'];
+        return ($status==='complete' && $shortage<=0)
+            || ($status==='lacking' && $shortage>0)
+            || ($status==='excess' && $shortage<0);
+    });
+}
+
 ?>
 
 <div class="content">
@@ -60,18 +84,12 @@ $assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td><?= $a['required_count'] ?></td>
                                     <td><?= $a['assigned_count'] ?></td>
                                     <td>
-                                        <?php if ($shortage > 0): ?>
-                                            <span class="badge bg-danger">
-                                                Needs <?= $shortage ?>
-                                            </span>
-                                        <?php elseif ($shortage < 0): ?>
-                                            <span class="badge bg-warning">
-                                                Excess <?= -1 * $shortage ?>
-                                            </span>
+                                        <?php if($shortage>0): ?>
+                                            <span class="badge bg-danger">Needs <?= $shortage ?></span>
+                                        <?php elseif($shortage<0): ?>
+                                            <span class="badge bg-warning">Excess <?= -$shortage ?></span>
                                         <?php else: ?>
-                                            <span class="badge bg-success">
-                                                Complete
-                                            </span>
+                                            <span class="badge bg-success">Complete</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

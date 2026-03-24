@@ -44,12 +44,13 @@ $excessPct = $totalAssignments ? round($excessAssignments / $totalAssignments * 
 // Cards data array
 $cards = [
     ['label' => 'Total Promodizers', 'value' => $total, 'color' => 'primary', 'icon' => '👥', 'link' => 'promodizers.php'],
-    ['label' => 'Assigned', 'value' => $assigned, 'percent' => $assignedPct, 'color' => 'success', 'icon' => '✅', 'link' => 'promodizers.php?status=assigned'],
-    ['label' => 'Unassigned', 'value' => $unassigned, 'percent' => $unassignedPct, 'color' => 'danger', 'icon' => '⚠️', 'link' => 'promodizers.php?status=unassigned'],
+    ['label' => 'Assigned', 'value' => $assigned, 'percent' => $assignedPct, 'color' => 'success', 'icon' => '✅', 'link' => 'promodizers.php?status=active'],
+    ['label' => 'Unassigned', 'value' => $unassigned, 'percent' => $unassignedPct, 'color' => 'danger', 'icon' => '⚠️', 'link' => 'promodizers.php?status=inactive'],
     ['label' => 'Total Assignments', 'value' => $totalAssignments, 'color' => 'primary', 'icon' => '📋', 'link' => 'assignments.php'],
     ['label' => 'Complete', 'value' => $completeAssignments, 'percent' => $completePct, 'color' => 'success', 'icon' => '✅', 'link' => 'assignments.php?status=complete'],
     ['label' => 'Lacking', 'value' => $lackingAssignments, 'percent' => $lackingPct, 'color' => 'danger', 'icon' => '⚠️', 'link' => 'assignments.php?status=lacking'],
     ['label' => 'Excess', 'value' => $excessAssignments, 'percent' => $excessPct, 'color' => 'warning', 'icon' => '⚠️', 'link' => 'assignments.php?status=excess'],
+    
 ];
 ?>
 

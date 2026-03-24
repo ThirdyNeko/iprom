@@ -124,3 +124,7 @@
 [2026-03-24 10:17:08] Error [2]: Undefined array key "brand_name" in C:\xampp\htdocs\iprom\assignments.php on line 59
 [2026-03-24 10:17:08] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\assignments.php on line 60
 [2026-03-24 10:17:08] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\assignments.php on line 61
+[2026-03-24 10:51:26] Error [2]: Undefined variable $status in C:\xampp\htdocs\iprom\assignments.php on line 33
+[2026-03-24 10:51:28] Error [2]: Undefined variable $status in C:\xampp\htdocs\iprom\assignments.php on line 33
+[2026-03-24 10:51:29] Error [2]: Undefined variable $status in C:\xampp\htdocs\iprom\assignments.php on line 33
+[2026-03-24 10:55:17] Error [2]: Undefined variable $status in C:\xampp\htdocs\iprom\assignments.php on line 33

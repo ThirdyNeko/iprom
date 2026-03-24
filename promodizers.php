@@ -11,7 +11,28 @@ $pdo = qa_db();
    FETCH PROMODIZERS
 ========================= */
 // Call SP without any parameters
-$stmt = $pdo->prepare("EXEC get_promodizers");
+$filters = [
+    ':branch' => $_GET['branch'] ?? null,
+    ':brand' => $_GET['brand'] ?? null,
+    ':status' => $_GET['status'] ?? null,
+    ':assigned_by' => $_GET['assigned_by'] ?? null,
+    ':from_date' => $_GET['from_date'] ?? null,
+    ':to_date' => $_GET['to_date'] ?? null
+];
+
+$stmt = $pdo->prepare("EXEC get_promodizers 
+    @branch = :branch,
+    @brand = :brand,
+    @status = :status,
+    @assigned_by = :assigned_by,
+    @from_date = :from_date,
+    @to_date = :to_date
+");
+
+foreach ($filters as $key => $value) {
+    $stmt->bindValue($key, $value);
+}
+
 $stmt->execute();
 $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
