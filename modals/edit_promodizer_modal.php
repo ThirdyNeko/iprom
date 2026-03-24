@@ -154,8 +154,10 @@ document.getElementById('saveBtn').addEventListener('click', () => {
 document.getElementById('unassignBtn').addEventListener('click', () => {
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
-    formData.set('branch', '');
-    formData.set('brand', '');
+    formData.set('first_name', document.getElementById('editFirstName').value.trim());
+    formData.set('last_name', document.getElementById('editLastName').value.trim());
+    formData.set('branch', 'Unassigned');
+    formData.set('brand', 'Unassigned');
     formData.set('status', 'Inactive');
     sendAction(formData);
 });
@@ -164,8 +166,10 @@ document.getElementById('unassignBtn').addEventListener('click', () => {
 document.getElementById('terminateBtn').addEventListener('click', () => {
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
-    formData.set('branch', '');
-    formData.set('brand', '');
+    formData.set('first_name', document.getElementById('editFirstName').value.trim());
+    formData.set('last_name', document.getElementById('editLastName').value.trim());
+    formData.set('branch', 'Unassigned');
+    formData.set('brand', 'Unassigned');
     formData.set('status', 'Terminated');
     sendAction(formData);
 });
