@@ -23,7 +23,7 @@ $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <h4 class="fw-bold mb-0">Promodizers</h4>
 
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
-                    + Add Employee
+                    <i class="bi bi-plus-circle"></i> Add Employee
                 </button>
             </div>
         </div>
