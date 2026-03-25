@@ -84,6 +84,21 @@ document.getElementById('addEmployeeForm').addEventListener('submit', async func
     const branch = form.querySelector('select[name="branch"]').value.trim();
     const brand  = form.querySelector('select[name="brand"]').value.trim();
 
+    // 🛑 CONFIRMATION FIRST
+    const confirm = await Swal.fire({
+        icon: 'warning',
+        title: 'Are you sure?',
+        text: 'This action cannot be easily changed once saved.',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Save',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33',
+        reverseButtons: true
+    });
+
+    // ❌ If user cancels → stop here
+    if (!confirm.isConfirmed) return;
+
     try {
         btn.disabled = true;
 
@@ -108,7 +123,7 @@ document.getElementById('addEmployeeForm').addEventListener('submit', async func
         // 2️⃣ Set status
         const status = (branch && brand) ? 'Active' : 'Inactive';
         formData.set('status', status);
-        formData.set('assigned_by', '<?= $_SESSION["username"] ?>'); // Pass session username
+        formData.set('assigned_by', '<?= $_SESSION["username"] ?>');
 
         // 3️⃣ Submit employee
         const submitRes = await fetch('functions/add_employee.php', {
@@ -116,7 +131,6 @@ document.getElementById('addEmployeeForm').addEventListener('submit', async func
             body: formData
         });
 
-        // ✅ Always expect a JSON response from add_employee.php
         const submitData = await submitRes.json();
 
         if(submitData.status === 'success'){
@@ -129,7 +143,7 @@ document.getElementById('addEmployeeForm').addEventListener('submit', async func
                 form.reset();
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal'));
                 modal.hide();
-                location.reload(); // update table
+                location.reload();
             });
         } else {
             Swal.fire({

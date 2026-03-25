@@ -193,6 +193,20 @@ async function sendAction(data, actionName = 'Save') {
 
 // Save
 document.getElementById('saveBtn').addEventListener('click', async () => {
+
+    const confirm = await Swal.fire({
+        icon: 'warning',
+        title: 'Save Changes?',
+        text: 'Changes to this employee may affect assignments and history. This cannot be easily undone.',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Save Changes',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#3085d6',
+        reverseButtons: true
+    });
+
+    if (!confirm.isConfirmed) return;
+
     const id = document.getElementById('editPromodizerId').value;
     const firstName = document.getElementById('editFirstName').value.trim();
     const lastName  = document.getElementById('editLastName').value.trim();
@@ -229,6 +243,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
         formData.set('status', status);
 
         await sendAction(formData, 'Save Changes');
+
     } catch(err) {
         console.error(err);
         Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred.' });
@@ -236,7 +251,21 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 });
 
 // Unassign
-document.getElementById('unassignBtn').addEventListener('click', () => {
+document.getElementById('unassignBtn').addEventListener('click', async () => {
+
+    const confirm = await Swal.fire({
+        icon: 'warning',
+        title: 'Unassign Employee?',
+        text: 'This will remove the employee from their current branch and brand.',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Unassign',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#f0ad4e',
+        reverseButtons: true
+    });
+
+    if (!confirm.isConfirmed) return;
+
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
     formData.set('first_name', document.getElementById('editFirstName').value.trim());
@@ -244,11 +273,30 @@ document.getElementById('unassignBtn').addEventListener('click', () => {
     formData.set('branch', 'Unassigned');
     formData.set('brand', 'Unassigned');
     formData.set('status', 'Inactive');
+
     sendAction(formData, 'Unassign');
 });
 
 // Terminate
-document.getElementById('terminateBtn').addEventListener('click', () => {
+document.getElementById('terminateBtn').addEventListener('click', async () => {
+
+    const confirm = await Swal.fire({
+        icon: 'error',
+        title: 'Terminate Employee?',
+        html: `
+            <b>This action is irreversible.</b><br>
+            The employee will be permanently marked as terminated<br>
+            and will no longer be editable.
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Terminate',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#d33',
+        reverseButtons: true
+    });
+
+    if (!confirm.isConfirmed) return;
+
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
     formData.set('first_name', document.getElementById('editFirstName').value.trim());
@@ -256,6 +304,7 @@ document.getElementById('terminateBtn').addEventListener('click', () => {
     formData.set('branch', 'Unassigned');
     formData.set('brand', 'Unassigned');
     formData.set('status', 'Terminated');
+
     sendAction(formData, 'Terminate');
 });
 </script>
