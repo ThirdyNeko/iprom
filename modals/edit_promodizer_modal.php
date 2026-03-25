@@ -10,6 +10,11 @@
             <div class="modal-body">
                 <div id="editAlert"></div>
 
+                <!-- 🔴 Terminated Notice -->
+                <div id="terminatedNotice" class="alert alert-danger d-none">
+                    This employee is terminated and can no longer be modified.
+                </div>
+
                 <!-- Hidden ID -->
                 <input type="hidden" id="editPromodizerId">
 
@@ -82,13 +87,13 @@
     </div>
 </div>
 
-<!-- Include SweetAlert2 CDN -->
+<!-- SweetAlert2 -->
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
 <script>
 const modalEl = document.getElementById('editPromodizerModal');
 
-// Populate modal when clicking a row
+// Populate modal
 document.querySelectorAll('.clickable-row').forEach(row => {
     row.addEventListener('click', async () => {
         const id = row.dataset.id;
@@ -103,7 +108,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 return;
             }
 
-            // Fill table fields
+            // Fill fields
             document.getElementById('editPromodizerId').value = p.id;
             document.getElementById('editFirstName').value = p.first_name;
             document.getElementById('editLastName').value = p.last_name;
@@ -116,6 +121,32 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             document.getElementById('editDateReturn').textContent = p.date_of_return ? new Date(p.date_of_return).toLocaleDateString() : '-';
             document.getElementById('editDateSeparated').textContent = p.date_separated ? new Date(p.date_separated).toLocaleDateString() : '-';
 
+            // 🔒 HANDLE TERMINATED STATE
+            const status = (p.status || '').toLowerCase();
+            const inputs = modalEl.querySelectorAll('input, select');
+            const saveBtn = document.getElementById('saveBtn');
+            const unassignBtn = document.getElementById('unassignBtn');
+            const terminateBtn = document.getElementById('terminateBtn');
+            const notice = document.getElementById('terminatedNotice');
+
+            if (status === 'terminated') {
+                inputs.forEach(el => el.disabled = true);
+
+                saveBtn.style.display = 'none';
+                unassignBtn.style.display = 'none';
+                terminateBtn.style.display = 'none';
+
+                notice.classList.remove('d-none');
+            } else {
+                inputs.forEach(el => el.disabled = false);
+
+                saveBtn.style.display = 'inline-block';
+                unassignBtn.style.display = 'inline-block';
+                terminateBtn.style.display = 'inline-block';
+
+                notice.classList.add('d-none');
+            }
+
             modal.show();
         } catch(err) {
             console.error(err);
@@ -124,7 +155,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
     });
 });
 
-// Helper function to send AJAX POST and show SweetAlert
+// Helper AJAX
 async function sendAction(data, actionName = 'Save') {
     const btns = modalEl.querySelectorAll('button');
     btns.forEach(b => b.disabled = true);
@@ -137,17 +168,15 @@ async function sendAction(data, actionName = 'Save') {
             await Swal.fire({
                 icon: 'success',
                 title: `${actionName} Successful`,
-                text: result.message,
-                confirmButtonText: 'OK'
+                text: result.message
             });
             bootstrap.Modal.getInstance(modalEl).hide();
-            location.reload(); // refresh table
+            location.reload();
         } else {
             Swal.fire({
                 icon: 'error',
                 title: `${actionName} Failed`,
-                text: result.message,
-                confirmButtonText: 'OK'
+                text: result.message
             });
         }
     } catch(err) {
@@ -155,15 +184,14 @@ async function sendAction(data, actionName = 'Save') {
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'An unexpected error occurred. Try again.',
-            confirmButtonText: 'OK'
+            text: 'An unexpected error occurred.'
         });
     } finally {
         btns.forEach(b => b.disabled = false);
     }
 }
 
-// Save changes
+// Save
 document.getElementById('saveBtn').addEventListener('click', async () => {
     const id = document.getElementById('editPromodizerId').value;
     const firstName = document.getElementById('editFirstName').value.trim();
@@ -179,7 +207,6 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     formData.set('brand', brand || null);
 
     try {
-        // Validate assignment if both branch & brand are selected
         if(branch && brand){
             const res = await fetch('functions/check_assignment.php', {
                 method: 'POST',
@@ -187,12 +214,12 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
                 body: JSON.stringify({ branch, brand })
             });
             const data = await res.json();
+
             if(!data.exists){
                 Swal.fire({
                     icon: 'error',
                     title: 'Invalid Assignment',
-                    text: 'No assignment exists for the selected Branch & Brand.',
-                    confirmButtonText: 'OK'
+                    text: 'No assignment exists for the selected Branch & Brand.'
                 });
                 return;
             }
@@ -204,7 +231,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
         await sendAction(formData, 'Save Changes');
     } catch(err) {
         console.error(err);
-        Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred. Try again.', confirmButtonText: 'OK' });
+        Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred.' });
     }
 });
 
