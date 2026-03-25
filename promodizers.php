@@ -35,6 +35,15 @@ foreach ($filters as $key => $value) {
 
 $stmt->execute();
 $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch branches & brands
+$branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
+                ->fetchAll(PDO::FETCH_COLUMN);
+
+$brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
+             ->fetchAll(PDO::FETCH_COLUMN);
+
+// Include modal
+
 ?>
 
 <div class="content">
@@ -60,6 +69,56 @@ $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- Table -->
         <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-2">
+
+                    <div class="col-md-2">
+                        <label class="form-label">Branch</label>
+                        <select id="filterBranch" class="form-select">
+                            <option value="">All</option>
+                            <?php foreach($branches as $b): ?>
+                                <option value="<?= $b ?>"><?= $b ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Brand</label>
+                        <select id="filterBrand" class="form-select">
+                            <option value="">All</option>
+                            <?php foreach($brands as $b): ?>
+                                <option value="<?= $b ?>"><?= $b ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select id="filterStatus" class="form-select">
+                            <option value="">All</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Terminated">Terminated</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Assigned By</label>
+                        <input type="text" id="filterAssignedBy" class="form-control" placeholder="Search...">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">From</label>
+                        <input type="date" id="filterFrom" class="form-control">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">To</label>
+                        <input type="date" id="filterTo" class="form-control">
+                    </div>
+
+                </div>
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="promodizerTable" class="table table-striped table-hover align-middle">
@@ -105,28 +164,59 @@ $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <script>
 $(document).ready(function() {
-    $('#promodizerTable').DataTable({
-        "pageLength": 10,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        "responsive": true
+    var table = $('#promodizerTable').DataTable({
+        pageLength: 10,
+        responsive: true,
+        dom: 'lrtip'
     });
+
+    // Column indexes (based on your table)
+    // 0 #, 1 Name, 2 Branch, 3 Brand, 4 Status, 5 Assigned By, 6 Date
+
+    $('#filterBranch').on('change', function() {
+        table.column(2).search(this.value).draw();
+    });
+
+    $('#filterBrand').on('change', function() {
+        table.column(3).search(this.value).draw();
+    });
+
+    $('#filterStatus').on('change', function() {
+        table.column(4).search(this.value).draw();
+    });
+
+    $('#filterAssignedBy').on('keyup', function() {
+        table.column(5).search(this.value).draw();
+    });
+
+    // DATE RANGE FILTER (custom)
+    $.fn.dataTable.ext.search.push(function(settings, data) {
+        var from = $('#filterFrom').val();
+        var to   = $('#filterTo').val();
+        var date = data[6]; // Assignment Date column
+
+        if (!date) return true;
+
+        var rowDate = new Date(date);
+        var fromDate = from ? new Date(from) : null;
+        var toDate   = to ? new Date(to) : null;
+
+        if (
+            (!fromDate || rowDate >= fromDate) &&
+            (!toDate || rowDate <= toDate)
+        ) {
+            return true;
+        }
+        return false;
+    });
+
+    $('#filterFrom, #filterTo').on('change', function() {
+        table.draw();
+    });
+
 });
 </script>
-<?php
-// Fetch branches & brands
-$branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
-                ->fetchAll(PDO::FETCH_COLUMN);
-
-$brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
-             ->fetchAll(PDO::FETCH_COLUMN);
-
-// Include modal
-include 'modals/edit_promodizer_modal.php';
-?>
+<?php include 'modals/edit_promodizer_modal.php'; ?>
 <?php include 'modals/add_employee_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 </body>
