@@ -124,7 +124,6 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                     <table id="promodizerTable" class="table table-striped table-hover align-middle">
                         <thead class="table-dark">
                             <tr>
-                                <th>#</th>
                                 <th>Name</th>
                                 <th>Branch</th>
                                 <th>Brand</th>
@@ -134,17 +133,16 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($promodizers as $index => $p): ?>
+                            <?php foreach($promodizers as $p): ?>
                                 <tr class="clickable-row" 
                                     data-id="<?= $p['id'] ?>" 
                                     data-branch="<?= htmlspecialchars($p['branch']) ?>" 
                                     data-brand="<?= htmlspecialchars($p['brand']) ?>">
-                                    <td><?= $index + 1 ?></td>
-                                    <td><?= $p['first_name'] ?> <?= $p['last_name'] ?></td>
-                                    <td><?= $p['branch'] ?? '-' ?></td>
-                                    <td><?= $p['brand'] ?? '-' ?></td>
-                                    <td><?= $p['status'] ?? '-' ?></td>
-                                    <td><?= $p['last_assigned_by'] ?? '-' ?></td>
+                                    <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($p['branch'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($p['brand'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($p['status'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($p['last_assigned_by'] ?? '-') ?></td>
                                     <td><?= $p['assignment_date'] ? date('Y-m-d', strtotime($p['assignment_date'])) : '-' ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -170,30 +168,30 @@ $(document).ready(function() {
         dom: 'lrtip'
     });
 
-    // Column indexes (based on your table)
-    // 0 #, 1 Name, 2 Branch, 3 Brand, 4 Status, 5 Assigned By, 6 Date
+    // Column indexes after removing ID column:
+    // 0 Name, 1 Branch, 2 Brand, 3 Status, 4 Assigned By, 5 Date
 
     $('#filterBranch').on('change', function() {
-        table.column(2).search(this.value).draw();
+        table.column(1).search(this.value).draw();
     });
 
     $('#filterBrand').on('change', function() {
-        table.column(3).search(this.value).draw();
+        table.column(2).search(this.value).draw();
     });
 
     $('#filterStatus').on('change', function() {
-        table.column(4).search(this.value).draw();
+        table.column(3).search(this.value).draw();
     });
 
     $('#filterAssignedBy').on('keyup', function() {
-        table.column(5).search(this.value).draw();
+        table.column(4).search(this.value).draw();
     });
 
     // DATE RANGE FILTER (custom)
     $.fn.dataTable.ext.search.push(function(settings, data) {
         var from = $('#filterFrom').val();
         var to   = $('#filterTo').val();
-        var date = data[6]; // Assignment Date column
+        var date = data[5]; // Assignment Date column
 
         if (!date) return true;
 
@@ -213,7 +211,6 @@ $(document).ready(function() {
     $('#filterFrom, #filterTo').on('change', function() {
         table.draw();
     });
-
 });
 </script>
 <?php include 'modals/edit_promodizer_modal.php'; ?>
