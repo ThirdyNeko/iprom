@@ -78,7 +78,6 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                     <table id="assignmentTable" class="table table-striped table-hover align-middle">
                         <thead class="table-dark">
                             <tr>
-                                <th>#</th>
                                 <th>Branch</th>
                                 <th>Brand</th>
                                 <th>Required</th>
@@ -121,7 +120,7 @@ $(document).ready(function() {
         lengthMenu: [10,25,50,100],
         responsive: true,
         dom: 'lrtip',
-        order: [[6,'desc']]
+        order: [[5,'desc']]
     });
 
     // Reload table on filter change

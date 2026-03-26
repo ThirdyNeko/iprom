@@ -55,7 +55,6 @@ foreach($pagedData as $i => $a){
             "data-assigned" => $a['assigned_count'],
             "data-updated"  => $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-'
         ],
-        $start + $i + 1,
         $a['branch_name'],
         $a['brand_name'],
         $a['required_count'],
