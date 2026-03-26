@@ -44,8 +44,9 @@ $lackingPct = $totalAssignments ? round($lackingAssignments / $totalAssignments 
 $excessPct = $totalAssignments ? round($excessAssignments / $totalAssignments * 100, 1) : 0;
 
 /* ==============================
-   TOP BRANCHES (LIMIT + OTHERS)
+   BRANCH CHART (TOP BY EXCESS)
 ============================== */
+
 $topLimit = 10;
 
 $branches = [];
@@ -55,10 +56,9 @@ $excessData = [];
 $othersComplete = 0;
 $othersExcess = 0;
 
-// Sort by total DESC
+// Sort by EXCESS descending
 usort($branchStats, function($a, $b) {
-    return ($b['complete_count'] + $b['excess_count']) 
-         <=> ($a['complete_count'] + $a['excess_count']);
+    return (int)$b['excess_count'] <=> (int)$a['excess_count'];
 });
 
 foreach ($branchStats as $index => $row) {
@@ -72,13 +72,12 @@ foreach ($branchStats as $index => $row) {
     }
 }
 
-// Add "Others"
+// Add "Others" if any
 if ($othersComplete > 0 || $othersExcess > 0) {
     $branches[] = 'Others';
     $completeData[] = $othersComplete;
     $excessData[] = $othersExcess;
 }
-
 /* ==============================
    CARDS
 ============================== */
