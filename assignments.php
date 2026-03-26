@@ -60,9 +60,6 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
         <div class="row mb-3">
             <div class="col d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold mb-0">Assignments</h4>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal">
-                    <i class="bi bi-plus-circle"></i> Add Plantilla
-                </button>
             </div>
         </div>
 
@@ -201,7 +198,6 @@ $(document).ready(function() {
 });
 </script>
 
-<?php include 'modals/add_plantilla_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 </body>
 </html>
