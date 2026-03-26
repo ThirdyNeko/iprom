@@ -122,7 +122,12 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                             <?php foreach($assignments as $index => $a): 
                                 $shortage = $a['required_count'] - $a['assigned_count'];
                             ?>
-                            <tr class="clickable-row">
+                            <tr class="clickable-row"
+                                data-branch="<?= htmlspecialchars($a['branch_name']) ?>"
+                                data-brand="<?= htmlspecialchars($a['brand_name']) ?>"
+                                data-required="<?= $a['required_count'] ?>"
+                                data-assigned="<?= $a['assigned_count'] ?>"
+                                data-updated="<?= $a['updated_at'] ?>">
                                 <td><?= $index + 1 ?></td>
                                 <td><?= htmlspecialchars($a['branch_name']) ?></td>
                                 <td><?= htmlspecialchars($a['brand_name']) ?></td>
@@ -198,6 +203,7 @@ $(document).ready(function() {
 });
 </script>
 
+<?php include 'modals/assignment_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 </body>
 </html>
