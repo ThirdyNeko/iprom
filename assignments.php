@@ -7,41 +7,6 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
-/* =========================
-   FETCH ASSIGNMENTS
-========================= */
-$filters = [
-    ':branch' => $_GET['branch'] ?? null,
-    ':brand' => $_GET['brand'] ?? null,
-    ':from_date' => $_GET['from_date'] ?? null,
-    ':to_date' => $_GET['to_date'] ?? null
-];
-
-$stmt = $pdo->prepare("EXEC get_assignments 
-    @branch_name = :branch,
-    @brand_name = :brand,
-    @from_date = :from_date,
-    @to_date = :to_date
-");
-
-foreach ($filters as $key => $value) {
-    $stmt->bindValue($key, $value);
-}
-
-$stmt->execute();
-$assignments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// PHP filter for status (complete/lacking/excess)
-$status = $_GET['status'] ?? null;
-if($status){
-    $assignments = array_filter($assignments, function($a) use($status){
-        $shortage = $a['required_count'] - $a['assigned_count'];
-        return ($status==='complete' && $shortage===0)
-            || ($status==='lacking' && $shortage>0)
-            || ($status==='excess' && $shortage<0);
-    });
-}
-
 // Fetch branches & brands for filter dropdowns
 $branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
                 ->fetchAll(PDO::FETCH_COLUMN);
@@ -52,8 +17,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
 <div class="content">
     <style>
-    .clickable-row { cursor: pointer; transition: background-color 0.2s; }
-    .clickable-row:hover { background-color: #f1f1f1; }
+        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
+        .clickable-row:hover { background-color: #f1f1f1; }
     </style>
 
     <div class="container-fluid">
@@ -63,8 +28,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             </div>
         </div>
 
-        <!-- Table -->
-        <div class="card shadow-sm">
+        <!-- Filters -->
+        <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <div class="row g-2">
                     <div class="col-md-2">
@@ -72,7 +37,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         <select id="filterBranch" class="form-select">
                             <option value="">All</option>
                             <?php foreach($branches as $b): ?>
-                                <option value="<?= $b ?>"><?= $b ?></option>
+                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -81,7 +46,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         <select id="filterBrand" class="form-select">
                             <option value="">All</option>
                             <?php foreach($brands as $b): ?>
-                                <option value="<?= $b ?>"><?= $b ?></option>
+                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -104,6 +69,10 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="assignmentTable" class="table table-striped table-hover align-middle">
@@ -115,42 +84,14 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Required</th>
                                 <th>Assigned</th>
                                 <th>Status</th>
-                                <th>Updated At</th> <!-- New column -->
+                                <th>Updated At</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php foreach($assignments as $index => $a): 
-                                $shortage = $a['required_count'] - $a['assigned_count'];
-                            ?>
-                            <tr class="clickable-row"
-                                data-branch="<?= htmlspecialchars($a['branch_name']) ?>"
-                                data-brand="<?= htmlspecialchars($a['brand_name']) ?>"
-                                data-required="<?= $a['required_count'] ?>"
-                                data-assigned="<?= $a['assigned_count'] ?>"
-                                data-updated="<?= $a['updated_at'] ?>">
-                                <td><?= $index + 1 ?></td>
-                                <td><?= htmlspecialchars($a['branch_name']) ?></td>
-                                <td><?= htmlspecialchars($a['brand_name']) ?></td>
-                                <td><?= $a['required_count'] ?></td>
-                                <td><?= $a['assigned_count'] ?></td>
-                                <td data-status="<?= $shortage>0 ? 'lacking' : ($shortage<0 ? 'excess' : 'complete') ?>">
-                                    <?php if($shortage>0): ?>
-                                        <span class="badge bg-danger">Needs <?= $shortage ?></span>
-                                    <?php elseif($shortage<0): ?>
-                                        <span class="badge bg-warning">Excess <?= -$shortage ?></span>
-                                    <?php else: ?>
-                                        <span class="badge bg-success">Complete</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?= $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-' ?></td> <!-- Updated At -->
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
+                        <tbody></tbody> <!-- Server-side AJAX will populate -->
                     </table>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -161,45 +102,43 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
 <script>
 $(document).ready(function() {
+
     var table = $('#assignmentTable').DataTable({
-        pageLength: 10,
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: 'functions/fetch_assignments.php',
+            type: 'POST',
+            data: function(d) {
+                d.branch = $('#filterBranch').val();
+                d.brand  = $('#filterBrand').val();
+                d.status = $('#filterStatus').val();
+                d.from_date = $('#filterFrom').val();
+                d.to_date   = $('#filterTo').val();
+            }
+        },
+        pageLength: 50,
+        lengthMenu: [10,25,50,100],
         responsive: true,
-        dom: 'lrtip'
+        dom: 'lrtip',
+        order: [[6,'desc']]
     });
 
-    $('#filterBranch').on('change', function() {
-        table.column(1).search(this.value).draw();
-    });
-    $('#filterBrand').on('change', function() {
-        table.column(2).search(this.value).draw();
-    });
-    $.fn.dataTable.ext.search.push(
-        function(settings, data, dataIndex) {
-            var statusFilter = $('#filterStatus').val();
-            var status = $(table.row(dataIndex).node()).find('td:eq(5)').data('status'); // Status column index = 5
-
-            if (!statusFilter) return true; // no filter, show all
-            return status === statusFilter;
-        }
-    );
-
-    $('#filterStatus').on('change', function() {
-        table.draw();
+    // Reload table on filter change
+    $('#filterBranch,#filterBrand,#filterStatus,#filterFrom,#filterTo').on('change', function(){
+        table.ajax.reload();
     });
 
-    // DATE RANGE FILTER (custom)
-    $.fn.dataTable.ext.search.push(function(settings, data) {
-        var from = $('#filterFrom').val();
-        var to   = $('#filterTo').val();
-        var date = data[0]; // can customize if assignments have a date column
+    // Clickable row handler
+    $('#assignmentTable tbody').on('click', 'tr.clickable-row', function() {
+        var branch = $(this).data('branch');
+        var brand  = $(this).data('brand');
+        var required = $(this).data('required');
+        var assigned = $(this).data('assigned');
+        var updated = $(this).data('updated');
 
-        // No date column? Keep all rows
-        return true;
     });
 
-    $('#filterFrom, #filterTo').on('change', function() {
-        table.draw();
-    });
 });
 </script>
 
