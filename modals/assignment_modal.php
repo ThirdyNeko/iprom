@@ -75,7 +75,18 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
     $('#modalRequired').text(required);
     $('#modalAssigned').text(assigned);
     $('#modalStatus').html(status); // ⚠️ use html for badge
-    $('#modalUpdated').text(updated ? updated : '-');
+    let formattedDate = updated 
+        ? new Date(updated).toLocaleString('en-CA', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        }).replace(',', '')
+        : '-';
+
+    $('#modalUpdated').text(formattedDate);
 
     $('#assignmentModal').modal('show');
 });
