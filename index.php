@@ -11,84 +11,121 @@ $pdo = qa_db();
 /* ==============================
    DASHBOARD COUNTS
 ============================== */
-
-// Call stored procedure that returns all counts
 $stmt = $pdo->prepare("EXEC get_dashboard_counts");
 $stmt->execute();
 
-// First result set → dashboard counts
+// First result set → totals
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Move to second result set → branch-level data
+// Second result set → branch stats
 $stmt->nextRowset();
 $branchStats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+/* ==============================
+   DATA PREPARATION
+============================== */
+
 // Promodizers
-$total = $result['total_promodizers'];
-$assigned = $result['active_promodizers'];
-$unassigned = $result['inactive_promodizers'];
+$total = (int)$result['total_promodizers'];
+$assigned = (int)$result['active_promodizers'];
+$unassigned = (int)$result['inactive_promodizers'];
 
 // Assignments
-$totalAssignments = $result['total_assignments'];
-$completeAssignments = $result['complete_assignments'];
-$lackingAssignments = $result['lacking_assignments'];
-$excessAssignments = $result['excess_assignments'];
+$totalAssignments = (int)$result['total_assignments'];
+$completeAssignments = (int)$result['complete_assignments'];
+$lackingAssignments = (int)$result['lacking_assignments'];
+$excessAssignments = (int)$result['excess_assignments'];
 
-// Calculate percentages
+// Percentages
 $assignedPct = $total ? round($assigned / $total * 100, 1) : 0;
 $unassignedPct = $total ? round($unassigned / $total * 100, 1) : 0;
 $completePct = $totalAssignments ? round($completeAssignments / $totalAssignments * 100, 1) : 0;
 $lackingPct = $totalAssignments ? round($lackingAssignments / $totalAssignments * 100, 1) : 0;
 $excessPct = $totalAssignments ? round($excessAssignments / $totalAssignments * 100, 1) : 0;
 
-// Cards data array
+/* ==============================
+   TOP BRANCHES (LIMIT + OTHERS)
+============================== */
+$topLimit = 10;
+
+$branches = [];
+$completeData = [];
+$excessData = [];
+
+$othersComplete = 0;
+$othersExcess = 0;
+
+// Sort by total DESC
+usort($branchStats, function($a, $b) {
+    return ($b['complete_count'] + $b['excess_count']) 
+         <=> ($a['complete_count'] + $a['excess_count']);
+});
+
+foreach ($branchStats as $index => $row) {
+    if ($index < $topLimit) {
+        $branches[] = $row['branch_name'];
+        $completeData[] = (int)$row['complete_count'];
+        $excessData[] = (int)$row['excess_count'];
+    } else {
+        $othersComplete += (int)$row['complete_count'];
+        $othersExcess += (int)$row['excess_count'];
+    }
+}
+
+// Add "Others"
+if ($othersComplete > 0 || $othersExcess > 0) {
+    $branches[] = 'Others';
+    $completeData[] = $othersComplete;
+    $excessData[] = $othersExcess;
+}
+
+/* ==============================
+   CARDS
+============================== */
 $cards = [
-    ['label' => 'Total Promodizers', 'value' => $total, 'color' => 'primary', 'icon' => '👥', 'link' => 'promodizers.php'],
-    ['label' => 'Assigned', 'value' => $assigned, 'percent' => $assignedPct, 'color' => 'success', 'icon' => '✅', 'link' => 'promodizers.php?status=active'],
-    ['label' => 'Unassigned', 'value' => $unassigned, 'percent' => $unassignedPct, 'color' => 'danger', 'icon' => '⚠️', 'link' => 'promodizers.php?status=inactive'],
-    ['label' => 'Total Assignments', 'value' => $totalAssignments, 'color' => 'primary', 'icon' => '📋', 'link' => 'assignments.php'],
-    ['label' => 'Complete', 'value' => $completeAssignments, 'percent' => $completePct, 'color' => 'success', 'icon' => '✅', 'link' => 'assignments.php?status=complete'],
-    ['label' => 'Lacking', 'value' => $lackingAssignments, 'percent' => $lackingPct, 'color' => 'danger', 'icon' => '⚠️', 'link' => 'assignments.php?status=lacking'],
-    ['label' => 'Excess', 'value' => $excessAssignments, 'percent' => $excessPct, 'color' => 'warning', 'icon' => '⚠️', 'link' => 'assignments.php?status=excess'],
+    ['label'=>'Total Promodizers','value'=>$total,'color'=>'primary','icon'=>'👥','link'=>'promodizers.php'],
+    ['label'=>'Assigned','value'=>$assigned,'percent'=>$assignedPct,'color'=>'success','icon'=>'✅','link'=>'promodizers.php?status=active'],
+    ['label'=>'Unassigned','value'=>$unassigned,'percent'=>$unassignedPct,'color'=>'danger','icon'=>'⚠️','link'=>'promodizers.php?status=inactive'],
     
+    ['label'=>'Total Assignments','value'=>$totalAssignments,'color'=>'primary','icon'=>'📋','link'=>'assignments.php'],
+    
+    // Updated to include filter-ready URL parameters
+    ['label'=>'Complete','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
+    ['label'=>'Lacking','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'danger','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
+    ['label'=>'Excess','value'=>$excessAssignments,'percent'=>$excessPct,'color'=>'warning','icon'=>'⚠️','link'=>'assignments.php?status=excess']
 ];
 ?>
 
 <style>
-/* Hover effect for cards */
-.hover-scale {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.hover-scale:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    cursor: pointer;
-}
+    .hover-scale {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-scale:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
 </style>
 
 <div class="content">
     <div class="container-fluid">
 
-        <div class="row mb-3">
-            <div class="col">
-                <h4 class="fw-bold">Dashboard</h4>
-            </div>
-        </div>
+        <h4 class="fw-bold mb-3">Dashboard</h4>
 
+        <!-- CARDS -->
+        <!-- FIRST ROW (Promodizers) -->
         <div class="row g-3 justify-content-center">
-            <!-- Promodizer Cards -->
             <?php foreach(array_slice($cards,0,3) as $card): ?>
                 <div class="col-md-3">
                     <a href="<?= $card['link'] ?>" class="text-decoration-none">
-                        <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale" 
-                             data-bs-toggle="tooltip" 
-                             title="<?= $card['label'] ?> Details">
+                        <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale"
+                            data-bs-toggle="tooltip"
+                            title="<?= $card['label'] ?> Details">
                             <div class="card-body text-center">
                                 <h6 class="text-muted"><?= $card['icon'] ?> <?= $card['label'] ?></h6>
                                 <h3>
                                     <?= $card['value'] ?>
                                     <?php if(isset($card['percent'])): ?>
-                                        <small class="text-muted">(<?= $card['percent'] ?>%)</small>
+                                        
                                     <?php endif; ?>
                                 </h3>
                             </div>
@@ -98,14 +135,14 @@ $cards = [
             <?php endforeach; ?>
         </div>
 
+        <!-- SECOND ROW (Assignments) -->
         <div class="row g-3 mt-3 justify-content-center">
-            <!-- Assignment Cards -->
             <?php foreach(array_slice($cards,3) as $card): ?>
                 <div class="col-md-3">
                     <a href="<?= $card['link'] ?>" class="text-decoration-none">
-                        <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale" 
-                             data-bs-toggle="tooltip" 
-                             title="<?= $card['label'] ?> Details">
+                        <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale"
+                            data-bs-toggle="tooltip"
+                            title="<?= $card['label'] ?> Details">
                             <div class="card-body text-center">
                                 <h6 class="text-muted"><?= $card['icon'] ?> <?= $card['label'] ?></h6>
                                 <h3>
@@ -121,92 +158,76 @@ $cards = [
             <?php endforeach; ?>
         </div>
 
-        <!-- Charts Section: 3 charts in one row -->
+        <!-- CHARTS -->
         <div class="row g-3 mt-4">
+
+            <!-- Promodizer -->
             <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-muted mb-3">Promodizer Status</h6>
+                        <h6 class="text-muted">Promodizer Status</h6>
                         <canvas id="promodizerChart"></canvas>
                     </div>
                 </div>
             </div>
 
+            <!-- Branch -->
             <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-muted mb-3">Branch Assignments (Assigned vs Excess)</h6>
-                        <canvas id="branchAssignmentChart"></canvas>
+                        <h6 class="text-muted">Top Branch Assignments</h6>
+                        <canvas id="branchChart"></canvas>
                     </div>
                 </div>
             </div>
 
+            <!-- Assignment -->
             <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-muted mb-3">Assignments Status</h6>
+                        <h6 class="text-muted">Assignments Status</h6>
                         <canvas id="assignmentChart"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <?php
-        // Prepare branch-level arrays for Chart.js
-        $branches = [];
-        $completeData = [];
-        $excessData = [];
-        foreach ($branchStats as $row) {
-            $branches[] = $row['branch_name'];
-            $completeData[] = (int)$row['complete_count'];
-            $excessData[] = (int)$row['excess_count'];
-        }
-        ?>
+        </div>
 
     </div>
 </div>
 
-<!-- JS -->
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-// Initialize Bootstrap tooltips
-document.addEventListener("DOMContentLoaded", function(){
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+// PROMODIZER
+new Chart(document.getElementById('promodizerChart'), {
+type:'doughnut',
+data:{
+labels:['Assigned','Unassigned'],
+datasets:[{
+data:[<?= $assigned ?>, <?= $unassigned ?>],
+backgroundColor:['#198754','#dc3545']
+}]
+},
+options:{plugins:{legend:{position:'bottom'}}}
 });
 
-// Charts
-const promodizerCtx = document.getElementById('promodizerChart').getContext('2d');
-const promodizerChart = new Chart(promodizerCtx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Assigned','Unassigned'],
-        datasets:[{
-            data: [<?= $assigned ?>, <?= $unassigned ?>],
-            backgroundColor:['#198754','#dc3545']
-        }]
-    },
-    options: { responsive:true, plugins:{legend:{position:'bottom'}} }
+// ASSIGNMENT (FIXED)
+new Chart(document.getElementById('assignmentChart'), {
+type:'doughnut',
+data:{
+labels:['Complete','Lacking'],
+datasets:[{
+    data:[<?= $completeAssignments ?>, <?= $lackingAssignments ?>],
+    backgroundColor:['#198754','#dc3545']
+}]
+},
+options:{plugins:{legend:{position:'bottom'}}}
 });
 
-const assignmentCtx = document.getElementById('assignmentChart').getContext('2d');
-const assignmentChart = new Chart(assignmentCtx, {
-    type:'doughnut',
-    data:{
-        labels:['Complete','Lacking'],
-        datasets:[{
-            data:[<?= $completeAssignments ?>, <?= $lackingAssignments ?>],
-            backgroundColor:['#198754','#dc3545']
-        }]
-    },
-    options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
-});
-
-const branchCtx = document.getElementById('branchAssignmentChart').getContext('2d');
-const branchAssignmentChart = new Chart(branchCtx,{
+// BRANCH (TOP 10 + OTHERS, HORIZONTAL)
+new Chart(document.getElementById('branchChart'), {
     type:'bar',
     data:{
         labels: <?= json_encode($branches) ?>,
@@ -216,11 +237,12 @@ const branchAssignmentChart = new Chart(branchCtx,{
         ]
     },
     options:{
+        indexAxis:'y',
         responsive:true,
         plugins:{legend:{position:'bottom'}},
         scales:{
-            x:{stacked:true, title:{display:true,text:'Branches'}},
-            y:{stacked:true, beginAtZero:true, title:{display:true,text:'Number of Promodizers'}}
+            x:{beginAtZero:true},
+            y:{ticks:{autoSkip:false}}
         }
     }
 });

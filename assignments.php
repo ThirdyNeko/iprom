@@ -101,7 +101,17 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
 <script>
 $(document).ready(function() {
+    function applyFiltersFromURL() {
+        const params = new URLSearchParams(window.location.search);
 
+        if (params.get('branch')) $('#filterBranch').val(params.get('branch'));
+        if (params.get('brand'))  $('#filterBrand').val(params.get('brand'));
+        if (params.get('status')) $('#filterStatus').val(params.get('status'));
+        if (params.get('from_date')) $('#filterFrom').val(params.get('from_date'));
+        if (params.get('to_date'))   $('#filterTo').val(params.get('to_date'));
+    }
+
+    applyFiltersFromURL();
     var table = $('#assignmentTable').DataTable({
         processing: true,
         serverSide: true,
