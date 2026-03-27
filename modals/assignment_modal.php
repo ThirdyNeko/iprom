@@ -113,12 +113,20 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
 
         res.data.forEach(emp => {
             html += `
-                <li class="list-group-item py-1">
-                    ${emp.first_name} ${emp.last_name}
+                <li class="list-group-item d-flex justify-content-between align-items-center py-1">
+                    <span>
+                        ${emp.first_name} ${emp.last_name}
+                    </span>
+                    <button 
+                        class="btn btn-sm btn-warning unassign-btn"
+                        data-id="${emp.id}"
+                        data-name="${emp.first_name} ${emp.last_name}"
+                    >
+                        Unassign
+                    </button>
                 </li>
             `;
         });
-
         html += '</ul>';
 
         $('#modalAssignedList').html(html);
@@ -230,6 +238,99 @@ document.getElementById('saveRequiredBtn').addEventListener('click', async () =>
                 icon: 'error',
                 title: 'Update Failed',
                 text: result.message || 'Something went wrong.'
+            });
+        }
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Server error occurred.'
+        });
+    }
+});
+
+$(document).on('click', '.unassign-btn', async function () {
+
+    const btn = $(this);
+    const id = btn.data('id');
+    const name = btn.data('name');
+
+    const confirm = await Swal.fire({
+        icon: 'warning',
+        title: 'Unassign Employee?',
+        text: `Remove ${name} from this assignment?`,
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Unassign',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#f0ad4e',
+        reverseButtons: true
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+        const res = await fetch('functions/unassign_promodizer.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id
+            })
+        });
+
+        const result = await res.json();
+
+        if (result.status === 'success') {
+
+            await Swal.fire({
+                icon: 'success',
+                title: 'Unassigned',
+                text: result.message || `${name} has been unassigned.`,
+                timer: 1200,
+                showConfirmButton: false
+            });
+
+            // ✅ Remove from UI instantly (NO MODAL CLOSE)
+            btn.closest('li').remove();
+
+            // ✅ Update assigned count (optional)
+            let currentCount = $('#modalAssignedList li').length;
+            $('#modalAssignedCount').text(`Assigned: ${currentCount}`);
+
+            // ✅ ALSO update table row assigned count
+            let modal = $('#assignmentModal');
+            let branch = modal.data('branch');
+            let brand  = modal.data('brand');
+
+            let row = $(`#assignmentTable tbody tr`).filter(function () {
+                return $(this).data('branch') === branch &&
+                       $(this).data('brand') === brand;
+            });
+
+            let assigned = parseInt(row.data('assigned')) - 1;
+            row.data('assigned', assigned);
+
+            // update status too 🔥
+            let required = parseInt(row.data('required'));
+            let shortage = required - assigned;
+
+            let status = '';
+            if (shortage > 0) {
+                status = `<span class="badge bg-danger">Needs ${shortage}</span>`;
+            } else if (shortage < 0) {
+                status = `<span class="badge bg-warning">Excess ${Math.abs(shortage)}</span>`;
+            } else {
+                status = `<span class="badge bg-success">Complete</span>`;
+            }
+
+            row.find('td').eq(4).html(status);
+
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed',
+                text: result.message || 'Unassign failed.'
             });
         }
 
