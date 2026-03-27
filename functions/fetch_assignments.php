@@ -54,14 +54,16 @@ foreach($pagedData as $i => $a){
             "data-brand"  => $a['brand_name'],
             "data-required" => $a['required_count'],
             "data-assigned" => $a['assigned_count'],
-            "data-updated"  => $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-'
+            "data-updated"  => $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-',
+            "data-updated-by" => $a['updated_by'] ?? '-'
         ],
         $a['branch_name'],
         $a['brand_name'],
         '<span class="required-cell">'.$a['required_count'].'</span>',
         $a['assigned_count'],
         $statusLabel,
-        $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-'
+        $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-',
+        $a['updated_by'] ?? '-'
     ];
 }
 

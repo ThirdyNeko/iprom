@@ -84,6 +84,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Assigned</th>
                                 <th>Status</th>
                                 <th>Updated At</th>
+                                <th>Last Updated By</th>
                             </tr>
                         </thead>
                         <tbody></tbody> <!-- Server-side AJAX will populate -->
@@ -130,7 +131,7 @@ $(document).ready(function() {
         lengthMenu: [10,25,50,100],
         responsive: true,
         dom: 'lrtip',
-        order: [[5,'desc']]
+        order: [[6,'desc']]
     });
 
     // Reload table on filter change

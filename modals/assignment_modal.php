@@ -39,6 +39,10 @@
                             <th>Updated At</th>
                             <td id="modalUpdated"></td>
                         </tr>
+                        <tr>
+                            <th>Updated By</th>
+                            <td colspan="3" id="modalUpdatedBy"></td> <!-- ✅ new row -->
+                        </tr>
                     </tbody>
                 </table>
 
@@ -149,6 +153,8 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
         : '-';
 
     $('#modalUpdated').text(formattedDate);
+    let updatedBy = row.data('updated-by') || '-';
+    $('#modalUpdatedBy').text(updatedBy);
 
     $('#assignmentModal').modal('show');
 });
