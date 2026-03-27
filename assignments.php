@@ -113,7 +113,7 @@ $(document).ready(function() {
     }
 
     applyFiltersFromURL();
-    var table = $('#assignmentTable').DataTable({
+    window.assignmentTable = $('#assignmentTable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -136,7 +136,7 @@ $(document).ready(function() {
 
     // Reload table on filter change
     $('#filterBranch,#filterBrand,#filterStatus,#filterFrom,#filterTo').on('change', function(){
-        table.ajax.reload();
+        window.assignmentTable.ajax.reload();
     });
 
     // Clickable row handler

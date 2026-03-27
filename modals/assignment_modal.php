@@ -238,6 +238,7 @@ document.getElementById('saveRequiredBtn').addEventListener('click', async () =>
 
             // close modal
             bootstrap.Modal.getInstance(document.getElementById('assignmentModal')).hide();
+            window.assignmentTable.ajax.reload(null, false); // refresh table, keep current page
 
         } else {
             Swal.fire({
@@ -331,6 +332,7 @@ $(document).on('click', '.unassign-btn', async function () {
             }
 
             row.find('td').eq(4).html(status);
+            window.assignmentTable.ajax.reload(null, false);
 
         } else {
             Swal.fire({
