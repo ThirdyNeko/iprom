@@ -314,3 +314,8 @@
 [2026-03-25 13:10:09] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\promodizers.php on line 70
 [2026-03-25 13:10:09] Error [2]: Undefined variable $brands in C:\xampp\htdocs\iprom\promodizers.php on line 80
 [2026-03-25 13:10:09] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\promodizers.php on line 80
+[2026-03-27 16:33:48] Error [2]: include(modals/add_plantilla_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\assignments.php on line 163
+[2026-03-27 16:33:48] Error [2]: include(): Failed opening 'modals/add_plantilla_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\assignments.php on line 163
+[2026-03-27 16:34:22] Error [8]: session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\iprom\modals\add_plantilla_modal.php on line 2
+[2026-03-27 16:34:22] Error [2]: include(../config/db.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\modals\add_plantilla_modal.php on line 3
+[2026-03-27 16:34:22] Error [2]: include(): Failed opening '../config/db.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\modals\add_plantilla_modal.php on line 3
