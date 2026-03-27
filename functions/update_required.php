@@ -1,4 +1,6 @@
 <?php
+session_start();
+$updated_by = $_SESSION['username']; // or whatever you store
 include '../config/db.php';
 $pdo = qa_db();
 
@@ -17,15 +19,9 @@ if (!$branch || !$brand) {
     exit;
 }
 
-$stmt = $pdo->prepare("
-    UPDATE assignment
-    SET required_count = ?, updated_at = GETDATE()
-    WHERE branch_name = ? AND brand_name = ?
-");
+$stmt = $pdo->prepare("EXEC update_required_count ?, ?, ?, ?");
+$stmt->execute([$branch, $brand, $required, $updated_by]);
 
-$stmt->execute([$required, $branch, $brand]);
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-echo json_encode([
-    "status" => "success",
-    "message" => "Required updated successfully"
-]);
+echo json_encode($result);

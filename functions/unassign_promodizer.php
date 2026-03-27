@@ -1,4 +1,6 @@
 <?php
+session_start();
+$updated_by = $_SESSION['username']; // or whatever you store
 header('Content-Type: application/json');
 include '../config/db.php';
 
@@ -16,20 +18,12 @@ try {
         exit;
     }
 
-    $stmt = $pdo->prepare("
-        UPDATE employee_info
-        SET branch = 'Unassigned',
-            brand = 'Unassigned',
-            status = 'Inactive'
-        WHERE id = ?
-    ");
+    $stmt = $pdo->prepare("EXEC unassign_employee ?, ?");
+    $stmt->execute([$id, $updated_by]);
 
-    $stmt->execute([$id]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    echo json_encode([
-        "status" => "success",
-        "message" => "Employee unassigned successfully"
-    ]);
+    echo json_encode($result);
 
 } catch (Exception $e) {
     echo json_encode([
