@@ -27,7 +27,11 @@
                                 <input type="number" id="modalRequired" class="form-control form-control-sm" min="0">
                             </td>
                             <th>Assigned</th>
-                            <td id="modalAssigned"></td>
+                            <td>
+                                <div id="modalAssignedList" style="max-height: 200px; overflow-y: auto;">
+                                    <small class="text-muted">Loading...</small>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
                             <th>Status</th>
@@ -81,7 +85,49 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
     $('#modalBranch').text(branch);
     $('#modalBrand').text(brand);
     $('#modalRequired').val(required);
-    $('#modalAssigned').text(assigned);
+    // Load assigned employees
+    $('#modalAssignedList').html('<small class="text-muted">Loading...</small>');
+
+    fetch('functions/get_assigned_promodizers.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            branch: branch,
+            brand: brand
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+
+        if (res.status !== 'success') {
+            $('#modalAssignedList').html('<span class="text-danger">Failed to load</span>');
+            return;
+        }
+
+        if (!res.data.length) {
+            $('#modalAssignedList').html('<small class="text-muted">No assigned employees</small>');
+            return;
+        }
+
+        let html = '<ul class="list-group list-group-flush">';
+
+        res.data.forEach(emp => {
+            html += `
+                <li class="list-group-item py-1">
+                    ${emp.first_name} ${emp.last_name}
+                </li>
+            `;
+        });
+
+        html += '</ul>';
+
+        $('#modalAssignedList').html(html);
+
+    })
+    .catch(err => {
+        console.error("Fetch error:", err);
+        $('#modalAssignedList').html('<span class="text-danger">Error loading data</span>');
+    });
     $('#modalStatus').html(status); // ⚠️ use html for badge
     let formattedDate = updated 
         ? new Date(updated).toLocaleString('en-CA', {
