@@ -47,6 +47,7 @@ foreach($pagedData as $i => $a){
             : "<span class='badge bg-success'>Complete</span>");
 
     $result[] = [
+        "DT_RowClass" => "clickable-row",
         "DT_RowAttr" => [
             "class" => "clickable-row",
             "data-branch" => $a['branch_name'],
@@ -57,7 +58,7 @@ foreach($pagedData as $i => $a){
         ],
         $a['branch_name'],
         $a['brand_name'],
-        $a['required_count'],
+        '<span class="required-cell">'.$a['required_count'].'</span>',
         $a['assigned_count'],
         $statusLabel,
         $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-'
