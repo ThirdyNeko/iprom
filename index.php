@@ -171,11 +171,13 @@ $cards = [
             </div>
 
             <!-- Branch -->
-            <div class="col-md-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
+            <div class="col-md-4 d-flex">
+                <div class="card shadow-sm w-100">
+                    <div class="card-body d-flex flex-column">
                         <h6 class="text-muted">Top Branch Assignments</h6>
-                        <canvas id="branchChart"></canvas>
+                        <div class="flex-grow-1">
+                            <canvas id="branchChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -225,23 +227,42 @@ datasets:[{
 options:{plugins:{legend:{position:'bottom'}}}
 });
 
+<?php
+$adjustedAssigned = [];
+foreach ($completeData as $i => $assigned) {
+    $excess = $excessData[$i];
+    $adjustedAssigned[] = max(0, $assigned - $excess);
+}
+?>
+
 // BRANCH (TOP 10 + OTHERS, HORIZONTAL)
 new Chart(document.getElementById('branchChart'), {
-    type:'bar',
-    data:{
+    type: 'bar',
+    data: {
         labels: <?= json_encode($branches) ?>,
-        datasets:[
-            {label:'Assigned', data: <?= json_encode($completeData) ?>, backgroundColor:'#198754'},
-            {label:'Excess', data: <?= json_encode($excessData) ?>, backgroundColor:'#ffc107'}
+        datasets: [
+            {
+                label: 'Assigned',
+                data: <?= json_encode($adjustedAssigned) ?>, // ✅ reduced
+                backgroundColor: '#198754'
+            },
+            {
+                label: 'Excess',
+                data: <?= json_encode($excessData) ?>,
+                backgroundColor: '#ffc107'
+            }
         ]
     },
-    options:{
-        indexAxis:'y',
-        responsive:true,
-        plugins:{legend:{position:'bottom'}},
-        scales:{
-            x:{beginAtZero:true},
-            y:{ticks:{autoSkip:false}}
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom' }
+        },
+        scales: {
+            x: { beginAtZero: true, stacked: true },
+            y: { stacked: true, ticks: { autoSkip: false } }
         }
     }
 });
