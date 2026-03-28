@@ -60,6 +60,7 @@
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
 <script>
+let assignmentModalDisabled = false;
 $(document).on('click', '#assignmentTable tbody tr', function () {
 
     let row = $(this);
@@ -104,9 +105,20 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
     .then(res => {
 
         if (res.status !== 'success') {
-            $('#modalAssignedList').html('<span class="text-danger">Failed to load</span>');
+            assignmentModalDisabled = true;
+
+            $('#modalAssignedList').html(
+                '<div class="alert alert-danger mb-0">Failed to load assignments.</div>'
+            );
+
+            // disable inputs
+            $('#modalRequired').prop('disabled', true);
+            $('#saveRequiredBtn').prop('disabled', true);
+
             return;
         }
+
+        assignmentModalDisabled = false;
 
         if (!res.data.length) {
             $('#modalAssignedList').html('<small class="text-muted">No assigned employees</small>');
@@ -131,14 +143,21 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
                 </li>
             `;
         });
+
         html += '</ul>';
-
         $('#modalAssignedList').html(html);
-
     })
     .catch(err => {
         console.error("Fetch error:", err);
-        $('#modalAssignedList').html('<span class="text-danger">Error loading data</span>');
+
+        assignmentModalDisabled = true;
+
+        $('#modalAssignedList').html(
+            '<div class="alert alert-danger mb-0">Service unavailable.</div>'
+        );
+
+        $('#modalRequired').prop('disabled', true);
+        $('#saveRequiredBtn').prop('disabled', true);
     });
     $('#modalStatus').html(status); // ⚠️ use html for badge
     let formattedDate = updated 
@@ -156,10 +175,29 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
     let updatedBy = row.data('updated-by') || '-';
     $('#modalUpdatedBy').text(updatedBy);
 
-    $('#assignmentModal').modal('show');
+    if (assignmentModalDisabled) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Unavailable',
+            text: 'Assignment service is currently unavailable.'
+        });
+        return;
+    }
+
+    const modalInstance = new bootstrap.Modal(document.getElementById('assignmentModal'));
+    modalInstance.show();
 });
 
 document.getElementById('saveRequiredBtn').addEventListener('click', async () => {
+
+    if (assignmentModalDisabled) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Unavailable',
+            text: 'Cannot update right now. Please try again later.'
+        });
+        return;
+    }
 
     const modal = $('#assignmentModal');
 
@@ -209,7 +247,9 @@ document.getElementById('saveRequiredBtn').addEventListener('click', async () =>
             await Swal.fire({
                 icon: 'success',
                 title: 'Updated!',
-                text: result.message || 'Required count updated successfully.'
+                text: result.message || 'Required count updated successfully.',
+                timer: 1200,
+                showConfirmButton: false
             });
 
             // ✅ update table live
