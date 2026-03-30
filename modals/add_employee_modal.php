@@ -15,13 +15,22 @@
 
                     <div class="mb-3">
                         <label class="form-label">First Name</label>
-                        <input type="text" name="first_name" class="form-control" required>
+                        <input type="text" name="first_name" id="firstName" class="form-control" required style="text-transform: uppercase;">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Last Name</label>
-                        <input type="text" name="last_name" class="form-control" required>
+                        <input type="text" name="last_name" id="lastName" class="form-control" required style="text-transform: uppercase;">
                     </div>
+
+                    <script>
+                    document.getElementById('firstName').addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                    document.getElementById('lastName').addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                    </script>
 
                     <?php
                     $pdo = qa_db();

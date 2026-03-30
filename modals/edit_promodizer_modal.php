@@ -27,6 +27,15 @@
                             <th>Last Name</th>
                             <td><input type="text" id="editLastName" class="form-control"></td>
                         </tr>
+
+                        <script>
+                        document.getElementById('editFirstName').addEventListener('input', function() {
+                            this.value = this.value.toUpperCase();
+                        });
+                        document.getElementById('editLastName').addEventListener('input', function() {
+                            this.value = this.value.toUpperCase();
+                        });
+                        </script>
                         <tr>
                             <th>Branch</th>
                             <td>
