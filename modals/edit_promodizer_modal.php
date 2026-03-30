@@ -245,7 +245,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
             }
         }
 
-        const status = (branch && brand) ? 'Active' : 'Inactive';
+        const status = (branch && brand) ? 'ACTIVE' : 'INACTIVE';
         formData.set('status', status);
 
         await sendAction(formData, 'Save Changes');
