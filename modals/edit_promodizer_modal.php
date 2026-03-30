@@ -31,7 +31,6 @@
                             <th>Branch</th>
                             <td>
                                 <select id="editBranch" class="form-select">
-                                    <option value="">Unassigned</option>
                                     <?php foreach($branches as $branch): ?>
                                         <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
                                     <?php endforeach; ?>
@@ -39,8 +38,7 @@
                             </td>
                             <th>Brand</th>
                             <td>
-                                <select id="editBrand" class="form-select">
-                                    <option value="">Unassigned</option>
+                                <select id="editBrand" class="form-select">                                   
                                     <?php foreach($brands as $brand): ?>
                                         <option value="<?= htmlspecialchars($brand) ?>"><?= htmlspecialchars($brand) ?></option>
                                     <?php endforeach; ?>
@@ -79,7 +77,6 @@
                     <button type="button" class="btn btn-warning" id="unassignBtn">Unassign</button>
                 </div>
                 <div>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="saveBtn">Save Changes</button>
                 </div>
             </div>
