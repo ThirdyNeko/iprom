@@ -276,9 +276,9 @@ document.getElementById('unassignBtn').addEventListener('click', async () => {
     formData.set('id', document.getElementById('editPromodizerId').value);
     formData.set('first_name', document.getElementById('editFirstName').value.trim());
     formData.set('last_name', document.getElementById('editLastName').value.trim());
-    formData.set('branch', 'Unassigned');
-    formData.set('brand', 'Unassigned');
-    formData.set('status', 'Inactive');
+    formData.set('branch', 'UNASSIGNED');
+    formData.set('brand', 'UNASSIGNED');
+    formData.set('status', 'INACTIVE');
 
     sendAction(formData, 'Unassign');
 });
@@ -307,9 +307,9 @@ document.getElementById('terminateBtn').addEventListener('click', async () => {
     formData.set('id', document.getElementById('editPromodizerId').value);
     formData.set('first_name', document.getElementById('editFirstName').value.trim());
     formData.set('last_name', document.getElementById('editLastName').value.trim());
-    formData.set('branch', 'Unassigned');
-    formData.set('brand', 'Unassigned');
-    formData.set('status', 'Terminated');
+    formData.set('branch', 'UNASSIGNED');
+    formData.set('brand', 'UNASSIGNED');
+    formData.set('status', 'TERMINATED');
 
     sendAction(formData, 'Terminate');
 });

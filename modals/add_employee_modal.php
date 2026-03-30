@@ -47,7 +47,7 @@
                     <div class="mb-3">
                         <label class="form-label">Branch</label>
                         <select name="branch" class="form-select">
-                            <option value="">Unassigned</option>
+                            <option value="" selected disabled>Unassigned</option>
                             <?php foreach($branches as $branch): ?>
                                 <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
                             <?php endforeach; ?>
@@ -57,7 +57,7 @@
                     <div class="mb-3">
                         <label class="form-label">Brand</label>
                         <select name="brand" class="form-select">
-                            <option value="">Unassigned</option>
+                            <option value="" selected disabled>Unassigned</option>
                             <?php foreach($brands as $brand): ?>
                                 <option value="<?= htmlspecialchars($brand) ?>"><?= htmlspecialchars($brand) ?></option>
                             <?php endforeach; ?>
