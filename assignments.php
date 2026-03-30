@@ -31,8 +31,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="card shadow-sm mb-3">
+        <!-- Table -->
+        <div class="card shadow-sm">
             <div class="card-body">
                 <div class="row g-2">
                     <div class="col-md-2">
@@ -72,10 +72,6 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Table -->
-        <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="assignmentTable" class="table table-striped table-hover align-middle">
