@@ -1,19 +1,8 @@
 <?php
-// Call the stored procedure
-$stmt = $pdo->query("EXEC get_branches_brands");
-
-$plantillaBranches = [];
-$plantillaBrands = [];
-
-// Fetch first result set: branches
-if ($stmt) {
-    $plantillaBranches = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
-    // Move to next result set: brands
-    if ($stmt->nextRowset()) {
-        $plantillaBrands = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    }
-}
+// Fetch branches only (no branch param, so SP returns all branches)
+$stmt = $pdo->prepare("EXEC dbo.get_branches_brands @branch = NULL");
+$stmt->execute();
+$plantillaBranches = $stmt->fetchAll(PDO::FETCH_COLUMN);
 ?>
 
 <div class="modal fade" id="addPlantillaModal" tabindex="-1">
@@ -25,9 +14,9 @@ if ($stmt) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                   <div class="mb-3">
+                    <div class="mb-3">
                         <label class="form-label">Branch</label>
-                        <select name="branch" class="form-select" required>
+                        <select name="branch" id="branchSelect" class="form-select" required>
                             <option value="">Select Branch</option>
                             <?php foreach($plantillaBranches as $b): ?>
                                 <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
@@ -37,11 +26,8 @@ if ($stmt) {
 
                     <div class="mb-3">
                         <label class="form-label">Brand</label>
-                        <select name="brand" class="form-select" required>
+                        <select name="brand" id="brandSelect" class="form-select" required>
                             <option value="">Select Brand</option>
-                            <?php foreach($plantillaBrands as $b): ?>
-                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
-                            <?php endforeach; ?>
                         </select>
                     </div>
 
@@ -52,59 +38,68 @@ if ($stmt) {
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Add Plantilla</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-document.getElementById('addPlantillaForm').addEventListener('submit', async function(e){
-    e.preventDefault();
+const branchSelect = document.getElementById('branchSelect');
+const brandSelect  = document.getElementById('brandSelect');
+const form         = document.getElementById('addPlantillaForm');
 
-    const form = this;
-    const btn = form.querySelector('button[type="submit"]');
-    const formData = new FormData(form);
+branchSelect.addEventListener('change', async () => {
+    const branch = branchSelect.value.trim();
+    brandSelect.innerHTML = '<option value="">Loading...</option>';
 
-    const branch = form.querySelector('select[name="branch"]').value.trim();
-    const brand  = form.querySelector('select[name="brand"]').value.trim();
-
-    if (!branch || !brand) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Required Fields',
-            text: 'Please select both Branch and Brand.',
-            confirmButtonText: 'OK'
-        });
+    if (!branch) {
+        brandSelect.innerHTML = '<option value="">Select Brand</option>';
         return;
     }
 
     try {
-        btn.disabled = true;
+        // Fetch unused brands for selected branch using the SP
+        const res = await fetch(`functions/get_available_brands.php?branch=${encodeURIComponent(branch)}`);
+        const data = await res.json();
 
-        // 1️⃣ Check if plantilla already exists
-        const checkRes = await fetch('functions/check_plantilla.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ branch, brand })
-        });
-        const checkData = await checkRes.json();
-
-        if(checkData.exists){
-            Swal.fire({
-                icon: 'error',
-                title: 'Duplicate Plantilla',
-                text: `A plantilla already exists for Branch "${branch}" and Brand "${brand}".`,
-                confirmButtonText: 'OK'
-            });
+        brandSelect.innerHTML = '<option value="">Select Brand</option>';
+        if (data.length === 0) {
+            brandSelect.innerHTML = '<option value="">No available brands</option>';
             return;
         }
 
-        // 2️⃣ Confirm action
+        data.forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            brandSelect.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error(err);
+        brandSelect.innerHTML = '<option value="">Error loading brands</option>';
+    }
+});
+
+form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+
+    const formData = new FormData(form);
+    const branch = branchSelect.value.trim();
+    const brand  = brandSelect.value.trim();
+
+    if (!branch || !brand) {
+        Swal.fire({ icon: 'warning', title: 'Required Fields', text: 'Please select both Branch and Brand.' });
+        btn.disabled = false;
+        return;
+    }
+
+    try {
+        // Confirm action
         const confirm = await Swal.fire({
             icon: 'question',
             title: 'Add Plantilla?',
@@ -115,45 +110,27 @@ document.getElementById('addPlantillaForm').addEventListener('submit', async fun
             confirmButtonColor: '#28a745',
             reverseButtons: true
         });
+        if (!confirm.isConfirmed) return btn.disabled = false;
 
-        if (!confirm.isConfirmed) return;
-
-        // 3️⃣ Submit plantilla
-        const submitRes = await fetch('functions/add_plantilla.php', {
-            method: 'POST',
-            body: formData
-        });
+        // Submit plantilla
+        const submitRes = await fetch('functions/add_plantilla.php', { method: 'POST', body: formData });
         const submitData = await submitRes.json();
 
         if(submitData.success){
-            Swal.fire({
-                icon: 'success',
-                title: 'Plantilla Added!',
-                text: `Branch "${branch}" and Brand "${brand}" has been added successfully.`,
-                confirmButtonText: 'OK'
-            }).then(() => {
-                form.reset();
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addPlantillaModal'));
-                modal.hide();
-                window.assignmentTable.ajax.reload();
-            });
+            Swal.fire({ icon: 'success', title: 'Plantilla Added!', text: `Branch "${branch}" and Brand "${brand}" has been added successfully.` })
+                .then(() => {
+                    form.reset();
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addPlantillaModal'));
+                    modal.hide();
+                    window.assignmentTable.ajax.reload();
+                });
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: submitData.message || 'Failed to add plantilla.',
-                confirmButtonText: 'OK'
-            });
+            Swal.fire({ icon: 'error', title: 'Error!', text: submitData.message || 'Failed to add plantilla.' });
         }
 
-    } catch(err){
+    } catch (err) {
         console.error(err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Unexpected Error',
-            text: 'An unexpected error occurred. Please try again.',
-            confirmButtonText: 'OK'
-        });
+        Swal.fire({ icon: 'error', title: 'Unexpected Error', text: 'An unexpected error occurred. Please try again.' });
     } finally {
         btn.disabled = false;
     }
