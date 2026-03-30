@@ -6,11 +6,11 @@ $error = '';
 $pdo = qa_db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id_number = trim($_POST['id_number'] ?? '');
+    $username = trim($_POST['username'] ?? '');
     $password  = trim($_POST['password'] ?? '');
 
-    if ($id_number === '' || $password === '') {
-        $error = "Please enter both ID and password.";
+    if ($username === '' || $password === '') {
+        $error = "Please enter both username and password.";
     } else {
 
         $stmt = $pdo->prepare("
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
 
         $stmt->execute([
-            ':username' => $id_number
+            ':username' => $username
         ]);
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -114,13 +114,34 @@ body {
 
     <form method="POST">
         <div class="mb-4">
-            <label class="form-label">Admin ID Number</label>
+            <label class="form-label">Username</label>
             <input type="text"
-                   name="id_number"
-                   class="form-control form-control-lg text-center"
-                   placeholder="Enter Admin ID"
-                   required>
+                name="username"
+                id="username"
+                class="form-control form-control-lg text-center uppercase-input"
+                placeholder="Enter Username"
+                required>
         </div>
+
+        <style>
+        /* Only transform the typed text, not the placeholder */
+        .uppercase-input {
+            text-transform: none; /* base input text will be controlled by JS */
+        }
+
+        .uppercase-input::-ms-input-placeholder { /* IE 10+ */
+            text-transform: none;
+        }
+        .uppercase-input::placeholder {
+            text-transform: none;
+        }
+        </style>
+
+        <script>
+        document.getElementById('username').addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+        </script>
 
         <div class="input-group mb-4">
             <input type="password"
