@@ -56,6 +56,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
     .clickable-row:hover {
         background-color: #f1f1f1; /* light gray on hover */
     }
+    #promodizerTable th,
+    #promodizerTable td {
+        text-align: center;
+        vertical-align: middle;
+    }
     </style>
     <div class="container-fluid">
         <div class="row mb-3">
@@ -122,7 +127,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="promodizerTable" class="table table-striped table-hover align-middle">
+                    <table id="promodizerTable" class="table table-striped table-hover align-middle text-center">
                         <thead class="table-dark">
                             <tr>
                                 <th>Name</th>

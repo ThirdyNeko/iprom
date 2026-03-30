@@ -20,6 +20,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
     <style>
         .clickable-row { cursor: pointer; transition: background-color 0.2s; }
         .clickable-row:hover { background-color: #f1f1f1; }
+        #assignmentTable th,
+        #assignmentTable td {
+            text-align: center;
+            vertical-align: middle;
+        }
     </style>
 
     <div class="container-fluid">
@@ -75,7 +80,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="assignmentTable" class="table table-striped table-hover align-middle">
+                    <table id="assignmentTable" class="table table-striped table-hover align-middle text-center">
                         <thead class="table-dark">
                             <tr>
                                 <th>Branch</th>
@@ -83,7 +88,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Required</th>
                                 <th>Assigned</th>
                                 <th>Status</th>
-                                <th>Updated At</th>
+                                <th>Last Updated At</th>
                                 <th>Last Updated By</th>
                             </tr>
                         </thead>

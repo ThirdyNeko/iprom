@@ -333,3 +333,5 @@
 [2026-03-28 10:45:27] Error [2]: Undefined array key "username" in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 126
 [2026-03-30 11:39:32] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
 [2026-03-30 11:39:32] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-30 13:11:21] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-30 13:11:21] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
