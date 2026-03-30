@@ -160,14 +160,11 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
     });
     $('#modalStatus').html(status); // ⚠️ use html for badge
     let formattedDate = updated 
-        ? new Date(updated).toLocaleString('en-CA', {
+        ? new Date(updated.replace(' ', 'T')).toLocaleDateString('en-CA', {
             year: 'numeric',
             month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        }).replace(',', '')
+            day: '2-digit'
+        })
         : '-';
 
     $('#modalUpdated').text(formattedDate);
