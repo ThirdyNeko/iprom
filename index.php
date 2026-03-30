@@ -174,7 +174,7 @@ $cards = [
             <div class="col-md-4 d-flex">
                 <div class="card shadow-sm w-100">
                     <div class="card-body d-flex flex-column">
-                        <h6 class="text-muted">Top Branch Assignments</h6>
+                        <h6 class="text-muted">Branch Assignments</h6>
                         <div class="flex-grow-1">
                             <canvas id="branchChart"></canvas>
                         </div>
@@ -198,7 +198,7 @@ $cards = [
 </div>
 
 <script src="assets/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/js/chart.js"></script>
 
 <script>
 // PROMODIZER
