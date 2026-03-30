@@ -129,7 +129,7 @@ document.getElementById('addEmployeeForm').addEventListener('submit', async func
         }
 
         // 2️⃣ Set status
-        const status = (branch && brand) ? 'Active' : 'Inactive';
+        const status = (branch && brand) ? 'ACTIVE' : 'INACTIVE';
         formData.set('status', status);
         formData.set('assigned_by', '<?= $_SESSION["username"] ?>');
 

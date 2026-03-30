@@ -102,9 +102,9 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         <label class="form-label">Status</label>
                         <select id="filterStatus" class="form-select">
                             <option value="">All</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                            <option value="Terminated">Terminated</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                            <option value="TERMINATED">Terminated</option>
                         </select>
                     </div>
 
@@ -178,15 +178,18 @@ $(document).ready(function() {
     // 0 Name, 1 Branch, 2 Brand, 3 Status, 4 Assigned By, 5 Date
 
     $('#filterBranch').on('change', function() {
-        table.column(1).search(this.value).draw();
+        var val = this.value;
+        table.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
     });
 
     $('#filterBrand').on('change', function() {
-        table.column(2).search(this.value).draw();
+        var val = this.value;
+        table.column(2).search(val ? '^' + val + '$' : '', true, false).draw();
     });
-
+    
     $('#filterStatus').on('change', function() {
-        table.column(3).search(this.value).draw();
+        var val = this.value;
+        table.column(3).search(val ? '^' + val + '$' : '', true, false).draw();
     });
 
     $('#filterAssignedBy').on('keyup', function() {
