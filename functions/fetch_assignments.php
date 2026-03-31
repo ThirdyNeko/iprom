@@ -24,9 +24,10 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 if($status){
     $data = array_filter($data, function($a) use($status){
         $shortage = $a['required_count'] - $a['assigned_count'];
-        return ($status==='complete' && $shortage===0)
-            || ($status==='lacking' && $shortage>0)
-            || ($status==='excess' && $shortage<0);
+
+        return ($status==='complete' && $shortage === 0)
+            || ($status==='lacking' && $shortage > 0)
+            || ($status==='zero' && $a['assigned_count'] == 0);
     });
 }
 
@@ -40,12 +41,15 @@ $pagedData = array_slice($data, $start, $length);
 $result = [];
 foreach($pagedData as $i => $a){
     $shortage = $a['required_count'] - $a['assigned_count'];
-    $statusLabel = $shortage > 0
-        ? "<span class='badge bg-danger'>Needs $shortage</span>"
-        : ($shortage < 0
-            ? "<span class='badge bg-warning'>Excess ".abs($shortage)."</span>"
-            : "<span class='badge bg-success'>Complete</span>");
 
+    if ($a['assigned_count'] == 0) {
+        $statusLabel = "<span class='badge bg-secondary'>Zero Assigned</span>";
+    } elseif ($shortage > 0) {
+        $statusLabel = "<span class='badge bg-danger'>Needs $shortage</span>";
+    } else {
+        $statusLabel = "<span class='badge bg-success'>Complete</span>";
+    }
+    
     $result[] = [
         "DT_RowClass" => "clickable-row",
         "DT_RowAttr" => [

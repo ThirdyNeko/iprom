@@ -385,3 +385,103 @@
 [2026-03-31 10:19:48] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\users.php on line 72
 [2026-03-31 10:19:48] Error [2]: Undefined variable $brands in C:\xampp\htdocs\iprom\users.php on line 82
 [2026-03-31 10:19:48] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\users.php on line 82
+[2026-03-31 13:41:22] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:41:22] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:41:22] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 224
+[2026-03-31 13:41:22] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 224
+[2026-03-31 13:42:28] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:42:28] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:42:28] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 209
+[2026-03-31 13:42:28] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 209
+[2026-03-31 13:43:21] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:43:21] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:43:21] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 211
+[2026-03-31 13:43:21] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 211
+[2026-03-31 13:43:41] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:43:41] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:43:41] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 211
+[2026-03-31 13:43:41] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 211
+[2026-03-31 13:43:59] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:43:59] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:43:59] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 211
+[2026-03-31 13:43:59] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 211
+[2026-03-31 13:45:28] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:45:28] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:45:28] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 212
+[2026-03-31 13:45:28] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 212
+[2026-03-31 13:47:11] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:47:11] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:47:11] Error [2]: Undefined variable $assignmentStats in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:47:11] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:47:11] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:47:11] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:48:07] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:07] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:24] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:24] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:24] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:24] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:27] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:48:27] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:48:27] Error [2]: Undefined variable $assignmentStats in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:48:27] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:48:27] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:48:27] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:48:28] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:48:28] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:48:28] Error [2]: Undefined variable $assignmentStats in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:48:28] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:48:28] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:48:28] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:48:29] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:48:29] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 25
+[2026-03-31 13:48:29] Error [2]: Undefined variable $assignmentStats in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:48:29] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 48
+[2026-03-31 13:48:29] Error [2]: Undefined variable $completeData in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:48:29] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 215
+[2026-03-31 13:48:33] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:33] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:34] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:34] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:57] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:48:57] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:50:07] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:50:07] Error [2]: Undefined array key "required_count" in C:\xampp\htdocs\iprom\index.php on line 26
+[2026-03-31 13:51:38] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:51:38] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:51:38] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:38] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:51:39] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:51:39] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:51:39] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:51:39] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:51:39] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:51:39] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:51:39] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:51:39] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:39] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:40] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:51:40] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:51:40] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:40] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:40] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:51:40] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:51:40] Error [2]: Undefined variable $branchStats in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:51:40] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\index.php on line 57
+[2026-03-31 13:52:14] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:52:14] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:53:08] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:53:08] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:53:27] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:53:27] Error [2]: Undefined variable $totalAssignments in C:\xampp\htdocs\iprom\index.php on line 33
+[2026-03-31 13:56:31] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:56:49] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:59:30] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-03-31 13:59:37] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29

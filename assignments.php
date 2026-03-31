@@ -65,7 +65,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                             <option value="">All</option>
                             <option value="complete">Complete</option>
                             <option value="lacking">Lacking</option>
-                            <option value="excess">Excess</option>
+                            <option value="zero">Zero Assigned</option>
                         </select>
                     </div>
                     <div class="col-md-2">
