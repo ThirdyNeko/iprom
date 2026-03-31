@@ -19,8 +19,18 @@ $pdo = qa_db();
 /* =========================
    FETCH USERS
 ========================= */
-$stmt = $pdo->query("SELECT username, role, branch, brand FROM users ORDER BY username ASC");
+$stmt = $pdo->prepare("EXEC get_users @role = :role, @branch = :branch, @brand = :brand");
+$stmt->execute([
+    ':role' => null,
+    ':branch' => null,
+    ':brand' => null
+]);
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
+                ->fetchAll(PDO::FETCH_COLUMN);
+
+$brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
+             ->fetchAll(PDO::FETCH_COLUMN);
 ?>
 
 <style>
@@ -48,6 +58,45 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- Table -->
         <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-2">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Role</label>
+                        <select id="filterRole" class="form-select">
+                            <option value="">All</option>
+                            <option value="admin">ADMIN</option>
+                            <option value="human resources">HUMAN RESOURCES</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Branch</label>
+                        <select id="filterBranch" class="form-select">
+                            <option value="">All</option>
+                            <?php foreach($branches as $b): ?>
+                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Brand</label>
+                        <select id="filterBrand" class="form-select">
+                            <option value="">All</option>
+                            <?php foreach($brands as $b): ?>
+                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" id="filterUsername" class="form-control" placeholder="Search...">
+                    </div>
+
+                </div>
+            </div>
             <div class="card-body">
 
                 <div class="table-responsive">
@@ -94,13 +143,31 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <script>
 $(document).ready(function() {
-    $('#usersTable').DataTable({
+    var table = $('#usersTable').DataTable({
         pageLength: 10,
         responsive: true,
         dom: 'lrtip'
     });
+
+    // Filters
+    $('#filterRole').on('change', function() {
+        var val = this.value;
+        table.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+    $('#filterBranch').on('change', function() {
+        var val = this.value;
+        table.column(2).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+    $('#filterBrand').on('change', function() {
+        var val = this.value;
+        table.column(3).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+    $('#filterUsername').on('keyup', function() {
+        table.column(0).search(this.value).draw();
+    });
 });
 </script>
+
 <?php include 'modals/create_user_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 </body>

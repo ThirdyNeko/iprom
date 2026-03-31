@@ -14,6 +14,7 @@
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         <input type="text"
+                               placeholder="Enter Username"
                                name="username"
                                class="form-control text-uppercase"
                                style="text-transform: uppercase;"
