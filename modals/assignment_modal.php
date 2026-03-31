@@ -128,31 +128,48 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
 
         assignmentModalDisabled = false;
 
+        let html = '';
+
         if (!res.data.length) {
-            $('#modalAssignedList').html('<small class="text-muted">No assigned employees</small>');
-            return;
+            html = '<small class="text-muted">No assigned employees</small>';
+        } else {
+            html = '<ul class="list-group list-group-flush">';
+
+            res.data.forEach(emp => {
+                html += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-1">
+                        <span>
+                            ${emp.first_name} ${emp.last_name}
+                        </span>
+                        <button 
+                            class="btn btn-sm btn-warning unassign-btn"
+                            data-id="${emp.id}"
+                            data-name="${emp.first_name} ${emp.last_name}"
+                        >
+                            Unassign
+                        </button>
+                    </li>
+                `;
+            });
+
+            html += '</ul>';
         }
 
-        let html = '<ul class="list-group list-group-flush">';
+        // ✅ ALWAYS evaluate this (even if 0 assigned)
+        let requiredVal = parseInt($('#modalRequired').val());
+        let assignedCount = res.data.length;
 
-        res.data.forEach(emp => {
+        if (assignedCount < requiredVal) {
             html += `
-                <li class="list-group-item d-flex justify-content-between align-items-center py-1">
-                    <span>
-                        ${emp.first_name} ${emp.last_name}
-                    </span>
-                    <button 
-                        class="btn btn-sm btn-warning unassign-btn"
-                        data-id="${emp.id}"
-                        data-name="${emp.first_name} ${emp.last_name}"
-                    >
-                        Unassign
-                    </button>
-                </li>
+                <div class="mt-2 text-center">
+                    <a href="promodizers.php?status=inactive" 
+                    class="btn btn-sm btn-primary">
+                    + Add Promodizer
+                    </a>
+                </div>
             `;
-        });
+        }
 
-        html += '</ul>';
         $('#modalAssignedList').html(html);
     })
     .catch(err => {
