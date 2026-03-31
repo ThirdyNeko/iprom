@@ -12,40 +12,49 @@
                 <!-- Optional alert placeholder -->
                 <div id="assignmentAlert"></div>
 
-                <!-- Assignment Info Table -->
-                <table class="table table-bordered table-striped table-sm mb-3">
-                    <tbody>
-                        <tr>
-                            <th>Branch</th>
-                            <td id="modalBranch"></td>
-                            <th>Brand</th>
-                            <td id="modalBrand"></td>
-                        </tr>
-                        <tr>
-                            <th>Required</th>
-                            <td>
-                                <input type="number" id="modalRequired" class="form-control form-control-sm" min="0">
-                            </td>
-                            <th>Assigned</th>
-                            <td>
-                                <div id="modalAssignedList" style="max-height: 200px; overflow-y: auto;">
-                                    <small class="text-muted">Loading...</small>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td id="modalStatus"></td>
-                            <th>Updated At</th>
-                            <td id="modalUpdated"></td>
-                        </tr>
-                        <tr>
-                            <th>Updated By</th>
-                            <td colspan="3" id="modalUpdatedBy"></td> <!-- ✅ new row -->
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="row">
+                    <!-- Left: Assignment Info -->
+                    <div class="col-md-6">
+                        <table class="table table-bordered table-sm mb-0">
+                            <tbody>
+                                <tr>
+                                    <th>Branch</th>
+                                    <td id="modalBranch"></td>
+                                </tr>
+                                <tr>
+                                    <th>Brand</th>
+                                    <td id="modalBrand"></td>
+                                </tr>
+                                <tr>
+                                    <th>Required</th>
+                                    <td>
+                                        <input type="number" id="modalRequired" class="form-control form-control-sm" min="0">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td id="modalStatus"></td>
+                                </tr>
+                                <tr>
+                                    <th>Updated At</th>
+                                    <td id="modalUpdated"></td>
+                                </tr>
+                                <tr>
+                                    <th>Updated By</th>
+                                    <td id="modalUpdatedBy"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
+                    <!-- Right: Assigned Employees -->
+                    <div class="col-md-6">
+                        <h6>Promodizers</h6>
+                        <div id="modalAssignedList" style="max-height: 300px; overflow-y: auto;">
+                            <small class="text-muted">Loading...</small>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer">
