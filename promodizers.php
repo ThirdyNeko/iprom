@@ -102,9 +102,9 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         <label class="form-label">Status</label>
                         <select id="filterStatus" class="form-select">
                             <option value="">All</option>
-                            <option value="ACTIVE">Active</option>
-                            <option value="INACTIVE">Inactive</option>
-                            <option value="TERMINATED">Terminated</option>
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                            <option value="TERMINATED">TERMINATED</option>
                         </select>
                     </div>
 
