@@ -337,3 +337,19 @@
 [2026-03-30 13:11:21] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
 [2026-03-31 08:50:41] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
 [2026-03-31 08:50:41] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-31 09:05:01] Error [2]: include(partials/footer.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\users.php on line 69
+[2026-03-31 09:05:01] Error [2]: include(): Failed opening 'partials/footer.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\users.php on line 69
+[2026-03-31 09:05:03] Error [2]: include(partials/footer.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\users.php on line 69
+[2026-03-31 09:05:03] Error [2]: include(): Failed opening 'partials/footer.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\users.php on line 69
+[2026-03-31 09:05:04] Error [2]: include(partials/footer.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\users.php on line 69
+[2026-03-31 09:05:04] Error [2]: include(): Failed opening 'partials/footer.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\users.php on line 69
+[2026-03-31 09:44:11] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-31 09:44:11] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-31 09:44:41] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-31 09:44:41] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-31 09:45:00] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-31 09:45:00] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-31 09:50:52] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-31 09:50:52] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36
+[2026-03-31 09:52:41] Error [2]: Undefined array key "branch" in C:\xampp\htdocs\iprom\auth\login.php on line 35
+[2026-03-31 09:52:41] Error [2]: Undefined array key "brand" in C:\xampp\htdocs\iprom\auth\login.php on line 36

@@ -27,6 +27,16 @@
             </a>
         </li>
 
+        <!-- ✅ ADMIN ONLY: Users -->
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <li>
+            <a href="users.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'users.php' ? 'active' : '' ?>">
+                <i class="bi bi-person-gear"></i>
+                <span>Users</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
         <!-- Change Password Sidebar Link (Modal Trigger) -->
         <li>
             <a href="#" 
@@ -44,9 +54,18 @@
 
     <!-- Bottom Section -->
     <div class="mt-auto pt-3 border-top border-secondary">
+        <?php
+        $roleLabels = [
+            'admin' => 'ADMIN',
+            'hr'    => 'HUMAN RESOURCES',
+            'manager' => 'MANAGER', // optional if you have manager too
+        ];
+        $currentRole = $_SESSION['role'] ?? 'Guest';
+        $roleDisplay = $roleLabels[$currentRole] ?? $currentRole;
+        ?>
         <div class="text-light small mb-2 d-flex align-items-center gap-2">
             <i class="bi bi-person-circle"></i>
-            <span class="sidebar-text text-uppercase"><?= $_SESSION['role'] ?? 'Guest' ?></span>
+            <span class="sidebar-text"><?= htmlspecialchars($roleDisplay) ?></span>
         </div>
 
         <!-- Logout Button -->
