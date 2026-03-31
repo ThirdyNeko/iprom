@@ -14,22 +14,7 @@ $pdo = qa_db();
 ============================== */
 $stmt = $pdo->prepare("EXEC get_dashboard_counts");
 $stmt->execute();
-
-// First result set → totals
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Second result set → branch stats
-// Fetch raw assignment stats (before filtering)
-$stmt->nextRowset();
-$assignmentStats = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Count Zero Assigned properly
-$zeroAssigned = 0;
-foreach ($assignmentStats as $a) {
-    if ((int)$a['assigned_count'] === 0) $zeroAssigned++;
-} 
-
-// Calculate percentage
 
 /* ==============================
    DATA PREPARATION
@@ -44,6 +29,7 @@ $unassigned = (int)$result['inactive_promodizers'];
 $totalAssignments = (int)$result['total_assignments'];
 $completeAssignments = (int)$result['complete_assignments'];
 $lackingAssignments = (int)$result['lacking_assignments'];
+$zeroAssigned = (int)$result['zero_assigned'];
 
 // Percentages
 $assignedPct = $total ? round($assigned / $total * 100, 1) : 0;

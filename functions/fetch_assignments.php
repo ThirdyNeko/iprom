@@ -21,15 +21,18 @@ $stmt->execute([$branch, $brand, $from, $to]);
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Status filter in PHP
-if($status){
-    $data = array_filter($data, function($a) use($status){
-        $shortage = $a['required_count'] - $a['assigned_count'];
+$data = array_filter($data, function($a) use($status){
+    $shortage = $a['required_count'] - $a['assigned_count'];
 
-        return ($status==='complete' && $shortage === 0)
-            || ($status==='lacking' && $shortage > 0)
-            || ($status==='zero' && $a['assigned_count'] == 0);
-    });
-}
+    if ($status === 'zero') {
+        return $a['assigned_count'] == 0;
+    } elseif ($status === 'complete') {
+        return $shortage === 0;
+    } elseif ($status === 'lacking') {
+        return $a['assigned_count'] > 0 && $shortage > 0;
+    }
+    return true; // no status filter
+});
 
 // Total records
 $total = count($data);
@@ -43,9 +46,9 @@ foreach($pagedData as $i => $a){
     $shortage = $a['required_count'] - $a['assigned_count'];
 
     if ($a['assigned_count'] == 0) {
-        $statusLabel = "<span class='badge bg-secondary'>Zero Assigned</span>";
+        $statusLabel = "<span class='badge bg-danger'>Zero Assigned</span>";
     } elseif ($shortage > 0) {
-        $statusLabel = "<span class='badge bg-danger'>Needs $shortage</span>";
+        $statusLabel = "<span class='badge bg-warning'>Needs $shortage</span>";
     } else {
         $statusLabel = "<span class='badge bg-success'>Complete</span>";
     }

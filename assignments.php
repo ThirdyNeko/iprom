@@ -157,8 +157,6 @@ $(document).ready(function() {
 });
 </script>
 
-
-
 <?php include 'modals/assignment_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 <?php include 'modals/add_plantilla_modal.php'; ?>
