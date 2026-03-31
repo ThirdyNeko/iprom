@@ -182,6 +182,8 @@ $(document).ready(function() {
         dom: 'lrtip'
     });
 
+    table.column(3).search('^(?!TERMINATED$).*$', true, false).draw();
+
     // Column indexes after removing ID column:
     // 0 Name, 1 Branch, 2 Brand, 3 Status, 4 Assigned By, 5 Date
 
@@ -197,7 +199,16 @@ $(document).ready(function() {
     
     $('#filterStatus').on('change', function() {
         var val = this.value;
-        table.column(3).search(val ? '^' + val + '$' : '', true, false).draw();
+
+        if (val === '') {
+            // ✅ Back to default (exclude TERMINATED)
+            table.column(3).search('^(?!TERMINATED$).*$', true, false);
+        } else {
+            // ✅ Show only selected status
+            table.column(3).search('^' + val + '$', true, false);
+        }
+
+        table.draw();
     });
 
     $('#filterAssignedBy').on('keyup', function() {
