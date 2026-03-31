@@ -37,11 +37,19 @@ foreach ($filters as $key => $value) {
 $stmt->execute();
 $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // Fetch branches & brands
-$branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
-                ->fetchAll(PDO::FETCH_COLUMN);
+$branches = $pdo->query("
+    SELECT DISTINCT branch_name 
+    FROM assignment
+    WHERE assigned_count < required_count
+    ORDER BY branch_name
+")->fetchAll(PDO::FETCH_COLUMN);
 
-$brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
-             ->fetchAll(PDO::FETCH_COLUMN);
+$brands = $pdo->query("
+    SELECT DISTINCT brand_name 
+    FROM assignment
+    WHERE assigned_count < required_count
+    ORDER BY brand_name
+")->fetchAll(PDO::FETCH_COLUMN);
 
 // Include modal
 

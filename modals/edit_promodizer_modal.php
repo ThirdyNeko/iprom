@@ -40,6 +40,7 @@
                             <th>Branch</th>
                             <td>
                                 <select id="editBranch" class="form-select">
+                                    <option value="UNASSIGNED" selected disabled selected>UNASSIGNED</option>
                                     <?php foreach($branches as $branch): ?>
                                         <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
                                     <?php endforeach; ?>
@@ -47,7 +48,8 @@
                             </td>
                             <th>Brand</th>
                             <td>
-                                <select id="editBrand" class="form-select">                                   
+                                <select id="editBrand" class="form-select">
+                                    <option value="UNASSIGNED" selected disabled selected>UNASSIGNED</option>
                                     <?php foreach($brands as $brand): ?>
                                         <option value="<?= htmlspecialchars($brand) ?>"><?= htmlspecialchars($brand) ?></option>
                                     <?php endforeach; ?>

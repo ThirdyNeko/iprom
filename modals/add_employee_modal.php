@@ -36,12 +36,19 @@
                     $pdo = qa_db();
 
                     // Fetch distinct branches
-                    $branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
-                                    ->fetchAll(PDO::FETCH_COLUMN);
+                    $branches = $pdo->query("
+                        SELECT DISTINCT branch_name 
+                        FROM assignment
+                        WHERE assigned_count < required_count
+                        ORDER BY branch_name
+                    ")->fetchAll(PDO::FETCH_COLUMN);
 
-                    // Fetch distinct brands
-                    $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
-                                ->fetchAll(PDO::FETCH_COLUMN);
+                    $brands = $pdo->query("
+                        SELECT DISTINCT brand_name 
+                        FROM assignment
+                        WHERE assigned_count < required_count
+                        ORDER BY brand_name
+                    ")->fetchAll(PDO::FETCH_COLUMN);
                     ?>
 
                     <div class="mb-3">
