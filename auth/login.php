@@ -32,8 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
-            $_SESSION['branch'] = $user['branch'];
-            $_SESSION['brand'] = $user['brand'];
+            $_SESSION['branch'] = $user['branch'] ?? null;
+            $_SESSION['brand']  = $user['brand'] ?? null;
 
             header("Location: ../index.php");
             exit;

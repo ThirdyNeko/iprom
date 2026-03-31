@@ -26,6 +26,7 @@
                             <option value="" disabled selected>Select Role</option>
                             <option value="admin">ADMIN</option>
                             <option value="hr">HUMAN RESOURCES</option>
+                            <option value="manager">MANAGER</option>
                         </select>
                     </div>
 
