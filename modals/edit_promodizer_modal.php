@@ -39,21 +39,12 @@
                         <tr>
                             <th>Branch</th>
                             <td>
-                                <select id="editBranch" class="form-select">
-                                    <option value="UNASSIGNED" selected disabled selected>UNASSIGNED</option>
-                                    <?php foreach($branches as $branch): ?>
-                                        <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <select id="editBranch" class="form-select"></select>
                             </td>
+
                             <th>Brand</th>
                             <td>
-                                <select id="editBrand" class="form-select">
-                                    <option value="UNASSIGNED" selected disabled selected>UNASSIGNED</option>
-                                    <?php foreach($brands as $brand): ?>
-                                        <option value="<?= htmlspecialchars($brand) ?>"><?= htmlspecialchars($brand) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <select id="editBrand" class="form-select"></select>
                             </td>
                         </tr>
                         <tr>
@@ -108,6 +99,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
         const modal = new bootstrap.Modal(modalEl);
 
         try {
+            // 1️⃣ Fetch employee data
             const res = await fetch(`functions/get_employee.php?id=${id}`);
             const p = await res.json();
 
@@ -116,18 +108,41 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 return;
             }
 
-            // Fill fields
+            // Fill basic fields
             document.getElementById('editPromodizerId').value = p.id;
             document.getElementById('editFirstName').value = p.first_name;
             document.getElementById('editLastName').value = p.last_name;
-            document.getElementById('editBranch').value = p.branch || '';
-            document.getElementById('editBrand').value = p.brand || '';
             document.getElementById('editStatus').textContent = p.status || '-';
             document.getElementById('editLastAssignedBy').textContent = p.last_assigned_by || '-';
             document.getElementById('editAssignmentDate').textContent = p.assignment_date ? new Date(p.assignment_date).toLocaleDateString() : '-';
             document.getElementById('editDateHired').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString() : '-';
             document.getElementById('editDateReturn').textContent = p.date_of_return ? new Date(p.date_of_return).toLocaleDateString() : '-';
             document.getElementById('editDateSeparated').textContent = p.date_separated ? new Date(p.date_separated).toLocaleDateString() : '-';
+            // Fetch available branches & brands dynamically
+            const availRes = await fetch('functions/get_available_branches_brands.php');
+            const availData = await availRes.json();
+            const branches = availData.branches || [];
+            const brands   = availData.brands || [];
+
+            // Get selects
+            const branchSelect = document.getElementById('editBranch');
+            const brandSelect  = document.getElementById('editBrand');
+
+            // Clear previous options
+            branchSelect.innerHTML = '';
+            brandSelect.innerHTML  = '';
+
+            // Populate dropdowns
+            branches.forEach(b => branchSelect.appendChild(new Option(b, b)));
+            brands.forEach(b => brandSelect.appendChild(new Option(b, b)));
+
+            // Ensure employee's current selection exists
+            if (p.branch && !branches.includes(p.branch)) branchSelect.appendChild(new Option(p.branch, p.branch));
+            if (p.brand && !brands.includes(p.brand)) brandSelect.appendChild(new Option(p.brand, p.brand));
+
+            // Set selected values
+            branchSelect.value = p.branch || '';
+            brandSelect.value  = p.brand || '';
 
             // 🔒 HANDLE TERMINATED STATE
             const status = (p.status || '').toLowerCase();
@@ -139,19 +154,15 @@ document.querySelectorAll('.clickable-row').forEach(row => {
 
             if (status === 'terminated') {
                 inputs.forEach(el => el.disabled = true);
-
                 saveBtn.style.display = 'none';
                 unassignBtn.style.display = 'none';
                 terminateBtn.style.display = 'none';
-
                 notice.classList.remove('d-none');
             } else {
                 inputs.forEach(el => el.disabled = false);
-
                 saveBtn.style.display = 'inline-block';
                 unassignBtn.style.display = 'inline-block';
                 terminateBtn.style.display = 'inline-block';
-
                 notice.classList.add('d-none');
             }
 
