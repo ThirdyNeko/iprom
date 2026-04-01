@@ -102,7 +102,6 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             // 1️⃣ Fetch employee data
             const res = await fetch(`functions/get_employee.php?id=${id}`);
             const p = await res.json();
-
             if (!p || !p.id) {
                 Swal.fire({ icon: 'error', title: 'Error', text: 'Employee not found' });
                 return;
@@ -118,33 +117,68 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             document.getElementById('editDateHired').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString() : '-';
             document.getElementById('editDateReturn').textContent = p.date_of_return ? new Date(p.date_of_return).toLocaleDateString() : '-';
             document.getElementById('editDateSeparated').textContent = p.date_separated ? new Date(p.date_separated).toLocaleDateString() : '-';
-            // Fetch available branches & brands dynamically
-            const availRes = await fetch('functions/get_available_branches_brands.php');
-            const availData = await availRes.json();
-            const branches = availData.branches || [];
-            const brands   = availData.brands || [];
 
-            // Get selects
+            // 2️⃣ Fetch assignments data
+            const availRes = await fetch('functions/get_available_branches_brands.php');
+            const combos = await availRes.json(); // [{branch_name, brand_name, required_count, assigned_count}]
+
             const branchSelect = document.getElementById('editBranch');
             const brandSelect  = document.getElementById('editBrand');
 
-            // Clear previous options
+            // Determine full combos and full branches
+            const fullCombos = combos
+                .filter(c => c.assigned_count >= c.required_count)
+                .map(c => `${c.branch_name}||${c.brand_name}`);
+
+            const fullBranches = combos
+                .filter(c => c.assigned_count >= c.required_count)
+                .map(c => c.branch_name);
+
+            const uniqueBranches = [...new Set(combos.map(c => c.branch_name))];
+
+            // Populate branch select
             branchSelect.innerHTML = '';
-            brandSelect.innerHTML  = '';
+            uniqueBranches.forEach(b => {
+                const opt = new Option(b, b);
+                const allBrandsFull = combos
+                    .filter(c => c.branch_name === b)
+                    .every(c => c.assigned_count >= c.required_count);
+                if (allBrandsFull) {
+                    opt.disabled = true;
+                    opt.text += ' (Full)';
+                }
+                branchSelect.appendChild(opt);
+            });
 
-            // Populate dropdowns
-            branches.forEach(b => branchSelect.appendChild(new Option(b, b)));
-            brands.forEach(b => brandSelect.appendChild(new Option(b, b)));
+            // Function to update brand options based on selected branch
+            function updateBrands() {
+                const branch = branchSelect.value;
+                const brandsForBranch = combos
+                    .filter(c => c.branch_name === branch)
+                    .map(c => c.brand_name);
 
-            // Ensure employee's current selection exists
-            if (p.branch && !branches.includes(p.branch)) branchSelect.appendChild(new Option(p.branch, p.branch));
-            if (p.brand && !brands.includes(p.brand)) brandSelect.appendChild(new Option(p.brand, p.brand));
+                brandSelect.innerHTML = '';
+                brandsForBranch.forEach(b => {
+                    const opt = new Option(b, b);
+                    if(fullCombos.includes(`${branch}||${b}`)) {
+                        opt.disabled = true;
+                        opt.text += " (Full)";
+                    }
+                    brandSelect.appendChild(opt);
+                });
 
-            // Set selected values
+                // If current value is disabled, reset
+                if(brandSelect.selectedOptions[0]?.disabled) brandSelect.value = '';
+            }
+
+            branchSelect.addEventListener('change', updateBrands);
+
+            // Initial populate
             branchSelect.value = p.branch || '';
-            brandSelect.value  = p.brand || '';
+            updateBrands();
+            brandSelect.value = p.brand || '';
 
-            // 🔒 HANDLE TERMINATED STATE
+            // 🔒 Handle terminated state
             const status = (p.status || '').toLowerCase();
             const inputs = modalEl.querySelectorAll('input, select');
             const saveBtn = document.getElementById('saveBtn');
@@ -167,6 +201,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             }
 
             modal.show();
+
         } catch(err) {
             console.error(err);
             Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load employee data' });
@@ -212,7 +247,6 @@ async function sendAction(data, actionName = 'Save') {
 
 // Save
 document.getElementById('saveBtn').addEventListener('click', async () => {
-
     const confirm = await Swal.fire({
         icon: 'warning',
         title: 'Save Changes?',
@@ -223,7 +257,6 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
         confirmButtonColor: '#3085d6',
         reverseButtons: true
     });
-
     if (!confirm.isConfirmed) return;
 
     const id = document.getElementById('editPromodizerId').value;
@@ -232,41 +265,35 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     const branch    = document.getElementById('editBranch').value;
     const brand     = document.getElementById('editBrand').value;
 
+    // Prevent saving full branch/brand
+    const availRes = await fetch('functions/get_available_branches_brands.php');
+    const combos = await availRes.json();
+    const fullCombos = combos
+        .filter(c => c.assigned_count >= c.required_count)
+        .map(c => `${c.branch_name}||${c.brand_name}`);
+
+    const branchFull = combos
+        .filter(c => c.branch_name === branch)
+        .every(c => c.assigned_count >= c.required_count);
+
+    if(branchFull || fullCombos.includes(`${branch}||${brand}`)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Cannot Save',
+            text: 'Selected branch or brand is full. Please choose another.'
+        });
+        return;
+    }
+
     const formData = new FormData();
     formData.set('id', id);
     formData.set('first_name', firstName);
     formData.set('last_name', lastName);
     formData.set('branch', branch || null);
     formData.set('brand', brand || null);
+    formData.set('status', (branch && brand) ? 'ACTIVE' : 'INACTIVE');
 
-    try {
-        if(branch && brand){
-            const res = await fetch('functions/check_assignment.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ branch, brand })
-            });
-            const data = await res.json();
-
-            if(!data.exists){
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Assignment',
-                    text: 'No assignment exists for the selected Branch & Brand.'
-                });
-                return;
-            }
-        }
-
-        const status = (branch && brand) ? 'ACTIVE' : 'INACTIVE';
-        formData.set('status', status);
-
-        await sendAction(formData, 'Save Changes');
-
-    } catch(err) {
-        console.error(err);
-        Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred.' });
-    }
+    sendAction(formData, 'Save Changes');
 });
 
 // Unassign
