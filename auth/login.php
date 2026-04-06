@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
 <link rel="stylesheet" href="../assets/bootstrap-icons/font/bootstrap-icons.min.css">
+<script src ="http://192.168.40.14/branch_logger/hooks/qa_hook.js"></script>
 
 <style>
 body {
