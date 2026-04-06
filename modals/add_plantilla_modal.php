@@ -1,8 +1,19 @@
 <?php
-// Fetch branches only (no branch param, so SP returns all branches)
-$stmt = $pdo->prepare("EXEC dbo.get_branches_brands @branch = NULL");
-$stmt->execute();
-$plantillaBranches = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$plantillaBranches = [];
+
+try {
+    // Fetch branches only
+    $stmt = $pdo->prepare("EXEC dbo.get_branches_brands @branch = NULL");
+    $stmt->execute();
+    $plantillaBranches = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+} catch (PDOException $e) {
+    // Optional: log error
+    // error_log($e->getMessage());
+
+    // Fallback: empty branches (prevents crash)
+    $plantillaBranches = [];
+}
 ?>
 
 <div class="modal fade" id="addPlantillaModal" tabindex="-1">
@@ -17,10 +28,14 @@ $plantillaBranches = $stmt->fetchAll(PDO::FETCH_COLUMN);
                     <div class="mb-3">
                         <label class="form-label">Branch</label>
                         <select name="branch" id="branchSelect" class="form-select" required>
-                            <option value="">Select Branch</option>
-                            <?php foreach($plantillaBranches as $b): ?>
-                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
-                            <?php endforeach; ?>
+                            <?php if (empty($plantillaBranches)): ?>
+                                <option value="">System under maintenance</option>
+                            <?php else: ?>
+                                <option value="">Select Branch</option>
+                                <?php foreach($plantillaBranches as $b): ?>
+                                    <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </select>
                     </div>
 
