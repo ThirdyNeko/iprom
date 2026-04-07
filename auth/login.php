@@ -115,7 +115,6 @@ body {
 
     <form method="POST">
         <div class="mb-4">
-            <label class="form-label">Username</label>
             <input type="text"
                 name="username"
                 id="username"
