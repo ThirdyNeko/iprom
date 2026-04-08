@@ -9,11 +9,8 @@
 
             <div class="modal-body">
                 <div id="editAlert"></div>
-
-                <!-- Hidden ID -->
                 <input type="hidden" id="editPromodizerId">
 
-                <!-- Employee Info Table -->
                 <table class="table table-bordered table-striped table-sm mb-3">
                     <tbody>
                         <tr>
@@ -44,7 +41,7 @@
                         </tr>
                         <tr>
                             <th>Status</th>
-                            <td id="editStatus"></td>
+                            <td><input type="text" id="editStatus" class="form-control" readonly></td>
                             <th>Last Assigned By</th>
                             <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
                         </tr>
@@ -78,9 +75,9 @@
                         </tr>
                         <tr>
                             <th>Last Updated By</th>
-                            <td><input type="text" id="editLastUpdatedBy" class="form-control"></td>
+                            <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
                             <th>Date Last Updated</th>
-                            <td><input type="date" id="editDateLastUpdated" class="form-control"></td>
+                            <td><input type="date" id="editDateLastUpdated" class="form-control" readonly></td>
                         </tr>
                         <tr>
                             <th>Remarks</th>

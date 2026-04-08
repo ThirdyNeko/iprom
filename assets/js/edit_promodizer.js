@@ -1,7 +1,13 @@
-// Edit Promodizer JS
 const modalEl = document.getElementById('editPromodizerModal');
 
-// Populate modal when a row is clicked
+// Helper to clean null/nchar
+function cleanValue(value) {
+    if (!value) return '';
+    const trimmed = value.toString().trim();
+    return (trimmed.toLowerCase() === 'null' || trimmed === '') ? '' : trimmed;
+}
+
+// Populate modal
 document.querySelectorAll('.clickable-row').forEach(row => {
     row.addEventListener('click', async () => {
         const id = row.dataset.id;
@@ -16,7 +22,6 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 return;
             }
 
-            // Map database columns to JS properties
             const employee = {
                 id: p.id,
                 first_name: p.first_name,
@@ -26,8 +31,6 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 assignment_date: p.assignment_date,
                 last_assigned_by: p.last_assigned_by,
                 status: p.status,
-                created_at: p.created_at,
-                updated_at: p.updated_at,
                 date_of_return: p.date_of_return,
                 date_separated: p.date_separated,
                 employment_status: p.employment_status,
@@ -35,16 +38,8 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 last_updated_by: p.last_updated_by,
                 reason_update: p.reason_for_update,
                 date_hired: p.date_hired,
-                start_date: p.start_date,
-                end_date: p.end_date
+                updated_at: p.updated_at
             };
-
-            // Helper function to clean null/nchar values
-            function cleanValue(value) {
-                if (!value) return '';
-                const trimmed = value.toString().trim();
-                return (trimmed.toLowerCase() === 'null' || trimmed === '') ? '' : trimmed;
-            }
 
             // Fill read-only fields
             document.getElementById('editPromodizerId').value = employee.id;
@@ -53,11 +48,11 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             document.getElementById('editBranch').value = cleanValue(employee.branch);
             document.getElementById('editBrand').value = cleanValue(employee.brand);
             document.getElementById('editDateHired').value = employee.date_hired ? new Date(employee.date_hired).toLocaleDateString() : '-';
-            document.getElementById('editStatus').textContent = cleanValue(employee.status) || '-';
+            document.getElementById('editStatus').value = cleanValue(employee.status) || '-';
             document.getElementById('editLastAssignedBy').value = cleanValue(employee.last_assigned_by);
             document.getElementById('editAssignmentDate').value = employee.assignment_date ? new Date(employee.assignment_date).toLocaleDateString() : '-';
 
-            // Fill editable selects safely
+            // Select fields
             const employmentSelect = document.getElementById('editEmploymentStatus');
             const empStatus = cleanValue(employee.employment_status).toUpperCase();
             employmentSelect.value = [...employmentSelect.options].some(opt => opt.value === empStatus) ? empStatus : '';
@@ -66,25 +61,26 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             const reasonValue = cleanValue(employee.reason_update).toUpperCase();
             reasonSelect.value = [...reasonSelect.options].some(opt => opt.value === reasonValue) ? reasonValue : '';
 
-            // Fill other editable fields
+            // Editable fields
             document.getElementById('editDateSeparated').value = cleanValue(employee.date_separated);
             document.getElementById('editDateReturn').value = cleanValue(employee.date_of_return);
-            document.getElementById('editLastUpdatedBy').value = cleanValue(employee.last_updated_by);
-            document.getElementById('editDateLastUpdated').value = employee.updated_at ? new Date(employee.updated_at).toISOString().split('T')[0] : '';
             document.getElementById('editRemarks').value = cleanValue(employee.remarks);
 
-            // Enable only editable fields
-            const inputs = modalEl.querySelectorAll('input, select, textarea');
+            // Read-only fields
+            document.getElementById('editLastUpdatedBy').value = cleanValue(employee.last_updated_by);
+            document.getElementById('editDateLastUpdated').value = employee.updated_at ? new Date(employee.updated_at).toISOString().split('T')[0] : '';
+
+            // Enable/disable fields
             const editable = [
                 'editEmploymentStatus',
                 'editReasonUpdate',
                 'editDateSeparated',
                 'editDateReturn',
-                'editLastUpdatedBy',
-                'editDateLastUpdated',
                 'editRemarks'
             ];
-            inputs.forEach(el => el.disabled = !editable.includes(el.id));
+            modalEl.querySelectorAll('input, select, textarea').forEach(el => {
+                el.disabled = !editable.includes(el.id);
+            });
 
             modal.show();
 
@@ -95,7 +91,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
     });
 });
 
-// Helper AJAX function to send form data
+// Send form data
 async function sendAction(data, actionName = 'Save') {
     const btns = modalEl.querySelectorAll('button');
     btns.forEach(b => b.disabled = true);
@@ -105,33 +101,21 @@ async function sendAction(data, actionName = 'Save') {
         const result = await res.json();
 
         if(result.status === 'success') {
-            await Swal.fire({
-                icon: 'success',
-                title: `${actionName} Successful`,
-                text: result.message
-            });
+            await Swal.fire({ icon: 'success', title: `${actionName} Successful`, text: result.message });
             bootstrap.Modal.getInstance(modalEl).hide();
             location.reload();
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: `${actionName} Failed`,
-                text: result.message
-            });
+            Swal.fire({ icon: 'error', title: `${actionName} Failed`, text: result.message });
         }
     } catch(err) {
         console.error(err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'An unexpected error occurred.'
-        });
+        Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred.' });
     } finally {
         btns.forEach(b => b.disabled = false);
     }
 }
 
-// Save Changes button
+// Save button
 document.getElementById('saveBtn').addEventListener('click', async () => {
     const confirm = await Swal.fire({
         icon: 'warning',
