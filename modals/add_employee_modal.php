@@ -1,31 +1,28 @@
 <?php
 $pdo = qa_db();
 
-// Fetch available branches and brands
+// Fetch all branches (no filtering)
 $branches = $pdo->query("
-    SELECT DISTINCT branch_name 
+    SELECT DISTINCT branch_name
     FROM assignment
-    WHERE assigned_count < required_count
+    WHERE branch_name IS NOT NULL
     ORDER BY branch_name
 ")->fetchAll(PDO::FETCH_COLUMN);
 
+// Fetch all brands (no filtering)
 $brands = $pdo->query("
-    SELECT DISTINCT brand_name 
+    SELECT DISTINCT brand_name
     FROM assignment
-    WHERE assigned_count < required_count
+    WHERE brand_name IS NOT NULL
     ORDER BY brand_name
 ")->fetchAll(PDO::FETCH_COLUMN);
 
-// Optional: prepare branch-brand mapping for roving
+// Fetch branch-brand pairs for JS mapping
 $branch_brand_pairs = $pdo->query("
-    SELECT branch_name, brand_name 
+    SELECT branch_name, brand_name, assigned_count, required_count
     FROM assignment
-    WHERE assigned_count < required_count
+    WHERE branch_name IS NOT NULL AND brand_name IS NOT NULL
 ")->fetchAll(PDO::FETCH_ASSOC);
-$branch_brand_mapping = [];
-foreach ($branch_brand_pairs as $row) {
-    $branch_brand_mapping[$row['branch_name']][] = $row['brand_name'];
-}
 ?>
 
 <!-- ADD EMPLOYEE MODAL -->
