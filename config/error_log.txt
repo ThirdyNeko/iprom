@@ -489,3 +489,28 @@
 [2026-03-31 14:01:40] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
 [2026-03-31 14:01:41] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
 [2026-03-31 14:01:46] Error [2]: Undefined array key "assigned_count" in C:\xampp\htdocs\iprom\index.php on line 29
+[2026-04-08 10:38:39] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 132
+[2026-04-08 10:38:39] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 132
+[2026-04-08 10:41:43] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:42:37] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:48:23] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:48:47] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:52:46] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:53:13] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:55:28] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:57:17] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:57:46] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:59:07] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:59:16] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:59:17] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 10:59:42] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-08 10:59:45] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-08 10:59:49] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-08 11:00:12] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 11:01:16] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 11:03:39] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 11:03:54] Error [2]: Undefined variable $branch_brand_pairs in C:\xampp\htdocs\iprom\modals\add_employee_modal.php on line 116
+[2026-04-08 11:10:22] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-08 11:12:35] Error [2]: foreach() argument must be of type array|object, string given in C:\xampp\htdocs\iprom\functions\add_employee.php on line 23
+[2026-04-08 11:13:27] Error [2]: foreach() argument must be of type array|object, string given in C:\xampp\htdocs\iprom\functions\add_employee.php on line 23
+[2026-04-08 11:14:59] Error [2]: foreach() argument must be of type array|object, string given in C:\xampp\htdocs\iprom\functions\add_employee.php on line 23
