@@ -43,13 +43,13 @@ $zeroAssignedPct = $totalAssignments ? round($zeroAssigned / $totalAssignments *
 ============================== */
 $cards = [
     ['label'=>'Total Promodizers','value'=>$total,'color'=>'primary','icon'=>'👥','link'=>'promodizers.php'],
-    ['label'=>'Assigned','value'=>$assigned,'percent'=>$assignedPct,'color'=>'success','icon'=>'✅','link'=>'promodizers.php?status=active'],
-    ['label'=>'Unassigned','value'=>$unassigned,'percent'=>$unassignedPct,'color'=>'danger','icon'=>'⚠️','link'=>'promodizers.php?status=inactive'],
+    ['label'=>'ACTIVE','value'=>$assigned,'percent'=>$assignedPct,'color'=>'success','icon'=>'✅','link'=>'promodizers.php?status=active'],
+    ['label'=>'INACTIVE','value'=>$unassigned,'percent'=>$unassignedPct,'color'=>'danger','icon'=>'⚠️','link'=>'promodizers.php?status=inactive'],
 
     ['label'=>'Total Assignments','value'=>$totalAssignments,'color'=>'primary','icon'=>'📋','link'=>'assignments.php'],
-    ['label'=>'Complete','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
-    ['label'=>'Lacking','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'warning','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
-    ['label'=>'Zero Assigned','value'=>$zeroAssigned,'percent'=>$zeroAssignedPct,'color'=>'danger','icon'=>'0️⃣','link'=>'assignments.php?status=zero'], // placed last
+    ['label'=>'ACTIVE','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
+    ['label'=>'VACANT','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'warning','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
+    ['label'=>'INACTIVE','value'=>$zeroAssigned,'percent'=>$zeroAssignedPct,'color'=>'danger','icon'=>'0️⃣','link'=>'assignments.php?status=zero'], // placed last
 ];
 ?>
 
@@ -150,7 +150,7 @@ $cards = [
 new Chart(document.getElementById('promodizerChart'), {
     type:'doughnut',
     data:{
-        labels:['Assigned','Unassigned'],
+        labels:['ACTIVE','INACTIVE'],
         datasets:[{
             data:[<?= $assigned ?>, <?= $unassigned ?>],
             backgroundColor:['#198754','#dc3545']
@@ -163,7 +163,7 @@ new Chart(document.getElementById('promodizerChart'), {
 new Chart(document.getElementById('assignmentChart'), {
     type:'doughnut',
     data:{
-        labels:['Complete','Lacking','Zero Assigned'],
+        labels:['ACTIVE','VACANT','INACTIVE'],
         datasets:[{
             data:[<?= $completeAssignments ?>, <?= $lackingAssignments ?>, <?= $zeroAssigned ?>],
             backgroundColor:['#198754','#ffc107','#dc3545']
