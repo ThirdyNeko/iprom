@@ -1,112 +1,90 @@
+// Edit Promodizer JS
 const modalEl = document.getElementById('editPromodizerModal');
 
-// Populate modal
+// Populate modal when a row is clicked
 document.querySelectorAll('.clickable-row').forEach(row => {
     row.addEventListener('click', async () => {
         const id = row.dataset.id;
         const modal = new bootstrap.Modal(modalEl);
 
         try {
-            // 1️⃣ Fetch employee data
             const res = await fetch(`functions/get_employee.php?id=${id}`);
             const p = await res.json();
+
             if (!p || !p.id) {
                 Swal.fire({ icon: 'error', title: 'Error', text: 'Employee not found' });
                 return;
             }
 
-            // Fill basic fields
-            document.getElementById('editPromodizerId').value = p.id;
-            document.getElementById('editFirstName').value = p.first_name;
-            document.getElementById('editLastName').value = p.last_name;
-            document.getElementById('editStatus').textContent = p.status || '-';
-            document.getElementById('editLastAssignedBy').textContent = p.last_assigned_by || '-';
-            document.getElementById('editAssignmentDate').textContent = p.assignment_date ? new Date(p.assignment_date).toLocaleDateString() : '-';
-            document.getElementById('editDateHired').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString() : '-';
-            document.getElementById('editDateReturn').textContent = p.date_of_return ? new Date(p.date_of_return).toLocaleDateString() : '-';
-            document.getElementById('editDateSeparated').textContent = p.date_separated ? new Date(p.date_separated).toLocaleDateString() : '-';
+            // Map database columns to JS properties
+            const employee = {
+                id: p.id,
+                first_name: p.first_name,
+                last_name: p.last_name,
+                branch: p.branch,
+                brand: p.brand,
+                assignment_date: p.assignment_date,
+                last_assigned_by: p.last_assigned_by,
+                status: p.status,
+                created_at: p.created_at,
+                updated_at: p.updated_at,
+                date_of_return: p.date_of_return,
+                date_separated: p.date_separated,
+                employment_status: p.employment_status,
+                remarks: p.remarks,
+                last_updated_by: p.last_updated_by,
+                reason_update: p.reason_for_update,
+                date_hired: p.date_hired,
+                start_date: p.start_date,
+                end_date: p.end_date
+            };
 
-            // 2️⃣ Fetch assignments data
-            const availRes = await fetch('functions/get_available_branches_brands.php');
-            const combos = await availRes.json(); // [{branch_name, brand_name, required_count, assigned_count}]
-
-            const branchSelect = document.getElementById('editBranch');
-            const brandSelect  = document.getElementById('editBrand');
-
-            // Determine full combos and full branches
-            const fullCombos = combos
-                .filter(c => c.assigned_count >= c.required_count)
-                .map(c => `${c.branch_name}||${c.brand_name}`);
-
-            const fullBranches = combos
-                .filter(c => c.assigned_count >= c.required_count)
-                .map(c => c.branch_name);
-
-            const uniqueBranches = [...new Set(combos.map(c => c.branch_name))];
-
-            // Populate branch select
-            branchSelect.innerHTML = '';
-            uniqueBranches.forEach(b => {
-                const opt = new Option(b, b);
-                const allBrandsFull = combos
-                    .filter(c => c.branch_name === b)
-                    .every(c => c.assigned_count >= c.required_count);
-                if (allBrandsFull) {
-                    opt.disabled = true;
-                    opt.text += ' (Full)';
-                }
-                branchSelect.appendChild(opt);
-            });
-
-            // Function to update brand options based on selected branch
-            function updateBrands() {
-                const branch = branchSelect.value;
-                const brandsForBranch = combos
-                    .filter(c => c.branch_name === branch)
-                    .map(c => c.brand_name);
-
-                brandSelect.innerHTML = '';
-                brandsForBranch.forEach(b => {
-                    const opt = new Option(b, b);
-                    if(fullCombos.includes(`${branch}||${b}`)) {
-                        opt.disabled = true;
-                        opt.text += " (Full)";
-                    }
-                    brandSelect.appendChild(opt);
-                });
-
-                // If current value is disabled, reset
-                if(brandSelect.selectedOptions[0]?.disabled) brandSelect.value = '';
+            // Helper function to clean null/nchar values
+            function cleanValue(value) {
+                if (!value) return '';
+                const trimmed = value.toString().trim();
+                return (trimmed.toLowerCase() === 'null' || trimmed === '') ? '' : trimmed;
             }
 
-            branchSelect.addEventListener('change', updateBrands);
+            // Fill read-only fields
+            document.getElementById('editPromodizerId').value = employee.id;
+            document.getElementById('editFirstName').value = cleanValue(employee.first_name);
+            document.getElementById('editLastName').value = cleanValue(employee.last_name);
+            document.getElementById('editBranch').value = cleanValue(employee.branch);
+            document.getElementById('editBrand').value = cleanValue(employee.brand);
+            document.getElementById('editDateHired').value = employee.date_hired ? new Date(employee.date_hired).toLocaleDateString() : '-';
+            document.getElementById('editStatus').textContent = cleanValue(employee.status) || '-';
+            document.getElementById('editLastAssignedBy').value = cleanValue(employee.last_assigned_by);
+            document.getElementById('editAssignmentDate').value = employee.assignment_date ? new Date(employee.assignment_date).toLocaleDateString() : '-';
 
-            // Initial populate
-            branchSelect.value = p.branch || '';
-            updateBrands();
-            brandSelect.value = p.brand || '';
+            // Fill editable selects safely
+            const employmentSelect = document.getElementById('editEmploymentStatus');
+            const empStatus = cleanValue(employee.employment_status).toUpperCase();
+            employmentSelect.value = [...employmentSelect.options].some(opt => opt.value === empStatus) ? empStatus : '';
 
-            // 🔒 Handle terminated state
-            const status = (p.status || '').toLowerCase();
-            const inputs = modalEl.querySelectorAll('input, select');
-            const saveBtn = document.getElementById('saveBtn');
-            const unassignBtn = document.getElementById('unassignBtn');
-            const terminateBtn = document.getElementById('terminateBtn');
-            const notice = document.getElementById('terminatedNotice');
+            const reasonSelect = document.getElementById('editReasonUpdate');
+            const reasonValue = cleanValue(employee.reason_update).toUpperCase();
+            reasonSelect.value = [...reasonSelect.options].some(opt => opt.value === reasonValue) ? reasonValue : '';
 
-            if (status === 'terminated') {
-                inputs.forEach(el => el.disabled = true);
-                saveBtn.style.display = 'none';
-                unassignBtn.style.display = 'none';
-                terminateBtn.style.display = 'none';
-                notice.classList.remove('d-none');
-            } else {
-                inputs.forEach(el => el.disabled = false);
-                saveBtn.style.display = 'inline-block';
-                unassignBtn.style.display = 'inline-block';
-                terminateBtn.style.display = 'inline-block';
-                notice.classList.add('d-none');
-            }
+            // Fill other editable fields
+            document.getElementById('editDateSeparated').value = cleanValue(employee.date_separated);
+            document.getElementById('editDateReturn').value = cleanValue(employee.date_of_return);
+            document.getElementById('editLastUpdatedBy').value = cleanValue(employee.last_updated_by);
+            document.getElementById('editDateLastUpdated').value = employee.updated_at ? new Date(employee.updated_at).toISOString().split('T')[0] : '';
+            document.getElementById('editRemarks').value = cleanValue(employee.remarks);
+
+            // Enable only editable fields
+            const inputs = modalEl.querySelectorAll('input, select, textarea');
+            const editable = [
+                'editEmploymentStatus',
+                'editReasonUpdate',
+                'editDateSeparated',
+                'editDateReturn',
+                'editLastUpdatedBy',
+                'editDateLastUpdated',
+                'editRemarks'
+            ];
+            inputs.forEach(el => el.disabled = !editable.includes(el.id));
 
             modal.show();
 
@@ -117,7 +95,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
     });
 });
 
-// Helper AJAX
+// Helper AJAX function to send form data
 async function sendAction(data, actionName = 'Save') {
     const btns = modalEl.querySelectorAll('button');
     btns.forEach(b => b.disabled = true);
@@ -153,7 +131,7 @@ async function sendAction(data, actionName = 'Save') {
     }
 }
 
-// Save
+// Save Changes button
 document.getElementById('saveBtn').addEventListener('click', async () => {
     const confirm = await Swal.fire({
         icon: 'warning',
@@ -167,97 +145,15 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     });
     if (!confirm.isConfirmed) return;
 
-    const id = document.getElementById('editPromodizerId').value;
-    const firstName = document.getElementById('editFirstName').value.trim();
-    const lastName  = document.getElementById('editLastName').value.trim();
-    const branch    = document.getElementById('editBranch').value;
-    const brand     = document.getElementById('editBrand').value;
-
-    // Prevent saving full branch/brand
-    const availRes = await fetch('functions/get_available_branches_brands.php');
-    const combos = await availRes.json();
-    const fullCombos = combos
-        .filter(c => c.assigned_count >= c.required_count)
-        .map(c => `${c.branch_name}||${c.brand_name}`);
-
-    const branchFull = combos
-        .filter(c => c.branch_name === branch)
-        .every(c => c.assigned_count >= c.required_count);
-
-    if(branchFull || fullCombos.includes(`${branch}||${brand}`)) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Cannot Save',
-            text: 'Selected branch or brand is full. Please choose another.'
-        });
-        return;
-    }
-
     const formData = new FormData();
-    formData.set('id', id);
-    formData.set('first_name', firstName);
-    formData.set('last_name', lastName);
-    formData.set('branch', branch || null);
-    formData.set('brand', brand || null);
-    formData.set('status', (branch && brand) ? 'ACTIVE' : 'INACTIVE');
+    formData.set('id', document.getElementById('editPromodizerId').value);
+    formData.set('employment_status', document.getElementById('editEmploymentStatus').value);
+    formData.set('reason_update', document.getElementById('editReasonUpdate').value);
+    formData.set('date_separated', document.getElementById('editDateSeparated').value);
+    formData.set('date_returned', document.getElementById('editDateReturn').value);
+    formData.set('last_updated_by', document.getElementById('editLastUpdatedBy').value);
+    formData.set('date_last_updated', document.getElementById('editDateLastUpdated').value);
+    formData.set('remarks', document.getElementById('editRemarks').value);
 
     sendAction(formData, 'Save Changes');
-});
-
-// Unassign
-document.getElementById('unassignBtn').addEventListener('click', async () => {
-
-    const confirm = await Swal.fire({
-        icon: 'warning',
-        title: 'Unassign Employee?',
-        text: 'This will remove the employee from their current branch and brand.',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Unassign',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#f0ad4e',
-        reverseButtons: true
-    });
-
-    if (!confirm.isConfirmed) return;
-
-    const formData = new FormData();
-    formData.set('id', document.getElementById('editPromodizerId').value);
-    formData.set('first_name', document.getElementById('editFirstName').value.trim());
-    formData.set('last_name', document.getElementById('editLastName').value.trim());
-    formData.set('branch', 'UNASSIGNED');
-    formData.set('brand', 'UNASSIGNED');
-    formData.set('status', 'INACTIVE');
-
-    sendAction(formData, 'Unassign');
-});
-
-// Terminate
-document.getElementById('terminateBtn').addEventListener('click', async () => {
-
-    const confirm = await Swal.fire({
-        icon: 'error',
-        title: 'Terminate Employee?',
-        html: `
-            <b>This action is irreversible.</b><br>
-            The employee will be permanently marked as terminated<br>
-            and will no longer be editable.
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Terminate',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#d33',
-        reverseButtons: true
-    });
-
-    if (!confirm.isConfirmed) return;
-
-    const formData = new FormData();
-    formData.set('id', document.getElementById('editPromodizerId').value);
-    formData.set('first_name', document.getElementById('editFirstName').value.trim());
-    formData.set('last_name', document.getElementById('editLastName').value.trim());
-    formData.set('branch', 'UNASSIGNED');
-    formData.set('brand', 'UNASSIGNED');
-    formData.set('status', 'TERMINATED');
-
-    sendAction(formData, 'Terminate');
 });

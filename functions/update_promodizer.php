@@ -1,67 +1,72 @@
 <?php
-session_start(); // Make sure session is started
+session_start(); // Ensure session is active
 require_once '../config/db.php';
 header('Content-Type: application/json');
 
 $pdo = qa_db();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['status'=>'danger','message'=>'Invalid request method']);
+    echo json_encode(['status' => 'danger', 'message' => 'Invalid request method']);
     exit;
 }
 
 // Get POST values
-$id         = $_POST['id'] ?? null;
-$first_name = trim($_POST['first_name'] ?? '');
-$last_name  = trim($_POST['last_name'] ?? '');
-$branch     = trim($_POST['branch'] ?? '') ?: null;
-$brand      = trim($_POST['brand'] ?? '') ?: null;
-$status     = $_POST['status'] ?? null;
-$assigned_by = $_SESSION['username'] ?? 'System';
+$id               = $_POST['id'] ?? null;
+$reason_update    = trim($_POST['reason_update'] ?? '');
+$date_separated   = trim($_POST['date_separated'] ?? null);
+$date_returned    = trim($_POST['date_returned'] ?? null);
+$last_updated_by  = $_SESSION['username'] ?? 'System';
+$date_last_updated= trim($_POST['date_last_updated'] ?? date('Y-m-d'));
+$remarks          = trim($_POST['remarks'] ?? '');
 
 // Validation
 if (!$id) {
-    echo json_encode(['status'=>'danger','message'=>'Invalid employee ID']);
+    echo json_encode(['status' => 'danger', 'message' => 'Invalid employee ID']);
     exit;
 }
 
-// Dynamically set status if not provided
-if (!$status) {
-    $status = ($branch && $brand) ? 'Active' : 'Inactive';
+// Optional: set default status based on reason_update
+$status = 'Active';
+if (in_array(strtolower($reason_update), ['resigned', 'pull-out/terminated', 'AWOL', 'end of contract', 'blacklisted', 'retrenchment'])) {
+    $status = 'Inactive';
 }
 
 try {
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
-            @first_name = :first_name,
-            @last_name  = :last_name,
-            @branch = :branch,
-            @brand = :brand,
-            @status = :status,
-            @last_assigned_by = :assigned_by
+            @reason_update = :reason_update,
+            @date_separated = :date_separated,
+            @date_returned = :date_returned,
+            @last_updated_by = :last_updated_by,
+            @date_last_updated = :date_last_updated,
+            @remarks = :remarks,
+            @status = :status
     ");
 
     $stmt->execute([
-        ':id'           => $id,
-        ':first_name'   => $first_name,
-        ':last_name'    => $last_name,
-        ':branch'       => $branch,
-        ':brand'        => $brand,
-        ':status'       => $status,
-        ':assigned_by'  => $assigned_by
+        ':id'               => $id,
+        ':reason_update'    => $reason_update,
+        ':date_separated'   => $date_separated,
+        ':date_returned'    => $date_returned,
+        ':last_updated_by'  => $last_updated_by,
+        ':date_last_updated'=> $date_last_updated,
+        ':remarks'          => $remarks,
+        ':status'           => $status
     ]);
 
     echo json_encode([
         'status' => 'success',
         'message' => 'Employee updated successfully',
         'data' => [
-            'id' => $id,
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'branch' => $branch,
-            'brand' => $brand,
-            'status' => $status
+            'id'               => $id,
+            'reason_update'    => $reason_update,
+            'date_separated'   => $date_separated,
+            'date_returned'    => $date_returned,
+            'last_updated_by'  => $last_updated_by,
+            'date_last_updated'=> $date_last_updated,
+            'remarks'          => $remarks,
+            'status'           => $status
         ]
     ]);
 } catch (Exception $e) {

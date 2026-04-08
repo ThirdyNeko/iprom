@@ -10,11 +10,6 @@
             <div class="modal-body">
                 <div id="editAlert"></div>
 
-                <!-- 🔴 Terminated Notice -->
-                <div id="terminatedNotice" class="alert alert-danger d-none">
-                    This employee is terminated and can no longer be modified.
-                </div>
-
                 <!-- Hidden ID -->
                 <input type="hidden" id="editPromodizerId">
 
@@ -23,64 +18,82 @@
                     <tbody>
                         <tr>
                             <th>First Name</th>
-                            <td><input type="text" id="editFirstName" class="form-control"></td>
+                            <td><input type="text" id="editFirstName" class="form-control" readonly></td>
                             <th>Last Name</th>
-                            <td><input type="text" id="editLastName" class="form-control"></td>
+                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
                         </tr>
-
-                        <script>
-                        document.getElementById('editFirstName').addEventListener('input', function() {
-                            this.value = this.value.toUpperCase();
-                        });
-                        document.getElementById('editLastName').addEventListener('input', function() {
-                            this.value = this.value.toUpperCase();
-                        });
-                        </script>
                         <tr>
                             <th>Branch</th>
-                            <td>
-                                <select id="editBranch" class="form-select"></select>
-                            </td>
-
+                            <td><input type="text" id="editBranch" class="form-control" readonly></td>
                             <th>Brand</th>
-                            <td>
-                                <select id="editBrand" class="form-select"></select>
+                            <td><input type="text" id="editBrand" class="form-control" readonly></td>
+                        </tr>
+                        <tr>
+                            <th>Date Hired</th>
+                            <td><input type="text" id="editDateHired" class="form-control" readonly></td>
+                            <th>Employment Status</th>
+                            <td colspan="3">
+                                <select id="editEmploymentStatus" class="form-select">
+                                    <option value="">-- Select Status --</option>
+                                    <option value="PERMANENT">PERMANENT</option>
+                                    <option value="SEASONAL">SEASONAL</option>
+                                    <option value="RELIEVER">RELIEVER</option>
+                                    <option value="ROVING">ROVING</option>
+                                </select>
                             </td>
                         </tr>
                         <tr>
                             <th>Status</th>
                             <td id="editStatus"></td>
                             <th>Last Assigned By</th>
-                            <td id="editLastAssignedBy"></td>
+                            <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
                         </tr>
                         <tr>
                             <th>Assignment Date</th>
-                            <td id="editAssignmentDate"></td>
+                            <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>
                             <td colspan="2"></td>
                         </tr>
                         <tr>
-                            <th>Date Hired</th>
-                            <td id="editDateHired"></td>
-                            <th>Date of Return</th>
-                            <td id="editDateReturn"></td>
+                            <th>Reason for Update</th>
+                            <td colspan="3">
+                                <select id="editReasonUpdate" class="form-select">
+                                    <option value="">-- Select Reason --</option>
+                                    <option value="RESIGNED">RESIGNED</option>
+                                    <option value="PULL-OUT / TERMINATED">PULL-OUT / TERMINATED</option>
+                                    <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
+                                    <option value="AWOL">AWOL</option>
+                                    <option value="TRANSFER">TRANSFER</option>
+                                    <option value="RETRENCHMENT">RETRENCHMENT</option>
+                                    <option value="PROMOTED (MT)">PROMOTED (MT)</option>
+                                    <option value="END OF CONTRACT">END OF CONTRACT</option>
+                                    <option value="BLACKLISTED">BLACKLISTED</option>
+                                </select>
+                            </td>
                         </tr>
                         <tr>
                             <th>Date Separated</th>
-                            <td id="editDateSeparated"></td>
-                            <td colspan="2"></td>
+                            <td><input type="date" id="editDateSeparated" class="form-control"></td>
+                            <th>Date Returned</th>
+                            <td><input type="date" id="editDateReturn" class="form-control"></td>
+                        </tr>
+                        <tr>
+                            <th>Last Updated By</th>
+                            <td><input type="text" id="editLastUpdatedBy" class="form-control"></td>
+                            <th>Date Last Updated</th>
+                            <td><input type="date" id="editDateLastUpdated" class="form-control"></td>
+                        </tr>
+                        <tr>
+                            <th>Remarks</th>
+                            <td colspan="3">
+                                <input type="text" id="editRemarks" class="form-control" maxlength="100" placeholder="e.g. immediate resignation, pull out product">
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="modal-footer d-flex justify-content-between">
-                <div>
-                    <button type="button" class="btn btn-danger" id="terminateBtn">Terminate</button>
-                    <button type="button" class="btn btn-warning" id="unassignBtn">Unassign</button>
-                </div>
-                <div>
-                    <button type="button" class="btn btn-primary" id="saveBtn">Save Changes</button>
-                </div>
+            <div class="modal-footer d-flex justify-content-end">
+                <button type="button" class="btn btn-primary" id="saveBtn">Save Changes</button>
             </div>
         </div>
     </div>
