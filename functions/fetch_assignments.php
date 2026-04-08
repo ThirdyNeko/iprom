@@ -46,11 +46,11 @@ foreach($pagedData as $i => $a){
     $shortage = $a['required_count'] - $a['assigned_count'];
 
     if ($a['assigned_count'] == 0) {
-        $statusLabel = "<span class='badge bg-danger'>Zero Assigned</span>";
+        $statusLabel = "<span class='badge bg-danger'>INACTIVE</span>";
     } elseif ($shortage > 0) {
-        $statusLabel = "<span class='badge bg-warning'>Needs $shortage</span>";
+        $statusLabel = "<span class='badge bg-warning'>VACANT: $shortage</span>";
     } else {
-        $statusLabel = "<span class='badge bg-success'>Complete</span>";
+        $statusLabel = "<span class='badge bg-success'>ACTIVE</span>";
     }
     
     $result[] = [
