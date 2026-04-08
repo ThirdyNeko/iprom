@@ -71,6 +71,22 @@ $branch_brand_pairs = $pdo->query("
                                     <input type="date" name="end_date" class="form-control">
                                 </div>
                             </div>
+                            <!-- ROVING BRANCHES -->
+                            <div id="rovingField" class="mb-3 d-none">
+                                <label class="form-label">Roving Branches</label>
+                                <div id="rovingContainer">
+                                    <div class="input-group mb-2 roving-row">
+                                        <select name="roving_branches[]" class="form-select roving-select" required>
+                                            <option value="" disabled selected>Select Branch</option>
+                                            <?php foreach($branches as $branch): ?>
+                                                <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button type="button" class="btn btn-success add-branch">+</button>
+                                        <button type="button" class="btn btn-danger remove-branch">−</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- RIGHT COLUMN -->
@@ -99,23 +115,6 @@ $branch_brand_pairs = $pdo->query("
                                     <option value="RELIEVER">Reliever</option>
                                     <option value="ROVING">Roving</option>
                                 </select>
-                            </div>
-
-                            <!-- ROVING BRANCHES -->
-                            <div id="rovingField" class="mb-3 d-none">
-                                <label class="form-label">Roving Branches</label>
-                                <div id="rovingContainer">
-                                    <div class="input-group mb-2 roving-row">
-                                        <select name="roving_branches[]" class="form-select roving-select" required>
-                                            <option value="" disabled selected>Select Branch</option>
-                                            <?php foreach($branches as $branch): ?>
-                                                <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                        <button type="button" class="btn btn-success add-branch">+</button>
-                                        <button type="button" class="btn btn-danger remove-branch">−</button>
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="mb-3">
