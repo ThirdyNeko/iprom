@@ -1,5 +1,5 @@
 <?php
-session_start(); // Ensure session is active
+session_start();
 require_once '../config/db.php';
 header('Content-Type: application/json');
 
@@ -10,68 +10,97 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Get POST values
-$id               = $_POST['id'] ?? null;
-$reason_update    = trim($_POST['reason_update'] ?? '');
-$date_separated   = trim($_POST['date_separated'] ?? null);
-$date_returned    = trim($_POST['date_returned'] ?? null);
-$last_updated_by  = $_SESSION['username'] ?? 'System';
-$date_last_updated= trim($_POST['date_last_updated'] ?? date('Y-m-d'));
-$remarks          = trim($_POST['remarks'] ?? '');
+// =========================
+// POST VALUES
+// =========================
+$id = $_POST['id'] ?? null;
 
-// Validation
+$status            = trim($_POST['status'] ?? 'ACTIVE');
+$reason_for_update = trim($_POST['reason_update'] ?? '');
+
+$date_separated = !empty($_POST['date_separated'])
+    ? $_POST['date_separated']
+    : null;
+
+$date_of_return = !empty($_POST['date_returned'])
+    ? $_POST['date_returned']
+    : null;
+
+$remarks = trim($_POST['remarks'] ?? '');
+
+$last_updated_by = $_SESSION['username'] ?? 'System';
+
+// OPTIONAL (not currently used in UI, but supported by SP)
+$last_assigned_by = $_POST['last_assigned_by'] ?? null;
+$start_date       = $_POST['start_date'] ?? null;
+$end_date         = $_POST['end_date'] ?? null;
+
+// =========================
+// VALIDATION
+// =========================
 if (!$id) {
     echo json_encode(['status' => 'danger', 'message' => 'Invalid employee ID']);
     exit;
 }
 
-// Optional: set default status based on reason_update
-$status = 'Active';
-if (in_array(strtolower($reason_update), ['resigned', 'pull-out/terminated', 'AWOL', 'end of contract', 'blacklisted', 'retrenchment'])) {
-    $status = 'Inactive';
+// =========================
+// STATUS LOGIC (optional override safety)
+// =========================
+$inactiveReasons = [
+    'RESIGNED',
+    'PULL-OUT / TERMINATED',
+    'AWOL',
+    'END OF CONTRACT',
+    'BLACKLISTED',
+    'RETRENCHMENT'
+];
+
+if (in_array(strtoupper($reason_for_update), $inactiveReasons)) {
+    $status = 'INACTIVE';
 }
 
+// =========================
+// EXECUTE STORED PROCEDURE
+// =========================
 try {
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
-            @reason_update = :reason_update,
+            @status = :status,
+            @reason_for_update = :reason_for_update,
+            @start_date = :start_date,
+            @end_date = :end_date,
             @date_separated = :date_separated,
-            @date_returned = :date_returned,
-            @last_updated_by = :last_updated_by,
-            @date_last_updated = :date_last_updated,
+            @date_of_return = :date_of_return,
             @remarks = :remarks,
-            @status = :status
+            @last_updated_by = :last_updated_by,
+            @last_assigned_by = :last_assigned_by
     ");
 
     $stmt->execute([
-        ':id'               => $id,
-        ':reason_update'    => $reason_update,
-        ':date_separated'   => $date_separated,
-        ':date_returned'    => $date_returned,
-        ':last_updated_by'  => $last_updated_by,
-        ':date_last_updated'=> $date_last_updated,
-        ':remarks'          => $remarks,
-        ':status'           => $status
+        ':id'                => $id,
+        ':status'            => $status,
+        ':reason_for_update' => $reason_for_update,
+        ':start_date'        => $start_date,
+        ':end_date'          => $end_date,
+        ':date_separated'    => $date_separated,
+        ':date_of_return'    => $date_of_return,
+        ':remarks'           => $remarks,
+        ':last_updated_by'   => $last_updated_by,
+        ':last_assigned_by'  => $last_assigned_by
     ]);
 
+    $updated = $stmt->fetch(PDO::FETCH_ASSOC);
+
     echo json_encode([
-        'status' => 'success',
+        'status'  => 'success',
         'message' => 'Employee updated successfully',
-        'data' => [
-            'id'               => $id,
-            'reason_update'    => $reason_update,
-            'date_separated'   => $date_separated,
-            'date_returned'    => $date_returned,
-            'last_updated_by'  => $last_updated_by,
-            'date_last_updated'=> $date_last_updated,
-            'remarks'          => $remarks,
-            'status'           => $status
-        ]
+        'data'    => $updated
     ]);
+
 } catch (Exception $e) {
     echo json_encode([
-        'status' => 'danger',
+        'status'  => 'danger',
         'message' => 'Error: ' . $e->getMessage()
     ]);
 }

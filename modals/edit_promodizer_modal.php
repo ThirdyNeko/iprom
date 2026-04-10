@@ -67,11 +67,17 @@
                                 </select>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="rowDateSeparated">
                             <th>Date Separated</th>
                             <td><input type="date" id="editDateSeparated" class="form-control"></td>
+                            <th></th>
+                            <td></td>
+                        </tr>
+
+                        <tr id="rowDateReturned">
                             <th>Date Returned</th>
                             <td><input type="date" id="editDateReturn" class="form-control"></td>
+                            <td colspan="2"></td>
                         </tr>
                         <tr>
                             <th>Last Updated By</th>

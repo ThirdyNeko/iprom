@@ -7,6 +7,54 @@ function cleanValue(value) {
     return (trimmed.toLowerCase() === 'null' || trimmed === '') ? '' : trimmed;
 }
 
+// Toggle Date Separated
+const reasonSelect = document.getElementById('editReasonUpdate');
+const dateSeparatedRow = document.getElementById('rowDateSeparated');
+const dateSeparatedInput = document.getElementById('editDateSeparated');
+
+const showDateSeparatedReasons = [
+    "RESIGNED",
+    "PULL-OUT / TERMINATED",
+    "AWOL",
+    "RETRENCHMENT",
+    "END OF CONTRACT",
+    "BLACKLISTED",
+    "TRANSFER",
+    "MATERNITY LEAVE"
+];
+
+function toggleDateSeparated() {
+    const value = (reasonSelect.value || '').trim().toUpperCase();
+    const shouldShow = showDateSeparatedReasons.includes(value);
+
+    dateSeparatedRow.style.display = shouldShow ? "" : "none";
+    dateSeparatedInput.disabled = !shouldShow;
+    dateSeparatedInput.required = shouldShow; // ✅ ADDED: real validation control
+
+    if (!shouldShow) {
+        dateSeparatedInput.value = "";
+    }
+}
+
+//Toggle Date Returned
+
+const dateReturnedRow = document.getElementById('rowDateReturned');
+const dateReturnedInput = document.getElementById('editDateReturn');
+
+function toggleDateReturned() {
+    const value = (reasonSelect.value || '').trim().toUpperCase();
+    const shouldShow = value === "MATERNITY LEAVE";
+
+    dateReturnedRow.style.display = shouldShow ? "" : "none";
+    dateReturnedInput.disabled = !shouldShow;
+    dateReturnedInput.required = shouldShow;
+
+    if (!shouldShow) {
+        dateReturnedInput.value = "";
+    }
+}
+
+
 // Populate modal
 document.querySelectorAll('.clickable-row').forEach(row => {
     row.addEventListener('click', async () => {
@@ -47,19 +95,26 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             document.getElementById('editLastName').value = cleanValue(employee.last_name);
             document.getElementById('editBranch').value = cleanValue(employee.branch);
             document.getElementById('editBrand').value = cleanValue(employee.brand);
-            document.getElementById('editDateHired').value = employee.date_hired ? new Date(employee.date_hired).toLocaleDateString() : '-';
+            document.getElementById('editDateHired').value = employee.date_hired
+                ? new Date(employee.date_hired).toLocaleDateString()
+                : '-';
             document.getElementById('editStatus').value = cleanValue(employee.status) || '-';
             document.getElementById('editLastAssignedBy').value = cleanValue(employee.last_assigned_by);
-            document.getElementById('editAssignmentDate').value = employee.assignment_date ? new Date(employee.assignment_date).toLocaleDateString() : '-';
+            document.getElementById('editAssignmentDate').value = employee.assignment_date
+                ? new Date(employee.assignment_date).toLocaleDateString()
+                : '-';
 
             // Select fields
             const employmentSelect = document.getElementById('editEmploymentStatus');
             const empStatus = cleanValue(employee.employment_status).toUpperCase();
-            employmentSelect.value = [...employmentSelect.options].some(opt => opt.value === empStatus) ? empStatus : '';
+            employmentSelect.value = [...employmentSelect.options].some(opt => opt.value === empStatus)
+                ? empStatus
+                : '';
 
-            const reasonSelect = document.getElementById('editReasonUpdate');
             const reasonValue = cleanValue(employee.reason_update).toUpperCase();
-            reasonSelect.value = [...reasonSelect.options].some(opt => opt.value === reasonValue) ? reasonValue : '';
+            reasonSelect.value = [...reasonSelect.options].some(opt => opt.value === reasonValue)
+                ? reasonValue
+                : '';
 
             // Editable fields
             document.getElementById('editDateSeparated').value = cleanValue(employee.date_separated);
@@ -68,9 +123,11 @@ document.querySelectorAll('.clickable-row').forEach(row => {
 
             // Read-only fields
             document.getElementById('editLastUpdatedBy').value = cleanValue(employee.last_updated_by);
-            document.getElementById('editDateLastUpdated').value = employee.updated_at ? new Date(employee.updated_at).toISOString().split('T')[0] : '';
+            document.getElementById('editDateLastUpdated').value = employee.updated_at
+                ? new Date(employee.updated_at).toISOString().split('T')[0]
+                : '';
 
-            // Enable/disable fields
+            // Enable only editable fields
             const editable = [
                 'editEmploymentStatus',
                 'editReasonUpdate',
@@ -78,13 +135,18 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 'editDateReturn',
                 'editRemarks'
             ];
+
             modalEl.querySelectorAll('input, select, textarea').forEach(el => {
                 el.disabled = !editable.includes(el.id);
             });
 
             modal.show();
 
-        } catch(err) {
+            // IMPORTANT: sync toggle after loading data
+            toggleDateSeparated();
+            toggleDateReturned();
+
+        } catch (err) {
             console.error(err);
             Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load employee data' });
         }
@@ -97,19 +159,37 @@ async function sendAction(data, actionName = 'Save') {
     btns.forEach(b => b.disabled = true);
 
     try {
-        const res = await fetch('functions/update_promodizer.php', { method: 'POST', body: data });
+        const res = await fetch('functions/update_promodizer.php', {
+            method: 'POST',
+            body: data
+        });
+
         const result = await res.json();
 
-        if(result.status === 'success') {
-            await Swal.fire({ icon: 'success', title: `${actionName} Successful`, text: result.message });
+        if (result.status === 'success') {
+            await Swal.fire({
+                icon: 'success',
+                title: `${actionName} Successful`,
+                text: result.message
+            });
+
             bootstrap.Modal.getInstance(modalEl).hide();
             location.reload();
         } else {
-            Swal.fire({ icon: 'error', title: `${actionName} Failed`, text: result.message });
+            Swal.fire({
+                icon: 'error',
+                title: `${actionName} Failed`,
+                text: result.message
+            });
         }
-    } catch(err) {
+
+    } catch (err) {
         console.error(err);
-        Swal.fire({ icon: 'error', title: 'Error', text: 'An unexpected error occurred.' });
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An unexpected error occurred.'
+        });
     } finally {
         btns.forEach(b => b.disabled = false);
     }
@@ -127,8 +207,18 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
         confirmButtonColor: '#3085d6',
         reverseButtons: true
     });
-    if (!confirm.isConfirmed) return;
 
+    if (!confirm.isConfirmed) return;
+    const dateSeparated = document.getElementById('editDateSeparated');
+
+    if (dateSeparated.required && !dateSeparated.value) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Date Separated Required',
+            text: 'Please enter Date Separated for this status.'
+        });
+        return;
+    }
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
     formData.set('employment_status', document.getElementById('editEmploymentStatus').value);
@@ -138,6 +228,14 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     formData.set('last_updated_by', document.getElementById('editLastUpdatedBy').value);
     formData.set('date_last_updated', document.getElementById('editDateLastUpdated').value);
     formData.set('remarks', document.getElementById('editRemarks').value);
-
+    
     sendAction(formData, 'Save Changes');
+});
+
+// Init toggle listener
+document.addEventListener('DOMContentLoaded', function () {
+    if (reasonSelect) {
+        reasonSelect.addEventListener('change', toggleDateSeparated);
+        reasonSelect.addEventListener('change', toggleDateReturned);
+    }
 });
