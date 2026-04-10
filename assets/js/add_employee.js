@@ -160,11 +160,26 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Start / End date validation
         const startDateInput = form.querySelector('input[name="start_date"]');
         const endDateInput = form.querySelector('input[name="end_date"]');
-        if ((statusType === 'SEASONAL' || statusType === 'RELIEVER')) {
-            if (!startDateInput.value || !endDateInput.value) 
-                return Swal.fire('Missing Dates', 'Start and End dates are required.', 'warning');
-            if (new Date(startDateInput.value) > new Date(endDateInput.value)) 
-                return Swal.fire('Invalid Dates', 'End date must be after start date.', 'error');
+
+        // convert empty strings to null
+        const startDate = startDateInput.value ? startDateInput.value : null;
+        const endDate = endDateInput.value ? endDateInput.value : null;
+        if (statusType === 'SEASONAL' || statusType === 'RELIEVER') {
+            if (!startDate || !endDate) {
+                return Swal.fire(
+                    'Missing Dates',
+                    'Start and End dates are required.',
+                    'warning'
+                );
+            }
+
+            if (new Date(startDate) > new Date(endDate)) {
+                return Swal.fire(
+                    'Invalid Dates',
+                    'End date must be after start date.',
+                    'error'
+                );
+            }
         }
 
         // Gather all branches (main + roving)

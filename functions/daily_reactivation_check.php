@@ -19,7 +19,7 @@ if ($lastRun !== $today) {
 
     // run update
     autoReactivateEmployees();
-    autoDeactivateEmployees()
+    autoDeactivateEmployees();
 
     // update flag
     if ($lastRun === false) {
