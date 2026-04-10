@@ -5,44 +5,50 @@ $(document).ready(function() {
         dom: 'lrtip'
     });
 
-    table.column(3).search('^(?!TERMINATED$).*$', true, false).draw();
+    // =========================
+    // DEFAULT = ACTIVE only
+    // =========================
+    table.column(3).search('^ACTIVE$', true, false).draw();
+    $('#filterStatus').val('ACTIVE');
 
-    // Column indexes after removing ID column:
-    // 0 Name, 1 Branch, 2 Brand, 3 Status, 4 Assigned By, 5 Date
-
+    // Branch filter
     $('#filterBranch').on('change', function() {
         var val = this.value;
         table.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
     });
 
+    // Brand filter
     $('#filterBrand').on('change', function() {
         var val = this.value;
         table.column(2).search(val ? '^' + val + '$' : '', true, false).draw();
     });
-    
+
+    // =========================
+    // STATUS FILTER (FIXED)
+    // =========================
     $('#filterStatus').on('change', function() {
         var val = this.value;
 
-        if (val === '') {
-            // ✅ Back to default (exclude TERMINATED)
-            table.column(3).search('^(?!TERMINATED$).*$', true, false);
-        } else {
-            // ✅ Show only selected status
+        if (val === 'ACTIVE' || val === 'INACTIVE') {
             table.column(3).search('^' + val + '$', true, false);
+        } else {
+            // ALL → show everything INCLUDING inactive
+            table.column(3).search('');
         }
 
         table.draw();
     });
 
+    // Assigned By
     $('#filterAssignedBy').on('keyup', function() {
         table.column(4).search(this.value).draw();
     });
 
-    // DATE RANGE FILTER (custom)
+    // DATE FILTER
     $.fn.dataTable.ext.search.push(function(settings, data) {
         var from = $('#filterFrom').val();
         var to   = $('#filterTo').val();
-        var date = data[5]; // Assignment Date column
+        var date = data[5];
 
         if (!date) return true;
 
@@ -50,13 +56,8 @@ $(document).ready(function() {
         var fromDate = from ? new Date(from) : null;
         var toDate   = to ? new Date(to) : null;
 
-        if (
-            (!fromDate || rowDate >= fromDate) &&
-            (!toDate || rowDate <= toDate)
-        ) {
-            return true;
-        }
-        return false;
+        return (!fromDate || rowDate >= fromDate) &&
+               (!toDate || rowDate <= toDate);
     });
 
     $('#filterFrom, #filterTo').on('change', function() {
