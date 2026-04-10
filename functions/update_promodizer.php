@@ -52,7 +52,9 @@ $inactiveReasons = [
     'AWOL',
     'END OF CONTRACT',
     'BLACKLISTED',
-    'RETRENCHMENT'
+    'RETRENCHMENT',
+    'TRANSFER',
+    'MATERNITY LEAVE'
 ];
 
 if (in_array(strtoupper($reason_for_update), $inactiveReasons)) {

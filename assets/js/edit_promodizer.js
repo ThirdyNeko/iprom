@@ -209,26 +209,42 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     });
 
     if (!confirm.isConfirmed) return;
+
+    const reason = (document.getElementById('editReasonUpdate').value || '').toUpperCase();
+
     const dateSeparated = document.getElementById('editDateSeparated');
+    const dateReturned = document.getElementById('editDateReturn');
+
+    // =========================
+    // VALIDATION RULES
+    // =========================
 
     if (dateSeparated.required && !dateSeparated.value) {
-        Swal.fire({
+        return Swal.fire({
             icon: 'warning',
             title: 'Date Separated Required',
             text: 'Please enter Date Separated for this status.'
         });
-        return;
     }
+
+    if (reason === "MATERNITY LEAVE" && !dateReturned.value) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Date Returned Required',
+            text: 'Please enter Date Returned for maternity leave.'
+        });
+    }
+
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
     formData.set('employment_status', document.getElementById('editEmploymentStatus').value);
-    formData.set('reason_update', document.getElementById('editReasonUpdate').value);
-    formData.set('date_separated', document.getElementById('editDateSeparated').value);
-    formData.set('date_returned', document.getElementById('editDateReturn').value);
+    formData.set('reason_update', reason);
+    formData.set('date_separated', dateSeparated.value);
+    formData.set('date_returned', dateReturned.value);
     formData.set('last_updated_by', document.getElementById('editLastUpdatedBy').value);
     formData.set('date_last_updated', document.getElementById('editDateLastUpdated').value);
     formData.set('remarks', document.getElementById('editRemarks').value);
-    
+
     sendAction(formData, 'Save Changes');
 });
 
