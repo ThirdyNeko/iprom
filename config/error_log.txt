@@ -514,3 +514,5 @@
 [2026-04-08 11:12:35] Error [2]: foreach() argument must be of type array|object, string given in C:\xampp\htdocs\iprom\functions\add_employee.php on line 23
 [2026-04-08 11:13:27] Error [2]: foreach() argument must be of type array|object, string given in C:\xampp\htdocs\iprom\functions\add_employee.php on line 23
 [2026-04-08 11:14:59] Error [2]: foreach() argument must be of type array|object, string given in C:\xampp\htdocs\iprom\functions\add_employee.php on line 23
+[2026-04-10 09:01:22] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-10 09:01:25] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311

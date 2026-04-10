@@ -73,10 +73,9 @@ $(document).on('click', '#assignmentTable tbody tr', function () {
                     <li class="list-group-item d-flex justify-content-between align-items-center py-1">
                         <span>${emp.first_name} ${emp.last_name}</span>
                         <button 
-                            class="btn btn-sm btn-warning unassign-btn"
-                            data-id="${emp.id}"
-                            data-name="${emp.first_name} ${emp.last_name}">
-                            Unassign
+                            class="btn btn-sm btn-primary edit-btn"
+                            data-id="${emp.id}">
+                            Edit
                         </button>
                     </li>
                 `;
@@ -230,82 +229,62 @@ document.getElementById('saveRequiredBtn').addEventListener('click', async () =>
     }
 });
 
+// ✅ EDIT (reuse promodizer table row click)
+$(document).on('click', '.edit-btn', function (e) {
+    e.stopPropagation();
 
-// ✅ UNASSIGN
-$(document).on('click', '.unassign-btn', async function () {
+    const id = $(this).data('id');
 
-    const btn = $(this);
-    const id = btn.data('id');
-    const name = btn.data('name');
+    // ✅ close assignment modal first
+    const assignmentModalEl = document.getElementById('assignmentModal');
+    const assignmentModal = bootstrap.Modal.getInstance(assignmentModalEl);
+    if (assignmentModal) {
+        assignmentModal.hide();
+    }
 
-    const confirm = await Swal.fire({
-        icon: 'warning',
-        title: 'Unassign Employee?',
-        text: `Remove ${name}?`,
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Unassign',
-        reverseButtons: true
+    // ✅ try to find row in promodizer table
+    const row = $('#promodizerTable tbody tr').filter(function () {
+        return $(this).data('id') == id;
     });
 
-    if (!confirm.isConfirmed) return;
-
-    try {
-        const res = await fetch('functions/unassign_promodizer.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
-        });
-
-        const result = await res.json();
-
-        if (result.status === 'success') {
-
-            await Swal.fire({
-                icon: 'success',
-                title: 'Unassigned',
-                timer: 1200,
-                showConfirmButton: false
-            });
-
-            btn.closest('li').remove();
-
-            let modal = $('#assignmentModal');
-            let branch = modal.data('branch');
-            let brand  = modal.data('brand');
-
-            let row = $(`#assignmentTable tbody tr`).filter(function () {
-                return $(this).data('branch') === branch &&
-                       $(this).data('brand') === brand;
-            });
-
-            let assigned = (parseInt(row.data('assigned')) || 1) - 1;
-            row.data('assigned', assigned);
-
-            let required = parseInt(row.data('required')) || 0;
-
-            // ✅ update status
-            let status = getStatusBadge(required, assigned);
-            row.find('td').eq(4).html(status);
-
-            // ✅ update modal status live
-            $('#modalStatus').html(getStatusBadge(required, assigned));
-
-            window.assignmentTable.ajax.reload(null, false);
-
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Failed',
-                text: result.message || 'Unassign failed.'
-            });
-        }
-
-    } catch (err) {
-        console.error(err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Server error occurred.'
-        });
+    if (row.length) {
+        // ✅ best case: reuse existing logic
+        row.trigger('click');
+        return;
     }
+
+    // 🔥 fallback: fetch + open modal manually
+    console.warn('Row not found, using fallback fetch for ID:', id);
+
+    const modalEl = document.getElementById('editPromodizerModal');
+    const modal = new bootstrap.Modal(modalEl);
+
+    fetch(`functions/get_employee.php?id=${id}`)
+        .then(res => res.json())
+        .then(p => {
+
+            // ✅ populate using correct IDs
+            $('#editPromodizerId').val(p.id);
+            $('#editFirstName').val(p.first_name);
+            $('#editLastName').val(p.last_name);
+            $('#editBranch').val(p.branch);
+            $('#editBrand').val(p.brand);
+            $('#editDateHired').val(p.date_hired);
+            $('#editEmploymentStatus').val(p.employment_status);
+            $('#editStatus').val(p.status);
+            $('#editLastAssignedBy').val(p.last_assigned_by);
+            $('#editAssignmentDate').val(p.assignment_date);
+            $('#editLastUpdatedBy').val(p.last_updated_by);
+            $('#editDateLastUpdated').val(p.updated_at ? p.updated_at.split(' ')[0] : '');
+            $('#editRemarks').val(p.remarks);
+
+            // optional fields
+            $('#editDateSeparated').val(p.date_separated || '');
+            $('#editDateReturn').val(p.date_of_return || '');
+            $('#editReasonUpdate').val(p.reason_for_update || '');
+
+            // ✅ NOW show modal
+            const modal = new bootstrap.Modal(document.getElementById('editPromodizerModal'));
+            modal.show();
+        })
 });

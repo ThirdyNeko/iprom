@@ -107,7 +107,21 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 <script src="assets/js/assignments.js"></script>
 
 <?php include 'modals/assignment_modal.php'; ?>
+<?php include 'modals/edit_promodizer_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 <?php include 'modals/add_plantilla_modal.php'; ?>
+
+<div class="modal fade" id="editPromodizerModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-body" id="editPromodizerContent">
+        <div class="text-center py-3">
+          <div class="spinner-border text-primary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
