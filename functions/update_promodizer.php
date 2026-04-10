@@ -16,24 +16,32 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $id = $_POST['id'] ?? null;
 
 $status            = trim($_POST['status'] ?? 'ACTIVE');
+$employment_status = trim($_POST['employment_status'] ?? null);
 $reason_for_update = trim($_POST['reason_update'] ?? '');
-
-$date_separated = !empty($_POST['date_separated'])
-    ? $_POST['date_separated']
-    : null;
-
-$date_of_return = !empty($_POST['date_returned'])
-    ? $_POST['date_returned']
-    : null;
 
 $remarks = trim($_POST['remarks'] ?? '');
 
 $last_updated_by = $_SESSION['username'] ?? 'System';
-
-// OPTIONAL (not currently used in UI, but supported by SP)
 $last_assigned_by = $_POST['last_assigned_by'] ?? null;
-$start_date       = $_POST['start_date'] ?? null;
-$end_date         = $_POST['end_date'] ?? null;
+
+// =========================
+// DATE VALUES (SAFE)
+// =========================
+$start_date = (isset($_POST['start_date']) && $_POST['start_date'] !== '')
+    ? $_POST['start_date']
+    : null;
+
+$end_date = (isset($_POST['end_date']) && $_POST['end_date'] !== '')
+    ? $_POST['end_date']
+    : null;
+
+$date_separated = (isset($_POST['date_separated']) && $_POST['date_separated'] !== '')
+    ? $_POST['date_separated']
+    : null;
+
+$date_of_return = (isset($_POST['date_returned']) && $_POST['date_returned'] !== '')
+    ? $_POST['date_returned']
+    : null;
 
 // =========================
 // VALIDATION
@@ -44,7 +52,7 @@ if (!$id) {
 }
 
 // =========================
-// STATUS LOGIC (optional override safety)
+// STATUS AUTO RULE
 // =========================
 $inactiveReasons = [
     'RESIGNED',
@@ -62,13 +70,14 @@ if (in_array(strtoupper($reason_for_update), $inactiveReasons)) {
 }
 
 // =========================
-// EXECUTE STORED PROCEDURE
+// EXECUTE PROCEDURE
 // =========================
 try {
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
             @status = :status,
+            @employment_status = :employment_status,
             @reason_for_update = :reason_for_update,
             @start_date = :start_date,
             @end_date = :end_date,
@@ -82,6 +91,7 @@ try {
     $stmt->execute([
         ':id'                => $id,
         ':status'            => $status,
+        ':employment_status' => $employment_status,
         ':reason_for_update' => $reason_for_update,
         ':start_date'        => $start_date,
         ':end_date'          => $end_date,
@@ -95,14 +105,14 @@ try {
     $updated = $stmt->fetch(PDO::FETCH_ASSOC);
 
     echo json_encode([
-        'status'  => 'success',
+        'status' => 'success',
         'message' => 'Employee updated successfully',
-        'data'    => $updated
+        'data' => $updated
     ]);
 
 } catch (Exception $e) {
     echo json_encode([
-        'status'  => 'danger',
-        'message' => 'Error: ' . $e->getMessage()
+        'status' => 'danger',
+        'message' => $e->getMessage()
     ]);
 }
