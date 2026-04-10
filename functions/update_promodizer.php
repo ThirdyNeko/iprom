@@ -51,9 +51,9 @@ if (!$id) {
     exit;
 }
 
-// =========================
-// STATUS AUTO RULE
-// =========================
+$dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
+$today = strtotime(date('Y-m-d'));
+
 $inactiveReasons = [
     'RESIGNED',
     'PULL-OUT / TERMINATED',
@@ -65,8 +65,27 @@ $inactiveReasons = [
     'MATERNITY LEAVE'
 ];
 
-if (in_array(strtoupper($reason_for_update), $inactiveReasons)) {
-    $status = 'INACTIVE';
+$isInactiveReason = in_array(strtoupper($reason_for_update), $inactiveReasons);
+
+// =========================
+// NEW RULE: DELAY INACTIVATION UNTIL DATE_SEPARATED
+// =========================
+if ($isInactiveReason) {
+
+    // If no separation date → allow immediate INACTIVE
+    if (!$dateSeparatedValue) {
+        $status = 'INACTIVE';
+    }
+
+    // If separation date exists → only inactivate if date has arrived
+    else if ($dateSeparatedValue <= $today) {
+        $status = 'INACTIVE';
+    }
+
+    // Otherwise keep ACTIVE until separation date
+    else {
+        $status = 'ACTIVE';
+    }
 }
 
 // =========================

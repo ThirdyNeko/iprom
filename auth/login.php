@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../config/db.php';
+require_once '../functions/daily_reactivation_check.php';
 
 $error = '';
 $pdo = qa_db();

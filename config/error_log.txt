@@ -519,3 +519,8 @@
 [2026-04-10 11:10:57] Error [2]: Undefined variable $employment_status in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 86
 [2026-04-10 11:11:08] Error [2]: Undefined variable $employment_status in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 86
 [2026-04-10 11:11:14] Error [2]: Undefined variable $employment_status in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 86
+[2026-04-10 13:11:12] Error [2]: require_once(auto_reactivate.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\functions\daily_reactivation_check.php on line 3
+[2026-04-10 13:11:12] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-10 13:11:17] Error [2]: require_once(auto_reactivate.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\functions\daily_reactivation_check.php on line 3
+[2026-04-10 13:11:17] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-10 13:11:38] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
