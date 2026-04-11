@@ -16,6 +16,7 @@ $branch     = $_POST['branch'] ?: null;
 $brand      = $_POST['brand'] ?: null;
 $status     = $_POST['status'] ?: null;
 $employment_status = $_POST['employment_status'] ?? null;
+$sub_status = $_POST['sub_status'] ?? null; // ✅ NEW
 $remarks    = $_POST['remarks'] ?? null;
 $date_hired = $_POST['date_hired'] ?? null;
 $start_date = $_POST['start_date'] ?? null;
@@ -28,11 +29,11 @@ $roving_branches = $_POST['roving_branches'] ?? [];
 $roving_branches = array_unique(array_filter($roving_branches, fn($b) => $b !== $branch));
 
 // =========================
-// ROVING GROUP ID (NEW)
+// ROVING GROUP ID
 // =========================
 $roving_group_id = null;
 
-if ($employment_status === 'ROVING') {
+if ($sub_status === 'MULTI BRANCH') { // ✅ FIXED
     $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100, 999);
 }
 
@@ -51,6 +52,7 @@ try {
                 @status = :status,
                 @assigned_by = :assigned_by,
                 @employment_status = :employment_status,
+                @sub_status = :sub_status,
                 @roving_group_id = :roving_group_id,
                 @remarks = :remarks,
                 @date_hired = :date_hired,
@@ -66,6 +68,7 @@ try {
             ':status'            => $status,
             ':assigned_by'       => $assigned_by,
             ':employment_status' => $employment_status,
+            ':sub_status'        => $sub_status, // ✅ NEW
             ':roving_group_id'   => $roving_group_id,
             ':remarks'           => $remarks,
             ':date_hired'        => $date_hired,
@@ -87,6 +90,7 @@ try {
                 @status = :status,
                 @assigned_by = :assigned_by,
                 @employment_status = :employment_status,
+                @sub_status = :sub_status,
                 @roving_group_id = :roving_group_id,
                 @remarks = :remarks,
                 @date_hired = :date_hired,
@@ -102,6 +106,7 @@ try {
             ':status'            => $status,
             ':assigned_by'       => $assigned_by,
             ':employment_status' => $employment_status,
+            ':sub_status'        => $sub_status,
             ':roving_group_id'   => $roving_group_id,
             ':remarks'           => $remarks,
             ':date_hired'        => $date_hired,

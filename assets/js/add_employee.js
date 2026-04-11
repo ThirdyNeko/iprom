@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const rovingContainer = document.getElementById('rovingContainer');
     const remarks = form.querySelector('textarea[name="remarks"]');
     const remarksCount = document.getElementById('remarksCount');
+    const subStatus = document.getElementById('subStatus');
 
     const mainBranchSelect = form.querySelector('select[name="branch"]');
     const mainBrandSelect = form.querySelector('select[name="brand"]');
@@ -38,18 +39,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Toggle fields based on Employment Status
     // =========================
     employmentStatus.addEventListener('change', toggleFields);
+    subStatus.addEventListener('change', toggleFields);
+
     function toggleFields() {
-        const value = employmentStatus.value;
+        const empStatus = employmentStatus.value;
+        const sub = subStatus.value;
+
+        // Reset
         dateRangeFields.classList.add('d-none');
         rovingField.classList.add('d-none');
 
         dateRangeFields.querySelectorAll('input').forEach(i => i.required = false);
         rovingField.querySelectorAll('.roving-select').forEach(s => s.required = false);
 
-        if (value === 'SEASONAL' || value === 'RELIEVER') {
+        // Show date range for seasonal/reliever
+        if (empStatus === 'SEASONAL' || empStatus === 'RELIEVER') {
             dateRangeFields.classList.remove('d-none');
             dateRangeFields.querySelectorAll('input').forEach(i => i.required = true);
-        } else if (value === 'ROVING') {
+        }
+
+        // ✅ NEW: Show roving when MULTI BRANCH
+        if (sub === 'MULTI BRANCH') {
             rovingField.classList.remove('d-none');
             rovingField.querySelectorAll('.roving-select').forEach(s => s.required = true);
         }
@@ -156,6 +166,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const branch = mainBranchSelect.value;
         const brand = mainBrandSelect.value;
         const statusType = employmentStatus.value;
+        const sub = subStatus.value;
 
         // Start / End date validation
         const startDateInput = form.querySelector('input[name="start_date"]');
@@ -184,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Gather all branches (main + roving)
         let branchesToCheck = branch ? [branch] : [];
-        if (statusType === 'ROVING') {
+        if (sub === 'MULTI BRANCH') {
             const rovingBranches = Array.from(rovingContainer.querySelectorAll('.roving-select')).map(s => s.value);
             if(rovingBranches.includes('') || new Set(rovingBranches).size !== rovingBranches.length) {
                 const msg = rovingBranches.includes('') ? 'Please select all roving branches.' : 'Duplicate branches are not allowed.';
@@ -220,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             btn.disabled = true;
 
-            const status = (statusType === 'ROVING' || (branch && brand)) ? 'ACTIVE' : 'INACTIVE';
+            const status = (sub === 'MULTI BRANCH' || (branch && brand)) ? 'ACTIVE' : 'INACTIVE';
             formData.set('status', status);
             formData.set('employment_status', statusType);
             formData.set('assigned_by', window.currentUser || 'SYSTEM');
