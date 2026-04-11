@@ -170,8 +170,7 @@ document.getElementById('saveRequiredBtn').addEventListener('click', async () =>
         title: 'Update Required?',
         text: `Change required count for ${branch} - ${brand}?`,
         showCancelButton: true,
-        confirmButtonText: 'Yes, Update',
-        reverseButtons: true
+        confirmButtonText: 'Yes, Update'
     });
 
     if (!confirm.isConfirmed) return;

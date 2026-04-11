@@ -294,8 +294,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             showCancelButton: true,
             confirmButtonText: 'Yes, Save',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#d33',
-            reverseButtons: true
+            confirmButtonColor: '#d33'
         });
         if(!confirm.isConfirmed) return;
 

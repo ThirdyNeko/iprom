@@ -204,8 +204,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
         showCancelButton: true,
         confirmButtonText: 'Yes, Save Changes',
         cancelButtonText: 'Cancel',
-        confirmButtonColor: '#3085d6',
-        reverseButtons: true
+        confirmButtonColor: '#3085d6'
     });
 
     if (!confirm.isConfirmed) return;

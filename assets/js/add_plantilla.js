@@ -59,8 +59,7 @@ form.addEventListener('submit', async e => {
             showCancelButton: true,
             confirmButtonText: 'Yes, Add',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#28a745',
-            reverseButtons: true
+            confirmButtonColor: '#28a745'
         });
         if (!confirm.isConfirmed) return btn.disabled = false;
 
