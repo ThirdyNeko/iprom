@@ -167,6 +167,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         const brand = mainBrandSelect.value;
         const statusType = employmentStatus.value;
         const sub = subStatus.value;
+        const dateHiredInput = form.querySelector('input[name="date_hired"]');
+
+        // Set max = today
+        const today = new Date().toISOString().split('T')[0];
+        dateHiredInput.setAttribute('max', today);
 
         // Start / End date validation
         const startDateInput = form.querySelector('input[name="start_date"]');
@@ -188,6 +193,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return Swal.fire(
                     'Invalid Dates',
                     'End date must be after start date.',
+                    'error'
+                );
+            }
+        }
+
+        const dateHiredValue = dateHiredInput.value;
+
+        if (dateHiredValue) {
+            const today = new Date().toISOString().split('T')[0];
+
+            if (dateHiredValue > today) {
+                return Swal.fire(
+                    'Invalid Date Hired',
+                    'Date hired cannot be in the future.',
                     'error'
                 );
             }

@@ -37,6 +37,14 @@ if ($sub_status === 'MULTI BRANCH') { // ✅ FIXED
     $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100, 999);
 }
 
+if ($date_hired && $date_hired > date('Y-m-d')) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Date hired cannot be in the future.'
+    ]);
+    exit;
+}
+
 try {
 
     // =========================
