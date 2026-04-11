@@ -113,7 +113,13 @@ $branch_brand_pairs = $pdo->query("
                                     <option value="PERMANENT">Permanent</option>
                                     <option value="SEASONAL">Seasonal</option>
                                     <option value="RELIEVER">Reliever</option>
-                                    <option value="ROVING">Roving</option>
+                                </select>
+                                <label class="form-label">S</label>
+                                <select name="employment_status" id="employmentStatus" class="form-select" required>
+                                    <option value="" disabled selected>Select Status</option>
+                                    <option value="SINGLE">SINGLE</option>
+                                    <option value="MULTI BRAND">MULTI BRAND</option>
+                                    <option value="MULTI BRANCH">MULTI BRANCH</option>
                                 </select>
                             </div>
 

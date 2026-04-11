@@ -18,8 +18,9 @@ $lastRun = $stmt->fetchColumn();
 if ($lastRun !== $today) {
 
     // run update
-    autoReactivateEmployees();
     autoDeactivateEmployees();
+    autoReactivateEmployees();
+
 
     // update flag
     if ($lastRun === false) {
