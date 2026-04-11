@@ -35,7 +35,6 @@
                                     <option value="PERMANENT">PERMANENT</option>
                                     <option value="SEASONAL">SEASONAL</option>
                                     <option value="RELIEVER">RELIEVER</option>
-                                    <option value="ROVING">ROVING</option>
                                 </select>
                             </td>
                         </tr>
