@@ -37,6 +37,21 @@ if ($sub_status === 'MULTI BRANCH') { // ✅ FIXED
     $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100, 999);
 }
 
+// =========================
+// MULTI BRANDS
+// =========================
+$multi_brands = $_POST['multi_brands'] ?? [];
+$multi_brands = array_unique(array_filter($multi_brands, fn($b) => $b !== $brand));
+
+// =========================
+// MULTI BRAND GROUP ID
+// =========================
+$multi_brand_group_id = null;
+
+if ($sub_status === 'MULTI BRAND') {
+    $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100, 999);
+}
+
 if ($date_hired && $date_hired > date('Y-m-d')) {
     echo json_encode([
         'status' => 'error',
@@ -62,6 +77,7 @@ try {
                 @employment_status = :employment_status,
                 @sub_status = :sub_status,
                 @roving_group_id = :roving_group_id,
+                @multi_brand_group_id = :multi_brand_group_id,
                 @remarks = :remarks,
                 @date_hired = :date_hired,
                 @start_date = :start_date,
@@ -78,6 +94,7 @@ try {
             ':employment_status' => $employment_status,
             ':sub_status'        => $sub_status, // ✅ NEW
             ':roving_group_id'   => $roving_group_id,
+            ':multi_brand_group_id' => $multi_brand_group_id,
             ':remarks'           => $remarks,
             ':date_hired'        => $date_hired,
             ':start_date'        => $start_date,
@@ -123,10 +140,49 @@ try {
         ]);
     }
 
+    // =========================
+    // MULTI BRAND INSERTS
+    // =========================
+    foreach ($multi_brands as $mBrand) {
+        $stmt = $pdo->prepare("
+            EXEC add_employee
+                @first_name = :first_name,
+                @last_name = :last_name,
+                @branch = :branch,
+                @brand = :brand,
+                @status = :status,
+                @assigned_by = :assigned_by,
+                @employment_status = :employment_status,
+                @sub_status = :sub_status,
+                @multi_brand_group_id = :multi_brand_group_id,
+                @remarks = :remarks,
+                @date_hired = :date_hired,
+                @start_date = :start_date,
+                @end_date = :end_date
+        ");
+
+        $stmt->execute([
+            ':first_name'        => $first_name,
+            ':last_name'         => $last_name,
+            ':branch'            => $branch,
+            ':brand'             => $mBrand,
+            ':status'            => $status,
+            ':assigned_by'       => $assigned_by,
+            ':employment_status' => $employment_status,
+            ':sub_status'        => $sub_status,
+            ':multi_brand_group_id' => $multi_brand_group_id,
+            ':remarks'           => $remarks,
+            ':date_hired'        => $date_hired,
+            ':start_date'        => $start_date,
+            ':end_date'          => $end_date
+        ]);
+    }
+
     echo json_encode([
-        'status'  => 'success',
+        'status' => 'success',
         'message' => 'Employee added successfully!',
-        'roving_group_id' => $roving_group_id
+        'roving_group_id' => $roving_group_id,
+        'multi_brand_group_id' => $multi_brand_group_id
     ]);
 
 } catch (PDOException $e) {

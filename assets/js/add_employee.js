@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const mainBranchSelect = form.querySelector('select[name="branch"]');
     const mainBrandSelect = form.querySelector('select[name="brand"]');
 
+    const multiBrandField = document.getElementById('multiBrandField');
+    const multiBrandContainer = document.getElementById('multiBrandContainer');
+
     // =========================
     // Fetch branch-brand availability mapping
     // =========================
@@ -44,6 +47,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     function toggleFields() {
         const empStatus = employmentStatus.value;
         const sub = subStatus.value;
+        multiBrandField.classList.add('d-none');
+        multiBrandField.querySelectorAll('.multi-brand-select').forEach(s => s.required = false);
 
         // Reset
         dateRangeFields.classList.add('d-none');
@@ -63,6 +68,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             rovingField.classList.remove('d-none');
             rovingField.querySelectorAll('.roving-select').forEach(s => s.required = true);
         }
+        if (sub === 'MULTI BRAND') {
+            multiBrandField.classList.remove('d-none');
+            multiBrandField.querySelectorAll('.multi-brand-select').forEach(s => s.required = true);
+        }
     }
 
     // =========================
@@ -81,6 +90,23 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         if (e.target.classList.contains('remove-branch')) {
             const rows = rovingContainer.querySelectorAll('.roving-row');
+            if (rows.length > 1) row.remove();
+            else row.querySelector('select').value = '';
+        }
+    });
+
+    multiBrandContainer.addEventListener('click', function(e) {
+        const row = e.target.closest('.multi-brand-row');
+        if (!row) return;
+
+        if (e.target.classList.contains('add-brand')) {
+            const clone = row.cloneNode(true);
+            clone.querySelector('select').value = '';
+            multiBrandContainer.appendChild(clone);
+        }
+
+        if (e.target.classList.contains('remove-brand')) {
+            const rows = multiBrandContainer.querySelectorAll('.multi-brand-row');
             if (rows.length > 1) row.remove();
             else row.querySelector('select').value = '';
         }
@@ -224,7 +250,33 @@ document.addEventListener('DOMContentLoaded', async function() {
             branchesToCheck.push(...rovingBranches);
         }
 
+        let multiBrands = [];
+
+        if (sub === 'MULTI BRAND') {
+            multiBrands = Array.from(
+                multiBrandContainer.querySelectorAll('.multi-brand-select')
+            ).map(s => s.value);
+
+            if (multiBrands.includes('') || new Set(multiBrands).size !== multiBrands.length) {
+                const msg = multiBrands.includes('')
+                    ? 'Please select all brands.'
+                    : 'Duplicate brands are not allowed.';
+                return Swal.fire('Multi Brand Error', msg, 'error');
+            }
+
+            multiBrands.forEach(b => formData.append('multi_brands[]', b));
+        }
+
         branchesToCheck = [...new Set(branchesToCheck)];
+
+        if (sub === 'MULTI BRAND') {
+            for (let b of multiBrands) {
+                const combo = branchBrandPairs.find(p => p.branch_name === branch && p.brand_name === b);
+                if (!combo || combo.assigned_count >= combo.required_count) {
+                    return Swal.fire('Cannot Save', `Invalid: ${branch} & ${b}`, 'error');
+                }
+            }
+        }
 
         // Client-side check: prevent saving full branch/brand combos
         for (let b of branchesToCheck) {
@@ -250,7 +302,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             btn.disabled = true;
 
-            const status = (sub === 'MULTI BRANCH' || (branch && brand)) ? 'ACTIVE' : 'INACTIVE';
+            const status = (
+                sub === 'MULTI BRANCH' || 
+                sub === 'MULTI BRAND' || 
+                (branch && brand)
+            ) ? 'ACTIVE' : 'INACTIVE';
             formData.set('status', status);
             formData.set('employment_status', statusType);
             formData.set('assigned_by', window.currentUser || 'SYSTEM');

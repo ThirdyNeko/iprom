@@ -87,6 +87,21 @@ $branch_brand_pairs = $pdo->query("
                                     </div>
                                 </div>
                             </div>
+                            <div id="multiBrandField" class="mb-3 d-none">
+                                <label class="form-label">Multiple Brands</label>
+                                <div id="multiBrandContainer">
+                                    <div class="input-group mb-2 multi-brand-row">
+                                        <select name="multi_brands[]" class="form-select multi-brand-select" required>
+                                            <option value="" disabled selected>Select Brand</option>
+                                            <?php foreach($brands as $brand): ?>
+                                                <option value="<?= htmlspecialchars($brand) ?>"><?= htmlspecialchars($brand) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button type="button" class="btn btn-success add-brand">+</button>
+                                        <button type="button" class="btn btn-danger remove-brand">−</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- RIGHT COLUMN -->
