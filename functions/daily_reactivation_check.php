@@ -18,6 +18,8 @@ $lastRun = $stmt->fetchColumn();
 if ($lastRun !== $today) {
 
     // run update
+    autoDeactivateSeasonal();
+    autoActivateSeasonal();
     autoDeactivateEmployees();
     autoReactivateEmployees();
 

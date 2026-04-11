@@ -301,15 +301,28 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         try {
             btn.disabled = true;
-
-            const status = (
-                sub === 'MULTI BRANCH' || 
-                sub === 'MULTI BRAND' || 
+            
+            let status = (
+                sub === 'MULTI BRANCH' ||
+                sub === 'MULTI BRAND' ||
                 (branch && brand)
             ) ? 'ACTIVE' : 'INACTIVE';
+
+            // =========================
+            // SEASONAL / RELIEVER RULE
+            // =========================
+            if ((statusType === 'SEASONAL' || statusType === 'RELIEVER') && startDateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+
+                if (today < startDateInput.value) {
+                    status = 'INACTIVE';
+                }
+            }
+
             formData.set('status', status);
             formData.set('employment_status', statusType);
             formData.set('assigned_by', window.currentUser || 'SYSTEM');
+            formData.set('updated_by', window.currentUser || 'SYSTEM');
 
             const res = await fetch('functions/add_employee.php', { method: 'POST', body: formData });
             const data = await res.json();
