@@ -76,7 +76,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             <div class="card-body">
                 <div class="row g-2">
 
-                    <div class="col-md-2">
+                    <div class="col">
                         <label class="form-label">Branch</label>
                         <select id="filterBranch" class="form-select">
                             <option value="">All</option>
@@ -86,7 +86,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col">
                         <label class="form-label">Brand</label>
                         <select id="filterBrand" class="form-select">
                             <option value="">All</option>
@@ -96,7 +96,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col">
                         <label class="form-label">Status</label>
                         <select id="filterStatus" class="form-select">
                             <option value="">All</option>
@@ -105,17 +105,37 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col">
+                        <label class="form-label">Employment Status</label>
+                        <select id="filterEmploymentStatus" class="form-select">
+                            <option value="">All</option>
+                            <option value="PERMANENT">PERMANENT</option>
+                            <option value="SEASONAL">SEASONAL</option>
+                            <option value="RELIEVER">RELIEVER</option>
+                        </select>
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Sub Status</label>
+                        <select id="filterSubStatus" class="form-select">
+                            <option value="">All</option>
+                            <option value="SINGLE">SINGLE</option>
+                            <option value="MULTI BRANCH">MULTI BRANCH</option>
+                            <option value="MULTI BRAND">MULTI BRAND</option>
+                        </select>
+                    </div>
+
+                    <div class="col">
                         <label class="form-label">Assigned By</label>
                         <input type="text" id="filterAssignedBy" class="form-control" placeholder="Search...">
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col">
                         <label class="form-label">From</label>
                         <input type="date" id="filterFrom" class="form-control">
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col">
                         <label class="form-label">To</label>
                         <input type="date" id="filterTo" class="form-control">
                     </div>
@@ -131,6 +151,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Branch</th>
                                 <th>Brand</th>
                                 <th>Status</th>
+                                <th>Employment Status</th> <!-- NEW -->
+                                <th>Sub Status</th> <!-- NEW -->
                                 <th>Last Assigned By</th>
                                 <th>Assignment Date</th>
                             </tr>
@@ -141,10 +163,16 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                     data-id="<?= $p['id'] ?>" 
                                     data-branch="<?= htmlspecialchars($p['branch']) ?>" 
                                     data-brand="<?= htmlspecialchars($p['brand']) ?>">
+                                    
                                     <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></td>
                                     <td><?= htmlspecialchars($p['branch'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars($p['brand'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars($p['status'] ?? '-') ?></td>
+
+                                    <!-- NEW -->
+                                    <td><?= htmlspecialchars($p['employment_status'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($p['sub_status'] ?? '-') ?></td>
+
                                     <td><?= htmlspecialchars($p['last_assigned_by'] ?? '-') ?></td>
                                     <td><?= $p['assignment_date'] ? date('Y-m-d', strtotime($p['assignment_date'])) : '-' ?></td>
                                 </tr>

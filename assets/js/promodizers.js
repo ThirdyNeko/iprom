@@ -24,7 +24,7 @@ $(document).ready(function() {
     });
 
     // =========================
-    // STATUS FILTER (FIXED)
+    // STATUS FILTER
     // =========================
     $('#filterStatus').on('change', function() {
         var val = this.value;
@@ -32,23 +32,26 @@ $(document).ready(function() {
         if (val === 'ACTIVE' || val === 'INACTIVE') {
             table.column(3).search('^' + val + '$', true, false);
         } else {
-            // ALL → show everything INCLUDING inactive
             table.column(3).search('');
         }
 
         table.draw();
     });
 
-    // Assigned By
+    // =========================
+    // Assigned By (UPDATED INDEX)
+    // =========================
     $('#filterAssignedBy').on('keyup', function() {
-        table.column(4).search(this.value).draw();
+        table.column(6).search(this.value).draw(); // was 4 → now 6
     });
 
-    // DATE FILTER
+    // =========================
+    // DATE FILTER (UPDATED INDEX)
+    // =========================
     $.fn.dataTable.ext.search.push(function(settings, data) {
         var from = $('#filterFrom').val();
         var to   = $('#filterTo').val();
-        var date = data[5];
+        var date = data[7]; // was 5 → now 7
 
         if (!date) return true;
 
@@ -63,4 +66,24 @@ $(document).ready(function() {
     $('#filterFrom, #filterTo').on('change', function() {
         table.draw();
     });
+
+    // =========================
+    // EMPLOYMENT STATUS FILTER
+    // =========================
+    $('#filterEmploymentStatus').on('change', function() {
+        var val = this.value;
+        table.column(4).search(val ? '^' + escapeRegex(val) + '$' : '', true, false).draw();
+    });
+
+    // =========================
+    // SUB STATUS FILTER
+    // =========================
+    $('#filterSubStatus').on('change', function() {
+        var val = this.value;
+        table.column(5).search(val ? '^' + escapeRegex(val) + '$' : '', true, false).draw();
+    });
+
+    function escapeRegex(val) {
+        return val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
 });
