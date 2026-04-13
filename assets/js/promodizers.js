@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
     var table = $('#promodizerTable').DataTable({
         pageLength: 10,
         responsive: true,
@@ -6,25 +7,7 @@ $(document).ready(function() {
     });
 
     // =========================
-    // DEFAULT = ACTIVE only
-    // =========================
-    table.column(3).search('^ACTIVE$', true, false).draw();
-    $('#filterStatus').val('ACTIVE');
-
-    // Branch filter
-    $('#filterBranch').on('change', function() {
-        var val = this.value;
-        table.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
-    });
-
-    // Brand filter
-    $('#filterBrand').on('change', function() {
-        var val = this.value;
-        table.column(2).search(val ? '^' + val + '$' : '', true, false).draw();
-    });
-
-    // =========================
-    // STATUS FILTER
+    // STATUS FILTER HANDLER FIRST
     // =========================
     $('#filterStatus').on('change', function() {
         var val = this.value;
@@ -39,19 +22,44 @@ $(document).ready(function() {
     });
 
     // =========================
-    // Assigned By (UPDATED INDEX)
+    // DEFAULT = ACTIVE
     // =========================
-    $('#filterAssignedBy').on('keyup', function() {
-        table.column(6).search(this.value).draw(); // was 4 → now 6
-    });
+    $('#filterStatus').val('ACTIVE').trigger('change');
 
     // =========================
-    // DATE FILTER (UPDATED INDEX)
+    // URL PARAM SUPPORT
     // =========================
+    const params = new URLSearchParams(window.location.search);
+    const statusParam = params.get('status');
+
+    if (statusParam) {
+        $('#filterStatus')
+            .val(statusParam.toUpperCase())
+            .trigger('change');
+    }
+
+    // Branch filter
+    $('#filterBranch').on('change', function() {
+        var val = this.value;
+        table.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+
+    // Brand filter
+    $('#filterBrand').on('change', function() {
+        var val = this.value;
+        table.column(2).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+
+    // Assigned By
+    $('#filterAssignedBy').on('keyup', function() {
+        table.column(6).search(this.value).draw();
+    });
+
+    // DATE FILTER
     $.fn.dataTable.ext.search.push(function(settings, data) {
         var from = $('#filterFrom').val();
         var to   = $('#filterTo').val();
-        var date = data[7]; // was 5 → now 7
+        var date = data[7];
 
         if (!date) return true;
 
@@ -67,17 +75,13 @@ $(document).ready(function() {
         table.draw();
     });
 
-    // =========================
-    // EMPLOYMENT STATUS FILTER
-    // =========================
+    // Employment Status
     $('#filterEmploymentStatus').on('change', function() {
         var val = this.value;
         table.column(4).search(val ? '^' + escapeRegex(val) + '$' : '', true, false).draw();
     });
 
-    // =========================
-    // SUB STATUS FILTER
-    // =========================
+    // Sub Status
     $('#filterSubStatus').on('change', function() {
         var val = this.value;
         table.column(5).search(val ? '^' + escapeRegex(val) + '$' : '', true, false).draw();
