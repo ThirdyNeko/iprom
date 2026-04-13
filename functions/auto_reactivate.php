@@ -49,17 +49,33 @@ function autoReactivateEmployees()
         if (!$row) continue;
 
         // 4. Only remove reliever if FULL
+        // Only remove if FULL or OVER
         if ((int)$row['assigned_count'] >= (int)$row['required_count']) {
 
             $remove = $pdo->prepare("
+                WITH Ranked AS (
+                    SELECT TOP 1 id
+                    FROM employee_info
+                    WHERE branch = :branch
+                    AND brand = :brand
+                    AND employment_status IN ('RELIEVER', 'SEASONAL')
+                    AND status = 'ACTIVE'
+                    ORDER BY 
+                        CASE 
+                            WHEN end_date IS NOT NULL AND end_date <= GETDATE() THEN 0
+                            ELSE 1
+                        END,
+                        CASE 
+                            WHEN end_date IS NULL THEN 999999
+                            ELSE ABS(DATEDIFF(DAY, end_date, GETDATE()))
+                        END,
+                        id ASC
+                )
                 UPDATE employee_info
                 SET status = 'INACTIVE',
                     last_updated_by = 'SYSTEM',
                     updated_at = GETDATE()
-                WHERE branch = :branch
-                  AND brand = :brand
-                  AND employment_status IN ('RELIEVER', 'SEASONAL')
-                  AND status = 'ACTIVE'
+                WHERE id = (SELECT id FROM Ranked);
             ");
 
             $remove->execute([
