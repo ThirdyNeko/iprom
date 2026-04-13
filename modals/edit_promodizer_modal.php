@@ -26,15 +26,23 @@
                             <td><input type="text" id="editBrand" class="form-control" readonly></td>
                         </tr>
                         <tr>
-                            <th>Date Hired</th>
-                            <td><input type="text" id="editDateHired" class="form-control" readonly></td>
                             <th>Employment Status</th>
-                            <td colspan="3">
+                            <td>
                                 <select id="editEmploymentStatus" class="form-select">
                                     <option value="">-- Select Status --</option>
                                     <option value="PERMANENT">PERMANENT</option>
                                     <option value="SEASONAL">SEASONAL</option>
                                     <option value="RELIEVER">RELIEVER</option>
+                                </select>
+                            </td>
+
+                            <th>Sub Status</th>
+                            <td>
+                                <select id="editSubStatus" class="form-select">
+                                    <option value="">-- Select Sub Status --</option>
+                                    <option value="STATIONARY">STATIONARY</option>
+                                    <option value="MULTI BRANCH">MULTI BRANCH</option>
+                                    <option value="MULTI BRAND">MULTI BRAND</option>
                                 </select>
                             </td>
                         </tr>
