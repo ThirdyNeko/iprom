@@ -5,7 +5,8 @@ function autoReactivateEmployees()
 {
     $pdo = qa_db();
 
-    $stmt = $pdo->prepare("
+    // 1. Reactivate returning employees
+    $stmt1 = $pdo->prepare("
         UPDATE employee_info
         SET status = 'ACTIVE',
             last_updated_by = 'SYSTEM',
@@ -15,8 +16,58 @@ function autoReactivateEmployees()
           AND CAST(date_of_return AS DATE) <= CAST(GETDATE() AS DATE)
           AND status = 'INACTIVE'
     ");
+    $stmt1->execute();
 
-    $stmt->execute();
+    // 2. Get affected assignments
+    $stmt2 = $pdo->prepare("
+        SELECT DISTINCT branch, brand
+        FROM employee_info
+        WHERE reason_for_update = 'MATERNITY LEAVE'
+          AND date_of_return IS NOT NULL
+          AND CAST(date_of_return AS DATE) <= CAST(GETDATE() AS DATE)
+    ");
+    $stmt2->execute();
+    $assignments = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($assignments as $a) {
+
+        // 3. Check assignment capacity
+        $check = $pdo->prepare("
+            SELECT assigned_count, required_count
+            FROM assignment
+            WHERE branch_name = :branch
+              AND brand_name = :brand
+        ");
+
+        $check->execute([
+            ':branch' => $a['branch'],
+            ':brand'  => $a['brand']
+        ]);
+
+        $row = $check->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) continue;
+
+        // 4. Only remove reliever if FULL
+        if ((int)$row['assigned_count'] >= (int)$row['required_count']) {
+
+            $remove = $pdo->prepare("
+                UPDATE employee_info
+                SET status = 'INACTIVE',
+                    last_updated_by = 'SYSTEM',
+                    updated_at = GETDATE()
+                WHERE branch = :branch
+                  AND brand = :brand
+                  AND employment_status = 'RELIEVER'
+                  AND status = 'ACTIVE'
+            ");
+
+            $remove->execute([
+                ':branch' => $a['branch'],
+                ':brand'  => $a['brand']
+            ]);
+        }
+    }
 }
 
 function autoDeactivateEmployees()
