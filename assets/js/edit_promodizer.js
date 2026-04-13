@@ -16,6 +16,36 @@ const dateSeparatedInput = document.getElementById('editDateSeparated');
 
 const dateReturnedRow = document.getElementById('rowDateReturned');
 const dateReturnedInput = document.getElementById('editDateReturn');
+const employmentStatusSelect = document.getElementById('editEmploymentStatus');
+
+const startDateRow = document.getElementById('rowStartDate');
+const startDateInput = document.getElementById('editStartDate');
+
+const endDateRow = document.getElementById('rowEndDate');
+const endDateInput = document.getElementById('editEndDate');
+
+function toggleEmploymentDates() {
+    if (!employmentStatusSelect) return;
+
+    const value = (employmentStatusSelect.value || '').trim().toUpperCase();
+
+    const shouldShow = value === "RELIEVER" || value === "SEASONAL";
+
+    if (startDateRow) startDateRow.style.display = shouldShow ? "" : "none";
+    if (endDateRow) endDateRow.style.display = shouldShow ? "" : "none";
+
+    if (startDateInput) {
+        startDateInput.disabled = !shouldShow;
+        startDateInput.required = shouldShow;
+        if (!shouldShow) startDateInput.value = '';
+    }
+
+    if (endDateInput) {
+        endDateInput.disabled = !shouldShow;
+        endDateInput.required = shouldShow;
+        if (!shouldShow) endDateInput.value = '';
+    }
+}
 
 // Guard (prevents crashes if modal DOM not loaded yet)
 if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
@@ -105,7 +135,9 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 last_updated_by: p.last_updated_by,
                 reason_update: p.reason_for_update,
                 date_hired: p.date_hired,
-                updated_at: p.updated_at
+                updated_at: p.updated_at,
+                start_date: p.start_date,
+                end_date: p.end_date
             };
 
             // =========================
@@ -130,6 +162,8 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             if (el('editAssignmentDate')) {
                 el('editAssignmentDate').value = employee.assignment_date || '';
             }
+            if (el('editStartDate')) el('editStartDate').value = cleanValue(employee.start_date);
+            if (el('editEndDate')) el('editEndDate').value = cleanValue(employee.end_date);
 
             // =========================
             // SELECT FIELDS SAFE
@@ -194,6 +228,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             // sync toggles
             toggleDateSeparated();
             toggleDateReturned();
+            toggleEmploymentDates();
 
         } catch (err) {
             console.error(err);
@@ -245,8 +280,26 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     formData.set('last_updated_by', document.getElementById('editLastUpdatedBy').value);
     formData.set('date_last_updated', document.getElementById('editDateLastUpdated').value);
     formData.set('remarks', document.getElementById('editRemarks').value);
+    formData.set('start_date', startDateInput.value);
+    formData.set('end_date', endDateInput.value);
 
-    sendAction(formData, 'Save Changes');
+   fetch('functions/update_promodizer.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire('Success', data.message, 'success')
+                .then(() => location.reload());
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        Swal.fire('Error', 'Request failed', 'error');
+    });
 });
 
 // =========================
@@ -256,5 +309,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (reasonSelect) {
         reasonSelect.addEventListener('change', toggleDateSeparated);
         reasonSelect.addEventListener('change', toggleDateReturned);
+    }
+    if (employmentStatusSelect) {
+        employmentStatusSelect.addEventListener('change', toggleEmploymentDates);
     }
 });

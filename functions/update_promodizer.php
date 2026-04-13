@@ -15,33 +15,26 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // =========================
 $id = $_POST['id'] ?? null;
 
-$status            = trim($_POST['status'] ?? 'ACTIVE');
-$employment_status = trim($_POST['employment_status'] ?? null);
-$reason_for_update = trim($_POST['reason_update'] ?? '');
+// 🔥 Always controlled by backend
+$status = 'ACTIVE';
+
+// Normalize inputs
+$employment_status = strtoupper(trim($_POST['employment_status'] ?? ''));
+$reason_for_update = strtoupper(trim($_POST['reason_update'] ?? ''));
 
 $remarks = trim($_POST['remarks'] ?? '');
 
-$last_updated_by = $_SESSION['username'] ?? 'System';
+$last_updated_by  = $_SESSION['username'] ?? 'System';
 $last_assigned_by = $_POST['last_assigned_by'] ?? null;
 
 // =========================
 // DATE VALUES (SAFE)
 // =========================
-$start_date = (isset($_POST['start_date']) && $_POST['start_date'] !== '')
-    ? $_POST['start_date']
-    : null;
+$start_date = (!empty($_POST['start_date'])) ? $_POST['start_date'] : null;
+$end_date   = (!empty($_POST['end_date']))   ? $_POST['end_date']   : null;
 
-$end_date = (isset($_POST['end_date']) && $_POST['end_date'] !== '')
-    ? $_POST['end_date']
-    : null;
-
-$date_separated = (isset($_POST['date_separated']) && $_POST['date_separated'] !== '')
-    ? $_POST['date_separated']
-    : null;
-
-$date_of_return = (isset($_POST['date_returned']) && $_POST['date_returned'] !== '')
-    ? $_POST['date_returned']
-    : null;
+$date_separated = (!empty($_POST['date_separated'])) ? $_POST['date_separated'] : null;
+$date_of_return = (!empty($_POST['date_returned']))  ? $_POST['date_returned']  : null;
 
 // =========================
 // VALIDATION
@@ -51,9 +44,46 @@ if (!$id) {
     exit;
 }
 
-$dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
+// Date helpers
 $today = strtotime(date('Y-m-d'));
+$dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
 
+// =========================
+// START/END DATE VALIDATION
+// =========================
+if ($start_date && $end_date) {
+    if (strtotime($end_date) < strtotime($start_date)) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'End date cannot be earlier than start date'
+        ]);
+        exit;
+    }
+}
+
+// =========================
+// EMPLOYMENT TYPE RULES
+// =========================
+$empStatusUpper = $employment_status;
+
+// Require dates for reliever/seasonal
+if (in_array($empStatusUpper, ['RELIEVER', 'SEASONAL'])) {
+    if (!$start_date || !$end_date) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Start and End date are required for Reliever/Seasonal'
+        ]);
+        exit;
+    }
+} else {
+    // Clear dates if not applicable
+    $start_date = null;
+    $end_date   = null;
+}
+
+// =========================
+// INACTIVE REASONS
+// =========================
 $inactiveReasons = [
     'RESIGNED',
     'PULL-OUT / TERMINATED',
@@ -65,25 +95,53 @@ $inactiveReasons = [
     'MATERNITY LEAVE'
 ];
 
-$isInactiveReason = in_array(strtoupper($reason_for_update), $inactiveReasons);
+$isInactiveReason = in_array($reason_for_update, $inactiveReasons);
 
 // =========================
-// NEW RULE: DELAY INACTIVATION UNTIL DATE_SEPARATED
+// STATUS LOGIC (FINAL ORDER)
 // =========================
+
+// 1. REASON-BASED (HIGHEST PRIORITY)
 if ($isInactiveReason) {
 
-    // If no separation date → allow immediate INACTIVE
     if (!$dateSeparatedValue) {
         $status = 'INACTIVE';
-    }
-
-    // If separation date exists → only inactivate if date has arrived
+    } 
     else if ($dateSeparatedValue <= $today) {
+        $status = 'INACTIVE';
+    } 
+    else {
+        $status = 'ACTIVE';
+    }
+}
+
+// =========================
+// CONTRACT-BASED LOGIC (FIXED)
+// =========================
+else if (in_array($empStatusUpper, ['RELIEVER', 'SEASONAL']) && $start_date && $end_date) {
+
+    $start = strtotime($start_date);
+    $end   = strtotime($end_date);
+
+    // ❌ NOT YET STARTED
+    if ($start > $today) {
         $status = 'INACTIVE';
     }
 
-    // Otherwise keep ACTIVE until separation date
+    // ❌ ALREADY ENDED
+    else if ($end < $today) {
+        $status = 'INACTIVE';
+    }
+
+    // ✅ ACTIVE PERIOD
     else {
+        $status = 'ACTIVE';
+    }
+}
+
+// 3. OPTIONAL: MATERNITY AUTO-RETURN
+if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
+    if (strtotime($date_of_return) <= $today) {
         $status = 'ACTIVE';
     }
 }

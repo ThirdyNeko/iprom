@@ -58,7 +58,7 @@ function autoReactivateEmployees()
                     updated_at = GETDATE()
                 WHERE branch = :branch
                   AND brand = :brand
-                  AND employment_status = 'RELIEVER'
+                  AND employment_status IN ('RELIEVER', 'SEASONAL')
                   AND status = 'ACTIVE'
             ");
 

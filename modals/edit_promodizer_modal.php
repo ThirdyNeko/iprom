@@ -86,6 +86,16 @@
                             <td><input type="date" id="editDateReturn" class="form-control"></td>
                             <td colspan="2"></td>
                         </tr>
+
+                        <tr id="rowStartDate">
+                            <td>Start Date</td>
+                            <td><input type="date" id="editStartDate"></td>
+                        </tr>
+
+                        <tr id="rowEndDate">
+                            <td>End Date</td>
+                            <td><input type="date" id="editEndDate"></td>
+                        </tr>
                         <tr>
                             <th>Last Updated By</th>
                             <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
