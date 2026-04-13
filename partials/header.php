@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Promodizer Manager</title>
+    <title>IProm</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS -->
@@ -122,7 +122,7 @@
 <!-- Header -->
 <nav class="navbar navbar-light bg-light border-bottom header px-3">
     <button class="btn btn-outline-secondary" onclick="toggleSidebar()">☰</button>
-    <span class="ms-3 fw-semibold">Promodizer Manager</span>
+    <span class="ms-3 fw-semibold">IProm</span>
 </nav>
 
 <script>

@@ -18,10 +18,10 @@ $lastRun = $stmt->fetchColumn();
 if ($lastRun !== $today) {
 
     // run update
-    autoDeactivateSeasonal();
-    autoActivateSeasonal();
-    autoDeactivateEmployees();
-    autoReactivateEmployees();
+    autoDeactivateEmployees();     // general deactivation first
+    autoDeactivateSeasonal();      // end contracts next
+    autoReactivateEmployees();     // bring back maternity
+    autoActivateSeasonal();        // fill required slots last
 
 
     // update flag

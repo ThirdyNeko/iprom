@@ -51,7 +51,7 @@ function autoActivateSeasonal()
            AND a.brand_name  = ei.brand
         WHERE ei.date_separated IS NULL
           AND CAST(ei.start_date AS DATE) <= CAST(GETDATE() AS DATE)
-          AND ei.sub_status IN ('SEASONAL', 'RELIEVER')
+          AND ei.employment_status IN ('SEASONAL', 'RELIEVER')
           AND ei.status = 'INACTIVE'
           AND (
                 SELECT COUNT(*)
@@ -77,7 +77,7 @@ function autoDeactivateSeasonal()
             date_separated = GETDATE(),
             reason_for_update = 'END OF CONTRACT'
         WHERE date_separated IS NULL
-          AND sub_status IN ('SEASONAL', 'RELIEVER')
+          AND employment_status IN ('SEASONAL', 'RELIEVER')
           AND CAST(end_date AS DATE) <= CAST(GETDATE() AS DATE)
           AND status = 'ACTIVE'
     ");
