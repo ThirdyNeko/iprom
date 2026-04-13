@@ -189,6 +189,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         e.preventDefault();
 
         const formData = new FormData(form);
+        // Start / End date validation
+        const startDateInput = form.querySelector('input[name="start_date"]');
+        const endDateInput = form.querySelector('input[name="end_date"]');
+        // ✅ FIX: remove empty date fields so PHP gets NULL
+        if (!startDateInput.value) formData.delete('start_date');
+        if (!endDateInput.value) formData.delete('end_date');
         const branch = mainBranchSelect.value;
         const brand = mainBrandSelect.value;
         const statusType = employmentStatus.value;
@@ -199,9 +205,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const today = new Date().toISOString().split('T')[0];
         dateHiredInput.setAttribute('max', today);
 
-        // Start / End date validation
-        const startDateInput = form.querySelector('input[name="start_date"]');
-        const endDateInput = form.querySelector('input[name="end_date"]');
+        
 
         // convert empty strings to null
         const startDate = startDateInput.value ? startDateInput.value : null;
