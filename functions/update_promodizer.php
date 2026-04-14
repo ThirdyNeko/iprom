@@ -36,12 +36,40 @@ $end_date   = (!empty($_POST['end_date']))   ? $_POST['end_date']   : null;
 $date_separated = (!empty($_POST['date_separated'])) ? $_POST['date_separated'] : null;
 $date_of_return = (!empty($_POST['date_returned']))  ? $_POST['date_returned']  : null;
 
+$sub_status = $_POST['sub_status'] ?? null;
+$multi_brand_group_id = $_POST['multi_brand_group_id'] ?? null;
+$roving_group_id = $_POST['roving_group_id'] ?? null;
+
 // =========================
 // VALIDATION
 // =========================
 if (!$id) {
     echo json_encode(['status' => 'danger', 'message' => 'Invalid employee ID']);
     exit;
+}
+
+if ($multi_brand_group_id) {
+    $pdo->prepare("
+        UPDATE employee_info
+        SET status = 'INACTIVE'
+        WHERE multi_brand_group_id = :gid
+          AND id <> :id
+    ")->execute([
+        ':gid' => $multi_brand_group_id,
+        ':id'  => $id
+    ]);
+}
+
+if ($roving_group_id) {
+    $pdo->prepare("
+        UPDATE employee_info
+        SET status = 'INACTIVE'
+        WHERE roving_group_id = :gid
+          AND id <> :id
+    ")->execute([
+        ':gid' => $roving_group_id,
+        ':id'  => $id
+    ]);
 }
 
 // Date helpers
@@ -154,6 +182,7 @@ try {
         EXEC update_employee
             @id = :id,
             @status = :status,
+            @sub_status = :sub_status,
             @employment_status = :employment_status,
             @reason_for_update = :reason_for_update,
             @start_date = :start_date,
@@ -166,17 +195,18 @@ try {
     ");
 
     $stmt->execute([
-        ':id'                => $id,
-        ':status'            => $status,
+        ':id' => $id,
+        ':status' => $status,
+        ':sub_status' => $sub_status,
         ':employment_status' => $employment_status,
         ':reason_for_update' => $reason_for_update,
-        ':start_date'        => $start_date,
-        ':end_date'          => $end_date,
-        ':date_separated'    => $date_separated,
-        ':date_of_return'    => $date_of_return,
-        ':remarks'           => $remarks,
-        ':last_updated_by'   => $last_updated_by,
-        ':last_assigned_by'  => $last_assigned_by
+        ':start_date' => $start_date,
+        ':end_date' => $end_date,
+        ':date_separated' => $date_separated,
+        ':date_of_return' => $date_of_return,
+        ':remarks' => $remarks,
+        ':last_updated_by' => $last_updated_by,
+        ':last_assigned_by' => $last_assigned_by
     ]);
 
     $updated = $stmt->fetch(PDO::FETCH_ASSOC);
