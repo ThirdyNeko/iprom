@@ -96,6 +96,18 @@
                             <td>End Date</td>
                             <td><input type="date" id="editEndDate"></td>
                         </tr>
+                        <tr id="editRovingField" class="d-none">
+                            <th>Roving Branches</th>
+                            <td colspan="3">
+                                <div id="editRovingContainer"></div>
+                            </td>
+                        </tr>
+                        <tr id="editMultiBrandField" class="d-none">
+                            <th>Multi Brands</th>
+                            <td colspan="3">
+                                <div id="editMultiBrandContainer"></div>
+                            </td>
+                        </tr>
                         <tr>
                             <th>Last Updated By</th>
                             <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>

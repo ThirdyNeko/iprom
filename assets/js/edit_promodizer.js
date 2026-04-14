@@ -24,6 +24,12 @@ const startDateInput = document.getElementById('editStartDate');
 const endDateRow = document.getElementById('rowEndDate');
 const endDateInput = document.getElementById('editEndDate');
 
+const editRovingField = document.getElementById('editRovingField');
+const editRovingContainer = document.getElementById('editRovingContainer');
+
+const editMultiBrandField = document.getElementById('editMultiBrandField');
+const editMultiBrandContainer = document.getElementById('editMultiBrandContainer');
+
 function toggleEmploymentDates() {
     if (!employmentStatusSelect) return;
 
@@ -82,6 +88,37 @@ function toggleDateSeparated() {
     }
 }
 
+function safeArray(value) {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+
+    if (typeof value === 'string') {
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) return parsed;
+        } catch (e) {}
+
+        return value.split(',').map(v => v.trim()).filter(Boolean);
+    }
+
+    return [];
+}
+
+function syncMultiUI(status) {
+    const value = (status || '').toUpperCase();
+
+    if (editRovingField) editRovingField.classList.add('d-none');
+    if (editMultiBrandField) editMultiBrandField.classList.add('d-none');
+
+    if (value === 'MULTI BRANCH') {
+        if (editRovingField) editRovingField.classList.remove('d-none');
+    }
+
+    if (value === 'MULTI BRAND') {
+        if (editMultiBrandField) editMultiBrandField.classList.remove('d-none');
+    }
+}
+
 // =========================
 // TOGGLE DATE RETURNED
 // =========================
@@ -99,6 +136,34 @@ function toggleDateReturned() {
 
         if (!shouldShow) dateReturnedInput.value = '';
     }
+}
+
+function populateEditRoving(branches = []) {
+    if (!editRovingContainer) return;
+
+    const list = safeArray(branches);
+
+    editRovingContainer.innerHTML = `
+        <select class="form-control roving-select" multiple>
+            ${list.map(b => `
+                <option value="${b}" selected>${b}</option>
+            `).join('')}
+        </select>
+    `;
+}
+
+function populateEditBrands(brands = []) {
+    if (!editMultiBrandContainer) return;
+
+    const list = safeArray(brands);
+
+    editMultiBrandContainer.innerHTML = `
+        <select class="form-control multi-brand-select" multiple>
+            ${list.map(b => `
+                <option value="${b}" selected>${b}</option>
+            `).join('')}
+        </select>
+    `;
 }
 
 // =========================
@@ -176,13 +241,41 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                     : '';
             }
 
+           // =========================
+            // GET SUB STATUS ONCE
+            // =========================
+            const subStatus = cleanValue(employee.sub_status).toUpperCase();
+
+            // =========================
+            // SET SELECT VALUE
+            // =========================
             const subStatusSelect = el('editSubStatus');
+
             if (subStatusSelect) {
-                const subStatus = cleanValue(employee.sub_status).toUpperCase();
                 const valid = [...subStatusSelect.options].some(opt => opt.value === subStatus);
                 subStatusSelect.value = valid ? subStatus : '';
             }
 
+            // =========================
+            // RESET + SYNC UI
+            // =========================
+            syncMultiUI(subStatus);
+
+            // normalize arrays safely (FIXED)
+            const branches = safeArray(employee.roving_branches || p.roving_branches);
+            const brands   = safeArray(employee.multi_brands || p.multi_brands);
+            
+            // render AFTER UI sync
+            requestAnimationFrame(() => {
+                if (subStatus === 'MULTI BRANCH') {
+                    populateEditRoving(branches);
+                }
+
+                if (subStatus === 'MULTI BRAND') {
+                    populateEditBrands(brands);
+                }
+            });
+            
             if (reasonSelect) {
                 const reasonValue = cleanValue(employee.reason_update).toUpperCase();
                 reasonSelect.value = [...reasonSelect.options].some(opt => opt.value === reasonValue)
@@ -312,5 +405,26 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (employmentStatusSelect) {
         employmentStatusSelect.addEventListener('change', toggleEmploymentDates);
+    }
+
+    // =========================
+    // EDIT SUB STATUS LISTENER
+    // =========================
+    const editSubStatus = document.getElementById('editSubStatus');
+
+    if (editSubStatus) {
+        editSubStatus.addEventListener('change', () => {
+            const value = (editSubStatus.value || '').toUpperCase();
+
+            syncMultiUI(value);
+
+            if (value === 'MULTI BRANCH') {
+                populateEditRoving(['']);
+            }
+
+            if (value === 'MULTI BRAND') {
+                populateEditBrands(['']);
+            }
+        });
     }
 });
