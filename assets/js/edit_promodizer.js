@@ -1,4 +1,5 @@
 const modalEl = document.getElementById('editPromodizerModal');
+let branchBrandPairs = [];
 
 // Helper to clean null/nchar
 function cleanValue(value) {
@@ -143,13 +144,21 @@ function populateEditRoving(branches = []) {
 
     const list = safeArray(branches);
 
-    editRovingContainer.innerHTML = `
-        <select class="form-control roving-select" multiple>
-            ${list.map(b => `
-                <option value="${b}" selected>${b}</option>
-            `).join('')}
-        </select>
-    `;
+    editRovingContainer.innerHTML = list.map(b => `
+        <div class="d-flex gap-2 mb-2 align-items-center roving-row">
+            <select class="form-control">
+                ${branchBrandPairs.map(p => `
+                    <option value="${p.branch_name}"
+                        ${p.branch_name === b ? 'selected' : ''}>
+                        ${p.branch_name}
+                    </option>
+                `).join('')}
+            </select>
+
+            <button type="button" class="btn btn-success btn-add-branch">+</button>
+            <button type="button" class="btn btn-danger btn-remove-branch">−</button>
+        </div>
+    `).join('');
 }
 
 function populateEditBrands(brands = []) {
@@ -157,13 +166,39 @@ function populateEditBrands(brands = []) {
 
     const list = safeArray(brands);
 
-    editMultiBrandContainer.innerHTML = `
-        <select class="form-control multi-brand-select" multiple>
-            ${list.map(b => `
-                <option value="${b}" selected>${b}</option>
-            `).join('')}
-        </select>
-    `;
+    editMultiBrandContainer.innerHTML = list.map(b => `
+        <div class="d-flex gap-2 mb-2 align-items-center brand-row">
+            <select class="form-control">
+                ${branchBrandPairs.map(p => `
+                    <option value="${p.brand_name}"
+                        ${p.brand_name === b ? 'selected' : ''}>
+                        ${p.brand_name}
+                    </option>
+                `).join('')}
+            </select>
+
+            <button type="button" class="btn btn-success btn-add-brand">+</button>
+            <button type="button" class="btn btn-danger btn-remove-brand">−</button>
+        </div>
+    `).join('');
+}
+
+function collectAssignments() {
+
+    const branches = Array.from(
+        document.querySelectorAll('#editRovingSelect option:checked')
+    ).map(opt => opt.value);
+
+    const brands = Array.from(
+        document.querySelectorAll('#editBrandSelect option:checked')
+    ).map(opt => opt.value);
+
+    return {
+        branches,
+        removedBranches: [],
+        brands,
+        removedBrands: []
+    };
 }
 
 // =========================
@@ -395,21 +430,50 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     });
 });
 
+async function loadBranchBrandPairs() {
+    try {
+        const res = await fetch('functions/get_available_branches_brands.php');
+        branchBrandPairs = await res.json();
+    } catch (err) {
+        console.error('Failed to load branch-brand pairs', err);
+    }
+}
+
 // =========================
 // INIT LISTENERS
 // =========================
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+
+    await loadBranchBrandPairs(); // 🔥 ADD THIS
+
     if (reasonSelect) {
         reasonSelect.addEventListener('change', toggleDateSeparated);
         reasonSelect.addEventListener('change', toggleDateReturned);
     }
+
     if (employmentStatusSelect) {
         employmentStatusSelect.addEventListener('change', toggleEmploymentDates);
     }
 
-    // =========================
-    // EDIT SUB STATUS LISTENER
-    // =========================
+    editRovingContainer.addEventListener('click', (e) => {
+
+        // ADD
+        if (e.target.classList.contains('btn-add-branch')) {
+            const row = e.target.closest('.roving-row');
+            const clone = row.cloneNode(true);
+
+            clone.querySelector('select').value = '';
+
+            editRovingContainer.appendChild(clone);
+        }
+
+        // REMOVE
+        if (e.target.classList.contains('btn-remove-branch')) {
+            const row = e.target.closest('.roving-row');
+            row.remove();
+        }
+    });
+
     const editSubStatus = document.getElementById('editSubStatus');
 
     if (editSubStatus) {
