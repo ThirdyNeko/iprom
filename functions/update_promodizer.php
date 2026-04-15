@@ -28,6 +28,75 @@ $last_updated_by  = $_SESSION['username'] ?? 'System';
 $last_assigned_by = $_POST['last_assigned_by'] ?? null;
 
 // =========================
+// NEW FRONTEND DATA
+// =========================
+$branches = isset($_POST['branches']) ? json_decode($_POST['branches'], true) : [];
+$brands   = isset($_POST['brands']) ? json_decode($_POST['brands'], true) : [];
+
+if (!is_array($branches)) $branches = [];
+if (!is_array($brands)) $brands = [];
+
+$roving_group_id = findGroup($pdo, 'branch_name', $branches, 'roving_group_id');
+$multi_brand_group_id = findGroup($pdo, 'brand_name', $brands, 'multi_brand_group_id');
+
+// =========================
+// VALIDATE ASSIGNMENTS
+// =========================
+// Only validate IF user is trying to assign multi-branch/brand
+if (!empty($branches) && !$roving_group_id) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Invalid branch combination'
+    ]);
+    exit;
+}
+
+if (!empty($brands) && !$multi_brand_group_id) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Invalid brand combination'
+    ]);
+    exit;
+}
+
+if ($branches && !$roving_group_id) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Invalid branch combination (no matching group)'
+    ]);
+    exit;
+}
+
+if ($brands && !$multi_brand_group_id) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Invalid brand combination (no matching group)'
+    ]);
+    exit;
+}
+
+
+function findGroup($pdo, $column, $values, $groupColumn) {
+    if (empty($values)) return null;
+
+    $placeholders = implode(',', array_fill(0, count($values), '?'));
+
+    $stmt = $pdo->prepare("
+        SELECT TOP 1 $groupColumn
+        FROM assignment
+        WHERE $column IN ($placeholders)
+        GROUP BY $groupColumn
+        HAVING COUNT(*) = ?
+    ");
+
+    $stmt->execute(array_merge($values, [count($values)]));
+
+    return $stmt->fetchColumn() ?: null;
+}
+
+
+
+// =========================
 // DATE VALUES (SAFE)
 // =========================
 $start_date = (!empty($_POST['start_date'])) ? $_POST['start_date'] : null;
@@ -37,8 +106,6 @@ $date_separated = (!empty($_POST['date_separated'])) ? $_POST['date_separated'] 
 $date_of_return = (!empty($_POST['date_returned']))  ? $_POST['date_returned']  : null;
 
 $sub_status = $_POST['sub_status'] ?? null;
-$multi_brand_group_id = $_POST['multi_brand_group_id'] ?? null;
-$roving_group_id = $_POST['roving_group_id'] ?? null;
 
 // =========================
 // VALIDATION
@@ -46,30 +113,6 @@ $roving_group_id = $_POST['roving_group_id'] ?? null;
 if (!$id) {
     echo json_encode(['status' => 'danger', 'message' => 'Invalid employee ID']);
     exit;
-}
-
-if ($multi_brand_group_id) {
-    $pdo->prepare("
-        UPDATE employee_info
-        SET status = 'INACTIVE'
-        WHERE multi_brand_group_id = :gid
-          AND id <> :id
-    ")->execute([
-        ':gid' => $multi_brand_group_id,
-        ':id'  => $id
-    ]);
-}
-
-if ($roving_group_id) {
-    $pdo->prepare("
-        UPDATE employee_info
-        SET status = 'INACTIVE'
-        WHERE roving_group_id = :gid
-          AND id <> :id
-    ")->execute([
-        ':gid' => $roving_group_id,
-        ':id'  => $id
-    ]);
 }
 
 // Date helpers
@@ -191,7 +234,9 @@ try {
             @date_of_return = :date_of_return,
             @remarks = :remarks,
             @last_updated_by = :last_updated_by,
-            @last_assigned_by = :last_assigned_by
+            @last_assigned_by = :last_assigned_by,
+            @roving_group_id = :roving_group_id,
+            @multi_brand_group_id = :multi_brand_group_id
     ");
 
     $stmt->execute([
@@ -206,7 +251,9 @@ try {
         ':date_of_return' => $date_of_return,
         ':remarks' => $remarks,
         ':last_updated_by' => $last_updated_by,
-        ':last_assigned_by' => $last_assigned_by
+        ':last_assigned_by' => $last_assigned_by,
+        ':roving_group_id' => $roving_group_id,
+        ':multi_brand_group_id' => $multi_brand_group_id
     ]);
 
     $updated = $stmt->fetch(PDO::FETCH_ASSOC);
