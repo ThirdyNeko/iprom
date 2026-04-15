@@ -1,4 +1,11 @@
 <!-- Edit Promodizer Modal -->
+<style>
+    .form-control[readonly],
+    .form-select[readonly] {
+        background-color: #fff9c4 !important;
+        opacity: 1; /* override Bootstrap fade */
+    }
+</style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">

@@ -1,3 +1,23 @@
+<style>
+/* FORCE override Bootstrap table cells */
+.table > tbody > tr > td.readonly-field {
+    background-color: #fff9c4 !important;
+}
+
+/* Optional: improve appearance */
+.table > tbody > tr > td.readonly-field {
+    color: #555;
+    vertical-align: middle;
+}
+
+/* For inputs */
+.form-control[readonly],
+.form-select[readonly],
+select:disabled {
+    background-color: #fff9c4 !important;
+    opacity: 1;
+}
+</style>
 <div class="modal fade" id="assignmentModal" tabindex="-1">
     <div class="modal-dialog modal-lg"> <!-- ✅ wider like promodizer -->
         <div class="modal-content">
@@ -19,11 +39,11 @@
                             <tbody>
                                 <tr>
                                     <th>Branch</th>
-                                    <td id="modalBranch"></td>
+                                    <td id="modalBranch" class="readonly-field"></td>
                                 </tr>
                                 <tr>
                                     <th>Brand</th>
-                                    <td id="modalBrand"></td>
+                                    <td id="modalBrand" class="readonly-field"></td>
                                 </tr>
                                 <tr>
                                     <th>Required</th>
@@ -33,15 +53,15 @@
                                 </tr>
                                 <tr>
                                     <th>Status</th>
-                                    <td id="modalStatus"></td>
+                                    <td id="modalStatus" class="readonly-field"></td>
                                 </tr>
                                 <tr>
                                     <th>Updated At</th>
-                                    <td id="modalUpdated"></td>
+                                    <td id="modalUpdated" class="readonly-field"></td>
                                 </tr>
                                 <tr>
                                     <th>Updated By</th>
-                                    <td id="modalUpdatedBy"></td>
+                                    <td id="modalUpdatedBy" class="readonly-field"></td>
                                 </tr>
                             </tbody>
                         </table>
