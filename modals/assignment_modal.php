@@ -1,22 +1,31 @@
 <style>
-/* FORCE override Bootstrap table cells */
-.table > tbody > tr > td.readonly-field {
-    background-color: #fff9c4 !important;
-}
+/* =========================
+   ONLY APPLY INSIDE ASSIGNMENT MODAL
+   ========================= */
 
-/* Optional: improve appearance */
-.table > tbody > tr > td.readonly-field {
+/* READONLY TABLE CELLS (yellow) */
+#assignmentModal .table td.readonly-field {
+    background-color: #e9ecef !important;
     color: #555;
     vertical-align: middle;
 }
 
-/* For inputs */
-.form-control[readonly],
-.form-select[readonly],
-select:disabled {
-    background-color: #fff9c4 !important;
+/* EDITABLE INPUTS (yellow) */
+#assignmentModal .form-control:not([readonly]):not([disabled]),
+#assignmentModal .form-select:not([disabled]) {
+    background-color: #fffbdf !important;
     opacity: 1;
 }
+
+/* READONLY / DISABLED INPUTS (grey) */
+#assignmentModal .form-control[readonly-field],
+#assignmentModal .form-control[disabled],
+#assignmentModal .form-select[disabled] {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+</style>
 </style>
 <div class="modal fade" id="assignmentModal" tabindex="-1">
     <div class="modal-dialog modal-lg"> <!-- ✅ wider like promodizer -->

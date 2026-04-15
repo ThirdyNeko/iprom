@@ -1,10 +1,22 @@
-<!-- Edit Promodizer Modal -->
 <style>
-    .form-control[readonly],
-    .form-select[readonly] {
-        background-color: #fff9c4 !important;
-        opacity: 1; /* override Bootstrap fade */
-    }
+/* =========================
+   ONLY APPLY INSIDE MODAL
+   ========================= */
+#editPromodizerModal .form-control:not([readonly]):not([disabled]),
+#editPromodizerModal .form-select:not([disabled]) {
+    background-color: #fffbdf !important; /* editable = yellow */
+    opacity: 1;
+}
+
+/* readonly / disabled */
+#editPromodizerModal .form-control[readonly],
+#editPromodizerModal .form-control[disabled],
+#editPromodizerModal .form-select[disabled] {
+    background-color: #e9ecef !important; /* grey */
+    opacity: 1;
+    cursor: not-allowed;
+}
+</style>
 </style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
