@@ -474,6 +474,42 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
+    editMultiBrandContainer.addEventListener('click', (e) => {
+
+        // =========================
+        // ADD BRAND ROW
+        // =========================
+        if (e.target.classList.contains('btn-add-brand')) {
+            const row = e.target.closest('.brand-row');
+            const clone = row.cloneNode(true);
+
+            // reset select
+            const select = clone.querySelector('select');
+            if (select) select.value = '';
+
+            editMultiBrandContainer.appendChild(clone);
+        }
+
+        // =========================
+        // REMOVE BRAND ROW
+        // =========================
+        if (e.target.classList.contains('btn-remove-brand')) {
+            const row = e.target.closest('.brand-row');
+
+            // optional safety: prevent deleting last row
+            const allRows = editMultiBrandContainer.querySelectorAll('.brand-row');
+            if (allRows.length > 1) {
+                row.remove();
+            } else {
+                // reset instead of remove
+                const select = row.querySelector('select');
+                if (select) select.value = '';
+            }
+        }
+    });
+
+    
+
     const editSubStatus = document.getElementById('editSubStatus');
 
     if (editSubStatus) {
