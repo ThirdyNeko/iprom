@@ -18,6 +18,23 @@ function autoReactivateEmployees()
     ");
     $stmt1->execute();
 
+    $history1 = $pdo->prepare("
+        INSERT INTO employee_reason_history (
+            employee_id,
+            reason_for_update,
+            update_date
+        )
+        SELECT 
+            id,
+            'AUTO REACTIVATED (MATERNITY RETURN)',
+            GETDATE()
+        FROM employee_info
+        WHERE reason_for_update = 'MATERNITY LEAVE'
+        AND date_of_return IS NOT NULL
+        AND CAST(date_of_return AS DATE) <= CAST(GETDATE() AS DATE)
+    ");
+    $history1->execute();
+
     // 2. Get affected assignments
     $stmt2 = $pdo->prepare("
         SELECT DISTINCT branch, brand
@@ -82,6 +99,21 @@ function autoReactivateEmployees()
                 ':branch' => $a['branch'],
                 ':brand'  => $a['brand']
             ]);
+
+            $history = $pdo->prepare("
+                INSERT INTO employee_reason_history (
+                    employee_id,
+                    reason_for_update,
+                    update_date
+                )
+                VALUES (
+                    :id,
+                    'AUTO REMOVED (CAPACITY CONTROL - RELIEVER/SEASONAL)',
+                    GETDATE()
+                )
+            ");
+
+            $history->execute([':id' => $id]);
         }
     }
 }
@@ -101,6 +133,23 @@ function autoDeactivateEmployees()
     ");
 
     $stmt->execute();
+
+    $history = $pdo->prepare("
+        INSERT INTO employee_reason_history (
+            employee_id,
+            reason_for_update,
+            update_date
+        )
+        SELECT 
+            id,
+            'AUTO DEACTIVATED (DATE SEPARATED)',
+            GETDATE()
+        FROM employee_info
+        WHERE date_separated IS NOT NULL
+        AND CAST(date_separated AS DATE) <= CAST(GETDATE() AS DATE)
+        AND status = 'INACTIVE'
+    ");
+    $history->execute();
 }
 
 function autoActivateSeasonal()
@@ -130,6 +179,27 @@ function autoActivateSeasonal()
     ");
 
     $stmt->execute();
+
+    $history = $pdo->prepare("
+        INSERT INTO employee_reason_history (
+            employee_id,
+            reason_for_update,
+            update_date
+        )
+        SELECT 
+            ei.id,
+            'AUTO REACTIVATED (SEASONAL START)',
+            GETDATE()
+        FROM employee_info ei
+        INNER JOIN assignment a
+            ON a.branch_name = ei.branch
+        AND a.brand_name  = ei.brand
+        WHERE ei.date_separated IS NULL
+        AND CAST(ei.start_date AS DATE) <= CAST(GETDATE() AS DATE)
+        AND ei.employment_status IN ('SEASONAL', 'RELIEVER')
+        AND ei.status = 'ACTIVE'
+    ");
+    $history->execute();
 }
 
 function autoDeactivateSeasonal()
@@ -150,4 +220,22 @@ function autoDeactivateSeasonal()
     ");
 
     $stmt->execute();
+
+    $history = $pdo->prepare("
+        INSERT INTO employee_reason_history (
+            employee_id,
+            reason_for_update,
+            update_date
+        )
+        SELECT 
+            id,
+            'AUTO DEACTIVATED (END OF CONTRACT)',
+            GETDATE()
+        FROM employee_info
+        WHERE date_separated IS NULL
+        AND employment_status IN ('SEASONAL', 'RELIEVER')
+        AND CAST(end_date AS DATE) <= CAST(GETDATE() AS DATE)
+        AND status = 'ACTIVE'
+    ");
+    $history->execute();
 }

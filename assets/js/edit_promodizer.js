@@ -352,6 +352,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             });
 
             modal.show();
+            loadHistory(employee.id);
 
             // sync toggles
             toggleDateSeparated();

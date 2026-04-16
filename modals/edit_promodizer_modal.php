@@ -16,7 +16,40 @@
     opacity: 1;
     cursor: not-allowed;
 }
-</style>
+
+/* =========================
+   HISTORY PANEL
+   ========================= */
+#editPromodizerModal .history-box {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    background: #fafafa;
+}
+
+/* individual item */
+.history-item {
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+/* timestamp */
+.history-date {
+    font-size: 12px;
+    color: #888;
+}
+
+/* reason highlight */
+.history-reason {
+    font-weight: 600;
+    color: #333;
+}
 </style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -84,6 +117,7 @@
                                     <option value="RESIGNED">RESIGNED</option>
                                     <option value="PULL-OUT / TERMINATED">PULL-OUT / TERMINATED</option>
                                     <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
+                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
                                     <option value="AWOL">AWOL</option>
                                     <option value="TRANSFER">TRANSFER</option>
                                     <option value="RETRENCHMENT">RETRENCHMENT</option>
@@ -141,6 +175,14 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <div class="mt-3">
+                    <h6 class="fw-bold mb-2">Update History</h6>
+
+                    <div id="historyContainer" class="history-box">
+                        <div class="text-muted small">No history available</div>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer d-flex justify-content-end">
@@ -152,4 +194,5 @@
 
 <!-- SweetAlert2 -->
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
+<script src="assets/js/history.js"></script>
 <script src="assets/js/edit_promodizer.js"></script>
