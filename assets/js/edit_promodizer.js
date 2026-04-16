@@ -148,15 +148,15 @@ function populateEditRoving(branches = []) {
     const uniqueBranches = [...new Set(branchBrandPairs.map(p => p.branch_name))];
 
     editRovingContainer.innerHTML = list.map((b, index) => {
-        const isExisting = b !== ''; // 🔥 existing value from DB
+
+        const isExisting = b !== '';
 
         return `
         <div class="d-flex gap-2 mb-2 align-items-center roving-row">
             <select class="form-control" ${isExisting ? 'disabled' : ''}>
                 <option value="">Select branch</option>
                 ${uniqueBranches.map(branch => `
-                    <option value="${branch}"
-                        ${branch === b ? 'selected' : ''}>
+                    <option value="${branch}" ${branch === b ? 'selected' : ''}>
                         ${branch}
                     </option>
                 `).join('')}
@@ -166,7 +166,7 @@ function populateEditRoving(branches = []) {
 
             <button type="button"
                 class="btn btn-danger btn-remove-branch"
-                style="${index === 0 ? 'display:none;' : ''}">
+                style="${isExisting || index === 0 ? 'display:none;' : ''}">
                 −
             </button>
         </div>
@@ -183,6 +183,7 @@ function populateEditBrands(brands = []) {
     const uniqueBrands = [...new Set(branchBrandPairs.map(p => p.brand_name))];
 
     editMultiBrandContainer.innerHTML = list.map((b, index) => {
+
         const isExisting = b !== '';
 
         return `
@@ -190,8 +191,7 @@ function populateEditBrands(brands = []) {
             <select class="form-control" ${isExisting ? 'disabled' : ''}>
                 <option value="">Select brand</option>
                 ${uniqueBrands.map(brand => `
-                    <option value="${brand}"
-                        ${brand === b ? 'selected' : ''}>
+                    <option value="${brand}" ${brand === b ? 'selected' : ''}>
                         ${brand}
                     </option>
                 `).join('')}
@@ -201,7 +201,7 @@ function populateEditBrands(brands = []) {
 
             <button type="button"
                 class="btn btn-danger btn-remove-brand"
-                style="${index === 0 ? 'display:none;' : ''}">
+                style="${isExisting || index === 0 ? 'display:none;' : ''}">
                 −
             </button>
         </div>

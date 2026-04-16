@@ -533,3 +533,7 @@
 [2026-04-16 15:41:28] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-04-16 15:41:31] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-04-16 15:42:09] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-16 16:32:23] Error [2]: Undefined variable $branch in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 429
+[2026-04-16 16:32:23] Error [2]: Undefined variable $branch in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 429
+[2026-04-16 17:10:17] Error [2]: Undefined variable $insertedIds in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 467
+[2026-04-16 17:10:17] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 467

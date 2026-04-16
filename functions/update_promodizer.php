@@ -58,7 +58,7 @@ $reason_for_update = strtoupper(trim($_POST['reason_update'] ?? ''));
 $remarks = trim($_POST['remarks'] ?? '');
 
 $last_updated_by  = $_SESSION['username'] ?? 'System';
-$last_assigned_by = $_POST['last_assigned_by'] ?? null;
+$last_assigned_by = $_SESSION['username'] ?? null;
 
 // =========================
 // SAFE GROUP INPUT HANDLING (FIXED)
@@ -200,79 +200,180 @@ if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
     }
 }
 
-// =========================
-// EXECUTE PROCEDURE (SAFE)
-// =========================
-$pdo->beginTransaction();
 
 try {
+    $pdo->beginTransaction();
 
-    if (!empty($rovingBranches) || !empty($multiBrands)) {
+    $hasInserted = false;
+    $insertedIds = []; // ✅ MUST be declared before use
 
-        $stmtBase = $pdo->prepare("SELECT * FROM employee_info WHERE id = ?");
-        $stmtBase->execute([$id]);
-        $base = $stmtBase->fetch(PDO::FETCH_ASSOC);
+    // =========================
+    // FETCH BASE EMPLOYEE
+    // =========================
+    $stmtBase = $pdo->prepare("SELECT * FROM employee_info WHERE id = ?");
+    $stmtBase->execute([$id]);
+    $base = $stmtBase->fetch(PDO::FETCH_ASSOC);
 
-        $currentBranch = $base['branch'];
-        $currentBrand  = $base['brand'];
+    if (!$base) {
+        throw new Exception("Employee not found");
+    }
+
+    $currentBranch = $base['branch'];
+    $currentBrand  = $base['brand'];
+
+    // =========================
+    // UPDATE ORIGINAL ONLY HERE
+    // =========================
+    $stmt = $pdo->prepare("
+        EXEC update_employee
+            @id = :id,
+            @status = :status,
+            @sub_status = :sub_status,
+            @employment_status = :employment_status,
+            @reason_for_update = :reason_for_update,
+            @start_date = :start_date,
+            @end_date = :end_date,
+            @date_separated = :date_separated,
+            @date_of_return = :date_of_return,
+            @remarks = :remarks,
+            @last_updated_by = :last_updated_by,
+            @roving_group_id = :roving_group_id,
+            @multi_brand_group_id = :multi_brand_group_id
+    ");
+
+    $stmt->execute([
+        ':id' => $id,
+        ':status' => $status,
+        ':sub_status' => $sub_status,
+        ':employment_status' => $employment_status,
+        ':reason_for_update' => $reason_for_update,
+        ':start_date' => $start_date,
+        ':end_date' => $end_date,
+        ':date_separated' => $date_separated,
+        ':date_of_return' => $date_of_return,
+        ':remarks' => $remarks,
+        ':last_updated_by' => $last_updated_by,
+        ':roving_group_id' => $roving_group_id,
+        ':multi_brand_group_id' => $multi_brand_group_id
+    ]);
+
+    // =========================
+    // ONLY RUN IF ADD BRANCH/BRAND
+    // =========================
+    if ($reason_for_update === 'ADD BRANCH/BRAND') {
+
+        // =========================
+        // INSERT TEMPLATE (reuse both loops)
+        // =========================
+        $stmtInsert = $pdo->prepare("
+            INSERT INTO employee_info (
+                first_name,
+                last_name,
+                branch,
+                brand,
+                assignment_date,
+                last_assigned_by,
+                status,
+                created_at,
+                updated_at,
+                date_of_return,
+                date_separated,
+                employment_status,
+                remarks,
+                last_updated_by,
+                reason_for_update,
+                date_hired,
+                start_date,
+                end_date,
+                roving_group_id,
+                sub_status,
+                multi_brand_group_id
+            )
+            VALUES (
+                :first_name,
+                :last_name,
+                :branch,
+                :brand,
+                :assignment_date,
+                :last_assigned_by,
+                :status,
+                GETDATE(),
+                GETDATE(),
+                :date_of_return,
+                :date_separated,
+                :employment_status,
+                :remarks,
+                :last_updated_by,
+                :reason_for_update,
+                :date_hired,
+                :start_date,
+                :end_date,
+                :roving_group_id,
+                :sub_status,
+                :multi_brand_group_id
+            )
+        ");
 
         // =========================
         // BRANCH DUPLICATION
         // =========================
         if (!empty($rovingBranches)) {
 
-            $stmtInsert = $pdo->prepare("
-                INSERT INTO employee_info (
-                    first_name,
-                    last_name,
-                    branch,
-                    brand,
-                    employment_status,
-                    sub_status,
-                    status,
-                    remarks,
-                    last_updated_by,
-                    reason_for_update,
-                    date_separated,
-                    date_of_return,
-                    start_date,
-                    end_date
-                )
-                VALUES (
-                    :first_name,
-                    :last_name,
-                    :branch,
-                    :brand,
-                    :employment_status,
-                    :sub_status,
-                    :status,
-                    :remarks,
-                    :last_updated_by,
-                    :reason_for_update,
-                    :date_separated,
-                    :date_of_return,
-                    :start_date,
-                    :end_date
-                )
-            ");
+            $rovingBranches = array_filter($rovingBranches);
 
             foreach ($rovingBranches as $branch) {
+
+                $check = $pdo->prepare("
+                    SELECT COUNT(*) 
+                    FROM employee_info
+                    WHERE first_name = ?
+                    AND last_name = ?
+                    AND branch = ?
+                    AND brand = ?
+                    AND status = 'ACTIVE'
+                    AND roving_group_id = ?
+                ");
+
+                $check->execute([
+                    $base['first_name'],
+                    $base['last_name'],
+                    $branch,
+                    $currentBrand,
+                    $base['roving_group_id']
+                ]);
+
+                if ($check->fetchColumn() > 0) {
+                    continue;
+                }
+
                 $stmtInsert->execute([
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
                     ':branch'     => $branch,
                     ':brand'      => $currentBrand,
-                    ':employment_status' => $employment_status,
-                    ':sub_status' => $sub_status,
+                    ':assignment_date' => date('Y-m-d'),
+                    ':last_assigned_by' => $last_assigned_by,
                     ':status' => $status,
+                    ':date_of_return' => $date_of_return,
+                    ':date_separated' => $date_separated,
+                    ':employment_status' => $employment_status,
                     ':remarks' => $remarks,
                     ':last_updated_by' => $last_updated_by,
                     ':reason_for_update' => $reason_for_update,
-                    ':date_separated' => $date_separated,
-                    ':date_of_return' => $date_of_return,
+                    ':date_hired' => $base['date_hired'],
                     ':start_date' => $start_date,
-                    ':end_date' => $end_date
+                    ':end_date' => $end_date,
+                    ':roving_group_id' => $base['roving_group_id'],
+                    ':sub_status' => $sub_status,
+                    ':multi_brand_group_id' => $base['multi_brand_group_id']
                 ]);
+
+                $newId = $pdo->lastInsertId();
+                if ($newId) {
+                    $insertedIds[] = $newId;
+                }
+
+                $hasInserted = true;
             }
         }
 
@@ -281,60 +382,125 @@ try {
         // =========================
         if (!empty($multiBrands)) {
 
-            $stmtInsert = $pdo->prepare("
-                INSERT INTO employee_info (
-                    first_name,
-                    last_name,
-                    branch,
-                    brand,
-                    employment_status,
-                    sub_status,
-                    status,
-                    remarks,
-                    last_updated_by,
-                    reason_for_update,
-                    date_separated,
-                    date_of_return,
-                    start_date,
-                    end_date
-                )
-                VALUES (
-                    :first_name,
-                    :last_name,
-                    :branch,
-                    :brand,
-                    :employment_status,
-                    :sub_status,
-                    :status,
-                    :remarks,
-                    :last_updated_by,
-                    :reason_for_update,
-                    :date_separated,
-                    :date_of_return,
-                    :start_date,
-                    :end_date
-                )
-            ");
+            $multiBrands = array_filter($multiBrands);
 
             foreach ($multiBrands as $brand) {
+
+                $check = $pdo->prepare("
+                    SELECT COUNT(*) 
+                    FROM employee_info
+                    WHERE first_name = ?
+                    AND last_name = ?
+                    AND branch = ?
+                    AND brand = ?
+                    AND status = 'ACTIVE'
+                    AND multi_brand_group_id = ?
+                ");
+
+                $check->execute([
+                    $base['first_name'],
+                    $base['last_name'],
+                    $currentBranch,
+                    $brand,
+                    $base['multi_brand_group_id']
+                ]);
+
+                if ($check->fetchColumn() > 0) {
+                    continue;
+                }
+
                 $stmtInsert->execute([
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
                     ':branch'     => $currentBranch,
                     ':brand'      => $brand,
-                    ':employment_status' => $employment_status,
-                    ':sub_status' => $sub_status,
+                    ':assignment_date' => date('Y-m-d'),
+                    ':last_assigned_by' => $last_assigned_by,
                     ':status' => $status,
+                    ':date_of_return' => $date_of_return,
+                    ':date_separated' => $date_separated,
+                    ':employment_status' => $employment_status,
                     ':remarks' => $remarks,
                     ':last_updated_by' => $last_updated_by,
                     ':reason_for_update' => $reason_for_update,
-                    ':date_separated' => $date_separated,
-                    ':date_of_return' => $date_of_return,
+                    ':date_hired' => $base['date_hired'],
                     ':start_date' => $start_date,
-                    ':end_date' => $end_date
+                    ':end_date' => $end_date,
+                    ':roving_group_id' => $base['roving_group_id'],
+                    ':sub_status' => $sub_status,
+                    ':multi_brand_group_id' => $base['multi_brand_group_id']
                 ]);
+
+                $newId = $pdo->lastInsertId();
+                if ($newId) {
+                    $insertedIds[] = $newId;
+                }
+
+                $hasInserted = true;
             }
         }
+    }
+
+    // =========================
+    // APPLY SP TO NEWLY CREATED ROWS
+    // =========================
+    foreach ($insertedIds as $newId) {
+
+        $stmt = $pdo->prepare("
+            EXEC update_employee
+                @id = :id,
+                @status = :status,
+                @employment_status = :employment_status,
+                @reason_for_update = :reason_for_update,
+                @start_date = :start_date,
+                @end_date = :end_date,
+                @date_separated = :date_separated,
+                @date_of_return = :date_of_return,
+                @remarks = :remarks,
+                @last_updated_by = :last_updated_by,
+                @last_assigned_by = :last_assigned_by,
+                @sub_status = :sub_status,
+                @roving_group_id = :roving_group_id,
+                @multi_brand_group_id = :multi_brand_group_id
+        ");
+
+        $stmt->execute([
+            ':id' => $newId,
+            ':status' => $status,
+            ':employment_status' => $employment_status,
+            ':reason_for_update' => $reason_for_update,
+            ':start_date' => $start_date,
+            ':end_date' => $end_date,
+            ':date_separated' => $date_separated,
+            ':date_of_return' => $date_of_return,
+            ':remarks' => $remarks,
+            ':last_updated_by' => $last_updated_by,
+            ':last_assigned_by' => $last_assigned_by,
+            ':sub_status' => $sub_status,
+            ':roving_group_id' => $base['roving_group_id'],
+            ':multi_brand_group_id' => $base['multi_brand_group_id']
+        ]);
+    }
+
+    // =========================
+    // HISTORY LOG
+    // =========================
+    if ($reason_for_update === 'ADD BRANCH/BRAND' && $hasInserted) {
+
+        $history = $pdo->prepare("
+            INSERT INTO employee_reason_history (
+                employee_id,
+                reason_for_update,
+                update_date
+            )
+            VALUES (
+                :id,
+                'ADDED',
+                GETDATE()
+            )
+        ");
+
+        $history->execute([':id' => $id]);
     }
 
     $pdo->commit();
