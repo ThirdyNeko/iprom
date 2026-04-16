@@ -142,15 +142,22 @@ function toggleDateReturned() {
 function populateEditRoving(branches = []) {
     if (!editRovingContainer) return;
 
-    const list = safeArray(branches);
+    let list = safeArray(branches);
+    if (list.length === 0) list = [''];
 
-    editRovingContainer.innerHTML = list.map((b, index) => `
+    const uniqueBranches = [...new Set(branchBrandPairs.map(p => p.branch_name))];
+
+    editRovingContainer.innerHTML = list.map((b, index) => {
+        const isExisting = b !== ''; // 🔥 existing value from DB
+
+        return `
         <div class="d-flex gap-2 mb-2 align-items-center roving-row">
-            <select class="form-control">
-                ${branchBrandPairs.map(p => `
-                    <option value="${p.branch_name}"
-                        ${p.branch_name === b ? 'selected' : ''}>
-                        ${p.branch_name}
+            <select class="form-control" ${isExisting ? 'disabled' : ''}>
+                <option value="">Select branch</option>
+                ${uniqueBranches.map(branch => `
+                    <option value="${branch}"
+                        ${branch === b ? 'selected' : ''}>
+                        ${branch}
                     </option>
                 `).join('')}
             </select>
@@ -163,21 +170,29 @@ function populateEditRoving(branches = []) {
                 −
             </button>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function populateEditBrands(brands = []) {
     if (!editMultiBrandContainer) return;
 
-    const list = safeArray(brands);
+    let list = safeArray(brands);
+    if (list.length === 0) list = [''];
 
-    editMultiBrandContainer.innerHTML = list.map((b, index) => `
+    const uniqueBrands = [...new Set(branchBrandPairs.map(p => p.brand_name))];
+
+    editMultiBrandContainer.innerHTML = list.map((b, index) => {
+        const isExisting = b !== '';
+
+        return `
         <div class="d-flex gap-2 mb-2 align-items-center brand-row">
-            <select class="form-control">
-                ${branchBrandPairs.map(p => `
-                    <option value="${p.brand_name}"
-                        ${p.brand_name === b ? 'selected' : ''}>
-                        ${p.brand_name}
+            <select class="form-control" ${isExisting ? 'disabled' : ''}>
+                <option value="">Select brand</option>
+                ${uniqueBrands.map(brand => `
+                    <option value="${brand}"
+                        ${brand === b ? 'selected' : ''}>
+                        ${brand}
                     </option>
                 `).join('')}
             </select>
@@ -190,7 +205,8 @@ function populateEditBrands(brands = []) {
                 −
             </button>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function collectAssignments() {
@@ -314,10 +330,12 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             requestAnimationFrame(() => {
                 if (subStatus === 'MULTI BRANCH') {
                     populateEditRoving(branches);
+                    updateBranchOptions();
                 }
 
                 if (subStatus === 'MULTI BRAND') {
                     populateEditBrands(brands);
+                    updateBrandOptions();
                 }
             });
             
@@ -459,6 +477,91 @@ async function loadBranchBrandPairs() {
     }
 }
 
+function getSelectedValues(container, selector) {
+    return [...container.querySelectorAll(selector)]
+        .map(s => s.value)
+        .filter(v => v);
+}
+
+function updateBranchOptions() {
+    const selects = editRovingContainer.querySelectorAll('select');
+    const selectedValues = getSelectedValues(editRovingContainer, 'select');
+
+    const uniqueBranches = [...new Set(branchBrandPairs.map(p => p.branch_name))];
+
+    selects.forEach(select => {
+        const currentValue = select.value;
+
+        select.innerHTML = `
+            <option value="">Select branch</option>
+        ` + uniqueBranches
+            .filter(branch => {
+
+                // ❌ remove full branches completely
+                const combos = branchBrandPairs.filter(p => p.branch_name === branch);
+
+                const hasAvailable = combos.some(c =>
+                    c.assigned_count < c.required_count
+                );
+
+                return hasAvailable || branch === currentValue;
+            })
+            .filter(branch =>
+                !selectedValues.includes(branch) || branch === currentValue
+            )
+            .map(branch => `
+                <option value="${branch}"
+                    ${branch === currentValue ? 'selected' : ''}>
+                    ${branch}
+                </option>
+            `).join('');
+    });
+}
+
+function updateBrandOptions() {
+    const selects = editMultiBrandContainer.querySelectorAll('select');
+    const selectedValues = getSelectedValues(editMultiBrandContainer, 'select');
+
+    const uniqueBrands = [...new Set(branchBrandPairs.map(p => p.brand_name))];
+
+    selects.forEach(select => {
+        const currentValue = select.value;
+
+        select.innerHTML = `
+            <option value="">Select brand</option>
+        ` + uniqueBrands
+            .filter(brand => {
+
+                const combos = branchBrandPairs.filter(p => p.brand_name === brand);
+
+                const hasAvailable = combos.some(c =>
+                    c.assigned_count < c.required_count
+                );
+
+                return hasAvailable || brand === currentValue;
+            })
+            .filter(brand =>
+                !selectedValues.includes(brand) || brand === currentValue
+            )
+            .map(brand => `
+                <option value="${brand}"
+                    ${brand === currentValue ? 'selected' : ''}>
+                    ${brand}
+                </option>
+            `).join('');
+    });
+}
+
+function isComboAvailable(branch, brand) {
+    const combo = branchBrandPairs.find(p =>
+        p.branch_name === branch &&
+        p.brand_name === brand
+    );
+
+    if (!combo) return false;
+
+    return combo.assigned_count < combo.required_count;
+}
 // =========================
 // INIT LISTENERS
 // =========================
@@ -482,50 +585,55 @@ document.addEventListener('DOMContentLoaded', async function () {
             const row = e.target.closest('.roving-row');
             const clone = row.cloneNode(true);
 
-            clone.querySelector('select').value = '';
+            const select = clone.querySelector('select');
+            if (select) {
+                select.value = '';
+                select.disabled = false;
+            }
 
-            // show remove button on cloned row
             const removeBtn = clone.querySelector('.btn-remove-branch');
             if (removeBtn) removeBtn.style.display = 'inline-block';
 
             editRovingContainer.appendChild(clone);
+            updateBranchOptions();
         }
 
         // REMOVE
         if (e.target.classList.contains('btn-remove-branch')) {
-            const row = e.target.closest('.roving-row');
-            row.remove();
+            e.target.closest('.roving-row').remove();
+            updateBranchOptions();
         }
     });
 
     editMultiBrandContainer.addEventListener('click', (e) => {
 
-        // ADD BRAND ROW
+        // ADD
         if (e.target.classList.contains('btn-add-brand')) {
             const row = e.target.closest('.brand-row');
             const clone = row.cloneNode(true);
 
             const select = clone.querySelector('select');
-            if (select) select.value = '';
+            if (select) {
+                select.value = '';
+                select.disabled = false;
+            }
 
-            // show remove button on cloned row
             const removeBtn = clone.querySelector('.btn-remove-brand');
             if (removeBtn) removeBtn.style.display = 'inline-block';
 
             editMultiBrandContainer.appendChild(clone);
+            updateBrandOptions();
         }
 
-        // REMOVE BRAND ROW
+        // REMOVE
         if (e.target.classList.contains('btn-remove-brand')) {
-            const row = e.target.closest('.brand-row');
-
             const allRows = editMultiBrandContainer.querySelectorAll('.brand-row');
 
             if (allRows.length > 1) {
-                row.remove();
+                e.target.closest('.brand-row').remove();
+                updateBrandOptions();
             } else {
-                const select = row.querySelector('select');
-                if (select) select.value = '';
+                e.target.closest('.brand-row').querySelector('select').value = '';
             }
         }
     });
@@ -547,4 +655,34 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         });
     }
+    // 🔥 PREVENT DUPLICATES ON CHANGE
+    editRovingContainer.addEventListener('change', (e) => {
+        if (e.target.tagName !== 'SELECT') return;
+
+        const branch = e.target.value;
+        const brand = document.getElementById('editBrand')?.value;
+
+        if (branch && brand && !isComboAvailable(branch, brand)) {
+            Swal.fire('Not Available', 'This branch is full.', 'warning');
+            e.target.value = '';
+            return;
+        }
+
+        updateBranchOptions();
+    });
+
+    editMultiBrandContainer.addEventListener('change', (e) => {
+        if (e.target.tagName !== 'SELECT') return;
+
+        const brand = e.target.value;
+        const branch = document.getElementById('editBranch')?.value;
+
+        if (branch && brand && !isComboAvailable(branch, brand)) {
+            Swal.fire('Not Available', 'This brand is full.', 'warning');
+            e.target.value = '';
+            return;
+        }
+
+        updateBrandOptions();
+    });
 });
