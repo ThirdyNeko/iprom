@@ -79,8 +79,8 @@
                         <tr>
                             <th>Reason for Update</th>
                             <td colspan="3">
-                                <select id="editReasonUpdate" class="form-select">
-                                    <option value="">-- Select Reason --</option>
+                                <select id="editReasonUpdate" class="form-select" required>
+                                    <option value="" disabled selected>-- Select Reason --</option>
                                     <option value="RESIGNED">RESIGNED</option>
                                     <option value="PULL-OUT / TERMINATED">PULL-OUT / TERMINATED</option>
                                     <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>

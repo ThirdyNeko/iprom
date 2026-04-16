@@ -398,6 +398,15 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
         });
     }
 
+    // 🚨 REQUIRED FIELD CHECK
+    if (!reason) {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'Reason Required',
+            text: 'Please select a reason for update.'
+        });
+    }
+
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
     formData.set('employment_status', document.getElementById('editEmploymentStatus').value);
