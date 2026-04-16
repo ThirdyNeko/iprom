@@ -164,7 +164,8 @@ $inactiveReasons = [
     'BLACKLISTED',
     'RETRENCHMENT',
     'TRANSFER',
-    'MATERNITY LEAVE'
+    'MATERNITY LEAVE',
+    'REMOVE BRANCH/BRAND'
 ];
 
 $isInactiveReason = in_array($reason_for_update, $inactiveReasons);
