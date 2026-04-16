@@ -5,6 +5,17 @@ header('Content-Type: application/json');
 
 $pdo = qa_db();
 
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+set_exception_handler(function($e) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => $e->getMessage()
+    ]);
+    exit;
+});
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['status' => 'danger', 'message' => 'Invalid request method']);
     exit;
@@ -55,54 +66,45 @@ $last_assigned_by = $_POST['last_assigned_by'] ?? null;
 $roving_group_id = $current['roving_group_id'];
 $multi_brand_group_id = $current['multi_brand_group_id'];
 
-/**
- * Only update IF frontend actually sends data
- */
-if (isset($_POST['branches'])) {
+$rovingBranches = $_POST['roving_branches'] ?? [];
+$multiBrands    = $_POST['multi_brands'] ?? [];
 
-    $branches = json_decode($_POST['branches'], true);
-    if (!is_array($branches)) $branches = [];
+if (!is_array($rovingBranches)) $rovingBranches = [$rovingBranches];
+if (!is_array($multiBrands)) $multiBrands = [$multiBrands];
 
-    if (!empty($branches)) {
+// =========================
+// ROVING BRANCHES (FIXED)
+// =========================
+if (!empty($rovingBranches)) {
 
-        $roving_group_id = findGroup(
-            $pdo,
-            'branch_name',
-            $branches,
-            'roving_group_id'
-        );
+    $rovingBranches = array_filter($rovingBranches);
 
-        if (!$roving_group_id) {
-            echo json_encode([
-                'status' => 'danger',
-                'message' => 'Invalid branch combination'
-            ]);
-            exit;
-        }
+    $roving_group_id = $current['roving_group_id'];
+
+    if (!$roving_group_id) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Invalid branch combination'
+        ]);
+        exit;
     }
 }
 
-if (isset($_POST['brands'])) {
+// =========================
+// MULTI BRANDS (FIXED)
+// =========================
+if (!empty($multiBrands)) {
 
-    $brands = json_decode($_POST['brands'], true);
-    if (!is_array($brands)) $brands = [];
+    $multiBrands = array_filter($multiBrands);
 
-    if (!empty($brands)) {
+    $multi_brand_group_id = $current['multi_brand_group_id'];
 
-        $multi_brand_group_id = findGroup(
-            $pdo,
-            'brand_name',
-            $brands,
-            'multi_brand_group_id'
-        );
-
-        if (!$multi_brand_group_id) {
-            echo json_encode([
-                'status' => 'danger',
-                'message' => 'Invalid brand combination'
-            ]);
-            exit;
-        }
+    if (!$multi_brand_group_id) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Invalid brand combination'
+        ]);
+        exit;
     }
 }
 
@@ -201,71 +203,153 @@ if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
 // =========================
 // EXECUTE PROCEDURE (SAFE)
 // =========================
-try {
-    $stmt = $pdo->prepare("
-        EXEC update_employee
-            @id = :id,
-            @status = :status,
-            @sub_status = :sub_status,
-            @employment_status = :employment_status,
-            @reason_for_update = :reason_for_update,
-            @start_date = :start_date,
-            @end_date = :end_date,
-            @date_separated = :date_separated,
-            @date_of_return = :date_of_return,
-            @remarks = :remarks,
-            @last_updated_by = :last_updated_by,
-            @last_assigned_by = :last_assigned_by,
-            @roving_group_id = :roving_group_id,
-            @multi_brand_group_id = :multi_brand_group_id
-    ");
+$pdo->beginTransaction();
 
-    $stmt->execute([
-        ':id' => $id,
-        ':status' => $status,
-        ':sub_status' => $sub_status,
-        ':employment_status' => $employment_status,
-        ':reason_for_update' => $reason_for_update,
-        ':start_date' => $start_date,
-        ':end_date' => $end_date,
-        ':date_separated' => $date_separated,
-        ':date_of_return' => $date_of_return,
-        ':remarks' => $remarks,
-        ':last_updated_by' => $last_updated_by,
-        ':last_assigned_by' => $last_assigned_by,
-        ':roving_group_id' => $roving_group_id,
-        ':multi_brand_group_id' => $multi_brand_group_id
-    ]);
+try {
+
+    if (!empty($rovingBranches) || !empty($multiBrands)) {
+
+        $stmtBase = $pdo->prepare("SELECT * FROM employee_info WHERE id = ?");
+        $stmtBase->execute([$id]);
+        $base = $stmtBase->fetch(PDO::FETCH_ASSOC);
+
+        $currentBranch = $base['branch'];
+        $currentBrand  = $base['brand'];
+
+        // =========================
+        // BRANCH DUPLICATION
+        // =========================
+        if (!empty($rovingBranches)) {
+
+            $stmtInsert = $pdo->prepare("
+                INSERT INTO employee_info (
+                    first_name,
+                    last_name,
+                    branch,
+                    brand,
+                    employment_status,
+                    sub_status,
+                    status,
+                    remarks,
+                    last_updated_by,
+                    reason_for_update,
+                    date_separated,
+                    date_of_return,
+                    start_date,
+                    end_date
+                )
+                VALUES (
+                    :first_name,
+                    :last_name,
+                    :branch,
+                    :brand,
+                    :employment_status,
+                    :sub_status,
+                    :status,
+                    :remarks,
+                    :last_updated_by,
+                    :reason_for_update,
+                    :date_separated,
+                    :date_of_return,
+                    :start_date,
+                    :end_date
+                )
+            ");
+
+            foreach ($rovingBranches as $branch) {
+                $stmtInsert->execute([
+                    ':first_name' => $base['first_name'],
+                    ':last_name'  => $base['last_name'],
+                    ':branch'     => $branch,
+                    ':brand'      => $currentBrand,
+                    ':employment_status' => $employment_status,
+                    ':sub_status' => $sub_status,
+                    ':status' => $status,
+                    ':remarks' => $remarks,
+                    ':last_updated_by' => $last_updated_by,
+                    ':reason_for_update' => $reason_for_update,
+                    ':date_separated' => $date_separated,
+                    ':date_of_return' => $date_of_return,
+                    ':start_date' => $start_date,
+                    ':end_date' => $end_date
+                ]);
+            }
+        }
+
+        // =========================
+        // BRAND DUPLICATION
+        // =========================
+        if (!empty($multiBrands)) {
+
+            $stmtInsert = $pdo->prepare("
+                INSERT INTO employee_info (
+                    first_name,
+                    last_name,
+                    branch,
+                    brand,
+                    employment_status,
+                    sub_status,
+                    status,
+                    remarks,
+                    last_updated_by,
+                    reason_for_update,
+                    date_separated,
+                    date_of_return,
+                    start_date,
+                    end_date
+                )
+                VALUES (
+                    :first_name,
+                    :last_name,
+                    :branch,
+                    :brand,
+                    :employment_status,
+                    :sub_status,
+                    :status,
+                    :remarks,
+                    :last_updated_by,
+                    :reason_for_update,
+                    :date_separated,
+                    :date_of_return,
+                    :start_date,
+                    :end_date
+                )
+            ");
+
+            foreach ($multiBrands as $brand) {
+                $stmtInsert->execute([
+                    ':first_name' => $base['first_name'],
+                    ':last_name'  => $base['last_name'],
+                    ':branch'     => $currentBranch,
+                    ':brand'      => $brand,
+                    ':employment_status' => $employment_status,
+                    ':sub_status' => $sub_status,
+                    ':status' => $status,
+                    ':remarks' => $remarks,
+                    ':last_updated_by' => $last_updated_by,
+                    ':reason_for_update' => $reason_for_update,
+                    ':date_separated' => $date_separated,
+                    ':date_of_return' => $date_of_return,
+                    ':start_date' => $start_date,
+                    ':end_date' => $end_date
+                ]);
+            }
+        }
+    }
+
+    $pdo->commit();
 
     echo json_encode([
         'status' => 'success',
-        'message' => 'Employee updated successfully'
+        'message' => 'Employee updated and duplicated successfully'
     ]);
+    exit;
 
 } catch (Exception $e) {
+    $pdo->rollBack();
     echo json_encode([
         'status' => 'danger',
         'message' => $e->getMessage()
     ]);
-}
-
-// =========================
-// HELPERS
-// =========================
-function findGroup($pdo, $column, $values, $groupColumn) {
-    if (empty($values)) return null;
-
-    $placeholders = implode(',', array_fill(0, count($values), '?'));
-
-    $stmt = $pdo->prepare("
-        SELECT TOP 1 $groupColumn
-        FROM assignment
-        WHERE $column IN ($placeholders)
-        GROUP BY $groupColumn
-        HAVING COUNT(*) = ?
-    ");
-
-    $stmt->execute(array_merge($values, [count($values)]));
-
-    return $stmt->fetchColumn() ?: null;
+    exit;
 }
