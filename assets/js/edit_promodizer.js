@@ -449,6 +449,37 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     formData.set('start_date', startDateInput.value);
     formData.set('end_date', endDateInput.value);
 
+    // =========================
+    // COLLECT ASSIGNMENTS
+    // =========================
+    const branch = document.getElementById('editBranch')?.value || '';
+    const brand  = document.getElementById('editBrand')?.value || '';
+
+    formData.set('branch', branch);
+    formData.set('brand', brand);
+
+    // MULTI BRANCH
+    const rovingBranches = Array.from(
+        document.querySelectorAll('#editRovingContainer select')
+    )
+    .map(s => s.value)
+    .filter(v => v);
+
+    rovingBranches.forEach(b => {
+        formData.append('roving_branches[]', b);
+    });
+
+    // MULTI BRAND
+    const multiBrands = Array.from(
+        document.querySelectorAll('#editMultiBrandContainer select')
+    )
+    .map(s => s.value)
+    .filter(v => v);
+
+    multiBrands.forEach(b => {
+        formData.append('multi_brands[]', b);
+    });
+
    fetch('functions/update_promodizer.php', {
         method: 'POST',
         body: formData
