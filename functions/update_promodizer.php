@@ -482,27 +482,6 @@ try {
         ]);
     }
 
-    // =========================
-    // HISTORY LOG
-    // =========================
-    if ($reason_for_update === 'ADD BRANCH/BRAND' && $hasInserted) {
-
-        $history = $pdo->prepare("
-            INSERT INTO employee_reason_history (
-                employee_id,
-                reason_for_update,
-                update_date
-            )
-            VALUES (
-                :id,
-                'ADDED',
-                GETDATE()
-            )
-        ");
-
-        $history->execute([':id' => $id]);
-    }
-
     $pdo->commit();
 
     echo json_encode([
