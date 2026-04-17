@@ -31,6 +31,37 @@ $(document).ready(function() {
     // =========================
     const params = new URLSearchParams(window.location.search);
     const statusParam = params.get('status');
+    const editId = params.get('edit');
+
+    if (editId) {
+
+        table.on('draw.dt', function () {
+
+            const row = table
+                .rows()
+                .nodes()
+                .to$()
+                .filter(function () {
+                    return String($(this).data('id')) === String(editId);
+                });
+
+            if (!row.length) return;
+
+            row.addClass('table-warning');
+
+            // scroll
+            $('html, body').animate({
+                scrollTop: row.offset().top - 150
+            }, 300);
+
+            // ✅ THIS is the key
+            row.trigger('click');
+
+            table.off('draw.dt');
+        });
+
+        table.draw(false);
+    }
 
     if (statusParam) {
         $('#filterStatus')

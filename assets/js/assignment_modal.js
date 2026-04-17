@@ -238,102 +238,10 @@ function setReadonlyState() {
         .prop('disabled', false); // keep editable ones enabled
 }
 
-// ✅ EDIT (reuse promodizer table row click)
 $(document).on('click', '.edit-btn', function (e) {
     e.stopPropagation();
 
     const id = $(this).data('id');
 
-    // =========================
-    // close assignment modal first
-    // =========================
-    const assignmentModalEl = document.getElementById('assignmentModal');
-    const assignmentModal = bootstrap.Modal.getInstance(assignmentModalEl);
-    if (assignmentModal) {
-        assignmentModal.hide();
-    }
-
-    // =========================
-    // try to reuse table row click
-    // =========================
-    const row = $('#promodizerTable tbody tr').filter(function () {
-        return $(this).data('id') == id;
-    });
-
-    if (row.length) {
-        row.trigger('click');
-        return;
-    }
-
-    console.warn('Row not found, using fallback fetch for ID:', id);
-
-    fetch(`functions/get_employee.php?id=${id}`)
-        .then(res => res.json())
-        .then(p => {
-
-            if (!p || !p.id) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Employee not found'
-                });
-                return;
-            }
-
-            // =========================
-            // Populate fields (safe formatting)
-            // =========================
-            $('#editPromodizerId').val(p.id);
-            $('#editFirstName').val(p.first_name || '');
-            $('#editLastName').val(p.last_name || '');
-            $('#editBranch').val(p.branch || '');
-            $('#editBrand').val(p.brand || '');
-            $('#editDateHired').val(p.date_hired ? p.date_hired.split(' ')[0] : '');
-            $('#editEmploymentStatus').val(p.employment_status || '');
-            $('#editStatus').val(p.status || '');
-            $('#editLastAssignedBy').val(p.last_assigned_by || '');
-            $('#editAssignmentDate').val(p.assignment_date ? p.assignment_date.split(' ')[0] : '');
-            $('#editLastUpdatedBy').val(p.last_updated_by || '');
-            $('#editDateLastUpdated').val(p.updated_at ? p.updated_at.split(' ')[0] : '');
-            $('#editRemarks').val(p.remarks || '');
-
-            // optional fields
-            $('#editDateSeparated').val(p.date_separated || '');
-            $('#editDateReturn').val(p.date_of_return || '');
-            $('#editReasonUpdate').val(p.reason_for_update || '');
-
-            // =========================
-            // Show modal FIRST
-            // =========================
-            const modalEl = document.getElementById('editPromodizerModal');
-            const modal = bootstrap.Modal.getInstance(modalEl) 
-                        || new bootstrap.Modal(modalEl);
-
-            modal.show();
-
-            // =========================
-            // Sync UI AFTER modal is fully shown
-            // =========================
-            setTimeout(() => {
-                if (typeof toggleDateSeparated === "function") {
-                    toggleDateSeparated();
-                }
-
-                if (typeof toggleDateReturned === "function") {
-                    toggleDateReturned();
-                }
-
-                // OPTIONAL: ensure proper UI refresh (Bootstrap fix)
-                $('#editReasonUpdate').trigger('change');
-
-            }, 200);
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Failed to load employee data'
-            });
-        });
+    window.location.href = `promodizers.php?edit=${id}`;
 });
