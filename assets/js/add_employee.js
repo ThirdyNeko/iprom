@@ -176,15 +176,52 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    function populateMultiBrandSelect(select, selectedBranch = null) {
+        select.innerHTML = '';
+
+        const branch = selectedBranch;
+        if (!branch) return;
+
+        branchBrandPairs
+            .filter(p => p.branch_name === branch)
+            .forEach(p => {
+                const opt = new Option(p.brand_name, p.brand_name);
+
+                if (p.assigned_count >= p.required_count) {
+                    opt.disabled = true;
+                    opt.text += ' (Full)';
+                }
+
+                select.appendChild(opt);
+            });
+
+        if (select.selectedOptions[0]?.disabled) {
+            select.value = '';
+        }
+    }
+
+    mainBranchSelect.addEventListener('change', () => {
+        updateBrandSelect(mainBranchSelect, mainBrandSelect);
+
+        // refresh multi-brand options based on branch
+        document.querySelectorAll('.multi-brand-select').forEach(sel => {
+            populateMultiBrandSelect(sel, mainBranchSelect.value);
+        });
+    });
+
     // Initial populate
     populateBranchSelect();
     updateBrandSelect(mainBranchSelect, mainBrandSelect);
     mainBranchSelect.addEventListener('change', () => updateBrandSelect(mainBranchSelect, mainBrandSelect));
     rovingContainer.querySelectorAll('.roving-select').forEach(s => populateRovingSelect(s));
+    multiBrandContainer
+        .querySelectorAll('.multi-brand-select')
+        .forEach(sel => populateMultiBrandSelect(sel, mainBranchSelect.value));
 
     // =========================
     // Form submission
     // =========================
+
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
