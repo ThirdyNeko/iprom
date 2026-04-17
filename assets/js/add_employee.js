@@ -84,6 +84,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (e.target.classList.contains('add-branch')) {
             const clone = row.cloneNode(true);
             clone.querySelector('select').value = '';
+            requestAnimationFrame(() => {
+                populateMultiBrandSelect(
+                    clone.querySelector('select'),
+                    mainBranchSelect.value,
+                    mainBrandSelect.value
+                );
+            });
             rovingContainer.appendChild(clone);
             populateRovingSelect(clone.querySelector('select'));
         }
@@ -101,8 +108,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         if (e.target.classList.contains('add-brand')) {
             const clone = row.cloneNode(true);
-            clone.querySelector('select').value = '';
+            const select = clone.querySelector('select');
+
+            select.value = '';
             multiBrandContainer.appendChild(clone);
+
+            // wait until DOM is fully attached
+            requestAnimationFrame(() => {
+                populateMultiBrandSelect(
+                    select,
+                    mainBranchSelect.value,
+                    mainBrandSelect.value
+                );
+            });
         }
 
         if (e.target.classList.contains('remove-brand')) {
@@ -124,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // =========================
     function populateBranchSelect() {
         const uniqueBranches = [...new Set(branchBrandPairs.map(p => p.branch_name))];
-        mainBranchSelect.innerHTML = '';
+        mainBranchSelect.innerHTML = '<option value="" disabled selected>-- Select Branch --</option>';
         uniqueBranches.forEach(b => {
             const opt = new Option(b, b);
             const allFull = branchBrandPairs
@@ -143,7 +161,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // =========================
     function updateBrandSelect(selectBranch, selectBrand) {
         const branch = selectBranch.value;
-        selectBrand.innerHTML = '';
+        selectBrand.innerHTML = '<option value="" disabled selected>-- Select Brand --</option>';
         branchBrandPairs
             .filter(p => p.branch_name === branch)
             .forEach(p => {
@@ -154,69 +172,101 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
                 selectBrand.appendChild(opt);
             });
-        if(selectBrand.selectedOptions[0]?.disabled) selectBrand.value = '';
     }
 
     // =========================
     // Populate roving selects
     // =========================
     function populateRovingSelect(select) {
-        const uniqueBranches = [...new Set(branchBrandPairs.map(p => p.branch_name))];
-        select.innerHTML = '';
+        const currentBranch = mainBranchSelect.value;
+
+        const uniqueBranches = [
+            ...new Set(branchBrandPairs.map(p => p.branch_name))
+        ];
+
+        select.innerHTML = '<option value="" disabled selected>-- Select Branch --</option>';
+
         uniqueBranches.forEach(b => {
+            if (b === currentBranch) return; // ❌ exclude selected branch
+
             const opt = new Option(b, b);
+
             const allFull = branchBrandPairs
                 .filter(p => p.branch_name === b)
                 .every(p => p.assigned_count >= p.required_count);
-            if(allFull) {
+
+            if (allFull) {
                 opt.disabled = true;
                 opt.text += ' (Full)';
             }
+
             select.appendChild(opt);
         });
     }
 
-    function populateMultiBrandSelect(select, selectedBranch = null) {
-        select.innerHTML = '';
+    function populateMultiBrandSelect(select, selectedBranch, excludedBrand) {
 
-        const branch = selectedBranch;
+        const branch = selectedBranch || mainBranchSelect.value;
+        const brandToExclude = excludedBrand || mainBrandSelect.value;
+
+        select.innerHTML = '<option value="" disabled selected>-- Select Brand --</option>';
+
         if (!branch) return;
 
-        branchBrandPairs
-            .filter(p => p.branch_name === branch)
-            .forEach(p => {
-                const opt = new Option(p.brand_name, p.brand_name);
+        const filtered = branchBrandPairs.filter(
+            p => p.branch_name === branch
+        );
 
-                if (p.assigned_count >= p.required_count) {
-                    opt.disabled = true;
-                    opt.text += ' (Full)';
-                }
+        filtered.forEach(p => {
 
-                select.appendChild(opt);
-            });
+            // ✅ IMPORTANT FIX: use passed value, not global only
+            if (p.brand_name === brandToExclude) return;
 
-        if (select.selectedOptions[0]?.disabled) {
-            select.value = '';
-        }
+            const opt = new Option(p.brand_name, p.brand_name);
+
+            if (p.assigned_count >= p.required_count) {
+                opt.disabled = true;
+                opt.text += ' (Full)';
+            }
+
+            select.appendChild(opt);
+        });
     }
 
     mainBranchSelect.addEventListener('change', () => {
         updateBrandSelect(mainBranchSelect, mainBrandSelect);
 
-        // refresh multi-brand options based on branch
-        document.querySelectorAll('.multi-brand-select').forEach(sel => {
-            populateMultiBrandSelect(sel, mainBranchSelect.value);
+        const branch = mainBranchSelect.value;
+        const brand = mainBrandSelect.value;
+
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.multi-brand-select').forEach(sel => {
+                populateMultiBrandSelect(sel, branch, brand);
+            });
+        });
+    });
+
+    mainBrandSelect.addEventListener('change', () => {
+
+        const branch = mainBranchSelect.value;
+        const brand = mainBrandSelect.value;
+
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.multi-brand-select').forEach(sel => {
+                populateMultiBrandSelect(sel, branch, brand);
+            });
         });
     });
 
     // Initial populate
     populateBranchSelect();
     updateBrandSelect(mainBranchSelect, mainBrandSelect);
-    mainBranchSelect.addEventListener('change', () => updateBrandSelect(mainBranchSelect, mainBrandSelect));
     rovingContainer.querySelectorAll('.roving-select').forEach(s => populateRovingSelect(s));
     multiBrandContainer
         .querySelectorAll('.multi-brand-select')
-        .forEach(sel => populateMultiBrandSelect(sel, mainBranchSelect.value));
+        .forEach(sel => {
+            populateMultiBrandSelect(sel, mainBranchSelect.value, mainBrandSelect.value);
+        });
 
     // =========================
     // Form submission
