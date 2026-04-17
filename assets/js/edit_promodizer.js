@@ -139,13 +139,37 @@ function toggleDateReturned() {
     }
 }
 
-function populateEditRoving(branches = []) {
+function populateEditRoving(branches = [], currentBrand = null) {
     if (!editRovingContainer) return;
 
     let list = safeArray(branches);
-    if (list.length === 0) list = [''];
 
-    const uniqueBranches = [...new Set(branchBrandPairs.map(p => p.branch_name))];
+    // ❗ STRICT: only rows with this brand AND available
+    const validBranches = branchBrandPairs
+        .filter(p =>
+            p.brand_name === currentBrand &&
+            (
+                p.assigned_count < p.required_count || // ✅ available
+                list.includes(p.branch_name)           // ✅ already selected
+            )
+        )
+        .map(p => p.branch_name);
+
+    const uniqueBranches = [...new Set(validBranches)];
+
+    // remove already selected
+    const finalAvailable = uniqueBranches.filter(b => !list.includes(b));
+
+    // 🚫 nothing valid → show nothing
+    if (list.length === 0 && finalAvailable.length === 0) {
+        editRovingContainer.innerHTML = '';
+        return;
+    }
+
+    // only allow empty row if something valid exists
+    if (list.length === 0 && finalAvailable.length > 0) {
+        list = [''];
+    }
 
     editRovingContainer.innerHTML = list.map((b, index) => {
 
@@ -174,13 +198,34 @@ function populateEditRoving(branches = []) {
     }).join('');
 }
 
-function populateEditBrands(brands = []) {
+function populateEditBrands(brands = [], currentBranch = null) {
     if (!editMultiBrandContainer) return;
 
     let list = safeArray(brands);
-    if (list.length === 0) list = [''];
 
-    const uniqueBrands = [...new Set(branchBrandPairs.map(p => p.brand_name))];
+    // ❗ STRICT: only rows with this branch AND available
+    const validBrands = branchBrandPairs
+        .filter(p =>
+            p.branch_name === currentBranch &&
+            (
+                p.assigned_count < p.required_count ||
+                list.includes(p.brand_name)
+            )
+        )
+        .map(p => p.brand_name);
+
+    const uniqueBrands = [...new Set(validBrands)];
+
+    const finalAvailable = uniqueBrands.filter(b => !list.includes(b));
+
+    if (list.length === 0 && finalAvailable.length === 0) {
+        editMultiBrandContainer.innerHTML = '';
+        return;
+    }
+
+    if (list.length === 0 && finalAvailable.length > 0) {
+        list = [''];
+    }
 
     editMultiBrandContainer.innerHTML = list.map((b, index) => {
 
@@ -329,12 +374,12 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             // render AFTER UI sync
             requestAnimationFrame(() => {
                 if (subStatus === 'MULTI BRANCH') {
-                    populateEditRoving(branches);
+                    populateEditRoving(branches, employee.brand);
                     updateBranchOptions();
                 }
 
                 if (subStatus === 'MULTI BRAND') {
-                    populateEditBrands(brands);
+                    populateEditBrands(brands, employee.branch);
                     updateBrandOptions();
                 }
             });
@@ -518,7 +563,19 @@ function updateBranchOptions() {
     const selects = editRovingContainer.querySelectorAll('select');
     const selectedValues = getSelectedValues(editRovingContainer, 'select');
 
-    const uniqueBranches = [...new Set(branchBrandPairs.map(p => p.branch_name))];
+    const currentBrand = document.getElementById('editBrand')?.value;
+
+    const validBranches = branchBrandPairs
+        .filter(p =>
+            p.brand_name === currentBrand &&
+            (
+                p.assigned_count < p.required_count ||
+                selectedValues.includes(p.branch_name)
+            )
+        )
+        .map(p => p.branch_name);
+
+    const uniqueBranches = [...new Set(validBranches)];
 
     selects.forEach(select => {
         const currentValue = select.value;
@@ -526,17 +583,6 @@ function updateBranchOptions() {
         select.innerHTML = `
             <option value="">Select branch</option>
         ` + uniqueBranches
-            .filter(branch => {
-
-                // ❌ remove full branches completely
-                const combos = branchBrandPairs.filter(p => p.branch_name === branch);
-
-                const hasAvailable = combos.some(c =>
-                    c.assigned_count < c.required_count
-                );
-
-                return hasAvailable || branch === currentValue;
-            })
             .filter(branch =>
                 !selectedValues.includes(branch) || branch === currentValue
             )
@@ -553,7 +599,19 @@ function updateBrandOptions() {
     const selects = editMultiBrandContainer.querySelectorAll('select');
     const selectedValues = getSelectedValues(editMultiBrandContainer, 'select');
 
-    const uniqueBrands = [...new Set(branchBrandPairs.map(p => p.brand_name))];
+    const currentBranch = document.getElementById('editBranch')?.value;
+
+    const validBrands = branchBrandPairs
+        .filter(p =>
+            p.branch_name === currentBranch &&
+            (
+                p.assigned_count < p.required_count ||
+                selectedValues.includes(p.brand_name)
+            )
+        )
+        .map(p => p.brand_name);
+
+    const uniqueBrands = [...new Set(validBrands)];
 
     selects.forEach(select => {
         const currentValue = select.value;
@@ -561,16 +619,6 @@ function updateBrandOptions() {
         select.innerHTML = `
             <option value="">Select brand</option>
         ` + uniqueBrands
-            .filter(brand => {
-
-                const combos = branchBrandPairs.filter(p => p.brand_name === brand);
-
-                const hasAvailable = combos.some(c =>
-                    c.assigned_count < c.required_count
-                );
-
-                return hasAvailable || brand === currentValue;
-            })
             .filter(brand =>
                 !selectedValues.includes(brand) || brand === currentValue
             )
