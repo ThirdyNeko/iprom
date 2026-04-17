@@ -139,7 +139,7 @@ function toggleDateReturned() {
     }
 }
 
-function populateEditRoving(branches = [], currentBrand = null) {
+function populateEditRoving(branches = [], currentBrand = null, baseBranch = null) {
     if (!editRovingContainer) return;
 
     let list = safeArray(branches);
@@ -148,9 +148,10 @@ function populateEditRoving(branches = [], currentBrand = null) {
     const validBranches = branchBrandPairs
         .filter(p =>
             p.brand_name === currentBrand &&
+            p.branch_name !== baseBranch && // ❌ exclude itself
             (
-                p.assigned_count < p.required_count || // ✅ available
-                list.includes(p.branch_name)           // ✅ already selected
+                p.assigned_count < p.required_count ||
+                list.includes(p.branch_name)
             )
         )
         .map(p => p.branch_name);
@@ -198,7 +199,7 @@ function populateEditRoving(branches = [], currentBrand = null) {
     }).join('');
 }
 
-function populateEditBrands(brands = [], currentBranch = null) {
+function populateEditBrands(brands = [], currentBranch = null, baseBrand = null) {
     if (!editMultiBrandContainer) return;
 
     let list = safeArray(brands);
@@ -207,6 +208,7 @@ function populateEditBrands(brands = [], currentBranch = null) {
     const validBrands = branchBrandPairs
         .filter(p =>
             p.branch_name === currentBranch &&
+            p.brand_name !== baseBrand && // ❌ exclude itself
             (
                 p.assigned_count < p.required_count ||
                 list.includes(p.brand_name)
@@ -374,12 +376,12 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             // render AFTER UI sync
             requestAnimationFrame(() => {
                 if (subStatus === 'MULTI BRANCH') {
-                    populateEditRoving(branches, employee.brand);
+                    populateEditRoving(branches, employee.brand, employee.branch);
                     updateBranchOptions();
                 }
 
                 if (subStatus === 'MULTI BRAND') {
-                    populateEditBrands(brands, employee.branch);
+                    populateEditBrands(brands, employee.branch, employee.brand);
                     updateBrandOptions();
                 }
             });
@@ -564,10 +566,12 @@ function updateBranchOptions() {
     const selectedValues = getSelectedValues(editRovingContainer, 'select');
 
     const currentBrand = document.getElementById('editBrand')?.value;
+    const baseBranch = document.getElementById('editBranch')?.value;
 
     const validBranches = branchBrandPairs
         .filter(p =>
             p.brand_name === currentBrand &&
+            p.branch_name !== baseBranch &&
             (
                 p.assigned_count < p.required_count ||
                 selectedValues.includes(p.branch_name)
@@ -600,10 +604,12 @@ function updateBrandOptions() {
     const selectedValues = getSelectedValues(editMultiBrandContainer, 'select');
 
     const currentBranch = document.getElementById('editBranch')?.value;
+    const baseBrand = document.getElementById('editBrand')?.value;
 
     const validBrands = branchBrandPairs
         .filter(p =>
             p.branch_name === currentBranch &&
+            p.brand_name !== baseBrand &&
             (
                 p.assigned_count < p.required_count ||
                 selectedValues.includes(p.brand_name)
