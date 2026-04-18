@@ -75,9 +75,9 @@ if (!is_array($multiBrands)) $multiBrands = [$multiBrands];
 // =========================
 // ROVING BRANCHES (FIXED)
 // =========================
-if (!empty($rovingBranches)) {
 
-    $rovingBranches = array_filter($rovingBranches);
+$rovingBranches = array_filter($rovingBranches);
+if ($reason_for_update === 'ADD BRANCH/BRAND' && !empty($rovingBranches)) {
 
     $roving_group_id = $current['roving_group_id'];
 
@@ -93,9 +93,8 @@ if (!empty($rovingBranches)) {
 // =========================
 // MULTI BRANDS (FIXED)
 // =========================
-if (!empty($multiBrands)) {
-
-    $multiBrands = array_filter($multiBrands);
+$multiBrands = array_filter($multiBrands);
+if ($reason_for_update === 'ADD BRANCH/BRAND' && !empty($multiBrands)) {
 
     $multi_brand_group_id = $current['multi_brand_group_id'];
 
