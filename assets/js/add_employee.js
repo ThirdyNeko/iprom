@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     const remarks = form.querySelector('textarea[name="remarks"]');
     const remarksCount = document.getElementById('remarksCount');
     const subStatus = document.getElementById('subStatus');
+    const genderInput = form.querySelector('select[name="gender"]');
+    const birthdayInput = form.querySelector('input[name="birthday"]');
 
     const mainBranchSelect = form.querySelector('select[name="branch"]');
     const mainBrandSelect = form.querySelector('select[name="brand"]');
@@ -287,6 +289,24 @@ document.addEventListener('DOMContentLoaded', async function() {
         const statusType = employmentStatus.value;
         const sub = subStatus.value;
         const dateHiredInput = form.querySelector('input[name="date_hired"]');
+        const gender = genderInput.value;
+        const birthday = birthdayInput.value;
+
+        // Gender validation
+        if (!gender) {
+            return Swal.fire('Missing Gender', 'Please select gender.', 'warning');
+        }
+
+        // Birthday validation
+        if (!birthday) {
+            return Swal.fire('Missing Birthday', 'Please select birthday.', 'warning');
+        }
+
+        // Optional: prevent future birthday
+        const todayDate = new Date().toISOString().split('T')[0];
+        if (birthday > todayDate) {
+            return Swal.fire('Invalid Birthday', 'Birthday cannot be in the future.', 'error');
+        }
 
         // Set max = today
         const today = new Date().toISOString().split('T')[0];
@@ -413,6 +433,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             formData.set('employment_status', statusType);
             formData.set('assigned_by', window.currentUser || 'SYSTEM');
             formData.set('updated_by', window.currentUser || 'SYSTEM');
+            formData.set('gender', gender);
+            formData.set('birthday', birthday);
 
             const res = await fetch('functions/add_employee.php', { method: 'POST', body: formData });
             const data = await res.json();

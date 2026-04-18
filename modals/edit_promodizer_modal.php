@@ -107,6 +107,17 @@
                         <tr>
                             <th>Assignment Date</th>
                             <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>
+                            <th>Date Hired</th>
+                            <td><input type="date" id="editDateHired" class="form-control" readonly></td>
+                        </tr>
+
+                        <tr>
+                            <th>Birthday</th>
+                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
+                            <th>Gender</th>
+                            <td>
+                                <input type="text" id="editGender" class="form-control" readonly>
+                            </td>
                             <td colspan="2"></td>
                         </tr>
                         <tr>

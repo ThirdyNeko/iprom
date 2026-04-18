@@ -21,6 +21,8 @@ $remarks    = $_POST['remarks'] ?? null;
 $date_hired = $_POST['date_hired'] ?? null;
 $start_date = $_POST['start_date'] ?? null;
 $end_date   = $_POST['end_date'] ?? null;
+$gender   = $_POST['gender'] ?? null;
+$birthday = $_POST['birthday'] ?? null;
 
 // =========================
 // ROVING BRANCHES
@@ -60,6 +62,14 @@ if ($date_hired && $date_hired > date('Y-m-d')) {
     exit;
 }
 
+if ($birthday && $birthday > date('Y-m-d')) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Birthday cannot be in the future.'
+    ]);
+    exit;
+}
+
 try {
 
     // =========================
@@ -81,7 +91,9 @@ try {
                 @remarks = :remarks,
                 @date_hired = :date_hired,
                 @start_date = :start_date,
-                @end_date = :end_date
+                @end_date = :end_date,
+                @gender = :gender,
+                @birthday = :birthday
         ");
 
         $stmt->execute([
@@ -98,7 +110,9 @@ try {
             ':remarks'           => $remarks,
             ':date_hired'        => $date_hired,
             ':start_date'        => $start_date,
-            ':end_date'          => $end_date
+            ':end_date'          => $end_date,
+            ':gender'   => $gender,
+            ':birthday' => $birthday
         ]);
     }
 
@@ -120,7 +134,9 @@ try {
                 @remarks = :remarks,
                 @date_hired = :date_hired,
                 @start_date = :start_date,
-                @end_date = :end_date
+                @end_date = :end_date,
+                @gender = :gender,
+                @birthday = :birthday
         ");
 
         $stmt->execute([
@@ -136,7 +152,9 @@ try {
             ':remarks'           => $remarks,
             ':date_hired'        => $date_hired,
             ':start_date'        => $start_date,
-            ':end_date'          => $end_date
+            ':end_date'          => $end_date,
+            ':gender'   => $gender,
+            ':birthday' => $birthday
         ]);
     }
 
@@ -158,7 +176,9 @@ try {
                 @remarks = :remarks,
                 @date_hired = :date_hired,
                 @start_date = :start_date,
-                @end_date = :end_date
+                @end_date = :end_date,
+                @gender = :gender,
+                @birthday = :birthday
         ");
 
         $stmt->execute([
@@ -174,7 +194,9 @@ try {
             ':remarks'           => $remarks,
             ':date_hired'        => $date_hired,
             ':start_date'        => $start_date,
-            ':end_date'          => $end_date
+            ':end_date'          => $end_date,
+            ':gender'   => $gender,
+            ':birthday' => $birthday
         ]);
     }
 

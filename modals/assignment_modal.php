@@ -55,7 +55,7 @@
                                     <td id="modalBrand" class="readonly-field"></td>
                                 </tr>
                                 <tr>
-                                    <th>Required</th>
+                                    <th>Plantilla</th>
                                     <td>
                                         <input type="number" id="modalRequired" class="form-control form-control-sm" min="0">
                                     </td>

@@ -57,6 +57,15 @@ $branch_brand_pairs = $pdo->query("
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label">Gender</label>
+                                <select name="gender" class="form-select" required>
+                                    <option value="" disabled selected>Select Gender</option>
+                                    <option value="MALE">MALE</option>
+                                    <option value="FEMALE">FEMALE</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Date Hired</label>
                                 <input type="date" name="date_hired" class="form-control" required>
                             </div>
@@ -119,6 +128,11 @@ $branch_brand_pairs = $pdo->query("
                             <div class="mb-3">
                                 <label class="form-label">Last Name</label>
                                 <input type="text" name="last_name" class="form-control" required style="text-transform: uppercase;">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Birthday</label>
+                                <input type="date" name="birthday" class="form-control" required>
                             </div>
 
                             <div class="mb-3">

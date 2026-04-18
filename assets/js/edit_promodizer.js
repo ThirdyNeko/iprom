@@ -31,6 +31,10 @@ const editRovingContainer = document.getElementById('editRovingContainer');
 const editMultiBrandField = document.getElementById('editMultiBrandField');
 const editMultiBrandContainer = document.getElementById('editMultiBrandContainer');
 
+const editGender = document.getElementById('editGender');
+const editBirthday = document.getElementById('editBirthday');
+const editDateHired = document.getElementById('editDateHired');
+
 function toggleEmploymentDates() {
     if (!employmentStatusSelect) return;
 
@@ -327,6 +331,14 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             // ✅ FIXED DATE HANDLING (NO "-")
             if (el('editDateHired')) {
                 el('editDateHired').value = employee.date_hired || '';
+            }
+
+            if (el('editGender')) {
+                el('editGender').value = cleanValue(employee.gender) || '';
+            }
+
+            if (el('editBirthday')) {
+                el('editBirthday').value = employee.birthday || '';
             }
 
             if (el('editStatus')) el('editStatus').value = cleanValue(employee.status) || '-';
