@@ -118,7 +118,6 @@
                             <td>
                                 <input type="text" id="editGender" class="form-control" readonly>
                             </td>
-                            <td colspan="2"></td>
                         </tr>
                         <tr>
                             <th>Reason for Update</th>

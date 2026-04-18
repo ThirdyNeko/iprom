@@ -314,7 +314,9 @@ document.querySelectorAll('.clickable-row').forEach(row => {
                 date_hired: p.date_hired,
                 updated_at: p.updated_at,
                 start_date: p.start_date,
-                end_date: p.end_date
+                end_date: p.end_date,
+                gender: p.gender,
+                birthday: p.birthday,
             };
 
             // =========================
