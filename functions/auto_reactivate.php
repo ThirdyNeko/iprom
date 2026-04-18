@@ -77,6 +77,7 @@ function autoReactivateEmployees()
                     AND brand = :brand
                     AND employment_status IN ('RELIEVER', 'SEASONAL')
                     AND status = 'ACTIVE'
+                    
                     ORDER BY 
                         CASE 
                             WHEN end_date IS NOT NULL AND end_date <= GETDATE() THEN 0
@@ -89,7 +90,7 @@ function autoReactivateEmployees()
                         id ASC
                 )
                 UPDATE employee_info
-                SET status = 'INACTIVE',
+                SET status = 'TERMINATED',
                     last_updated_by = 'SYSTEM',
                     updated_at = GETDATE()
                 WHERE id = (SELECT id FROM Ranked);
@@ -206,36 +207,116 @@ function autoDeactivateSeasonal()
 {
     $pdo = qa_db();
 
+    // =========================
+    // 1. GET AFFECTED EMPLOYEES
+    // =========================
     $stmt = $pdo->prepare("
-        UPDATE employee_info
-        SET status = 'INACTIVE',
-            last_updated_by = 'SYSTEM',
-            updated_at = GETDATE(),
-            date_separated = GETDATE(),
-            reason_for_update = 'END OF CONTRACT'
+        SELECT *
+        FROM employee_info
         WHERE date_separated IS NULL
           AND employment_status IN ('SEASONAL', 'RELIEVER')
           AND CAST(end_date AS DATE) <= CAST(GETDATE() AS DATE)
           AND status = 'ACTIVE'
     ");
-
     $stmt->execute();
+    $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $history = $pdo->prepare("
-        INSERT INTO employee_reason_history (
-            employee_id,
-            reason_for_update,
-            update_date
-        )
-        SELECT 
-            id,
-            'AUTO DEACTIVATED (END OF CONTRACT)',
-            GETDATE()
-        FROM employee_info
-        WHERE date_separated IS NULL
-        AND employment_status IN ('SEASONAL', 'RELIEVER')
-        AND CAST(end_date AS DATE) <= CAST(GETDATE() AS DATE)
-        AND status = 'ACTIVE'
-    ");
-    $history->execute();
+    foreach ($employees as $emp) {
+
+        $id = $emp['id'];
+        $branch = $emp['branch'];
+        $brand  = $emp['brand'];
+        $sub    = strtoupper($emp['sub_status']);
+
+        // =========================
+        // 2. CHECK IF MULTI GROUP
+        // =========================
+        $isMulti = in_array($sub, ['MULTI BRAND', 'MULTI BRANCH']);
+
+        if ($isMulti) {
+
+            // =========================
+            // 3. GET GROUP MEMBERS
+            // =========================
+            $groupStmt = $pdo->prepare("
+                SELECT id
+                FROM employee_info
+                WHERE branch = :branch
+                  AND brand = :brand
+                  AND status <> 'TERMINATED'
+            ");
+            $groupStmt->execute([
+                ':branch' => $branch,
+                ':brand'  => $brand
+            ]);
+
+            $group = $groupStmt->fetchAll(PDO::FETCH_COLUMN);
+
+            if (!empty($group)) {
+
+                // pick one survivor (oldest or lowest id)
+                sort($group);
+                $survivor = array_shift($group);
+
+                // =========================
+                // 4. TERMINATE OTHERS
+                // =========================
+                if (!empty($group)) {
+                    $in = implode(',', array_fill(0, count($group), '?'));
+
+                    $term = $pdo->prepare("
+                        UPDATE employee_info
+                        SET status = 'TERMINATED',
+                            roving_group_id = NULL,
+                            multi_brand_group_id = NULL,
+                            last_updated_by = 'SYSTEM',
+                            updated_at = GETDATE()
+                        WHERE id IN ($in)
+                    ");
+                    $term->execute($group);
+                }
+
+                // =========================
+                // 5. SURVIVOR BECOMES INACTIVE
+                // =========================
+                $pdo->prepare("
+                    UPDATE employee_info
+                    SET status = 'INACTIVE',
+                        date_separated = GETDATE(),
+                        reason_for_update = 'END OF CONTRACT (SURVIVOR)',
+                        last_updated_by = 'SYSTEM',
+                        updated_at = GETDATE()
+                    WHERE id = ?
+                ")->execute([$survivor]);
+
+            }
+
+        } else {
+
+            // =========================
+            // NORMAL SEASONAL FLOW
+            // =========================
+            $pdo->prepare("
+                UPDATE employee_info
+                SET status = 'INACTIVE',
+                    date_separated = GETDATE(),
+                    reason_for_update = 'END OF CONTRACT',
+                    last_updated_by = 'SYSTEM',
+                    updated_at = GETDATE()
+                WHERE id = ?
+            ")->execute([$id]);
+        }
+
+        // =========================
+        // HISTORY LOG
+        // =========================
+        $pdo->prepare("
+            INSERT INTO employee_reason_history (
+                employee_id,
+                reason_for_update,
+                update_date
+            )
+            VALUES (?, 'AUTO DEACTIVATED (END OF CONTRACT)', GETDATE())
+        ")->execute([$id]);
+    }
 }
