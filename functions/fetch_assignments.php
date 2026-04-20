@@ -4,8 +4,8 @@ include '../config/db.php';
 $pdo = qa_db();
 
 // DataTables params
-$draw = $_POST['draw'] ?? 1;
-$start = $_POST['start'] ?? 0;
+$draw   = $_POST['draw'] ?? 1;
+$start  = $_POST['start'] ?? 0;
 $length = $_POST['length'] ?? 50;
 
 // Filters
@@ -15,70 +15,88 @@ $status = $_POST['status'] ?: null;
 $from   = $_POST['from_date'] ?: null;
 $to     = $_POST['to_date'] ?: null;
 
-// Call SP safely
-$stmt = $pdo->prepare("EXEC get_assignments @branch_name=?, @brand_name=?, @from_date=?, @to_date=?");
+// Clean nulls properly
+function clean($v) {
+    return ($v === "" || $v === null) ? null : $v;
+}
+
+$branch = clean($branch);
+$brand  = clean($brand);
+$from   = clean($from);
+$to     = clean($to);
+
+// CALL STORED PROCEDURE
+$stmt = $pdo->prepare("
+    EXEC get_assignments 
+        @branch_name = ?, 
+        @brand_name = ?, 
+        @from_date = ?, 
+        @to_date = ?
+");
+
 $stmt->execute([$branch, $brand, $from, $to]);
-$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Status filter in PHP
-$data = array_filter($data, function($a) use($status){
-    $shortage = $a['required_count'] - $a['assigned_count'];
+// -------------------------
+// STATUS FILTER (POST DB)
+// -------------------------
+if ($status) {
+    $rows = array_filter($rows, function ($a) use ($status) {
+        $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
 
-    if ($status === 'zero') {
-        return $a['assigned_count'] == 0;
-    } elseif ($status === 'complete') {
-        return $shortage === 0;
-    } elseif ($status === 'lacking') {
-        return $a['assigned_count'] > 0 && $shortage > 0;
-    }
-    return true; // no status filter
-});
+        if ($status === 'zero') {
+            return (int)$a['assigned_count'] === 0;
+        }
+        if ($status === 'complete') {
+            return $shortage === 0;
+        }
+        if ($status === 'lacking') {
+            return (int)$a['assigned_count'] > 0 && $shortage > 0;
+        }
+        return true;
+    });
+}
 
-// Total records
-$total = count($data);
+// Reindex array after filter
+$rows = array_values($rows);
 
-// Pagination
-$pagedData = array_slice($data, $start, $length);
+// TOTALS (IMPORTANT FIX)
+$recordsFiltered = count($rows);
 
-// Format rows for DataTables
+// PAGINATION AFTER FILTER (correct now)
+$paged = array_slice($rows, $start, $length);
+
+// FORMAT OUTPUT
 $result = [];
-foreach($pagedData as $i => $a){
-    $shortage = $a['required_count'] - $a['assigned_count'];
 
-    if ($a['assigned_count'] == 0) {
+foreach ($paged as $a) {
+
+    $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
+
+    if ((int)$a['assigned_count'] === 0) {
         $statusLabel = "<span class='badge bg-danger'>INACTIVE</span>";
     } elseif ($shortage > 0) {
         $statusLabel = "<span class='badge bg-warning'>VACANT: $shortage</span>";
     } else {
         $statusLabel = "<span class='badge bg-success'>ACTIVE</span>";
     }
-    
+
     $result[] = [
-        "DT_RowClass" => "clickable-row",
-        "DT_RowAttr" => [
-            "class" => "clickable-row",
-            "data-branch" => $a['branch_name'],
-            "data-brand"  => $a['brand_name'],
-            "data-required" => $a['required_count'],
-            "data-assigned" => $a['assigned_count'],
-            "data-updated"  => $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-',
-            "data-updated-by" => $a['updated_by'] ?? '-'
-        ],
         $a['branch_name'],
         $a['brand_name'],
         '<span class="required-cell">'.$a['required_count'].'</span>',
         $a['assigned_count'],
         $statusLabel,
-        $a['updated_at'] ? date('Y-m-d', strtotime($a['updated_at'])) : '-',
+        $a['updated_at'] ? date('m/d/Y', strtotime($a['updated_at'])) : '-',
         $a['updated_by'] ?? '-'
     ];
 }
 
-// Return JSON
+// RESPONSE
 echo json_encode([
     "draw" => intval($draw),
-    "recordsTotal" => $total,
-    "recordsFiltered" => $total,
+    "recordsTotal" => $recordsFiltered,
+    "recordsFiltered" => $recordsFiltered,
     "data" => $result
 ]);
 exit;
