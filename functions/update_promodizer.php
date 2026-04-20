@@ -164,7 +164,6 @@ $inactiveReasons = [
     'END OF CONTRACT',
     'BLACKLISTED',
     'RETRENCHMENT',
-    'TRANSFER',
     'MATERNITY LEAVE',
     'REMOVE BRANCH/BRAND'
 ];

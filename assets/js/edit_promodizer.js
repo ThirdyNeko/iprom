@@ -73,7 +73,6 @@ const showDateSeparatedReasons = [
     "RETRENCHMENT",
     "END OF CONTRACT",
     "BLACKLISTED",
-    "TRANSFER",
     "MATERNITY LEAVE"
 ];
 
