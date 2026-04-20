@@ -27,7 +27,16 @@ async function loadHistory(employeeId) {
 
             return `
                 <div class="history-item">
-                    <div class="history-reason">${item.reason_for_update}</div>
+                    <div class="history-reason">
+                        ${item.reason_for_update || 'No reason'}
+                    </div>
+
+                    ${item.remarks ? `
+                        <div class="history-remarks text-muted small">
+                            Remarks: ${item.remarks}
+                        </div>
+                    ` : ''}
+
                     <div class="history-date">${formatted}</div>
                 </div>
             `;

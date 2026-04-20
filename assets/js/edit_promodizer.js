@@ -347,7 +347,18 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             if (el('editLastAssignedBy')) el('editLastAssignedBy').value = cleanValue(employee.last_assigned_by);
 
             if (el('editAssignmentDate')) {
-                el('editAssignmentDate').value = employee.assignment_date || '';
+                const d = employee.assignment_date;
+
+                if (d) {
+                    const dateObj = new Date(d);
+                    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const dd = String(dateObj.getDate()).padStart(2, '0');
+                    const yyyy = dateObj.getFullYear();
+
+                    el('editAssignmentDate').value = `${mm}/${dd}/${yyyy}`;
+                } else {
+                    el('editAssignmentDate').value = '';
+                }
             }
             if (el('editStartDate')) el('editStartDate').value = cleanValue(employee.start_date);
             if (el('editEndDate')) el('editEndDate').value = cleanValue(employee.end_date);
@@ -412,7 +423,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             // =========================
             if (el('editDateSeparated')) el('editDateSeparated').value = cleanValue(employee.date_separated);
             if (el('editDateReturn')) el('editDateReturn').value = cleanValue(employee.date_of_return);
-            if (el('editRemarks')) el('editRemarks').value = cleanValue(employee.remarks);
+            if (el('editRemarks')) el('editRemarks').value = '';
 
             // =========================
             // READ ONLY
@@ -506,7 +517,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     formData.set('date_returned', dateReturned.value);
     formData.set('last_updated_by', document.getElementById('editLastUpdatedBy').value);
     formData.set('date_last_updated', document.getElementById('editDateLastUpdated').value);
-    formData.set('remarks', document.getElementById('editRemarks').value);
+    document.getElementById('editRemarks').value = '';
     formData.set('start_date', startDateInput.value);
     formData.set('end_date', endDateInput.value);
 

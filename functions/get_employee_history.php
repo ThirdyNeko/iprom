@@ -11,12 +11,18 @@ if (!$id) {
 }
 
 $stmt = $pdo->prepare("
-    SELECT reason_for_update, update_date
+    SELECT 
+        employee_id,
+        reason_for_update,
+        remarks,
+        update_date
     FROM employee_reason_history
-    WHERE employee_id = ?
+    WHERE employee_id = :id
     ORDER BY update_date DESC
 ");
 
-$stmt->execute([$id]);
+$stmt->execute([':id' => $id]);
 
-echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+echo json_encode($data);
