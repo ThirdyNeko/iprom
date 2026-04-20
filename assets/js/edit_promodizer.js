@@ -512,6 +512,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 
     const formData = new FormData();
     formData.set('id', document.getElementById('editPromodizerId').value);
+    formData.set('employee_id', document.getElementById('editEmployeeId').value);
     formData.set('employment_status', document.getElementById('editEmploymentStatus').value);
     formData.set('sub_status', document.getElementById('editSubStatus').value);
     formData.set('reason_update', reason);

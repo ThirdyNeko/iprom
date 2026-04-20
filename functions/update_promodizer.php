@@ -266,6 +266,7 @@ try {
         // =========================
         $stmtInsert = $pdo->prepare("
             INSERT INTO employee_info (
+                employee_id,
                 first_name,
                 last_name,
                 branch,
@@ -289,6 +290,7 @@ try {
                 multi_brand_group_id
             )
             VALUES (
+                :employee_id,
                 :first_name,
                 :last_name,
                 :branch,
@@ -346,6 +348,7 @@ try {
                 }
 
                 $stmtInsert->execute([
+                    ':employee_id' => $_POST['employee_id'] ?? $id,
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
                     ':branch'     => $branch,
@@ -409,6 +412,7 @@ try {
                 }
 
                 $stmtInsert->execute([
+                    ':employee_id' => $_POST['employee_id'] ?? $id,
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
                     ':branch'     => $currentBranch,
