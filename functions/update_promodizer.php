@@ -236,8 +236,62 @@ try {
             @remarks = :remarks,
             @last_updated_by = :last_updated_by,
             @roving_group_id = :roving_group_id,
-            @multi_brand_group_id = :multi_brand_group_id
+            @multi_brand_group_id = :multi_brand_group_id,
+            @roving_branches = :roving_branches,
+            @multi_brands = :multi_brands
     ");
+
+    $filteredBranches = [];
+
+    foreach ($rovingBranches as $branch) {
+
+        $check = $pdo->prepare("
+            SELECT 1
+            FROM employee_info
+            WHERE first_name = ?
+            AND last_name = ?
+            AND branch = ?
+            AND roving_group_id = ?
+            AND status = 'ACTIVE'
+        ");
+
+        $check->execute([
+            $base['first_name'],
+            $base['last_name'],
+            $branch,
+            $roving_group_id
+        ]);
+
+        if (!$check->fetch()) {
+            $filteredBranches[] = $branch;
+        }
+    }
+
+    $filteredBrands = [];
+    
+    foreach ($multiBrands as $brand) {
+
+        $check = $pdo->prepare("
+            SELECT 1
+            FROM employee_info
+            WHERE first_name = ?
+            AND last_name = ?
+            AND brand = ?
+            AND multi_brand_group_id = ?
+            AND status = 'ACTIVE'
+        ");
+
+        $check->execute([
+            $base['first_name'],
+            $base['last_name'],
+            $brand,
+            $multi_brand_group_id
+        ]);
+
+        if (!$check->fetch()) {
+            $filteredBrands[] = $brand;
+        }
+    }
 
     $stmt->execute([
         ':id' => $id,
@@ -252,7 +306,9 @@ try {
         ':remarks' => $remarks,
         ':last_updated_by' => $last_updated_by,
         ':roving_group_id' => $roving_group_id,
-        ':multi_brand_group_id' => $multi_brand_group_id
+        ':multi_brand_group_id' => $multi_brand_group_id,
+        ':roving_branches' => !empty($filteredBranches) ? implode(',', $filteredBranches) : null,
+        ':multi_brands' => !empty($filteredBrands) ? implode(',', $filteredBrands) : null
     ]);
 
     // =========================
@@ -449,47 +505,6 @@ try {
                 $hasInserted = true;
             }
         }
-    }
-
-    // =========================
-    // APPLY SP TO NEWLY CREATED ROWS
-    // =========================
-    foreach ($insertedIds as $newId) {
-
-        $stmt = $pdo->prepare("
-            EXEC update_employee
-                @id = :id,
-                @status = :status,
-                @employment_status = :employment_status,
-                @reason_for_update = :reason_for_update,
-                @start_date = :start_date,
-                @end_date = :end_date,
-                @date_separated = :date_separated,
-                @date_of_return = :date_of_return,
-                @remarks = :remarks,
-                @last_updated_by = :last_updated_by,
-                @last_assigned_by = :last_assigned_by,
-                @sub_status = :sub_status,
-                @roving_group_id = :roving_group_id,
-                @multi_brand_group_id = :multi_brand_group_id
-        ");
-
-        $stmt->execute([
-            ':id' => $newId,
-            ':status' => $status,
-            ':employment_status' => $employment_status,
-            ':reason_for_update' => $reason_for_update,
-            ':start_date' => $start_date,
-            ':end_date' => $end_date,
-            ':date_separated' => $date_separated,
-            ':date_of_return' => $date_of_return,
-            ':remarks' => $remarks,
-            ':last_updated_by' => $last_updated_by,
-            ':last_assigned_by' => $last_assigned_by,
-            ':sub_status' => $sub_status,
-            ':roving_group_id' => $base['roving_group_id'],
-            ':multi_brand_group_id' => $base['multi_brand_group_id']
-        ]);
     }
 
     $pdo->commit();
