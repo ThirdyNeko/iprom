@@ -70,6 +70,7 @@ if (!empty($employee['multi_brand_group_id'])) {
 // =========================
 $employee['roving_branches'] = $rovingBranches;
 $employee['multi_brands'] = $multiBrands;
+$employee['employee_id'] = $employee['employee_id'] ?? null; // ✅ ADD THIS
 
 // =========================
 // RETURN JSON

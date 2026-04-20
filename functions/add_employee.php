@@ -23,6 +23,7 @@ $start_date = $_POST['start_date'] ?? null;
 $end_date   = $_POST['end_date'] ?? null;
 $gender   = $_POST['gender'] ?? null;
 $birthday = $_POST['birthday'] ?? null;
+$employee_id = 'EMP-' . date('YmdHis') . '-' . rand(100, 999);
 
 // =========================
 // ROVING BRANCHES
@@ -93,26 +94,28 @@ try {
                 @start_date = :start_date,
                 @end_date = :end_date,
                 @gender = :gender,
-                @birthday = :birthday
+                @birthday = :birthday,
+                @employee_id = :employee_id
         ");
 
         $stmt->execute([
-            ':first_name'        => $first_name,
-            ':last_name'         => $last_name,
-            ':branch'            => $branch,
-            ':brand'             => $brand,
-            ':status'            => $status,
-            ':assigned_by'       => $assigned_by,
-            ':employment_status' => $employment_status,
-            ':sub_status'        => $sub_status, // ✅ NEW
-            ':roving_group_id'   => $roving_group_id,
+            ':first_name'           => $first_name,
+            ':last_name'            => $last_name,
+            ':branch'               => $branch,
+            ':brand'                => $brand,
+            ':status'               => $status,
+            ':assigned_by'          => $assigned_by,
+            ':employment_status'    => $employment_status,
+            ':sub_status'           => $sub_status, // ✅ NEW
+            ':roving_group_id'      => $roving_group_id,
             ':multi_brand_group_id' => $multi_brand_group_id,
-            ':remarks'           => $remarks,
-            ':date_hired'        => $date_hired,
-            ':start_date'        => $start_date,
-            ':end_date'          => $end_date,
-            ':gender'   => $gender,
-            ':birthday' => $birthday
+            ':remarks'              => $remarks,
+            ':date_hired'           => $date_hired,
+            ':start_date'           => $start_date,
+            ':end_date'             => $end_date,
+            ':gender'               => $gender,
+            ':birthday'             => $birthday,
+            ':employee_id'          => $employee_id
         ]);
     }
 
@@ -136,7 +139,8 @@ try {
                 @start_date = :start_date,
                 @end_date = :end_date,
                 @gender = :gender,
-                @birthday = :birthday
+                @birthday = :birthday,
+                @employee_id = :employee_id
         ");
 
         $stmt->execute([
@@ -153,8 +157,9 @@ try {
             ':date_hired'        => $date_hired,
             ':start_date'        => $start_date,
             ':end_date'          => $end_date,
-            ':gender'   => $gender,
-            ':birthday' => $birthday
+            ':gender'               => $gender,
+            ':birthday'             => $birthday,
+            ':employee_id'          => $employee_id
         ]);
     }
 
@@ -178,7 +183,8 @@ try {
                 @start_date = :start_date,
                 @end_date = :end_date,
                 @gender = :gender,
-                @birthday = :birthday
+                @birthday = :birthday,
+                @employee_id = :employee_id
         ");
 
         $stmt->execute([
@@ -196,7 +202,8 @@ try {
             ':start_date'        => $start_date,
             ':end_date'          => $end_date,
             ':gender'   => $gender,
-            ':birthday' => $birthday
+            ':birthday' => $birthday,
+            ':employee_id' => $employee_id
         ]);
     }
 

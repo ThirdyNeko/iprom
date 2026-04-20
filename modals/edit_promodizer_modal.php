@@ -62,6 +62,7 @@
             <div class="modal-body">
                 <div id="editAlert"></div>
                 <input type="hidden" id="editPromodizerId">
+                <input type="hidden" id="editEmployeeId">
 
                 <table class="table table-bordered table-striped table-sm mb-3">
                     <tbody>

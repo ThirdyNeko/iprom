@@ -297,6 +297,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
 
             const employee = {
                 id: p.id,
+                employee_id: p.employee_id, // ✅ ADD THIS
                 first_name: p.first_name,
                 last_name: p.last_name,
                 branch: p.branch,
@@ -325,6 +326,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             const el = (id) => document.getElementById(id);
 
             if (el('editPromodizerId')) el('editPromodizerId').value = employee.id;
+            if (el('editEmployeeId')) el('editEmployeeId').value = employee.employee_id;
             if (el('editFirstName')) el('editFirstName').value = cleanValue(employee.first_name);
             if (el('editLastName')) el('editLastName').value = cleanValue(employee.last_name);
             if (el('editBranch')) el('editBranch').value = cleanValue(employee.branch);
@@ -452,7 +454,7 @@ document.querySelectorAll('.clickable-row').forEach(row => {
             });
 
             modal.show();
-            loadHistory(employee.id);
+            loadHistory(employee.employee_id);
 
             // sync toggles
             toggleDateSeparated();
