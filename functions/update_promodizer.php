@@ -286,7 +286,9 @@ try {
                 end_date,
                 roving_group_id,
                 sub_status,
-                multi_brand_group_id
+                multi_brand_group_id,
+                gender,
+                birthday
             )
             VALUES (
                 :employee_id,
@@ -310,7 +312,9 @@ try {
                 :end_date,
                 :roving_group_id,
                 :sub_status,
-                :multi_brand_group_id
+                :multi_brand_group_id,
+                :gender,
+                :birthday
             )
         ");
 
@@ -366,7 +370,9 @@ try {
                     ':end_date' => $end_date,
                     ':roving_group_id' => $base['roving_group_id'],
                     ':sub_status' => $sub_status,
-                    ':multi_brand_group_id' => $base['multi_brand_group_id']
+                    ':multi_brand_group_id' => $base['multi_brand_group_id'],
+                    ':gender'     => $base['gender'],
+                    ':birthday'   => $base['birthday']
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -430,7 +436,9 @@ try {
                     ':end_date' => $end_date,
                     ':roving_group_id' => $base['roving_group_id'],
                     ':sub_status' => $sub_status,
-                    ':multi_brand_group_id' => $base['multi_brand_group_id']
+                    ':multi_brand_group_id' => $base['multi_brand_group_id'],
+                    ':gender'     => $base['gender'],
+                    ':birthday'   => $base['birthday']
                 ]);
 
                 $newId = $pdo->lastInsertId();
