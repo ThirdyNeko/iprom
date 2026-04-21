@@ -3,19 +3,19 @@ header('Content-Type: application/json');
 include '../config/db.php';
 $pdo = qa_db();
 
-// DataTables params
+// DataTables params (SAFE)
 $draw   = $_POST['draw'] ?? 1;
 $start  = $_POST['start'] ?? 0;
 $length = $_POST['length'] ?? 50;
 
-// Filters
-$branch = $_POST['branch'] ?: null;
-$brand  = $_POST['brand'] ?: null;
-$status = $_POST['status'] ?: null;
-$from   = $_POST['from_date'] ?: null;
-$to     = $_POST['to_date'] ?: null;
+// Filters (SAFE FIX - avoid undefined index warnings)
+$branch = $_POST['branch'] ?? null;
+$brand  = $_POST['brand'] ?? null;
+$status = $_POST['status'] ?? null;
+$from   = $_POST['from_date'] ?? null;
+$to     = $_POST['to_date'] ?? null;
 
-// Clean nulls properly
+// Clean nulls
 function clean($v) {
     return ($v === "" || $v === null) ? null : $v;
 }
@@ -37,8 +37,11 @@ $stmt = $pdo->prepare("
 $stmt->execute([$branch, $brand, $from, $to]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// TOTAL BEFORE FILTER (IMPORTANT FIX)
+$recordsTotal = count($rows);
+
 // -------------------------
-// STATUS FILTER (POST DB)
+// STATUS FILTER
 // -------------------------
 if ($status) {
     $rows = array_filter($rows, function ($a) use ($status) {
@@ -57,16 +60,16 @@ if ($status) {
     });
 }
 
-// Reindex array after filter
+// Reindex
 $rows = array_values($rows);
 
-// TOTALS (IMPORTANT FIX)
+// FILTERED COUNT (IMPORTANT FIX)
 $recordsFiltered = count($rows);
 
-// PAGINATION AFTER FILTER (correct now)
+// PAGINATION
 $paged = array_slice($rows, $start, $length);
 
-// FORMAT OUTPUT
+// FORMAT OUTPUT (UNCHANGED STRUCTURE — SAFE)
 $result = [];
 
 foreach ($paged as $a) {
@@ -92,11 +95,12 @@ foreach ($paged as $a) {
     ];
 }
 
-// RESPONSE
+// RESPONSE (FIXED TOTALS ONLY)
 echo json_encode([
     "draw" => intval($draw),
-    "recordsTotal" => $recordsFiltered,
+    "recordsTotal" => $recordsTotal,
     "recordsFiltered" => $recordsFiltered,
     "data" => $result
 ]);
+
 exit;

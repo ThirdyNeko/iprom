@@ -17,13 +17,26 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 ?>
 
 <div class="content">
+
     <style>
-        .clickable-row { cursor: pointer; transition: background-color 0.2s; }
-        .clickable-row:hover { background-color: #f1f1f1; }
+        /* =========================
+           TABLE UI FIX (DATA TABLE SAFE)
+           ========================= */
+
         #assignmentTable th,
         #assignmentTable td {
             text-align: center;
             vertical-align: middle;
+        }
+
+        /* ✅ MAKE ROWS CLICKABLE */
+        #assignmentTable tbody tr {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        #assignmentTable tbody tr:hover {
+            background-color: #f1f1f1;
         }
     </style>
 
@@ -40,25 +53,32 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
         <!-- Table -->
         <div class="card shadow-sm">
             <div class="card-body">
+
                 <div class="row g-2">
                     <div class="col-md-2">
                         <label class="form-label">Branch</label>
                         <select id="filterBranch" class="form-select">
                             <option value="">All</option>
                             <?php foreach($branches as $b): ?>
-                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                                <option value="<?= htmlspecialchars($b) ?>">
+                                    <?= htmlspecialchars($b) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">Brand</label>
                         <select id="filterBrand" class="form-select">
                             <option value="">All</option>
                             <?php foreach($brands as $b): ?>
-                                <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                                <option value="<?= htmlspecialchars($b) ?>">
+                                    <?= htmlspecialchars($b) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">Status</label>
                         <select id="filterStatus" class="form-select">
@@ -68,16 +88,20 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                             <option value="zero">INACTIVE</option>
                         </select>
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">From</label>
                         <input type="date" id="filterFrom" class="form-control">
                     </div>
+
                     <div class="col-md-2">
                         <label class="form-label">To</label>
                         <input type="date" id="filterTo" class="form-control">
                     </div>
                 </div>
+
             </div>
+
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="assignmentTable" class="table table-striped table-hover align-middle text-center">
@@ -92,10 +116,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Last Updated By</th>
                             </tr>
                         </thead>
-                        <tbody></tbody> <!-- Server-side AJAX will populate -->
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
