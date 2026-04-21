@@ -206,24 +206,37 @@ function populateEditBranch(
   branches = [],
   currentBrand = null,
   baseBranch = null,
+  mode = "STATIONARY",
 ) {
   const branchSelect = document.getElementById("editBranch");
   if (!branchSelect) return;
 
   const list = safeArray(branches);
 
-  const validBranches = branchBrandPairs
-    .filter(
-      (p) =>
+  let validBranches = branchBrandPairs.filter((p) => {
+    // ✅ MULTI BRANCH → filter by brand
+    if (mode === "MULTI BRANCH") {
+      return (
         p.brand_name === currentBrand &&
-        (p.branch_name === baseBranch || // ✅ allow current
-          (p.branch_name !== baseBranch &&
-            (p.assigned_count < p.required_count ||
-              list.includes(p.branch_name)))),
-    )
-    .map((p) => p.branch_name);
+        (p.branch_name === baseBranch ||
+          p.assigned_count < p.required_count ||
+          list.includes(p.branch_name))
+      );
+    }
 
-  const uniqueBranches = [...new Set(validBranches)];
+    // ✅ STATIONARY → show ALL available
+    if (mode === "STATIONARY") {
+      return (
+        p.branch_name === baseBranch ||
+        p.assigned_count < p.required_count ||
+        list.includes(p.branch_name)
+      );
+    }
+
+    return false;
+  });
+
+  const uniqueBranches = [...new Set(validBranches.map((p) => p.branch_name))];
 
   branchSelect.innerHTML = `
     <option value="">Select branch</option>
@@ -240,24 +253,38 @@ function populateEditBrand(
   brands = [],
   currentBranch = null,
   baseBrand = null,
+  mode = "STATIONARY",
 ) {
   const brandSelect = document.getElementById("editBrand");
   if (!brandSelect) return;
 
   const list = safeArray(brands);
 
-  const validBrands = branchBrandPairs
-    .filter(
-      (p) =>
+  let validBrands = branchBrandPairs.filter((p) => {
+    // ✅ MULTI BRAND → filter by branch
+    if (mode === "MULTI BRAND") {
+      return (
         p.branch_name === currentBranch &&
-        (p.brand_name === baseBrand || // ✅ allow current
-          (p.brand_name !== baseBrand &&
-            (p.assigned_count < p.required_count ||
-              list.includes(p.brand_name)))),
-    )
-    .map((p) => p.brand_name);
+        (p.brand_name === baseBrand ||
+          p.assigned_count < p.required_count ||
+          list.includes(p.brand_name))
+      );
+    }
 
-  const uniqueBrands = [...new Set(validBrands)];
+    // ✅ STATIONARY → depends on selected branch
+    if (mode === "STATIONARY") {
+      return (
+        (!currentBranch || p.branch_name === currentBranch) &&
+        (p.brand_name === baseBrand ||
+          p.assigned_count < p.required_count ||
+          list.includes(p.brand_name))
+      );
+    }
+
+    return false;
+  });
+
+  const uniqueBrands = [...new Set(validBrands.map((p) => p.brand_name))];
 
   brandSelect.innerHTML = `
     <option value="">Select brand</option>
@@ -556,6 +583,21 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       // RESET + SYNC UI
       // =========================
       syncMultiUI(subStatus);
+
+      // ✅ populate main dropdowns FIRST (IMPORTANT)
+      populateEditBranch(
+        [employee.branch],
+        employee.brand,
+        employee.branch,
+        subStatus,
+      );
+
+      populateEditBrand(
+        [employee.brand],
+        employee.branch,
+        employee.brand,
+        subStatus,
+      );
 
       // normalize arrays safely (FIXED)
       const branches = safeArray(employee.roving_branches || p.roving_branches);
@@ -956,6 +998,20 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     });
   }
+
+  // ✅ STATIONARY dynamic brand update
+  document.getElementById("editBranch")?.addEventListener("change", () => {
+    const mode = document.getElementById("editSubStatus")?.value?.toUpperCase();
+
+    if (mode === "STATIONARY") {
+      populateEditBrand(
+        [],
+        document.getElementById("editBranch").value,
+        null,
+        "STATIONARY",
+      );
+    }
+  });
   // 🔥 PREVENT DUPLICATES ON CHANGE
   editRovingContainer.addEventListener("change", (e) => {
     if (e.target.tagName !== "SELECT") return;
