@@ -216,8 +216,10 @@ function populateEditBranch(
     .filter(
       (p) =>
         p.brand_name === currentBrand &&
-        p.branch_name !== baseBranch &&
-        (p.assigned_count < p.required_count || list.includes(p.branch_name)),
+        (p.branch_name === baseBranch || // ✅ allow current
+          (p.branch_name !== baseBranch &&
+            (p.assigned_count < p.required_count ||
+              list.includes(p.branch_name)))),
     )
     .map((p) => p.branch_name);
 
@@ -248,8 +250,10 @@ function populateEditBrand(
     .filter(
       (p) =>
         p.branch_name === currentBranch &&
-        p.brand_name !== baseBrand &&
-        (p.assigned_count < p.required_count || list.includes(p.brand_name)),
+        (p.brand_name === baseBrand || // ✅ allow current
+          (p.brand_name !== baseBrand &&
+            (p.assigned_count < p.required_count ||
+              list.includes(p.brand_name)))),
     )
     .map((p) => p.brand_name);
 
@@ -474,13 +478,11 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         el("editLastName").value = cleanValue(employee.last_name);
       if (el("editBranch")) {
         const value = cleanValue(employee.branch);
-        el("editBranch").innerHTML =
-          `<option value="${value}" selected>${value}</option>`;
+        populateEditBranch([employee.branch], employee.brand, employee.branch);
       }
       if (el("editBrand")) {
         const value = cleanValue(employee.brand);
-        el("editBrand").innerHTML =
-          `<option value="${value}" selected>${value}</option>`;
+        populateEditBrand([employee.brand], employee.branch, employee.brand);
       }
 
       // ✅ FIXED DATE HANDLING (NO "-")
