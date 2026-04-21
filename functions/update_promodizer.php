@@ -330,24 +330,6 @@ try {
         }
     }
 
-    $stmt->execute([
-        ':id' => $id,
-        ':status' => $status,
-        ':sub_status' => $sub_status,
-        ':employment_status' => $employment_status,
-        ':reason_for_update' => $reason_for_update,
-        ':start_date' => $start_date,
-        ':end_date' => $end_date,
-        ':date_separated' => $date_separated,
-        ':date_of_return' => $date_of_return,
-        ':remarks' => $remarks,
-        ':last_updated_by' => $last_updated_by,
-        ':roving_group_id' => $roving_group_id,
-        ':multi_brand_group_id' => $multi_brand_group_id,
-        ':roving_branches' => !empty($filteredBranches) ? implode(',', $filteredBranches) : null,
-        ':multi_brands' => !empty($filteredBrands) ? implode(',', $filteredBrands) : null
-    ]);
-
     // =========================
     // ONLY RUN IF ADD BRANCH/BRAND
     // =========================
