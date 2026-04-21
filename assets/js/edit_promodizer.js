@@ -1,800 +1,916 @@
-const modalEl = document.getElementById('editPromodizerModal');
+const modalEl = document.getElementById("editPromodizerModal");
 let branchBrandPairs = [];
 
 // Helper to clean null/nchar
 function cleanValue(value) {
-    if (!value) return '';
-    const trimmed = value.toString().trim();
-    return (trimmed.toLowerCase() === 'null' || trimmed === '') ? '' : trimmed;
+  if (!value) return "";
+  const trimmed = value.toString().trim();
+  return trimmed.toLowerCase() === "null" || trimmed === "" ? "" : trimmed;
 }
 
 // =========================
 // ELEMENT SAFETY CHECKS
 // =========================
-const reasonSelect = document.getElementById('editReasonUpdate');
-const dateSeparatedRow = document.getElementById('rowDateSeparated');
-const dateSeparatedInput = document.getElementById('editDateSeparated');
+const reasonSelect = document.getElementById("editReasonUpdate");
+const dateSeparatedRow = document.getElementById("rowDateSeparated");
+const dateSeparatedInput = document.getElementById("editDateSeparated");
 
-const dateReturnedRow = document.getElementById('rowDateReturned');
-const dateReturnedInput = document.getElementById('editDateReturn');
-const employmentStatusSelect = document.getElementById('editEmploymentStatus');
+const dateReturnedRow = document.getElementById("rowDateReturned");
+const dateReturnedInput = document.getElementById("editDateReturn");
+const employmentStatusSelect = document.getElementById("editEmploymentStatus");
 
-const startDateRow = document.getElementById('rowStartDate');
-const startDateInput = document.getElementById('editStartDate');
+const startDateRow = document.getElementById("rowStartDate");
+const startDateInput = document.getElementById("editStartDate");
 
-const endDateRow = document.getElementById('rowEndDate');
-const endDateInput = document.getElementById('editEndDate');
+const endDateRow = document.getElementById("rowEndDate");
+const endDateInput = document.getElementById("editEndDate");
 
-const editRovingField = document.getElementById('editRovingField');
-const editRovingContainer = document.getElementById('editRovingContainer');
+const editRovingField = document.getElementById("editRovingField");
+const editRovingContainer = document.getElementById("editRovingContainer");
 
-const editMultiBrandField = document.getElementById('editMultiBrandField');
-const editMultiBrandContainer = document.getElementById('editMultiBrandContainer');
+const editMultiBrandField = document.getElementById("editMultiBrandField");
+const editMultiBrandContainer = document.getElementById(
+  "editMultiBrandContainer",
+);
 
-const editGender = document.getElementById('editGender');
-const editBirthday = document.getElementById('editBirthday');
-const editDateHired = document.getElementById('editDateHired');
+const editGender = document.getElementById("editGender");
+const editBirthday = document.getElementById("editBirthday");
+const editDateHired = document.getElementById("editDateHired");
 
 function toggleEmploymentDates() {
-    if (!employmentStatusSelect) return;
+  if (!employmentStatusSelect) return;
 
-    const value = (employmentStatusSelect.value || '').trim().toUpperCase();
+  const value = (employmentStatusSelect.value || "").trim().toUpperCase();
 
-    const shouldShow = value === "RELIEVER" || value === "SEASONAL";
+  const shouldShow = value === "RELIEVER" || value === "SEASONAL";
 
-    if (startDateRow) startDateRow.style.display = shouldShow ? "" : "none";
-    if (endDateRow) endDateRow.style.display = shouldShow ? "" : "none";
+  if (startDateRow) startDateRow.style.display = shouldShow ? "" : "none";
+  if (endDateRow) endDateRow.style.display = shouldShow ? "" : "none";
 
-    if (startDateInput) {
-        startDateInput.disabled = !shouldShow;
-        startDateInput.required = shouldShow;
-        if (!shouldShow) startDateInput.value = '';
-    }
+  if (startDateInput) {
+    startDateInput.disabled = !shouldShow;
+    startDateInput.required = shouldShow;
+    if (!shouldShow) startDateInput.value = "";
+  }
 
-    if (endDateInput) {
-        endDateInput.disabled = !shouldShow;
-        endDateInput.required = shouldShow;
-        if (!shouldShow) endDateInput.value = '';
-    }
+  if (endDateInput) {
+    endDateInput.disabled = !shouldShow;
+    endDateInput.required = shouldShow;
+    if (!shouldShow) endDateInput.value = "";
+  }
 }
 
 // Guard (prevents crashes if modal DOM not loaded yet)
 if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
-    console.error('Modal elements not found. Check modal HTML.');
+  console.error("Modal elements not found. Check modal HTML.");
 }
 
 // =========================
 // TOGGLE DATE SEPARATED
 // =========================
 const showDateSeparatedReasons = [
-    "RESIGNED",
-    "PULL-OUT / TERMINATED",
-    "AWOL",
-    "RETRENCHMENT",
-    "END OF CONTRACT",
-    "BLACKLISTED",
-    "MATERNITY LEAVE"
+  "RESIGNED",
+  "PULL-OUT / TERMINATED",
+  "AWOL",
+  "RETRENCHMENT",
+  "END OF CONTRACT",
+  "BLACKLISTED",
+  "MATERNITY LEAVE",
 ];
 
 function toggleDateSeparated() {
-    if (!reasonSelect) return;
+  if (!reasonSelect) return;
 
-    const value = (reasonSelect.value || '').trim().toUpperCase();
-    const shouldShow = showDateSeparatedReasons.includes(value);
+  const value = (reasonSelect.value || "").trim().toUpperCase();
+  const shouldShow = showDateSeparatedReasons.includes(value);
 
-    if (dateSeparatedRow) dateSeparatedRow.style.display = shouldShow ? "" : "none";
+  if (dateSeparatedRow)
+    dateSeparatedRow.style.display = shouldShow ? "" : "none";
 
-    if (dateSeparatedInput) {
-        dateSeparatedInput.disabled = !shouldShow;
-        dateSeparatedInput.required = shouldShow;
+  if (dateSeparatedInput) {
+    dateSeparatedInput.disabled = !shouldShow;
+    dateSeparatedInput.required = shouldShow;
 
-        if (!shouldShow) dateSeparatedInput.value = '';
+    if (!shouldShow) dateSeparatedInput.value = "";
+  }
+}
+
+function toggleTransferEditable() {
+  if (!reasonSelect) return;
+
+  const reason = (reasonSelect.value || "").toUpperCase();
+  const subStatusEl = document.getElementById("editSubStatus");
+
+  const subStatus = (subStatusEl?.value || "").toUpperCase();
+
+  const branchEl = document.getElementById("editBranch");
+  const brandEl = document.getElementById("editBrand");
+
+  // default: lock everything
+  if (branchEl) {
+    branchEl.disabled = true;
+    branchEl.readOnly = true;
+  }
+
+  if (brandEl) {
+    brandEl.disabled = true;
+    brandEl.readOnly = true;
+  }
+
+  // only unlock if TRANSFER
+  if (reason !== "TRANSFER") return;
+
+  // =========================
+  // APPLY RULES
+  // =========================
+  if (subStatus === "MULTI BRANCH") {
+    // ✅ only branch editable
+    if (branchEl) {
+      branchEl.disabled = false;
+      branchEl.readOnly = false;
     }
+  } else if (subStatus === "MULTI BRAND") {
+    // ✅ only brand editable
+    if (brandEl) {
+      brandEl.disabled = false;
+      brandEl.readOnly = false;
+    }
+  } else if (subStatus === "STATIONARY") {
+    // ✅ both editable
+    if (branchEl) {
+      branchEl.disabled = false;
+      branchEl.readOnly = false;
+    }
+
+    if (brandEl) {
+      brandEl.disabled = false;
+      brandEl.readOnly = false;
+    }
+  }
 }
 
 function safeArray(value) {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
 
-    if (typeof value === 'string') {
-        try {
-            const parsed = JSON.parse(value);
-            if (Array.isArray(parsed)) return parsed;
-        } catch (e) {}
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {}
 
-        return value.split(',').map(v => v.trim()).filter(Boolean);
-    }
+    return value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
 
-    return [];
+  return [];
 }
 
 function syncMultiUI(status) {
-    const value = (status || '').toUpperCase();
+  const value = (status || "").toUpperCase();
 
-    if (editRovingField) editRovingField.classList.add('d-none');
-    if (editMultiBrandField) editMultiBrandField.classList.add('d-none');
+  if (editRovingField) editRovingField.classList.add("d-none");
+  if (editMultiBrandField) editMultiBrandField.classList.add("d-none");
 
-    if (value === 'MULTI BRANCH') {
-        if (editRovingField) editRovingField.classList.remove('d-none');
-    }
+  if (value === "MULTI BRANCH") {
+    if (editRovingField) editRovingField.classList.remove("d-none");
+  }
 
-    if (value === 'MULTI BRAND') {
-        if (editMultiBrandField) editMultiBrandField.classList.remove('d-none');
-    }
+  if (value === "MULTI BRAND") {
+    if (editMultiBrandField) editMultiBrandField.classList.remove("d-none");
+  }
 }
 
 // =========================
 // TOGGLE DATE RETURNED
 // =========================
 function toggleDateReturned() {
-    if (!reasonSelect) return;
+  if (!reasonSelect) return;
 
-    const value = (reasonSelect.value || '').trim().toUpperCase();
-    const shouldShow = value === "MATERNITY LEAVE";
+  const value = (reasonSelect.value || "").trim().toUpperCase();
+  const shouldShow = value === "MATERNITY LEAVE";
 
-    if (dateReturnedRow) dateReturnedRow.style.display = shouldShow ? "" : "none";
+  if (dateReturnedRow) dateReturnedRow.style.display = shouldShow ? "" : "none";
 
-    if (dateReturnedInput) {
-        dateReturnedInput.disabled = !shouldShow;
-        dateReturnedInput.required = shouldShow;
+  if (dateReturnedInput) {
+    dateReturnedInput.disabled = !shouldShow;
+    dateReturnedInput.required = shouldShow;
 
-        if (!shouldShow) dateReturnedInput.value = '';
-    }
+    if (!shouldShow) dateReturnedInput.value = "";
+  }
 }
 
-function populateEditRoving(branches = [], currentBrand = null, baseBranch = null) {
-    if (!editRovingContainer) return;
+function populateEditRoving(
+  branches = [],
+  currentBrand = null,
+  baseBranch = null,
+) {
+  if (!editRovingContainer) return;
 
-    let list = safeArray(branches);
+  let list = safeArray(branches);
 
-    // ❗ STRICT: only rows with this brand AND available
-    const validBranches = branchBrandPairs
-        .filter(p =>
-            p.brand_name === currentBrand &&
-            p.branch_name !== baseBranch && // ❌ exclude itself
-            (
-                p.assigned_count < p.required_count ||
-                list.includes(p.branch_name)
-            )
-        )
-        .map(p => p.branch_name);
+  // ❗ STRICT: only rows with this brand AND available
+  const validBranches = branchBrandPairs
+    .filter(
+      (p) =>
+        p.brand_name === currentBrand &&
+        p.branch_name !== baseBranch && // ❌ exclude itself
+        (p.assigned_count < p.required_count || list.includes(p.branch_name)),
+    )
+    .map((p) => p.branch_name);
 
-    const uniqueBranches = [...new Set(validBranches)];
+  const uniqueBranches = [...new Set(validBranches)];
 
-    // remove already selected
-    const finalAvailable = uniqueBranches.filter(b => !list.includes(b));
+  // remove already selected
+  const finalAvailable = uniqueBranches.filter((b) => !list.includes(b));
 
-    // 🚫 nothing valid → show nothing
-    if (list.length === 0 && finalAvailable.length === 0) {
-        editRovingContainer.innerHTML = '';
-        return;
-    }
+  // 🚫 nothing valid → show nothing
+  if (list.length === 0 && finalAvailable.length === 0) {
+    editRovingContainer.innerHTML = "";
+    return;
+  }
 
-    // only allow empty row if something valid exists
-    if (list.length === 0 && finalAvailable.length > 0) {
-        list = [''];
-    }
+  // only allow empty row if something valid exists
+  if (list.length === 0 && finalAvailable.length > 0) {
+    list = [""];
+  }
 
-    editRovingContainer.innerHTML = list.map((b, index) => {
+  editRovingContainer.innerHTML = list
+    .map((b, index) => {
+      const isExisting = b !== "";
 
-        const isExisting = b !== '';
-
-        return `
+      return `
         <div class="d-flex gap-2 mb-2 align-items-center roving-row">
-            <select class="form-control" ${isExisting ? 'disabled' : ''}>
+            <select class="form-control" ${isExisting ? "disabled" : ""}>
                 <option value="">Select branch</option>
-                ${uniqueBranches.map(branch => `
-                    <option value="${branch}" ${branch === b ? 'selected' : ''}>
+                ${uniqueBranches
+                  .map(
+                    (branch) => `
+                    <option value="${branch}" ${branch === b ? "selected" : ""}>
                         ${branch}
                     </option>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
             </select>
 
             <button type="button" class="btn btn-success btn-add-branch">+</button>
 
             <button type="button"
                 class="btn btn-danger btn-remove-branch"
-                style="${isExisting || index === 0 ? 'display:none;' : ''}">
+                style="${isExisting || index === 0 ? "display:none;" : ""}">
                 −
             </button>
         </div>
         `;
-    }).join('');
+    })
+    .join("");
 }
 
-function populateEditBrands(brands = [], currentBranch = null, baseBrand = null) {
-    if (!editMultiBrandContainer) return;
+function populateEditBrands(
+  brands = [],
+  currentBranch = null,
+  baseBrand = null,
+) {
+  if (!editMultiBrandContainer) return;
 
-    let list = safeArray(brands);
+  let list = safeArray(brands);
 
-    // ❗ STRICT: only rows with this branch AND available
-    const validBrands = branchBrandPairs
-        .filter(p =>
-            p.branch_name === currentBranch &&
-            p.brand_name !== baseBrand && // ❌ exclude itself
-            (
-                p.assigned_count < p.required_count ||
-                list.includes(p.brand_name)
-            )
-        )
-        .map(p => p.brand_name);
+  // ❗ STRICT: only rows with this branch AND available
+  const validBrands = branchBrandPairs
+    .filter(
+      (p) =>
+        p.branch_name === currentBranch &&
+        p.brand_name !== baseBrand && // ❌ exclude itself
+        (p.assigned_count < p.required_count || list.includes(p.brand_name)),
+    )
+    .map((p) => p.brand_name);
 
-    const uniqueBrands = [...new Set(validBrands)];
+  const uniqueBrands = [...new Set(validBrands)];
 
-    const finalAvailable = uniqueBrands.filter(b => !list.includes(b));
+  const finalAvailable = uniqueBrands.filter((b) => !list.includes(b));
 
-    if (list.length === 0 && finalAvailable.length === 0) {
-        editMultiBrandContainer.innerHTML = '';
-        return;
-    }
+  if (list.length === 0 && finalAvailable.length === 0) {
+    editMultiBrandContainer.innerHTML = "";
+    return;
+  }
 
-    if (list.length === 0 && finalAvailable.length > 0) {
-        list = [''];
-    }
+  if (list.length === 0 && finalAvailable.length > 0) {
+    list = [""];
+  }
 
-    editMultiBrandContainer.innerHTML = list.map((b, index) => {
+  editMultiBrandContainer.innerHTML = list
+    .map((b, index) => {
+      const isExisting = b !== "";
 
-        const isExisting = b !== '';
-
-        return `
+      return `
         <div class="d-flex gap-2 mb-2 align-items-center brand-row">
-            <select class="form-control" ${isExisting ? 'disabled' : ''}>
+            <select class="form-control" ${isExisting ? "disabled" : ""}>
                 <option value="">Select brand</option>
-                ${uniqueBrands.map(brand => `
-                    <option value="${brand}" ${brand === b ? 'selected' : ''}>
+                ${uniqueBrands
+                  .map(
+                    (brand) => `
+                    <option value="${brand}" ${brand === b ? "selected" : ""}>
                         ${brand}
                     </option>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
             </select>
 
             <button type="button" class="btn btn-success btn-add-brand">+</button>
 
             <button type="button"
                 class="btn btn-danger btn-remove-brand"
-                style="${isExisting || index === 0 ? 'display:none;' : ''}">
+                style="${isExisting || index === 0 ? "display:none;" : ""}">
                 −
             </button>
         </div>
         `;
-    }).join('');
+    })
+    .join("");
 }
 
 function collectAssignments() {
+  const branches = Array.from(
+    document.querySelectorAll("#editRovingSelect option:checked"),
+  ).map((opt) => opt.value);
 
-    const branches = Array.from(
-        document.querySelectorAll('#editRovingSelect option:checked')
-    ).map(opt => opt.value);
+  const brands = Array.from(
+    document.querySelectorAll("#editBrandSelect option:checked"),
+  ).map((opt) => opt.value);
 
-    const brands = Array.from(
-        document.querySelectorAll('#editBrandSelect option:checked')
-    ).map(opt => opt.value);
-
-    return {
-        branches,
-        removedBranches: [],
-        brands,
-        removedBrands: []
-    };
+  return {
+    branches,
+    removedBranches: [],
+    brands,
+    removedBrands: [],
+  };
 }
 
 // =========================
 // POPULATE MODAL
 // =========================
-document.querySelectorAll('.clickable-row').forEach(row => {
-    row.addEventListener('click', async () => {
-        const id = row.dataset.id;
-        const modal = new bootstrap.Modal(modalEl);
+document.querySelectorAll(".clickable-row").forEach((row) => {
+  row.addEventListener("click", async () => {
+    const id = row.dataset.id;
+    const modal = new bootstrap.Modal(modalEl);
 
-        try {
-            const res = await fetch(`functions/get_employee.php?id=${id}`);
-            const p = await res.json();
+    try {
+      const res = await fetch(`functions/get_employee.php?id=${id}`);
+      const p = await res.json();
 
-            if (!p || !p.id) {
-                Swal.fire({ icon: 'error', title: 'Error', text: 'Employee not found' });
-                return;
-            }
+      if (!p || !p.id) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Employee not found",
+        });
+        return;
+      }
 
-            const employee = {
-                id: p.id,
-                employee_id: p.employee_id, // ✅ ADD THIS
-                first_name: p.first_name,
-                last_name: p.last_name,
-                branch: p.branch,
-                brand: p.brand,
-                assignment_date: p.assignment_date,
-                last_assigned_by: p.last_assigned_by,
-                status: p.status,
-                date_of_return: p.date_of_return,
-                date_separated: p.date_separated,
-                employment_status: p.employment_status,
-                sub_status: p.sub_status, // ✅ FIXED (was missing)
-                remarks: p.remarks,
-                last_updated_by: p.last_updated_by,
-                reason_update: p.reason_for_update,
-                date_hired: p.date_hired,
-                updated_at: p.updated_at,
-                start_date: p.start_date,
-                end_date: p.end_date,
-                gender: p.gender,
-                birthday: p.birthday,
-            };
+      const employee = {
+        id: p.id,
+        employee_id: p.employee_id, // ✅ ADD THIS
+        first_name: p.first_name,
+        last_name: p.last_name,
+        branch: p.branch,
+        brand: p.brand,
+        assignment_date: p.assignment_date,
+        last_assigned_by: p.last_assigned_by,
+        status: p.status,
+        date_of_return: p.date_of_return,
+        date_separated: p.date_separated,
+        employment_status: p.employment_status,
+        sub_status: p.sub_status, // ✅ FIXED (was missing)
+        remarks: p.remarks,
+        last_updated_by: p.last_updated_by,
+        reason_update: p.reason_for_update,
+        date_hired: p.date_hired,
+        updated_at: p.updated_at,
+        start_date: p.start_date,
+        end_date: p.end_date,
+        gender: p.gender,
+        birthday: p.birthday,
+      };
 
-            // =========================
-            // SAFE FIELD ASSIGNMENTS
-            // =========================
-            const el = (id) => document.getElementById(id);
+      // =========================
+      // SAFE FIELD ASSIGNMENTS
+      // =========================
+      const el = (id) => document.getElementById(id);
 
-            if (el('editPromodizerId')) el('editPromodizerId').value = employee.id;
-            if (el('editEmployeeId')) el('editEmployeeId').value = employee.employee_id;
-            if (el('editFirstName')) el('editFirstName').value = cleanValue(employee.first_name);
-            if (el('editLastName')) el('editLastName').value = cleanValue(employee.last_name);
-            if (el('editBranch')) el('editBranch').value = cleanValue(employee.branch);
-            if (el('editBrand')) el('editBrand').value = cleanValue(employee.brand);
+      if (el("editPromodizerId")) el("editPromodizerId").value = employee.id;
+      if (el("editEmployeeId"))
+        el("editEmployeeId").value = employee.employee_id;
+      if (el("editFirstName"))
+        el("editFirstName").value = cleanValue(employee.first_name);
+      if (el("editLastName"))
+        el("editLastName").value = cleanValue(employee.last_name);
+      if (el("editBranch"))
+        el("editBranch").value = cleanValue(employee.branch);
+      if (el("editBrand")) el("editBrand").value = cleanValue(employee.brand);
 
-            // ✅ FIXED DATE HANDLING (NO "-")
-            if (el('editDateHired')) {
-                el('editDateHired').value = employee.date_hired || '';
-            }
+      // ✅ FIXED DATE HANDLING (NO "-")
+      if (el("editDateHired")) {
+        el("editDateHired").value = employee.date_hired || "";
+      }
 
-            if (el('editGender')) {
-                el('editGender').value = cleanValue(employee.gender) || '';
-            }
+      if (el("editGender")) {
+        el("editGender").value = cleanValue(employee.gender) || "";
+      }
 
-            if (el('editBirthday')) {
-                el('editBirthday').value = employee.birthday || '';
-            }
+      if (el("editBirthday")) {
+        el("editBirthday").value = employee.birthday || "";
+      }
 
-            if (el('editStatus')) el('editStatus').value = cleanValue(employee.status) || '-';
-            if (el('editLastAssignedBy')) el('editLastAssignedBy').value = cleanValue(employee.last_assigned_by);
+      if (el("editStatus"))
+        el("editStatus").value = cleanValue(employee.status) || "-";
+      if (el("editLastAssignedBy"))
+        el("editLastAssignedBy").value = cleanValue(employee.last_assigned_by);
 
-            if (el('editAssignmentDate')) {
-                const d = employee.assignment_date;
+      if (el("editAssignmentDate")) {
+        const d = employee.assignment_date;
 
-                if (d) {
-                    const dateObj = new Date(d);
-                    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                    const dd = String(dateObj.getDate()).padStart(2, '0');
-                    const yyyy = dateObj.getFullYear();
+        if (d) {
+          const dateObj = new Date(d);
+          const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+          const dd = String(dateObj.getDate()).padStart(2, "0");
+          const yyyy = dateObj.getFullYear();
 
-                    el('editAssignmentDate').value = `${mm}/${dd}/${yyyy}`;
-                } else {
-                    el('editAssignmentDate').value = '';
-                }
-            }
-            if (el('editStartDate')) el('editStartDate').value = cleanValue(employee.start_date);
-            if (el('editEndDate')) el('editEndDate').value = cleanValue(employee.end_date);
-
-            // =========================
-            // SELECT FIELDS SAFE
-            // =========================
-            const employmentSelect = el('editEmploymentStatus');
-            if (employmentSelect) {
-                const empStatus = cleanValue(employee.employment_status).toUpperCase();
-                employmentSelect.value = [...employmentSelect.options].some(opt => opt.value === empStatus)
-                    ? empStatus
-                    : '';
-            }
-
-           // =========================
-            // GET SUB STATUS ONCE
-            // =========================
-            const subStatus = cleanValue(employee.sub_status).toUpperCase();
-
-            // =========================
-            // SET SELECT VALUE
-            // =========================
-            const subStatusSelect = el('editSubStatus');
-
-            if (subStatusSelect) {
-                const valid = [...subStatusSelect.options].some(opt => opt.value === subStatus);
-                subStatusSelect.value = valid ? subStatus : '';
-            }
-
-            // =========================
-            // RESET + SYNC UI
-            // =========================
-            syncMultiUI(subStatus);
-
-            // normalize arrays safely (FIXED)
-            const branches = safeArray(employee.roving_branches || p.roving_branches);
-            const brands   = safeArray(employee.multi_brands || p.multi_brands);
-            
-            // render AFTER UI sync
-            requestAnimationFrame(() => {
-                if (subStatus === 'MULTI BRANCH') {
-                    populateEditRoving(branches, employee.brand, employee.branch);
-                    updateBranchOptions();
-                }
-
-                if (subStatus === 'MULTI BRAND') {
-                    populateEditBrands(brands, employee.branch, employee.brand);
-                    updateBrandOptions();
-                }
-            });
-            
-            if (reasonSelect) {
-                const reasonValue = cleanValue(employee.reason_update).toUpperCase();
-                reasonSelect.value = [...reasonSelect.options].some(opt => opt.value === reasonValue)
-                    ? reasonValue
-                    : '';
-            }
-
-            // =========================
-            // EDITABLE FIELDS SAFE
-            // =========================
-            if (el('editDateSeparated')) el('editDateSeparated').value = cleanValue(employee.date_separated);
-            if (el('editDateReturn')) el('editDateReturn').value = cleanValue(employee.date_of_return);
-            if (el('editRemarks')) el('editRemarks').value = '';
-
-            // =========================
-            // READ ONLY
-            // =========================
-            if (el('editLastUpdatedBy')) el('editLastUpdatedBy').value = cleanValue(employee.last_updated_by);
-            if (el('editDateLastUpdated')) {
-                el('editDateLastUpdated').value = employee.updated_at
-                    ? employee.updated_at.split(' ')[0]
-                    : '';
-            }
-
-            // =========================
-            // DISABLE LOGIC
-            // =========================
-            const editable = [
-                'editEmploymentStatus',
-                'editSubStatus',
-                'editReasonUpdate',
-                'editDateSeparated',
-                'editDateReturn',
-                'editRemarks'
-            ];
-
-            modalEl.querySelectorAll('input, select, textarea').forEach(el => {
-                el.disabled = !editable.includes(el.id);
-            });
-
-            modal.show();
-            loadHistory(employee.employee_id);
-
-            // sync toggles
-            toggleDateSeparated();
-            toggleDateReturned();
-            toggleEmploymentDates();
-
-        } catch (err) {
-            console.error(err);
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to load employee data' });
+          el("editAssignmentDate").value = `${mm}/${dd}/${yyyy}`;
+        } else {
+          el("editAssignmentDate").value = "";
         }
-    });
+      }
+      if (el("editStartDate"))
+        el("editStartDate").value = cleanValue(employee.start_date);
+      if (el("editEndDate"))
+        el("editEndDate").value = cleanValue(employee.end_date);
+
+      // =========================
+      // SELECT FIELDS SAFE
+      // =========================
+      const employmentSelect = el("editEmploymentStatus");
+      if (employmentSelect) {
+        const empStatus = cleanValue(employee.employment_status).toUpperCase();
+        employmentSelect.value = [...employmentSelect.options].some(
+          (opt) => opt.value === empStatus,
+        )
+          ? empStatus
+          : "";
+      }
+
+      // =========================
+      // GET SUB STATUS ONCE
+      // =========================
+      const subStatus = cleanValue(employee.sub_status).toUpperCase();
+
+      // =========================
+      // SET SELECT VALUE
+      // =========================
+      const subStatusSelect = el("editSubStatus");
+
+      if (subStatusSelect) {
+        const valid = [...subStatusSelect.options].some(
+          (opt) => opt.value === subStatus,
+        );
+        subStatusSelect.value = valid ? subStatus : "";
+      }
+
+      // =========================
+      // RESET + SYNC UI
+      // =========================
+      syncMultiUI(subStatus);
+
+      // normalize arrays safely (FIXED)
+      const branches = safeArray(employee.roving_branches || p.roving_branches);
+      const brands = safeArray(employee.multi_brands || p.multi_brands);
+
+      // render AFTER UI sync
+      requestAnimationFrame(() => {
+        if (subStatus === "MULTI BRANCH") {
+          populateEditRoving(branches, employee.brand, employee.branch);
+          updateBranchOptions();
+        }
+
+        if (subStatus === "MULTI BRAND") {
+          populateEditBrands(brands, employee.branch, employee.brand);
+          updateBrandOptions();
+        }
+      });
+
+      if (reasonSelect) {
+        const reasonValue = cleanValue(employee.reason_update).toUpperCase();
+        reasonSelect.value = [...reasonSelect.options].some(
+          (opt) => opt.value === reasonValue,
+        )
+          ? reasonValue
+          : "";
+      }
+
+      toggleTransferEditable(); // 👈 ADD HERE
+
+      // =========================
+      // EDITABLE FIELDS SAFE
+      // =========================
+      if (el("editDateSeparated"))
+        el("editDateSeparated").value = cleanValue(employee.date_separated);
+      if (el("editDateReturn"))
+        el("editDateReturn").value = cleanValue(employee.date_of_return);
+      if (el("editRemarks")) el("editRemarks").value = "";
+
+      // =========================
+      // READ ONLY
+      // =========================
+      if (el("editLastUpdatedBy"))
+        el("editLastUpdatedBy").value = cleanValue(employee.last_updated_by);
+      if (el("editDateLastUpdated")) {
+        el("editDateLastUpdated").value = employee.updated_at
+          ? employee.updated_at.split(" ")[0]
+          : "";
+      }
+
+      // =========================
+      // DISABLE LOGIC
+      // =========================
+      const editable = [
+        "editEmploymentStatus",
+        "editSubStatus",
+        "editReasonUpdate",
+        "editDateSeparated",
+        "editDateReturn",
+        "editRemarks",
+      ];
+
+      modalEl.querySelectorAll("input, select, textarea").forEach((el) => {
+        el.disabled = !editable.includes(el.id);
+      });
+
+      modal.show();
+      loadHistory(employee.employee_id);
+
+      // sync toggles
+      toggleDateSeparated();
+      toggleDateReturned();
+      toggleEmploymentDates();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load employee data",
+      });
+    }
+  });
 });
 
 // =========================
 // SAVE BUTTON (UNCHANGED LOGIC)
 // =========================
-document.getElementById('saveBtn').addEventListener('click', async () => {
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const confirm = await Swal.fire({
+    icon: "warning",
+    title: "Save Changes?",
+    text: "Changes to this employee may affect assignments and history. This cannot be easily undone.",
+    showCancelButton: true,
+  });
 
-    const confirm = await Swal.fire({
-        icon: 'warning',
-        title: 'Save Changes?',
-        text: 'Changes to this employee may affect assignments and history. This cannot be easily undone.',
-        showCancelButton: true
+  if (!confirm.isConfirmed) return;
+
+  const reason = (
+    document.getElementById("editReasonUpdate").value || ""
+  ).toUpperCase();
+
+  const dateSeparated = document.getElementById("editDateSeparated");
+  const dateReturned = document.getElementById("editDateReturn");
+
+  if (dateSeparated?.required && !dateSeparated.value) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Date Separated Required",
     });
+  }
 
-    if (!confirm.isConfirmed) return;
-
-    const reason = (document.getElementById('editReasonUpdate').value || '').toUpperCase();
-
-    const dateSeparated = document.getElementById('editDateSeparated');
-    const dateReturned = document.getElementById('editDateReturn');
-
-    if (dateSeparated?.required && !dateSeparated.value) {
-        return Swal.fire({
-            icon: 'warning',
-            title: 'Date Separated Required'
-        });
-    }
-
-    if (reason === "MATERNITY LEAVE" && !dateReturned.value) {
-        return Swal.fire({
-            icon: 'warning',
-            title: 'Date Returned Required'
-        });
-    }
-
-    // 🚨 REQUIRED FIELD CHECK
-    if (!reason) {
-        return Swal.fire({
-            icon: 'warning',
-            title: 'Reason Required',
-            text: 'Please select a reason for update.'
-        });
-    }
-
-    const formData = new FormData();
-    formData.set('id', document.getElementById('editPromodizerId').value);
-    formData.set('employee_id', document.getElementById('editEmployeeId').value);
-    formData.set('employment_status', document.getElementById('editEmploymentStatus').value);
-    formData.set('sub_status', document.getElementById('editSubStatus').value);
-    formData.set('reason_update', reason);
-    formData.set('date_separated', dateSeparated.value);
-    formData.set('date_returned', dateReturned.value);
-    formData.set('last_updated_by', document.getElementById('editLastUpdatedBy').value);
-    formData.set('date_last_updated', document.getElementById('editDateLastUpdated').value);
-    document.getElementById('editRemarks').value = '';
-    formData.set('start_date', startDateInput.value);
-    formData.set('end_date', endDateInput.value);
-
-    // =========================
-    // COLLECT ASSIGNMENTS
-    // =========================
-    const branch = document.getElementById('editBranch')?.value || '';
-    const brand  = document.getElementById('editBrand')?.value || '';
-
-    formData.set('branch', branch);
-    formData.set('brand', brand);
-
-    // MULTI BRANCH
-    const rovingBranches = Array.from(
-        document.querySelectorAll('#editRovingContainer select')
-    )
-    .map(s => s.value)
-    .filter(v => v);
-
-    rovingBranches.forEach(b => {
-        formData.append('roving_branches[]', b);
+  if (reason === "MATERNITY LEAVE" && !dateReturned.value) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Date Returned Required",
     });
+  }
 
-    // MULTI BRAND
-    const multiBrands = Array.from(
-        document.querySelectorAll('#editMultiBrandContainer select')
-    )
-    .map(s => s.value)
-    .filter(v => v);
-
-    multiBrands.forEach(b => {
-        formData.append('multi_brands[]', b);
+  // 🚨 REQUIRED FIELD CHECK
+  if (!reason) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Reason Required",
+      text: "Please select a reason for update.",
     });
+  }
 
-   fetch('functions/update_promodizer.php', {
-        method: 'POST',
-        body: formData
+  const formData = new FormData();
+  formData.set("id", document.getElementById("editPromodizerId").value);
+  formData.set("employee_id", document.getElementById("editEmployeeId").value);
+  formData.set(
+    "employment_status",
+    document.getElementById("editEmploymentStatus").value,
+  );
+  formData.set("sub_status", document.getElementById("editSubStatus").value);
+  formData.set("reason_update", reason);
+  formData.set("date_separated", dateSeparated.value);
+  formData.set("date_returned", dateReturned.value);
+  formData.set(
+    "last_updated_by",
+    document.getElementById("editLastUpdatedBy").value,
+  );
+  formData.set(
+    "date_last_updated",
+    document.getElementById("editDateLastUpdated").value,
+  );
+  document.getElementById("editRemarks").value = "";
+  formData.set("start_date", startDateInput.value);
+  formData.set("end_date", endDateInput.value);
+
+  // =========================
+  // COLLECT ASSIGNMENTS
+  // =========================
+  const branch = document.getElementById("editBranch")?.value || "";
+  const brand = document.getElementById("editBrand")?.value || "";
+
+  formData.set("branch", branch);
+  formData.set("brand", brand);
+
+  // MULTI BRANCH
+  const rovingBranches = Array.from(
+    document.querySelectorAll("#editRovingContainer select"),
+  )
+    .map((s) => s.value)
+    .filter((v) => v);
+
+  rovingBranches.forEach((b) => {
+    formData.append("roving_branches[]", b);
+  });
+
+  // MULTI BRAND
+  const multiBrands = Array.from(
+    document.querySelectorAll("#editMultiBrandContainer select"),
+  )
+    .map((s) => s.value)
+    .filter((v) => v);
+
+  multiBrands.forEach((b) => {
+    formData.append("multi_brands[]", b);
+  });
+
+  fetch("functions/update_promodizer.php", {
+    method: "POST",
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "success") {
+        Swal.fire("Success", data.message, "success").then(() =>
+          location.reload(),
+        );
+      } else {
+        Swal.fire("Error", data.message, "error");
+      }
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'success') {
-            Swal.fire('Success', data.message, 'success')
-                .then(() => location.reload());
-        } else {
-            Swal.fire('Error', data.message, 'error');
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        Swal.fire('Error', 'Request failed', 'error');
+    .catch((err) => {
+      console.error(err);
+      Swal.fire("Error", "Request failed", "error");
     });
 });
 
 async function loadBranchBrandPairs() {
-    try {
-        const res = await fetch('functions/get_available_branches_brands.php');
-        branchBrandPairs = await res.json();
-    } catch (err) {
-        console.error('Failed to load branch-brand pairs', err);
-    }
+  try {
+    const res = await fetch("functions/get_available_branches_brands.php");
+    branchBrandPairs = await res.json();
+  } catch (err) {
+    console.error("Failed to load branch-brand pairs", err);
+  }
 }
 
 function getSelectedValues(container, selector) {
-    return [...container.querySelectorAll(selector)]
-        .map(s => s.value)
-        .filter(v => v);
+  return [...container.querySelectorAll(selector)]
+    .map((s) => s.value)
+    .filter((v) => v);
 }
 
 function updateBranchOptions() {
-    const selects = editRovingContainer.querySelectorAll('select');
-    const selectedValues = getSelectedValues(editRovingContainer, 'select');
+  const selects = editRovingContainer.querySelectorAll("select");
+  const selectedValues = getSelectedValues(editRovingContainer, "select");
 
-    const currentBrand = document.getElementById('editBrand')?.value;
-    const baseBranch = document.getElementById('editBranch')?.value;
+  const currentBrand = document.getElementById("editBrand")?.value;
+  const baseBranch = document.getElementById("editBranch")?.value;
 
-    const validBranches = branchBrandPairs
-        .filter(p =>
-            p.brand_name === currentBrand &&
-            p.branch_name !== baseBranch &&
-            (
-                p.assigned_count < p.required_count ||
-                selectedValues.includes(p.branch_name)
-            )
-        )
-        .map(p => p.branch_name);
+  const validBranches = branchBrandPairs
+    .filter(
+      (p) =>
+        p.brand_name === currentBrand &&
+        p.branch_name !== baseBranch &&
+        (p.assigned_count < p.required_count ||
+          selectedValues.includes(p.branch_name)),
+    )
+    .map((p) => p.branch_name);
 
-    const uniqueBranches = [...new Set(validBranches)];
+  const uniqueBranches = [...new Set(validBranches)];
 
-    selects.forEach(select => {
-        const currentValue = select.value;
+  selects.forEach((select) => {
+    const currentValue = select.value;
 
-        select.innerHTML = `
+    select.innerHTML =
+      `
             <option value="">Select branch</option>
-        ` + uniqueBranches
-            .filter(branch =>
-                !selectedValues.includes(branch) || branch === currentValue
-            )
-            .map(branch => `
+        ` +
+      uniqueBranches
+        .filter(
+          (branch) =>
+            !selectedValues.includes(branch) || branch === currentValue,
+        )
+        .map(
+          (branch) => `
                 <option value="${branch}"
-                    ${branch === currentValue ? 'selected' : ''}>
+                    ${branch === currentValue ? "selected" : ""}>
                     ${branch}
                 </option>
-            `).join('');
-    });
+            `,
+        )
+        .join("");
+  });
 }
 
 function updateBrandOptions() {
-    const selects = editMultiBrandContainer.querySelectorAll('select');
-    const selectedValues = getSelectedValues(editMultiBrandContainer, 'select');
+  const selects = editMultiBrandContainer.querySelectorAll("select");
+  const selectedValues = getSelectedValues(editMultiBrandContainer, "select");
 
-    const currentBranch = document.getElementById('editBranch')?.value;
-    const baseBrand = document.getElementById('editBrand')?.value;
+  const currentBranch = document.getElementById("editBranch")?.value;
+  const baseBrand = document.getElementById("editBrand")?.value;
 
-    const validBrands = branchBrandPairs
-        .filter(p =>
-            p.branch_name === currentBranch &&
-            p.brand_name !== baseBrand &&
-            (
-                p.assigned_count < p.required_count ||
-                selectedValues.includes(p.brand_name)
-            )
-        )
-        .map(p => p.brand_name);
+  const validBrands = branchBrandPairs
+    .filter(
+      (p) =>
+        p.branch_name === currentBranch &&
+        p.brand_name !== baseBrand &&
+        (p.assigned_count < p.required_count ||
+          selectedValues.includes(p.brand_name)),
+    )
+    .map((p) => p.brand_name);
 
-    const uniqueBrands = [...new Set(validBrands)];
+  const uniqueBrands = [...new Set(validBrands)];
 
-    selects.forEach(select => {
-        const currentValue = select.value;
+  selects.forEach((select) => {
+    const currentValue = select.value;
 
-        select.innerHTML = `
+    select.innerHTML =
+      `
             <option value="">Select brand</option>
-        ` + uniqueBrands
-            .filter(brand =>
-                !selectedValues.includes(brand) || brand === currentValue
-            )
-            .map(brand => `
+        ` +
+      uniqueBrands
+        .filter(
+          (brand) => !selectedValues.includes(brand) || brand === currentValue,
+        )
+        .map(
+          (brand) => `
                 <option value="${brand}"
-                    ${brand === currentValue ? 'selected' : ''}>
+                    ${brand === currentValue ? "selected" : ""}>
                     ${brand}
                 </option>
-            `).join('');
-    });
+            `,
+        )
+        .join("");
+  });
 }
 
 function isComboAvailable(branch, brand) {
-    const combo = branchBrandPairs.find(p =>
-        p.branch_name === branch &&
-        p.brand_name === brand
-    );
+  const combo = branchBrandPairs.find(
+    (p) => p.branch_name === branch && p.brand_name === brand,
+  );
 
-    if (!combo) return false;
+  if (!combo) return false;
 
-    return combo.assigned_count < combo.required_count;
+  return combo.assigned_count < combo.required_count;
 }
 // =========================
 // INIT LISTENERS
 // =========================
-document.addEventListener('DOMContentLoaded', async function () {
+document.addEventListener("DOMContentLoaded", async function () {
+  await loadBranchBrandPairs(); // 🔥 ADD THIS
 
-    await loadBranchBrandPairs(); // 🔥 ADD THIS
+  if (reasonSelect) {
+    reasonSelect.addEventListener("change", toggleDateSeparated);
+    reasonSelect.addEventListener("change", toggleDateReturned);
+    reasonSelect.addEventListener("change", toggleTransferEditable); // ✅ ADD THIS
+  }
 
-    if (reasonSelect) {
-        reasonSelect.addEventListener('change', toggleDateSeparated);
-        reasonSelect.addEventListener('change', toggleDateReturned);
+  if (employmentStatusSelect) {
+    employmentStatusSelect.addEventListener("change", toggleEmploymentDates);
+  }
+
+  editRovingContainer.addEventListener("click", (e) => {
+    // ADD
+    if (e.target.classList.contains("btn-add-branch")) {
+      const row = e.target.closest(".roving-row");
+      const clone = row.cloneNode(true);
+
+      const select = clone.querySelector("select");
+      if (select) {
+        select.value = "";
+        select.disabled = false;
+      }
+
+      const removeBtn = clone.querySelector(".btn-remove-branch");
+      if (removeBtn) removeBtn.style.display = "inline-block";
+
+      editRovingContainer.appendChild(clone);
+      updateBranchOptions();
     }
 
-    if (employmentStatusSelect) {
-        employmentStatusSelect.addEventListener('change', toggleEmploymentDates);
+    // REMOVE
+    if (e.target.classList.contains("btn-remove-branch")) {
+      e.target.closest(".roving-row").remove();
+      updateBranchOptions();
+    }
+  });
+
+  editMultiBrandContainer.addEventListener("click", (e) => {
+    // ADD
+    if (e.target.classList.contains("btn-add-brand")) {
+      const row = e.target.closest(".brand-row");
+      const clone = row.cloneNode(true);
+
+      const select = clone.querySelector("select");
+      if (select) {
+        select.value = "";
+        select.disabled = false;
+      }
+
+      const removeBtn = clone.querySelector(".btn-remove-brand");
+      if (removeBtn) removeBtn.style.display = "inline-block";
+
+      editMultiBrandContainer.appendChild(clone);
+      updateBrandOptions();
     }
 
-    editRovingContainer.addEventListener('click', (e) => {
+    // REMOVE
+    if (e.target.classList.contains("btn-remove-brand")) {
+      const allRows = editMultiBrandContainer.querySelectorAll(".brand-row");
 
-        // ADD
-        if (e.target.classList.contains('btn-add-branch')) {
-            const row = e.target.closest('.roving-row');
-            const clone = row.cloneNode(true);
-
-            const select = clone.querySelector('select');
-            if (select) {
-                select.value = '';
-                select.disabled = false;
-            }
-
-            const removeBtn = clone.querySelector('.btn-remove-branch');
-            if (removeBtn) removeBtn.style.display = 'inline-block';
-
-            editRovingContainer.appendChild(clone);
-            updateBranchOptions();
-        }
-
-        // REMOVE
-        if (e.target.classList.contains('btn-remove-branch')) {
-            e.target.closest('.roving-row').remove();
-            updateBranchOptions();
-        }
-    });
-
-    editMultiBrandContainer.addEventListener('click', (e) => {
-
-        // ADD
-        if (e.target.classList.contains('btn-add-brand')) {
-            const row = e.target.closest('.brand-row');
-            const clone = row.cloneNode(true);
-
-            const select = clone.querySelector('select');
-            if (select) {
-                select.value = '';
-                select.disabled = false;
-            }
-
-            const removeBtn = clone.querySelector('.btn-remove-brand');
-            if (removeBtn) removeBtn.style.display = 'inline-block';
-
-            editMultiBrandContainer.appendChild(clone);
-            updateBrandOptions();
-        }
-
-        // REMOVE
-        if (e.target.classList.contains('btn-remove-brand')) {
-            const allRows = editMultiBrandContainer.querySelectorAll('.brand-row');
-
-            if (allRows.length > 1) {
-                e.target.closest('.brand-row').remove();
-                updateBrandOptions();
-            } else {
-                e.target.closest('.brand-row').querySelector('select').value = '';
-            }
-        }
-    });
-
-    const editSubStatus = document.getElementById('editSubStatus');
-
-    if (editSubStatus) {
-        editSubStatus.addEventListener('change', () => {
-            const value = (editSubStatus.value || '').toUpperCase();
-
-            syncMultiUI(value);
-
-            if (value === 'MULTI BRANCH') {
-                populateEditRoving(['']);
-            }
-
-            if (value === 'MULTI BRAND') {
-                populateEditBrands(['']);
-            }
-        });
-    }
-    // 🔥 PREVENT DUPLICATES ON CHANGE
-    editRovingContainer.addEventListener('change', (e) => {
-        if (e.target.tagName !== 'SELECT') return;
-
-        const branch = e.target.value;
-        const brand = document.getElementById('editBrand')?.value;
-
-        if (branch && brand && !isComboAvailable(branch, brand)) {
-            Swal.fire('Not Available', 'This branch is full.', 'warning');
-            e.target.value = '';
-            return;
-        }
-
-        updateBranchOptions();
-    });
-
-    editMultiBrandContainer.addEventListener('change', (e) => {
-        if (e.target.tagName !== 'SELECT') return;
-
-        const brand = e.target.value;
-        const branch = document.getElementById('editBranch')?.value;
-
-        if (branch && brand && !isComboAvailable(branch, brand)) {
-            Swal.fire('Not Available', 'This brand is full.', 'warning');
-            e.target.value = '';
-            return;
-        }
-
+      if (allRows.length > 1) {
+        e.target.closest(".brand-row").remove();
         updateBrandOptions();
+      } else {
+        e.target.closest(".brand-row").querySelector("select").value = "";
+      }
+    }
+  });
+
+  const editSubStatus = document.getElementById("editSubStatus");
+
+  if (editSubStatus) {
+    editSubStatus.addEventListener("change", () => {
+      const value = (editSubStatus.value || "").toUpperCase();
+
+      syncMultiUI(value);
+
+      if (value === "MULTI BRANCH") {
+        populateEditRoving([""]);
+      }
+
+      if (value === "MULTI BRAND") {
+        populateEditBrands([""]);
+      }
     });
+  }
+  // 🔥 PREVENT DUPLICATES ON CHANGE
+  editRovingContainer.addEventListener("change", (e) => {
+    if (e.target.tagName !== "SELECT") return;
+
+    const branch = e.target.value;
+    const brand = document.getElementById("editBrand")?.value;
+
+    if (branch && brand && !isComboAvailable(branch, brand)) {
+      Swal.fire("Not Available", "This branch is full.", "warning");
+      e.target.value = "";
+      return;
+    }
+
+    updateBranchOptions();
+  });
+
+  editMultiBrandContainer.addEventListener("change", (e) => {
+    if (e.target.tagName !== "SELECT") return;
+
+    const brand = e.target.value;
+    const branch = document.getElementById("editBranch")?.value;
+
+    if (branch && brand && !isComboAvailable(branch, brand)) {
+      Swal.fire("Not Available", "This brand is full.", "warning");
+      e.target.value = "";
+      return;
+    }
+
+    updateBrandOptions();
+  });
 });
