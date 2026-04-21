@@ -685,6 +685,24 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
 // SAVE BUTTON (UNCHANGED LOGIC)
 // =========================
 document.getElementById("saveBtn").addEventListener("click", async () => {
+  const branch = document.getElementById("editBranch")?.value || "";
+  const brand = document.getElementById("editBrand")?.value || "";
+
+  // 🔥 CHECK AVAILABILITY FIRST
+  const isAvailable = isComboAvailable(branch, brand);
+
+  if (!isAvailable) {
+    await Swal.fire({
+      icon: "warning",
+      title: "Slot Full",
+      text: "This branch + brand assignment is already full.",
+    });
+    return; // ❌ HARD STOP
+  }
+
+  // =========================
+  // CONFIRMATION
+  // =========================
   const confirm = await Swal.fire({
     icon: "warning",
     title: "Save Changes?",
@@ -701,6 +719,9 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const dateSeparated = document.getElementById("editDateSeparated");
   const dateReturned = document.getElementById("editDateReturn");
 
+  // =========================
+  // VALIDATIONS
+  // =========================
   if (dateSeparated?.required && !dateSeparated.value) {
     return Swal.fire({
       icon: "warning",
@@ -715,7 +736,6 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     });
   }
 
-  // 🚨 REQUIRED FIELD CHECK
   if (!reason) {
     return Swal.fire({
       icon: "warning",
@@ -724,7 +744,11 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     });
   }
 
+  // =========================
+  // BUILD FORM DATA
+  // =========================
   const formData = new FormData();
+
   formData.set("id", document.getElementById("editPromodizerId").value);
   formData.set("employee_id", document.getElementById("editEmployeeId").value);
   formData.set(
@@ -743,41 +767,46 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     "date_last_updated",
     document.getElementById("editDateLastUpdated").value,
   );
-  document.getElementById("editRemarks").value = "";
+
   formData.set("start_date", startDateInput.value);
   formData.set("end_date", endDateInput.value);
 
-  // =========================
-  // COLLECT ASSIGNMENTS
-  // =========================
-  const branch = document.getElementById("editBranch")?.value || "";
-  const brand = document.getElementById("editBrand")?.value || "";
-
+  // ✅ MAIN ASSIGNMENT
   formData.set("branch", branch);
   formData.set("brand", brand);
 
+  // ✅ SEND AVAILABILITY FLAG
+  formData.set("is_available", isAvailable ? "1" : "0");
+
+  // =========================
   // MULTI BRANCH
+  // =========================
   const rovingBranches = Array.from(
     document.querySelectorAll("#editRovingContainer select"),
   )
     .map((s) => s.value)
-    .filter((v) => v);
+    .filter(Boolean);
 
   rovingBranches.forEach((b) => {
     formData.append("roving_branches[]", b);
   });
 
+  // =========================
   // MULTI BRAND
+  // =========================
   const multiBrands = Array.from(
     document.querySelectorAll("#editMultiBrandContainer select"),
   )
     .map((s) => s.value)
-    .filter((v) => v);
+    .filter(Boolean);
 
   multiBrands.forEach((b) => {
     formData.append("multi_brands[]", b);
   });
 
+  // =========================
+  // SEND REQUEST
+  // =========================
   fetch("functions/update_promodizer.php", {
     method: "POST",
     body: formData,
@@ -1012,6 +1041,35 @@ document.addEventListener("DOMContentLoaded", async function () {
       );
     }
   });
+
+  function validateMainAssignment() {
+    const branch = document.getElementById("editBranch")?.value;
+    const brand = document.getElementById("editBrand")?.value;
+
+    if (!branch || !brand) return true;
+
+    if (!isComboAvailable(branch, brand)) {
+      Swal.fire({
+        icon: "warning",
+        title: "Slot Full",
+        text: "This branch + brand assignment is already full.",
+      });
+
+      return false;
+    }
+
+    return true;
+  }
+
+  // validate when either changes
+  document.getElementById("editBranch")?.addEventListener("change", () => {
+    validateMainAssignment();
+  });
+
+  document.getElementById("editBrand")?.addEventListener("change", () => {
+    validateMainAssignment();
+  });
+
   // 🔥 PREVENT DUPLICATES ON CHANGE
   editRovingContainer.addEventListener("change", (e) => {
     if (e.target.tagName !== "SELECT") return;

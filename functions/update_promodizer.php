@@ -68,6 +68,8 @@ $multi_brand_group_id = $current['multi_brand_group_id'];
 
 $rovingBranches = $_POST['roving_branches'] ?? [];
 $multiBrands    = $_POST['multi_brands'] ?? [];
+$branch = $_POST['branch'] ?? null;
+$brand  = $_POST['brand'] ?? null;
 
 if (!is_array($rovingBranches)) $rovingBranches = [$rovingBranches];
 if (!is_array($multiBrands)) $multiBrands = [$multiBrands];
@@ -134,6 +136,14 @@ if ($start_date && $end_date) {
         ]);
         exit;
     }
+}
+
+if ($_POST['is_available'] === "0") {
+    echo json_encode([
+        "status" => "error",
+        "message" => "Selected branch/brand is already full."
+    ]);
+    exit;
 }
 
 // =========================
@@ -222,6 +232,11 @@ try {
     // =========================
     // UPDATE ORIGINAL ONLY HERE
     // =========================
+    $sendTransferFields = in_array($reason_for_update, ['TRANSFER', 'REASSIGNED']);
+
+    $branchParam = $sendTransferFields ? $branch : null;
+    $brandParam  = $sendTransferFields ? $brand : null;
+
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
@@ -238,8 +253,30 @@ try {
             @roving_group_id = :roving_group_id,
             @multi_brand_group_id = :multi_brand_group_id,
             @roving_branches = :roving_branches,
-            @multi_brands = :multi_brands
+            @multi_brands = :multi_brands,
+            @branch = :branch,
+            @brand = :brand
     ");
+
+    $stmt->execute([
+        ':id' => $id,
+        ':status' => $status,
+        ':sub_status' => $sub_status,
+        ':employment_status' => $employment_status,
+        ':reason_for_update' => $reason_for_update,
+        ':start_date' => $start_date,
+        ':end_date' => $end_date,
+        ':date_separated' => $date_separated,
+        ':date_of_return' => $date_of_return,
+        ':remarks' => $remarks,
+        ':last_updated_by' => $last_updated_by,
+        ':roving_group_id' => $roving_group_id,
+        ':multi_brand_group_id' => $multi_brand_group_id,
+        ':roving_branches' => !empty($filteredBranches) ? implode(',', $filteredBranches) : null,
+        ':multi_brands' => !empty($filteredBrands) ? implode(',', $filteredBrands) : null,
+        ':branch' => $branchParam,
+        ':brand' => $brandParam
+    ]);
 
     $filteredBranches = [];
 
