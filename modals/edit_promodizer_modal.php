@@ -128,6 +128,7 @@
                                     <option value="RESIGNED">RESIGNED</option>
                                     <option value="PULL-OUT / TERMINATED">PULL-OUT / TERMINATED</option>
                                     <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
+                                    <option value="REASSIGNED">REASSIGNED</option>
                                     <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
                                     <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
                                     <option value="REMOVE BRANCH/BRAND">REMOVE BRANCH/BRAND</option>
