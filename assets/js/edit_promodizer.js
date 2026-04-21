@@ -202,6 +202,70 @@ function toggleDateReturned() {
   }
 }
 
+function populateEditBranch(
+  branches = [],
+  currentBrand = null,
+  baseBranch = null,
+) {
+  const branchSelect = document.getElementById("editBranch");
+  if (!branchSelect) return;
+
+  const list = safeArray(branches);
+
+  const validBranches = branchBrandPairs
+    .filter(
+      (p) =>
+        p.brand_name === currentBrand &&
+        p.branch_name !== baseBranch &&
+        (p.assigned_count < p.required_count || list.includes(p.branch_name)),
+    )
+    .map((p) => p.branch_name);
+
+  const uniqueBranches = [...new Set(validBranches)];
+
+  branchSelect.innerHTML = `
+    <option value="">Select branch</option>
+    ${uniqueBranches
+      .map(
+        (b) =>
+          `<option value="${b}" ${list.includes(b) ? "selected" : ""}>${b}</option>`,
+      )
+      .join("")}
+  `;
+}
+
+function populateEditBrand(
+  brands = [],
+  currentBranch = null,
+  baseBrand = null,
+) {
+  const brandSelect = document.getElementById("editBrand");
+  if (!brandSelect) return;
+
+  const list = safeArray(brands);
+
+  const validBrands = branchBrandPairs
+    .filter(
+      (p) =>
+        p.branch_name === currentBranch &&
+        p.brand_name !== baseBrand &&
+        (p.assigned_count < p.required_count || list.includes(p.brand_name)),
+    )
+    .map((p) => p.brand_name);
+
+  const uniqueBrands = [...new Set(validBrands)];
+
+  brandSelect.innerHTML = `
+    <option value="">Select brand</option>
+    ${uniqueBrands
+      .map(
+        (b) =>
+          `<option value="${b}" ${list.includes(b) ? "selected" : ""}>${b}</option>`,
+      )
+      .join("")}
+  `;
+}
+
 function populateEditRoving(
   branches = [],
   currentBrand = null,
@@ -408,9 +472,16 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         el("editFirstName").value = cleanValue(employee.first_name);
       if (el("editLastName"))
         el("editLastName").value = cleanValue(employee.last_name);
-      if (el("editBranch"))
-        el("editBranch").value = cleanValue(employee.branch);
-      if (el("editBrand")) el("editBrand").value = cleanValue(employee.brand);
+      if (el("editBranch")) {
+        const value = cleanValue(employee.branch);
+        el("editBranch").innerHTML =
+          `<option value="${value}" selected>${value}</option>`;
+      }
+      if (el("editBrand")) {
+        const value = cleanValue(employee.brand);
+        el("editBrand").innerHTML =
+          `<option value="${value}" selected>${value}</option>`;
+      }
 
       // ✅ FIXED DATE HANDLING (NO "-")
       if (el("editDateHired")) {

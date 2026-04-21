@@ -74,9 +74,14 @@
                         </tr>
                         <tr>
                             <th>Branch</th>
-                            <td><input type="text" id="editBranch" class="form-control" readonly></td>
+                            <td>
+                                <select id="editBranch" class="form-control"></select>
+                            </td>
+
                             <th>Brand</th>
-                            <td><input type="text" id="editBrand" class="form-control" readonly></td>
+                            <td>
+                                <select id="editBrand" class="form-control"></select>
+                            </td>
                         </tr>
                         <tr>
                             <th>Employment Status</th>
