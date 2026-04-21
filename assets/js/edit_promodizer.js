@@ -118,7 +118,7 @@ function toggleTransferEditable() {
   }
 
   // only unlock if TRANSFER
-  if (reason !== "TRANSFER") return;
+  if (reason !== "TRANSFER" && reason !== "REASSIGNED") return;
 
   // =========================
   // APPLY RULES
