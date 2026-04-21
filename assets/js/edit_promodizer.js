@@ -213,18 +213,15 @@ function populateEditBranch(
 
   const list = safeArray(branches);
 
-  let validBranches = branchBrandPairs.filter((p) => {
-    // ✅ MULTI BRANCH → filter by brand
+  const validBranches = branchBrandPairs.filter((p) => {
     if (mode === "MULTI BRANCH") {
-      return (
-        p.brand_name === currentBrand &&
-        (p.branch_name === baseBranch ||
-          p.assigned_count < p.required_count ||
-          list.includes(p.branch_name))
-      );
+      return p.brand_name === currentBrand;
     }
 
-    // ✅ STATIONARY → show ALL available
+    if (mode === "MULTI BRAND") {
+      return true;
+    }
+
     if (mode === "STATIONARY") {
       return (
         p.branch_name === baseBranch ||
@@ -241,10 +238,22 @@ function populateEditBranch(
   branchSelect.innerHTML = `
     <option value="">Select branch</option>
     ${uniqueBranches
-      .map(
-        (b) =>
-          `<option value="${b}" ${list.includes(b) ? "selected" : ""}>${b}</option>`,
-      )
+      .map((b) => {
+        const pair = branchBrandPairs.find(
+          (p) => p.branch_name === b && p.brand_name === currentBrand,
+        );
+
+        const isDisabled =
+          mode === "MULTI BRANCH" &&
+          pair &&
+          pair.assigned_count >= pair.required_count &&
+          !list.includes(b);
+
+        return `<option value="${b}" 
+          ${list.includes(b) ? "selected" : ""}
+          ${isDisabled ? "disabled" : ""}
+        >${b}</option>`;
+      })
       .join("")}
   `;
 }
@@ -260,18 +269,15 @@ function populateEditBrand(
 
   const list = safeArray(brands);
 
-  let validBrands = branchBrandPairs.filter((p) => {
-    // ✅ MULTI BRAND → filter by branch
+  const validBrands = branchBrandPairs.filter((p) => {
     if (mode === "MULTI BRAND") {
-      return (
-        p.branch_name === currentBranch &&
-        (p.brand_name === baseBrand ||
-          p.assigned_count < p.required_count ||
-          list.includes(p.brand_name))
-      );
+      return p.branch_name === currentBranch;
     }
 
-    // ✅ STATIONARY → depends on selected branch
+    if (mode === "MULTI BRANCH") {
+      return true;
+    }
+
     if (mode === "STATIONARY") {
       return (
         (!currentBranch || p.branch_name === currentBranch) &&
@@ -289,10 +295,22 @@ function populateEditBrand(
   brandSelect.innerHTML = `
     <option value="">Select brand</option>
     ${uniqueBrands
-      .map(
-        (b) =>
-          `<option value="${b}" ${list.includes(b) ? "selected" : ""}>${b}</option>`,
-      )
+      .map((b) => {
+        const pair = branchBrandPairs.find(
+          (p) => p.brand_name === b && p.branch_name === currentBranch,
+        );
+
+        const isDisabled =
+          mode === "MULTI BRAND" &&
+          pair &&
+          pair.assigned_count >= pair.required_count &&
+          !list.includes(b);
+
+        return `<option value="${b}"
+          ${list.includes(b) ? "selected" : ""}
+          ${isDisabled ? "disabled" : ""}
+        >${b}</option>`;
+      })
       .join("")}
   `;
 }
