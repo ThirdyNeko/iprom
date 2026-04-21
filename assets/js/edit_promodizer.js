@@ -706,59 +706,55 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const branch = document.getElementById("editBranch")?.value || "";
   const brand = document.getElementById("editBrand")?.value || "";
 
-  // 🔥 CHECK AVAILABILITY FIRST
-  const isAvailable = isComboAvailable(branch, brand);
-
-  if (!isAvailable) {
-    await Swal.fire({
-      icon: "warning",
-      title: "Slot Full",
-      text: "This branch + brand assignment is already full.",
-    });
-    return; // ❌ HARD STOP
-  }
-
-  // =========================
-  // CONFIRMATION
-  // =========================
-  const confirm = await Swal.fire({
-    icon: "warning",
-    title: "Save Changes?",
-    text: "Changes to this employee may affect assignments and history. This cannot be easily undone.",
-    showCancelButton: true,
-  });
-
-  if (!confirm.isConfirmed) return;
-
   const reason = (
     document.getElementById("editReasonUpdate").value || ""
   ).toUpperCase();
 
+  const requiresAssignmentCheck =
+    reason === "TRANSFER" || reason === "REASSIGNED";
+
+  let isAvailable = true;
+
+  // ONLY validate when needed
+  if (requiresAssignmentCheck) {
+    isAvailable = isComboAvailable(branch, brand);
+
+    if (!isAvailable) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Slot Full",
+        text: "This branch + brand assignment is already full.",
+      });
+      return;
+    }
+  }
+
+  // CONFIRMATION
+  const result = await Swal.fire({
+    icon: "warning",
+    title: "Save Changes?",
+    text: "Changes may affect assignments and history.",
+    showCancelButton: true,
+  });
+
+  if (!result.isConfirmed) return;
+
   const dateSeparated = document.getElementById("editDateSeparated");
   const dateReturned = document.getElementById("editDateReturn");
 
-  // =========================
   // VALIDATIONS
-  // =========================
   if (dateSeparated?.required && !dateSeparated.value) {
-    return Swal.fire({
-      icon: "warning",
-      title: "Date Separated Required",
-    });
+    return Swal.fire({ icon: "warning", title: "Date Separated Required" });
   }
 
   if (reason === "MATERNITY LEAVE" && !dateReturned.value) {
-    return Swal.fire({
-      icon: "warning",
-      title: "Date Returned Required",
-    });
+    return Swal.fire({ icon: "warning", title: "Date Returned Required" });
   }
 
   if (!reason) {
     return Swal.fire({
       icon: "warning",
       title: "Reason Required",
-      text: "Please select a reason for update.",
     });
   }
 
@@ -792,9 +788,6 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // ✅ MAIN ASSIGNMENT
   formData.set("branch", branch);
   formData.set("brand", brand);
-
-  // ✅ SEND AVAILABILITY FLAG
-  formData.set("is_available", isAvailable ? "1" : "0");
 
   // =========================
   // MULTI BRANCH
@@ -1061,6 +1054,15 @@ document.addEventListener("DOMContentLoaded", async function () {
   });
 
   function validateMainAssignment() {
+    const reason = (
+      document.getElementById("editReasonUpdate")?.value || ""
+    ).toUpperCase();
+
+    // 🚫 ONLY validate for transfer-related actions
+    if (reason !== "TRANSFER" && reason !== "REASSIGNED") {
+      return true;
+    }
+
     const branch = document.getElementById("editBranch")?.value;
     const brand = document.getElementById("editBrand")?.value;
 

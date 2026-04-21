@@ -208,6 +208,15 @@ if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
     }
 }
 
+if (in_array($reason_for_update, ['TRANSFER', 'REASSIGNED'])) {
+    if (!isComboAvailable($branch, $brand)) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Slot is already full."
+        ]);
+        exit;
+    }
+}
 
 try {
     $pdo->beginTransaction();
