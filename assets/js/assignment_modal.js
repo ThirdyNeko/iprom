@@ -31,14 +31,11 @@ $(document).on("click", "#assignmentTable tbody tr", function () {
   const assigned = parseInt(row.data("assigned")) || 0;
   const updated = row.data("updated") || null;
 
-  // store assigned globally (IMPORTANT FIX)
   currentAssigned = assigned;
 
-  // store modal state
   $("#assignmentModal").data("branch", branch);
   $("#assignmentModal").data("brand", brand);
 
-  // fill modal instantly
   $("#modalBranch").text(branch);
   $("#modalBrand").text(brand);
   $("#modalRequired").val(required);
@@ -46,11 +43,9 @@ $(document).on("click", "#assignmentTable tbody tr", function () {
 
   $("#modalAssignedList").html('<small class="text-muted">Loading...</small>');
 
-  // OPEN MODAL
   const modalEl = document.getElementById("assignmentModal");
   bootstrap.Modal.getOrCreateInstance(modalEl).show();
 
-  // FETCH
   fetch("functions/get_assigned_promodizers.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -70,7 +65,6 @@ $(document).on("click", "#assignmentTable tbody tr", function () {
       }
 
       assignmentModalDisabled = false;
-
       currentAssigned = res.data.length;
 
       let html = "";
@@ -107,7 +101,6 @@ $(document).on("click", "#assignmentTable tbody tr", function () {
       }
 
       $("#modalAssignedList").html(html);
-
       $("#modalStatus").html(getStatusBadge(requiredVal, currentAssigned));
     })
     .catch((err) => {
@@ -120,7 +113,6 @@ $(document).on("click", "#assignmentTable tbody tr", function () {
       );
     });
 
-  // date
   $("#modalUpdated").text(
     updated
       ? new Date(updated.replace(" ", "T")).toLocaleDateString("en-CA")
@@ -131,7 +123,7 @@ $(document).on("click", "#assignmentTable tbody tr", function () {
 });
 
 // =========================
-// SAVE REQUIRED (HARD BLOCK)
+// SAVE REQUIRED (FIXED)
 // =========================
 document
   .getElementById("saveRequiredBtn")
@@ -140,7 +132,7 @@ document
     const branch = modal.data("branch");
     const brand = modal.data("brand");
 
-    const required = parseInt($("#modalRequired").val());
+    const required = Number($("#modalRequired").val());
 
     if (!branch || !brand) {
       return Swal.fire({
@@ -166,7 +158,7 @@ document
       });
     }
 
-    // 🚨 HARD STOP RULE
+    // HARD RULE
     if (required < currentAssigned) {
       return Swal.fire({
         icon: "error",
@@ -175,6 +167,22 @@ document
       });
     }
 
+    // 🚨 SPECIAL WARNING FOR ZERO
+    if (required === 0) {
+      const dangerConfirm = await Swal.fire({
+        icon: "warning",
+        title: "WARNING: Full Pull-Out",
+        text: "Setting required to 0 will pull out ALL promodizers for this branch & brand. Do you want to continue?",
+        showCancelButton: true,
+        confirmButtonText: "Yes, I understand",
+        cancelButtonText: "Cancel",
+        confirmButtonColor: "#d33",
+      });
+
+      if (!dangerConfirm.isConfirmed) return;
+    }
+
+    // NORMAL CONFIRM
     const confirm = await Swal.fire({
       icon: "warning",
       title: "Update Required?",

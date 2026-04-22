@@ -156,13 +156,6 @@ if ($start_date && $end_date) {
     }
 }
 
-if ($_POST['is_available'] === "0") {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Selected branch/brand is already full."
-    ]);
-    exit;
-}
 
 // =========================
 // EMPLOYMENT RULES

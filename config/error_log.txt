@@ -43,3 +43,9 @@
 [2026-04-22 09:00:43] Error [2]: Undefined array key "employee_id" in C:\xampp\htdocs\iprom\functions\update_required.php on line 148
 [2026-04-22 09:13:15] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
 [2026-04-22 09:13:36] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
+[2026-04-22 09:23:07] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
+[2026-04-22 09:23:15] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
+[2026-04-22 09:23:22] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
+[2026-04-22 09:23:31] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
+[2026-04-22 09:23:40] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
+[2026-04-22 09:24:23] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
