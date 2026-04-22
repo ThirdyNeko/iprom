@@ -16,6 +16,24 @@ set_exception_handler(function($e) {
     exit;
 });
 
+function isComboAvailable($pdo, $branch, $brand) {
+    if (!$branch || !$brand) return false;
+
+    $stmt = $pdo->prepare("
+        SELECT required_count, assigned_count
+        FROM assignment
+        WHERE branch_name = ?
+        AND brand_name = ?
+    ");
+    
+    $stmt->execute([$branch, $brand]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row) return false;
+
+    return $row['assigned_count'] < $row['required_count'];
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['status' => 'danger', 'message' => 'Invalid request method']);
     exit;
@@ -209,7 +227,7 @@ if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
 }
 
 if (in_array($reason_for_update, ['TRANSFER', 'REASSIGNED'])) {
-    if (!isComboAvailable($branch, $brand)) {
+    if (!isComboAvailable($pdo, $branch, $brand)) {
         echo json_encode([
             "status" => "error",
             "message" => "Slot is already full."
@@ -247,6 +265,26 @@ try {
     $brandParam  = $sendTransferFields ? $brand : null;
 
     $stmt = $pdo->prepare("
+        SELECT branch
+        FROM employee_info
+        WHERE roving_group_id = ?
+    ");
+    $stmt->execute([$base['roving_group_id']]);
+
+    $existingBranches = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $newBranches = array_diff($rovingBranches, $existingBranches);
+
+    $stmt = $pdo->prepare("
+        SELECT brand
+        FROM employee_info
+        WHERE multi_brand_group_id = ?
+    ");
+    $stmt->execute([$base['multi_brand_group_id']]);
+
+    $existingBrands = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $newBrands = array_diff($multiBrands, $existingBrands);
+
+    $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
             @status = :status,
@@ -281,8 +319,8 @@ try {
         ':last_updated_by' => $last_updated_by,
         ':roving_group_id' => $roving_group_id,
         ':multi_brand_group_id' => $multi_brand_group_id,
-        ':roving_branches' => !empty($filteredBranches) ? implode(',', $filteredBranches) : null,
-        ':multi_brands' => !empty($filteredBrands) ? implode(',', $filteredBrands) : null,
+        ':roving_branches' => !empty($newBranches) ? implode(',', $newBranches) : null,
+        ':multi_brands'    => !empty($newBrands) ? implode(',', $newBrands) : null,
         ':branch' => $branchParam,
         ':brand' => $brandParam
     ]);
