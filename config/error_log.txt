@@ -49,3 +49,8 @@
 [2026-04-22 09:23:31] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
 [2026-04-22 09:23:40] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
 [2026-04-22 09:24:23] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 159
+[2026-04-22 17:54:18] Error [8192]: strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\iprom\functions\add_employee.php on line 127
+[2026-04-23 07:29:52] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-23 07:31:54] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-23 07:32:07] Error [2]: Undefined variable $id in C:\xampp\htdocs\iprom\functions\auto_reactivate.php on line 134
+[2026-04-23 07:32:07] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311

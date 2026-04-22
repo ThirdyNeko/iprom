@@ -29,7 +29,7 @@ function autoReactivateEmployees()
         FROM employee_info
         WHERE reason_for_update = 'MATERNITY LEAVE'
         AND date_of_return IS NOT NULL
-        AND hidden = true
+        AND hidden = 1
         AND CAST(date_of_return AS DATE) <= CAST(GETDATE() AS DATE)
     ");
     $history1->execute();
@@ -39,7 +39,7 @@ function autoReactivateEmployees()
         UPDATE employee_info
         SET status = 'ACTIVE',
             last_updated_by = 'SYSTEM',
-            hidden = false,
+            hidden = 0,
             date_separated = NULL,
             date_of_return = NULL,
             updated_at = GETDATE()
@@ -207,7 +207,7 @@ function autoDeactivateEmployees()
             GETDATE()
         FROM employee_info
         WHERE date_separated IS NOT NULL
-        AND hidden = false
+        AND hidden = 0
         AND CAST(date_separated AS DATE) <= CAST(GETDATE() AS DATE)
         AND status = 'INACTIVE'
     ");
@@ -223,7 +223,7 @@ function autoActivateSeasonal()
         SET ei.status = 'ACTIVE',
             ei.last_updated_by = 'SYSTEM',
             ei.updated_at = GETDATE(),
-            ei.hidden = false
+            ei.hidden = 0
         FROM employee_info ei
         INNER JOIN assignment a
             ON a.branch_name = ei.branch
