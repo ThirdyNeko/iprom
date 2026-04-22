@@ -122,7 +122,12 @@ try {
     // =========================
     // ROVING BRANCH INSERTS
     // =========================
+
+    $today = date('Y-m-d');
+    $hidden = (strtotime($start_date) > strtotime($today)) ? true : false;
+
     foreach ($roving_branches as $rBranch) {
+
         $stmt = $pdo->prepare("
             EXEC add_employee
                 @first_name = :first_name,
@@ -140,7 +145,8 @@ try {
                 @end_date = :end_date,
                 @gender = :gender,
                 @birthday = :birthday,
-                @employee_id = :employee_id
+                @employee_id = :employee_id,
+                @hidden = :hidden
         ");
 
         $stmt->execute([
@@ -157,9 +163,10 @@ try {
             ':date_hired'        => $date_hired,
             ':start_date'        => $start_date,
             ':end_date'          => $end_date,
-            ':gender'               => $gender,
-            ':birthday'             => $birthday,
-            ':employee_id'          => $employee_id
+            ':gender'            => $gender,
+            ':birthday'          => $birthday,
+            ':employee_id'       => $employee_id,
+            ':hidden'            => $hidden
         ]);
     }
 
@@ -167,6 +174,7 @@ try {
     // MULTI BRAND INSERTS
     // =========================
     foreach ($multi_brands as $mBrand) {
+
         $stmt = $pdo->prepare("
             EXEC add_employee
                 @first_name = :first_name,
@@ -184,26 +192,28 @@ try {
                 @end_date = :end_date,
                 @gender = :gender,
                 @birthday = :birthday,
-                @employee_id = :employee_id
+                @employee_id = :employee_id,
+                @hidden = :hidden
         ");
 
         $stmt->execute([
-            ':first_name'        => $first_name,
-            ':last_name'         => $last_name,
-            ':branch'            => $branch,
-            ':brand'             => $mBrand,
-            ':status'            => $status,
-            ':assigned_by'       => $assigned_by,
-            ':employment_status' => $employment_status,
-            ':sub_status'        => $sub_status,
-            ':multi_brand_group_id' => $multi_brand_group_id,
-            ':remarks'           => $remarks,
-            ':date_hired'        => $date_hired,
-            ':start_date'        => $start_date,
-            ':end_date'          => $end_date,
-            ':gender'   => $gender,
-            ':birthday' => $birthday,
-            ':employee_id' => $employee_id
+            ':first_name'            => $first_name,
+            ':last_name'             => $last_name,
+            ':branch'                => $branch,
+            ':brand'                 => $mBrand,
+            ':status'                => $status,
+            ':assigned_by'           => $assigned_by,
+            ':employment_status'     => $employment_status,
+            ':sub_status'            => $sub_status,
+            ':multi_brand_group_id'  => $multi_brand_group_id,
+            ':remarks'               => $remarks,
+            ':date_hired'            => $date_hired,
+            ':start_date'            => $start_date,
+            ':end_date'              => $end_date,
+            ':gender'                => $gender,
+            ':birthday'              => $birthday,
+            ':employee_id'           => $employee_id,
+            ':hidden'                => $hidden
         ]);
     }
 
