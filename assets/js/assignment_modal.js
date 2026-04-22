@@ -5,125 +5,138 @@ let currentAssigned = 0;
 // STATUS BADGE
 // =========================
 function getStatusBadge(required, assigned) {
-  let shortage = required - assigned;
+  const shortage = required - assigned;
 
   if (assigned === 0) {
     return `<span class="badge bg-danger">INACTIVE</span>`;
-  } else if (shortage > 0) {
-    return `<span class="badge bg-warning">VACANT: ${shortage}</span>`;
-  } else {
-    return `<span class="badge bg-success">ACTIVE</span>`;
   }
+
+  if (shortage > 0) {
+    return `<span class="badge bg-warning">VACANT: ${shortage}</span>`;
+  }
+
+  return `<span class="badge bg-success">ACTIVE</span>`;
 }
 
 // =========================
-// CLICK ROW → OPEN MODAL
+// OPEN MODAL (FETCH FROM DB)
 // =========================
 $(document).on("click", "#assignmentTable tbody tr", function () {
-  const row = $(this);
-
-  const branch = row.data("branch");
-  const brand = row.data("brand");
+  const branch = $(this).data("branch");
+  const brand = $(this).data("brand");
 
   if (!branch || !brand) return;
 
-  const required = parseInt(row.data("required")) || 0;
-  const assigned = parseInt(row.data("assigned")) || 0;
-  const updated = row.data("updated") || null;
+  openAssignmentModal(branch, brand);
+});
 
-  currentAssigned = assigned;
-
-  $("#assignmentModal").data("branch", branch);
-  $("#assignmentModal").data("brand", brand);
-
-  $("#modalBranch").text(branch);
-  $("#modalBrand").text(brand);
-  $("#modalRequired").val(required);
-  $("#modalStatus").html(getStatusBadge(required, assigned));
+// =========================
+// MAIN MODAL LOADER
+// =========================
+async function openAssignmentModal(branch, brand) {
+  assignmentModalDisabled = true;
+  currentAssigned = 0;
 
   $("#modalAssignedList").html('<small class="text-muted">Loading...</small>');
 
   const modalEl = document.getElementById("assignmentModal");
   bootstrap.Modal.getOrCreateInstance(modalEl).show();
 
-  fetch("functions/get_assigned_promodizers.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ branch, brand }),
-  })
-    .then((res) => res.json())
-    .then((res) => {
-      if (!res || res.status !== "success") {
-        assignmentModalDisabled = true;
-
-        $("#modalAssignedList").html(
-          '<div class="alert alert-danger mb-0">Failed to load assignments.</div>',
-        );
-
-        $("#saveRequiredBtn").prop("disabled", true);
-        return;
-      }
-
-      assignmentModalDisabled = false;
-      currentAssigned = res.data.length;
-
-      let html = "";
-
-      if (currentAssigned === 0) {
-        html = '<small class="text-muted">No assigned employees</small>';
-      } else {
-        html = '<ul class="list-group list-group-flush">';
-
-        res.data.forEach((emp) => {
-          html += `
-            <li class="list-group-item d-flex justify-content-between align-items-center py-1">
-              <span>${emp.first_name} ${emp.last_name}</span>
-              <button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
-                Edit
-              </button>
-            </li>
-          `;
-        });
-
-        html += "</ul>";
-      }
-
-      const requiredVal = parseInt($("#modalRequired").val()) || 0;
-
-      if (currentAssigned < requiredVal) {
-        html += `
-          <div class="mt-2 text-center">
-            <a href="promodizers.php?status=inactive" class="btn btn-sm btn-primary">
-              + Add Promodizer
-            </a>
-          </div>
-        `;
-      }
-
-      $("#modalAssignedList").html(html);
-      $("#modalStatus").html(getStatusBadge(requiredVal, currentAssigned));
-    })
-    .catch((err) => {
-      console.error(err);
-
-      assignmentModalDisabled = true;
-
-      $("#modalAssignedList").html(
-        '<div class="alert alert-danger mb-0">Service unavailable.</div>',
-      );
+  try {
+    const res = await fetch("functions/fetch_assignments.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "modal",
+        branch,
+        brand,
+      }),
     });
 
-  $("#modalUpdated").text(
-    updated
-      ? new Date(updated.replace(" ", "T")).toLocaleDateString("en-CA")
-      : "-",
-  );
+    const result = await res.json();
 
-  $("#modalUpdatedBy").text(row.data("updated-by") || "-");
-});
+    if (!result || result.status !== "success") {
+      throw new Error("Invalid response");
+    }
+
+    const data = result.data;
+
+    assignmentModalDisabled = false;
+
+    // store context
+    $("#assignmentModal").data("branch", data.branch);
+    $("#assignmentModal").data("brand", data.brand);
+
+    // update header info
+    $("#modalBranch").text(data.branch);
+    $("#modalBrand").text(data.brand);
+    $("#modalRequired").val(data.required);
+
+    currentAssigned = data.assigned;
+
+    $("#modalStatus").html(getStatusBadge(data.required, data.assigned));
+
+    $("#modalUpdated").text(
+      data.updated
+        ? new Date(data.updated.replace(" ", "T")).toLocaleDateString("en-CA")
+        : "-",
+    );
+
+    $("#modalUpdatedBy").text(data.updated_by || "-");
+
+    renderAssignedList(data.employees || [], data.required, data.assigned);
+  } catch (err) {
+    console.error(err);
+
+    assignmentModalDisabled = true;
+
+    $("#modalAssignedList").html(
+      '<div class="alert alert-danger mb-0">Failed to load data.</div>',
+    );
+  }
+}
 
 // =========================
-// SAVE REQUIRED (FIXED)
+// RENDER ASSIGNED LIST
+// =========================
+function renderAssignedList(employees, required, assigned) {
+  let html = "";
+
+  if (!employees.length) {
+    html = '<small class="text-muted">No assigned employees</small>';
+  } else {
+    html = '<ul class="list-group list-group-flush">';
+
+    employees.forEach((emp) => {
+      html += `
+        <li class="list-group-item d-flex justify-content-between align-items-center py-1">
+          <span>${emp.first_name} ${emp.last_name}</span>
+          <button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
+            Edit
+          </button>
+        </li>
+      `;
+    });
+
+    html += "</ul>";
+  }
+
+  if (assigned < required) {
+    html += `
+      <div class="mt-2 text-center">
+        <a href="promodizers.php?status=inactive" class="btn btn-sm btn-primary">
+          + Add Promodizer
+        </a>
+      </div>
+    `;
+  }
+
+  $("#modalAssignedList").html(html);
+  $("#modalStatus").html(getStatusBadge(required, assigned));
+}
+
+// =========================
+// SAVE REQUIRED
 // =========================
 document
   .getElementById("saveRequiredBtn")
@@ -135,60 +148,44 @@ document
     const required = Number($("#modalRequired").val());
 
     if (!branch || !brand) {
-      return Swal.fire({
-        icon: "error",
-        title: "Missing Data",
-        text: "No assignment selected.",
-      });
+      return Swal.fire("Missing Data", "No assignment selected.", "error");
     }
 
     if (assignmentModalDisabled) {
-      return Swal.fire({
-        icon: "error",
-        title: "Unavailable",
-        text: "Cannot update right now.",
-      });
+      return Swal.fire("Unavailable", "Cannot update right now.", "error");
     }
 
     if (isNaN(required) || required < 0) {
-      return Swal.fire({
-        icon: "error",
-        title: "Invalid Input",
-        text: "Required must be a valid number.",
-      });
+      return Swal.fire("Invalid Input", "Required must be valid.", "error");
     }
 
-    // HARD RULE
     if (required < currentAssigned) {
-      return Swal.fire({
-        icon: "error",
-        title: "Invalid Update",
-        text: `Required (${required}) cannot be less than Assigned (${currentAssigned}). Please reassign or remove promodizers first.`,
-      });
+      return Swal.fire(
+        "Invalid Update",
+        `Required (${required}) cannot be less than Assigned (${currentAssigned}).`,
+        "error",
+      );
     }
 
-    // 🚨 SPECIAL WARNING FOR ZERO
     if (required === 0) {
-      const dangerConfirm = await Swal.fire({
+      const confirmZero = await Swal.fire({
         icon: "warning",
-        title: "WARNING: Full Pull-Out",
-        text: "Setting required to 0 will pull out ALL promodizers for this branch & brand. Do you want to continue?",
+        title: "Full Pull-Out Warning",
+        text: "This will remove ALL assignments. Continue?",
         showCancelButton: true,
-        confirmButtonText: "Yes, I understand",
-        cancelButtonText: "Cancel",
         confirmButtonColor: "#d33",
+        confirmButtonText: "Yes, continue",
       });
 
-      if (!dangerConfirm.isConfirmed) return;
+      if (!confirmZero.isConfirmed) return;
     }
 
-    // NORMAL CONFIRM
     const confirm = await Swal.fire({
       icon: "warning",
       title: "Update Required?",
-      text: `Change required count for ${branch} - ${brand}?`,
+      text: `Update required count for ${branch} - ${brand}?`,
       showCancelButton: true,
-      confirmButtonText: "Yes, Update",
+      confirmButtonText: "Yes, update",
     });
 
     if (!confirm.isConfirmed) return;
@@ -202,33 +199,26 @@ document
 
       const result = await res.json();
 
-      if (result.status === "success") {
-        await Swal.fire({
-          icon: "success",
-          title: "Updated!",
-          timer: 1200,
-          showConfirmButton: false,
-        });
-
-        window.assignmentTable.ajax.reload(null, false);
-
-        bootstrap.Modal.getInstance(
-          document.getElementById("assignmentModal"),
-        ).hide();
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: result.message || "Something went wrong.",
-        });
+      if (result.status !== "success") {
+        throw new Error(result.message || "Update failed");
       }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Updated",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+
+      window.assignmentTable.ajax.reload(null, false);
+
+      bootstrap.Modal.getInstance(
+        document.getElementById("assignmentModal"),
+      ).hide();
     } catch (err) {
       console.error(err);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Server error occurred.",
-      });
+
+      Swal.fire("Error", "Server error occurred.", "error");
     }
   });
 

@@ -116,6 +116,16 @@ $(document).ready(function () {
 
         const assignedCount = res.data.length;
 
+        if (assignedCount < required) {
+          html += `
+            <div class="mt-2 text-center">
+              <a href="promodizers.php?status=inactive" class="btn btn-sm btn-primary">
+                + Add Promodizer
+              </a>
+            </div>
+          `;
+        }
+
         $("#modalAssignedList").html(html);
 
         $("#modalStatus").html(getStatusBadge(required, assignedCount));
