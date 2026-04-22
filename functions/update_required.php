@@ -52,7 +52,7 @@ try {
 
         // Get all active employees
         $stmt = $pdo->prepare("
-            SELECT id, sub_status, roving_group_id, multi_brand_group_id
+            SELECT id, employee_id, sub_status, roving_group_id, multi_brand_group_id
             FROM employee_info
             WHERE branch = ?
             AND brand = ?
@@ -64,12 +64,13 @@ try {
         foreach ($employees as $emp) {
 
             $empId = $emp['id'];
+            $employeeId = $emp['employee_id'];
             $subStatus = strtoupper(trim($emp['sub_status'] ?? ''));
 
-            $hidden = 0;
+            $shouldDelete = false;
 
             // ============================================
-            // ✅ DETERMINE GROUP BASED ON SUB STATUS
+            // MULTI BRANCH CHECK
             // ============================================
             if ($subStatus === 'MULTI BRANCH' && !empty($emp['roving_group_id'])) {
 
@@ -82,10 +83,14 @@ try {
                 $count = (int)$stmtGroup->fetchColumn();
 
                 if ($count > 1) {
-                    $hidden = 1;
+                    $shouldDelete = true;
                 }
+            }
 
-            } elseif ($subStatus === 'MULTI BRAND' && !empty($emp['multi_brand_group_id'])) {
+            // ============================================
+            // MULTI BRAND CHECK
+            // ============================================
+            elseif ($subStatus === 'MULTI BRAND' && !empty($emp['multi_brand_group_id'])) {
 
                 $stmtGroup = $pdo->prepare("
                     SELECT COUNT(*) 
@@ -96,25 +101,66 @@ try {
                 $count = (int)$stmtGroup->fetchColumn();
 
                 if ($count > 1) {
-                    $hidden = 1;
+                    $shouldDelete = true;
                 }
             }
 
             // ============================================
-            // ✅ UPDATE EMPLOYEE
+            // DELETE FLOW
             // ============================================
-            $stmtUpdate = $pdo->prepare("
-                UPDATE employee_info
-                SET 
-                    status = 'INACTIVE',
-                    reason_for_update = 'PULL-OUT / TERMINATED',
-                    hidden = ?,
-                    updated_at = GETDATE(),
-                    last_updated_by = ?
-                WHERE id = ?
-            ");
+            if ($shouldDelete) {
 
-            $stmtUpdate->execute([$hidden, $updated_by, $empId]);
+                // 1. INSERT HISTORY
+                $stmtHist = $pdo->prepare("
+                    INSERT INTO employee_reason_history
+                    (employee_id, reason_for_update, update_date, remarks)
+                    VALUES (?, ?, GETDATE(), ?)
+                ");
+
+                $stmtHist->execute([
+                    $employeeId,
+                    'PULL-OUT / TERMINATED',
+                    "Auto pull-out (required = 0 | Branch: $branch | Brand: $brand)"
+                ]);
+
+                // 2. DELETE EMPLOYEE
+                $stmtDelete = $pdo->prepare("
+                    DELETE FROM employee_info
+                    WHERE id = ?
+                ");
+
+                $stmtDelete->execute([$empId]);
+
+            } else {
+
+                // 1. INSERT HISTORY (INACTIVE CASE)
+                $stmtHist = $pdo->prepare("
+                    INSERT INTO employee_reason_history
+                    (employee_id, reason_for_update, update_date, remarks)
+                    VALUES (?, ?, GETDATE(), ?)
+                ");
+
+                $stmtHist->execute([
+                    $employeeId,
+                    'PULL-OUT / TERMINATED',
+                    "Auto inactivated (required = 0 | Branch: $branch | Brand: $brand)"
+                ]);
+
+                // 2. UPDATE EMPLOYEE TO INACTIVE
+                $stmtUpdate = $pdo->prepare("
+                    UPDATE employee_info
+                    SET 
+                        status = 'INACTIVE',
+                        reason_for_update = 'PULL-OUT / TERMINATED',
+                        sub_status = 'STATIONARY',
+                        employment_status = 'PERMANENT',
+                        updated_at = GETDATE(),
+                        last_updated_by = ?
+                    WHERE id = ?
+                ");
+
+                $stmtUpdate->execute([$updated_by, $empId]);
+            }
         }
     }
 
