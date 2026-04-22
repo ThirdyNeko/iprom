@@ -171,7 +171,7 @@ document
       return Swal.fire({
         icon: "error",
         title: "Invalid Update",
-        text: `Required (${required}) cannot be less than Assigned (${currentAssigned}).`,
+        text: `Required (${required}) cannot be less than Assigned (${currentAssigned}). Please reassign or remove promodizers first.`,
       });
     }
 

@@ -8,3 +8,7 @@
 [2026-04-21 17:55:20] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-04-21 17:55:23] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-04-21 17:55:26] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-04-22 08:12:21] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 141
+[2026-04-22 08:12:26] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 141
+[2026-04-22 08:12:31] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 141
+[2026-04-22 08:12:45] Error [2]: Undefined array key "is_available" in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 141
