@@ -124,7 +124,10 @@ try {
     // =========================
 
     $today = date('Y-m-d');
-    $hidden = (strtotime($start_date) > strtotime($today)) ? true : false;
+    $hidden = false;
+    if (!empty($start_date)) {
+        $hidden = strtotime($start_date) > strtotime($today);
+    }
 
     foreach ($roving_branches as $rBranch) {
 
