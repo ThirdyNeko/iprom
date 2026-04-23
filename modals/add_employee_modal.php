@@ -41,19 +41,16 @@ $branch_brand_pairs = $pdo->query("
                     <div class="row g-3">
                         <!-- LEFT COLUMN -->
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Branch</label>
-                                <select name="branch" id="mainBranch" class="form-select" required>
-                                    <option value="" selected disabled>Unassigned</option>
-                                    <?php foreach($branches as $branch): ?>
-                                        <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            
 
                             <div class="mb-3">
                                 <label class="form-label">First Name</label>
                                 <input type="text" name="first_name" class="form-control" required style="text-transform: uppercase;">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" name="last_name" class="form-control" required style="text-transform: uppercase;">
                             </div>
 
                             <div class="mb-3">
@@ -115,6 +112,17 @@ $branch_brand_pairs = $pdo->query("
 
                         <!-- RIGHT COLUMN -->
                         <div class="col-md-6">
+
+                            <div class="mb-3">
+                                <label class="form-label">Branch</label>
+                                <select name="branch" id="mainBranch" class="form-select" required>
+                                    <option value="" selected disabled>Unassigned</option>
+                                    <?php foreach($branches as $branch): ?>
+                                        <option value="<?= htmlspecialchars($branch) ?>"><?= htmlspecialchars($branch) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Brand</label>
                                 <select name="brand" id="mainBrand" class="form-select" required>
@@ -123,11 +131,6 @@ $branch_brand_pairs = $pdo->query("
                                         <option value="<?= htmlspecialchars($brand) ?>"><?= htmlspecialchars($brand) ?></option>
                                     <?php endforeach; ?>
                                 </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" name="last_name" class="form-control" required style="text-transform: uppercase;">
                             </div>
 
                             <div class="mb-3">
