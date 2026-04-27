@@ -47,12 +47,12 @@ try {
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Plantilla Count</label>
+                        <label class="form-label">Count</label>
                         <input type="number" name="required_count" class="form-control" min="1" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Add Plantilla</button>
+                    <button type="submit" class="btn btn-success">Add</button>
                 </div>
             </form>
         </div>
