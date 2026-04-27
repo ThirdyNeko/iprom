@@ -66,13 +66,7 @@
 
                 <table class="table table-bordered table-striped table-sm mb-3">
                     <tbody>
-                        <tr>
-                            <th>First Name</th>
-                            <td><input type="text" id="editFirstName" class="form-control" readonly></td>
-                            <th>Last Name</th>
-                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
-                        </tr>
-                        <tr>
+                         <tr>
                             <th>Branch</th>
                             <td>
                                 <select id="editBranch" class="form-control"></select>
@@ -83,7 +77,17 @@
                                 <select id="editBrand" class="form-control"></select>
                             </td>
                         </tr>
+
                         <tr>
+                            <th>First Name</th>
+                            <td><input type="text" id="editFirstName" class="form-control" readonly></td>
+                            <th>Date Hired</th>
+                            <td><input type="date" id="editDateHired" class="form-control" readonly></td>
+                        </tr>
+                       
+                        <tr>
+                            <th>Last Name</th>
+                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
                             <th>Employment Status</th>
                             <td>
                                 <select id="editEmploymentStatus" class="form-select">
@@ -93,7 +97,13 @@
                                     <option value="RELIEVER">RELIEVER</option>
                                 </select>
                             </td>
+                        </tr>
 
+                        <tr>
+                            <th>Gender</th>
+                            <td>
+                                <input type="text" id="editGender" class="form-control" readonly>
+                            </td>
                             <th>Sub Status</th>
                             <td>
                                 <select id="editSubStatus" class="form-select">
@@ -104,27 +114,21 @@
                                 </select>
                             </td>
                         </tr>
+
+                        <tr>
+                            <th>Birthday</th>
+                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
+                            <th>Assignment Date</th>
+                            <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>
+                        </tr>
+
                         <tr>
                             <th>Status</th>
                             <td><input type="text" id="editStatus" class="form-control" readonly></td>
                             <th>Last Assigned By</th>
                             <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
                         </tr>
-                        <tr>
-                            <th>Assignment Date</th>
-                            <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>
-                            <th>Date Hired</th>
-                            <td><input type="date" id="editDateHired" class="form-control" readonly></td>
-                        </tr>
-
-                        <tr>
-                            <th>Birthday</th>
-                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
-                            <th>Gender</th>
-                            <td>
-                                <input type="text" id="editGender" class="form-control" readonly>
-                            </td>
-                        </tr>
+                        
                         <tr>
                             <th>Reason for Update</th>
                             <td colspan="3">
@@ -147,28 +151,21 @@
                                 </select>
                             </td>
                         </tr>
+                        
                         <tr id="rowDateSeparated">
                             <th>Date Separated</th>
                             <td><input type="date" id="editDateSeparated" class="form-control"></td>
-                            <th></th>
-                            <td></td>
-                        </tr>
-
-                        <tr id="rowDateReturned">
                             <th>Date Returned</th>
                             <td><input type="date" id="editDateReturn" class="form-control"></td>
-                            <td colspan="2"></td>
                         </tr>
 
                         <tr id="rowStartDate">
                             <td>Start Date</td>
                             <td><input type="date" id="editStartDate"></td>
-                        </tr>
-
-                        <tr id="rowEndDate">
                             <td>End Date</td>
                             <td><input type="date" id="editEndDate"></td>
                         </tr>
+
                         <tr id="editRovingField" class="d-none">
                             <th>Roving Branches</th>
                             <td colspan="3">
