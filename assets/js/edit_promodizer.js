@@ -127,53 +127,33 @@ function toggleTransferEditable() {
   if (!reasonSelect) return;
 
   const reason = (reasonSelect.value || "").toUpperCase();
+
   const subStatusEl = document.getElementById("editSubStatus");
+  const employmentStatusEl = document.getElementById("editEmploymentStatus");
 
   const subStatus = (subStatusEl?.value || "").toUpperCase();
+  const employmentStatus = (employmentStatusEl?.value || "").toUpperCase();
 
   const branchEl = document.getElementById("editBranch");
   const brandEl = document.getElementById("editBrand");
 
-  // default: lock everything
-  if (branchEl) {
-    branchEl.disabled = true;
-    branchEl.readOnly = true;
-  }
-
-  if (brandEl) {
-    brandEl.disabled = true;
-    brandEl.readOnly = true;
-  }
-
-  // only unlock if TRANSFER
-  if (reason !== "TRANSFER" && reason !== "REASSIGNED") return;
+  // =========================
+  // DEFAULT: lock everything
+  // =========================
+  if (branchEl) branchEl.disabled = true;
+  if (brandEl) brandEl.disabled = true;
 
   // =========================
-  // APPLY RULES
+  // ONLY APPLY IF TRANSFER
   // =========================
-  if (subStatus === "MULTI BRANCH") {
+  if (reason !== "TRANSFER BRANCH") return;
+
+  // =========================
+  // RULES
+  // =========================
+  if (subStatus === "STATIONARY" && employmentStatus !== "RELIEVER") {
     // ✅ only branch editable
-    if (branchEl) {
-      branchEl.disabled = false;
-      branchEl.readOnly = false;
-    }
-  } else if (subStatus === "MULTI BRAND") {
-    // ✅ only brand editable
-    if (brandEl) {
-      brandEl.disabled = false;
-      brandEl.readOnly = false;
-    }
-  } else if (subStatus === "STATIONARY") {
-    // ✅ both editable
-    if (branchEl) {
-      branchEl.disabled = false;
-      branchEl.readOnly = false;
-    }
-
-    if (brandEl) {
-      brandEl.disabled = false;
-      brandEl.readOnly = false;
-    }
+    if (branchEl) branchEl.disabled = false;
   }
 }
 
