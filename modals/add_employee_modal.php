@@ -63,20 +63,15 @@ $branch_brand_pairs = $pdo->query("
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label">Birthday</label>
+                                <input type="date" name="birthday" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Date Hired</label>
                                 <input type="date" name="date_hired" class="form-control" required>
                             </div>
 
-                            <div id="dateRangeFields" class="d-none">
-                                <div class="mb-3">
-                                    <label class="form-label">Start Date</label>
-                                    <input type="date" name="start_date" class="form-control">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">End Date</label>
-                                    <input type="date" name="end_date" class="form-control">
-                                </div>
-                            </div>
                             <!-- ROVING BRANCHES -->
                             <div id="rovingField" class="mb-3 d-none">
                                 <label class="form-label">Roving Branches</label>
@@ -134,11 +129,6 @@ $branch_brand_pairs = $pdo->query("
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Birthday</label>
-                                <input type="date" name="birthday" class="form-control" required>
-                            </div>
-
-                            <div class="mb-3">
                                 <label class="form-label">Employment Status</label>
                                 <select name="employment_status" id="employmentStatus" class="form-select" required>
                                     <option value="" disabled selected>Select Status</option>
@@ -146,6 +136,20 @@ $branch_brand_pairs = $pdo->query("
                                     <option value="SEASONAL">SEASONAL</option>
                                     <option value="RELIEVER">RELIEVER</option>
                                 </select>
+                            </div>
+
+                            <div id="dateRangeFields" class="d-none">
+                                <div class="mb-3">
+                                    <label class="form-label">Start Date</label>
+                                    <input type="date" name="start_date" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">End Date</label>
+                                    <input type="date" name="end_date" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Sub Status</label>
                                 <select name="sub_status" id="subStatus" class="form-select" required>
                                     <option value="" disabled selected>Select Sub Status</option>
