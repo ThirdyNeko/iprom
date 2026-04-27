@@ -97,12 +97,13 @@ if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
 // =========================
 const showDateSeparatedReasons = [
   "RESIGNED",
-  "PULL-OUT / TERMINATED",
+  "PULL-OUT / END OF CONTRACT",
   "AWOL",
   "RETRENCHMENT",
   "END OF CONTRACT",
   "BLACKLISTED",
   "MATERNITY LEAVE",
+  "EMERGENCY LEAVE",
 ];
 
 function toggleDateSeparated() {
@@ -217,7 +218,7 @@ function toggleDateReturned() {
   if (!reasonSelect) return;
 
   const value = (reasonSelect.value || "").trim().toUpperCase();
-  const shouldShow = value === "MATERNITY LEAVE";
+  const shouldShow = value === "MATERNITY LEAVE" || value == "EMERGENCY LEAVE";
 
   if (dateReturnedRow) dateReturnedRow.style.display = shouldShow ? "" : "none";
 
@@ -776,6 +777,10 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   }
 
   if (reason === "MATERNITY LEAVE" && !dateReturned.value) {
+    return Swal.fire({ icon: "warning", title: "Date Returned Required" });
+  }
+
+  if (reason === "EMERGENCY LEAVE" && !dateReturned.value) {
     return Swal.fire({ icon: "warning", title: "Date Returned Required" });
   }
 

@@ -180,7 +180,7 @@ if (in_array($empStatusUpper, ['RELIEVER', 'SEASONAL'])) {
 // =========================
 $inactiveReasons = [
     'RESIGNED',
-    'PULL-OUT / TERMINATED',
+    'PULL-OUT / END OF CONTRACT',
     'AWOL',
     'END OF CONTRACT',
     'BLACKLISTED',
