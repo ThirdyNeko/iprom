@@ -78,8 +78,7 @@ form.addEventListener("submit", async (e) => {
     if (submitData.success) {
       Swal.fire({
         icon: "success",
-        title: "Plantilla Added!",
-        text: `Branch "${branch}" and Brand "${brand}" has been added successfully.`,
+        title: "Plantilla has been successfully added",
       }).then(() => {
         form.reset();
         const modal = bootstrap.Modal.getInstance(
