@@ -191,6 +191,31 @@ function syncMultiUI(status) {
   }
 }
 
+function toggleSubStatusOptions() {
+  if (!editSubStatus) return;
+
+  const value = (editSubStatus.value || "").toUpperCase();
+
+  const multiBranchOpt = editSubStatus.querySelector(
+    'option[value="MULTI BRANCH"]',
+  );
+  const multiBrandOpt = editSubStatus.querySelector(
+    'option[value="MULTI BRAND"]',
+  );
+
+  // reset first
+  if (multiBranchOpt) multiBranchOpt.disabled = false;
+  if (multiBrandOpt) multiBrandOpt.disabled = false;
+
+  if (value === "MULTI BRAND" && multiBranchOpt) {
+    multiBranchOpt.disabled = true;
+  }
+
+  if (value === "MULTI BRANCH" && multiBrandOpt) {
+    multiBrandOpt.disabled = true;
+  }
+}
+
 // =========================
 // TOGGLE DATE RETURNED
 // =========================
@@ -603,6 +628,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
           (opt) => opt.value === subStatus,
         );
         subStatusSelect.value = valid ? subStatus : "";
+        toggleSubStatusOptions();
       }
 
       // =========================
@@ -1041,16 +1067,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     editSubStatus.addEventListener("change", () => {
       const value = (editSubStatus.value || "").toUpperCase();
 
+      // ✅ ADD THIS
+      toggleSubStatusOptions();
+
       syncMultiUI(value);
 
       if (value === "MULTI BRANCH") {
         populateEditRoving([""]);
-        updateBranchOptions(); // ✅ add this
+        updateBranchOptions();
       }
 
       if (value === "MULTI BRAND") {
         populateEditBrands([""]);
-        updateBrandOptions(); // ✅ add this
+        updateBrandOptions();
       }
     });
   }
