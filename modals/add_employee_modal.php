@@ -64,12 +64,18 @@ $branch_brand_pairs = $pdo->query("
 
                             <div class="mb-3">
                                 <label class="form-label">Birthdate</label>
-                                <input type="date" name="birthday" class="form-control" required>
+                                <input 
+                                    type="date" 
+                                    name="birthday" 
+                                    class="form-control" 
+                                    max="<?= date('Y-m-d') ?>" 
+                                    required
+                                >
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Date Hired</label>
-                                <input type="date" name="date_hired" class="form-control" required>
+                                <input type="date" name="date_hired" class="form-control" max="<?= date('Y-m-d') ?>"  required>
                             </div>
 
                             <!-- ROVING BRANCHES -->
