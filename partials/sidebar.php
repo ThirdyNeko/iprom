@@ -1,7 +1,7 @@
 <div class="sidebar d-flex flex-column p-3">
 
     <!-- Logo / Title -->
-    <h5 class="text-white text-center mb-4">IPROM</h5>
+    <h5 class="text-white text-center mb-4">iProm</h5>
 
     <!-- Menu -->
     <ul class="nav nav-pills flex-column mb-3">
@@ -16,7 +16,7 @@
         <li>
             <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'promodizers.php' ? 'active' : '' ?>">
                 <i class="bi bi-people"></i>
-                <span>Promodizers</span>
+                <span>Promodisers</span>
             </a>
         </li>
 

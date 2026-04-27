@@ -78,7 +78,7 @@
 
                     <!-- Right: Assigned Employees -->
                     <div class="col-md-6">
-                        <h6>Promodizers</h6>
+                        <h6>Promodisers</h6>
                         <div id="modalAssignedList" style="max-height: 300px; overflow-y: auto;">
                             <small class="text-muted">Loading...</small>
                         </div>

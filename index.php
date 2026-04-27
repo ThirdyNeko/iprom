@@ -42,7 +42,7 @@ $zeroAssignedPct = $totalAssignments ? round($zeroAssigned / $totalAssignments *
    CARDS
 ============================== */
 $cards = [
-    ['label'=>'Total Promodizers','value'=>$total,'color'=>'primary','icon'=>'👥','link'=>'promodizers.php'],
+    ['label'=>'Total Promodisers','value'=>$total,'color'=>'primary','icon'=>'👥','link'=>'promodizers.php'],
     ['label'=>'ACTIVE','value'=>$assigned,'percent'=>$assignedPct,'color'=>'success','icon'=>'✅','link'=>'promodizers.php?status=active'],
     ['label'=>'INACTIVE','value'=>$unassigned,'percent'=>$unassignedPct,'color'=>'danger','icon'=>'⚠️','link'=>'promodizers.php?status=inactive'],
 
@@ -121,7 +121,7 @@ $cards = [
             <div class="col-md-6">
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-muted">Promodizer Status</h6>
+                        <h6 class="text-muted">Promodiser Status</h6>
                         <canvas id="promodizerChart"></canvas>
                     </div>
                 </div>

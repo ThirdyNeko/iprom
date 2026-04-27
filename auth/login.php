@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IProm</title>
+<title>iProm</title>
 
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
@@ -107,7 +107,7 @@ body {
 <body>
 
 <div class="login-card">
-    <h3 class="text-center mb-4">IProm</h3>
+    <h3 class="text-center mb-4">iProm</h3>
 
     <?php if ($error): ?>
         <div class="alert alert-danger text-center small"><?= $error ?></div>
