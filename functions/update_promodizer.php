@@ -173,7 +173,7 @@ if ($start_date && $end_date) {
 $empStatusUpper = $employment_status;
 
 $isReliever = in_array($empStatusUpper, ['RELIEVER', 'SEASONAL']);
-$isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER', 'CHANGE SUB STATUS']);
+$isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER', 'CHANGE SUB STATUS', 'CHANGE EMPLOYMENT STATUS']);
 
 if ($isReliever) {
 

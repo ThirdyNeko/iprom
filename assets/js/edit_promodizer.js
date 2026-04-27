@@ -63,27 +63,42 @@ function toggleEmploymentDates() {
 function toggleReasonDates() {
   if (!reasonSelect) return;
 
-  const value = (reasonSelect.value || "").trim().toUpperCase();
+  const reason = (reasonSelect.value || "").trim().toUpperCase();
 
-  const shouldShow =
-    value === "TRANSFER BRANCH" || value === "CHANGE SUB STATUS";
+  const value = (employmentStatusSelect.value || "").trim().toUpperCase();
 
-  // Show/hide rows
-  if (startDateRow) startDateRow.style.display = shouldShow ? "" : "none";
-  if (endDateRow) endDateRow.style.display = shouldShow ? "" : "none";
+  const shouldShow = value === "RELIEVER" || value === "SEASONAL";
 
-  // Start date → enabled
+  const shouldShowReason =
+    reason === "TRANSFER BRANCH" ||
+    reason === "CHANGE SUB STATUS" ||
+    reason === "CHANGE EMPLOYMENT STATUS";
+
+  // =========================
+  // START DATE LOGIC
+  // =========================
+  const showStart = shouldShowReason || shouldShow;
+
+  if (startDateRow) startDateRow.style.display = showStart ? "" : "none";
+
   if (startDateInput) {
-    startDateInput.disabled = !shouldShow;
-    startDateInput.required = shouldShow;
-    if (!shouldShow) startDateInput.value = "";
+    startDateInput.disabled = !showStart;
+    startDateInput.required = showStart;
+    if (!showStart) startDateInput.value = "";
   }
 
-  // End date → ALWAYS disabled
+  // =========================
+  // END DATE LOGIC
+  // =========================
+  const showEnd = shouldShow; // ONLY reliever/seasonal
+
+  if (endDateRow) endDateRow.style.display = showEnd ? "" : "none";
+
   if (endDateInput) {
-    endDateInput.disabled = true;
-    endDateInput.required = false;
-    endDateInput.value = ""; // optional: clear it
+    endDateInput.disabled = !showEnd;
+    endDateInput.required = showEnd;
+
+    if (!showEnd) endDateInput.value = "";
   }
 }
 
@@ -721,8 +736,8 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       // sync toggles
       toggleDateSeparated();
       toggleDateReturned();
-      toggleEmploymentDates();
       toggleReasonDates();
+      toggleEmploymentDates();
     } catch (err) {
       console.error(err);
       Swal.fire({
