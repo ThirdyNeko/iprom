@@ -97,11 +97,18 @@ if (!is_array($multiBrands)) $multiBrands = [$multiBrands];
 // =========================
 
 $rovingBranches = array_filter($rovingBranches);
-if ($reason_for_update === 'ADD BRANCH/BRAND' && !empty($rovingBranches)) {
+
+$isChangeSubStatus = ($reason_for_update === 'CHANGE SUB STATUS');
+$hasRovingBranches = !empty($rovingBranches);
+
+// Only validate group ID if:
+// - there are branches involved AND
+// - it's NOT a fresh CHANGE SUB STATUS flow
+if ($hasRovingBranches && !$isChangeSubStatus) {
 
     $roving_group_id = $current['roving_group_id'];
 
-    if (!$roving_group_id) {
+    if (empty($roving_group_id)) {
         echo json_encode([
             'status' => 'danger',
             'message' => 'Invalid branch combination'
@@ -114,11 +121,15 @@ if ($reason_for_update === 'ADD BRANCH/BRAND' && !empty($rovingBranches)) {
 // MULTI BRANDS (FIXED)
 // =========================
 $multiBrands = array_filter($multiBrands);
-if ($reason_for_update === 'ADD BRANCH/BRAND' && !empty($multiBrands)) {
 
-    $multi_brand_group_id = $current['multi_brand_group_id'];
+$hasMultiBrands = !empty($multiBrands);
 
-    if (!$multi_brand_group_id) {
+// Only validate group ID if:
+// - there are brands involved AND
+// - it's NOT a fresh sub status change that may not yet have a group
+if ($hasMultiBrands && !$isChangeSubStatus) {
+
+    if (empty($multi_brand_group_id)) {
         echo json_encode([
             'status' => 'danger',
             'message' => 'Invalid brand combination'
@@ -162,7 +173,12 @@ if ($start_date && $end_date) {
 // =========================
 $empStatusUpper = $employment_status;
 
-if (in_array($empStatusUpper, ['RELIEVER', 'SEASONAL'])) {
+$isReliever = in_array($empStatusUpper, ['RELIEVER', 'SEASONAL']);
+$isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER', 'CHANGE SUB STATUS']);
+
+if ($isReliever) {
+
+    // MUST have both dates
     if (!$start_date || !$end_date) {
         echo json_encode([
             'status' => 'danger',
@@ -170,9 +186,24 @@ if (in_array($empStatusUpper, ['RELIEVER', 'SEASONAL'])) {
         ]);
         exit;
     }
+
+} elseif ($isTransferOrSubStatus) {
+
+    // start date NOT required, end date ignored
+    if (!$start_date) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Start date is required for changing Sub-Status'
+        ]);
+        exit;
+    }
+    $end_date = null;
+
 } else {
+
+    // ALL OTHER CASES
     $start_date = null;
-    $end_date   = null;
+    $end_date = null;
 }
 
 // =========================
@@ -186,7 +217,7 @@ $inactiveReasons = [
     'BLACKLISTED',
     'RETRENCHMENT',
     'MATERNITY LEAVE',
-    'REMOVE BRANCH/BRAND'
+    'REMOVE BRANCH/BRAND',
 ];
 
 $isInactiveReason = in_array($reason_for_update, $inactiveReasons);
@@ -201,7 +232,17 @@ if ($isInactiveReason) {
         $status = 'ACTIVE';
     }
 
-} else if (in_array($empStatusUpper, ['RELIEVER', 'SEASONAL']) && $start_date && $end_date) {
+} else if (
+    (
+        in_array($empStatusUpper, ['RELIEVER', 'SEASONAL']) ||
+        in_array($reason_for_update, [
+            'CHANGE SUB STATUS',
+            'CHANGE EMPLOYMENT STATUS',
+            'BRANCH TRANSFER' // use this instead of BRANCH TRANSFER if that's your actual value
+        ])
+    )
+    && $start_date && $end_date
+) {
 
     $start = strtotime($start_date);
     $end   = strtotime($end_date);
@@ -373,7 +414,10 @@ try {
     // =========================
     // ONLY RUN IF ADD BRANCH/BRAND
     // =========================
-    if ($reason_for_update === 'ADD BRANCH/BRAND') {
+    if (
+        $reason_for_update === 'ADD BRANCH/BRAND' ||
+        ($reason_for_update === 'CHANGE SUB STATUS' && $sub_status !== 'STATIONARY')
+    ) {
 
         // =========================
         // INSERT TEMPLATE (reuse both loops)

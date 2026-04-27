@@ -1045,10 +1045,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       if (value === "MULTI BRANCH") {
         populateEditRoving([""]);
+        updateBranchOptions(); // ✅ add this
       }
 
       if (value === "MULTI BRAND") {
         populateEditBrands([""]);
+        updateBrandOptions(); // ✅ add this
       }
     });
   }
@@ -1095,13 +1097,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     return true;
   }
 
-  // validate when either changes
-  document.getElementById("editBranch")?.addEventListener("change", () => {
+  const editBranch = document.getElementById("editBranch");
+  const editBrand = document.getElementById("editBrand");
+
+  // =========================
+  // BRANCH CHANGED
+  // =========================
+  editBranch?.addEventListener("change", () => {
     validateMainAssignment();
+    updateBrandOptions(); // branch affects brands
   });
 
-  document.getElementById("editBrand")?.addEventListener("change", () => {
+  // =========================
+  // BRAND CHANGED
+  // =========================
+  editBrand?.addEventListener("change", () => {
     validateMainAssignment();
+    updateBranchOptions(); // brand affects branches
   });
 
   // 🔥 PREVENT DUPLICATES ON CHANGE
