@@ -96,7 +96,7 @@ $(document).ready(function () {
         let html = "";
 
         if (!res.data.length) {
-          html = "<small>No assigned employees</small>";
+          html = "<small>No employee assigned</small>";
         } else {
           html = '<ul class="list-group list-group-flush">';
 

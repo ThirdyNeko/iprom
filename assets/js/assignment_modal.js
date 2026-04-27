@@ -103,7 +103,7 @@ function renderAssignedList(employees, required, assigned) {
   let html = "";
 
   if (!employees.length) {
-    html = '<small class="text-muted">No assigned employees</small>';
+    html = '<small class="text-muted">No employee assigned</small>';
   } else {
     html = '<ul class="list-group list-group-flush">';
 
