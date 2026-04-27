@@ -159,9 +159,9 @@
 
                         <tr id="rowStartDate">
                             <td>Start Date</td>
-                            <td><input type="date" id="editStartDate"></td>
+                            <td><input type="date" id="editStartDate" class="form-control"></td>
                             <td>End Date</td>
-                            <td><input type="date" id="editEndDate"></td>
+                            <td><input type="date" id="editEndDate" class="form-control"></td>
                         </tr>
 
                         <tr id="editRovingField" class="d-none">
