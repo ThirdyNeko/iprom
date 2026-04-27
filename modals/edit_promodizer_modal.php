@@ -103,7 +103,7 @@
                             <td>
                                 <input type="text" id="editGender" class="form-control" readonly>
                             </td>
-                            <th>Sub Status</th>
+                            <th>Sub-Status</th>
                             <td>
                                 <select id="editSubStatus" class="form-select">
                                     <option value="MULTI BRANCH">MULTI BRANCH</option>
@@ -114,7 +114,7 @@
                         </tr>
 
                         <tr>
-                            <th>Birthday</th>
+                            <th>Birthdate</th>
                             <td><input type="date" id="editBirthday" class="form-control" readonly></td>
                             <th>Assignment Date</th>
                             <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>

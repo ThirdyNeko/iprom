@@ -152,9 +152,9 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Brand</th>
                                 <th>Status</th>
                                 <th>Employment Status</th> <!-- NEW -->
-                                <th>Sub Status</th> <!-- NEW -->
-                                <th>Last Assigned By</th>
+                                <th>Sub-Status</th> <!-- NEW -->
                                 <th>Assignment Date</th>
+                                <th>Last Assigned By</th>                                
                             </tr>
                         </thead>
                         <tbody>
@@ -173,8 +173,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                     <td><?= htmlspecialchars($p['employment_status'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars($p['sub_status'] ?? '-') ?></td>
 
-                                    <td><?= htmlspecialchars($p['last_assigned_by'] ?? '-') ?></td>
                                     <td><?= $p['assignment_date'] ? date('Y-m-d', strtotime($p['assignment_date'])) : '-' ?></td>
+                                    <td><?= htmlspecialchars($p['last_assigned_by'] ?? '-') ?></td>                                    
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>

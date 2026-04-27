@@ -63,7 +63,7 @@ $branch_brand_pairs = $pdo->query("
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Birthday</label>
+                                <label class="form-label">Birthdate</label>
                                 <input type="date" name="birthday" class="form-control" required>
                             </div>
 
@@ -150,7 +150,7 @@ $branch_brand_pairs = $pdo->query("
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Sub Status</label>
+                                <label class="form-label">Sub-Status</label>
                                 <select name="sub_status" id="subStatus" class="form-select" required>
                                     <option value="" disabled selected>Select Sub Status</option>
                                     <option value="MULTI BRAND">MULTI BRAND</option>
@@ -169,8 +169,7 @@ $branch_brand_pairs = $pdo->query("
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Add Employee</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add</button>
                 </div>
             </form>
         </div>
