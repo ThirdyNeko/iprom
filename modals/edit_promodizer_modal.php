@@ -133,19 +133,15 @@
                                 <select id="editReasonUpdate" class="form-select" required>
                                     <option value="" disabled selected>-- Select Reason --</option>
                                     <option value="RESIGNED">RESIGNED</option>
-                                    <option value="PULL-OUT / TERMINATED">PULL-OUT / TERMINATED</option>
+                                    <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
                                     <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
-                                    <option value="REASSIGNED">REASSIGNED</option>
-                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
+                                    <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
+                                    <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                                    <option value="BLOCKLISTED / AWOL / TERMINATED">BLOCKLISTED / AWOL / TERMINATED</option>
                                     <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
-                                    <option value="REMOVE BRANCH/BRAND">REMOVE BRANCH/BRAND</option>
-                                    <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
-                                    <option value="AWOL">AWOL</option>
-                                    <option value="TRANSFER">TRANSFER</option>
-                                    <option value="RETRENCHMENT">RETRENCHMENT</option>
-                                    <option value="PROMOTED (MT)">PROMOTED (MT)</option>
-                                    <option value="END OF CONTRACT">END OF CONTRACT</option>
-                                    <option value="BLACKLISTED">BLACKLISTED</option>
+                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>                                                                        
+                                    <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
+                                    <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>                                                                 
                                 </select>
                             </td>
                         </tr>
@@ -158,9 +154,9 @@
                         </tr>
 
                         <tr id="rowStartDate">
-                            <td>Start Date</td>
+                            <th>Start Date</th>
                             <td><input type="date" id="editStartDate" class="form-control"></td>
-                            <td>End Date</td>
+                            <th>End Date</th>
                             <td><input type="date" id="editEndDate" class="form-control"></td>
                         </tr>
 

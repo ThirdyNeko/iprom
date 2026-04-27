@@ -60,6 +60,33 @@ function toggleEmploymentDates() {
   }
 }
 
+function toggleReasonDates() {
+  if (!reasonSelect) return;
+
+  const value = (reasonSelect.value || "").trim().toUpperCase();
+
+  const shouldShow =
+    value === "TRANSFER BRANCH" || value === "CHANGE SUB STATUS";
+
+  // Show/hide rows
+  if (startDateRow) startDateRow.style.display = shouldShow ? "" : "none";
+  if (endDateRow) endDateRow.style.display = shouldShow ? "" : "none";
+
+  // Start date → enabled
+  if (startDateInput) {
+    startDateInput.disabled = !shouldShow;
+    startDateInput.required = shouldShow;
+    if (!shouldShow) startDateInput.value = "";
+  }
+
+  // End date → ALWAYS disabled
+  if (endDateInput) {
+    endDateInput.disabled = true;
+    endDateInput.required = false;
+    endDateInput.value = ""; // optional: clear it
+  }
+}
+
 // Guard (prevents crashes if modal DOM not loaded yet)
 if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
   console.error("Modal elements not found. Check modal HTML.");
@@ -688,6 +715,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       toggleDateSeparated();
       toggleDateReturned();
       toggleEmploymentDates();
+      toggleReasonDates();
     } catch (err) {
       console.error(err);
       Swal.fire({
@@ -956,6 +984,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (reasonSelect) {
     reasonSelect.addEventListener("change", toggleDateSeparated);
     reasonSelect.addEventListener("change", toggleDateReturned);
+    reasonSelect.addEventListener("change", toggleReasonDates);
     reasonSelect.addEventListener("change", toggleTransferEditable); // ✅ ADD THIS
   }
 
