@@ -261,25 +261,10 @@ function populateEditBranch(
 
   const list = safeArray(branches);
 
-  const validBranches = branchBrandPairs.filter((p) => {
-    if (mode === "MULTI BRANCH") {
-      return p.brand_name === currentBrand;
-    }
-
-    if (mode === "MULTI BRAND") {
-      return true;
-    }
-
-    if (mode === "STATIONARY") {
-      return (
-        p.branch_name === baseBranch ||
-        p.assigned_count < p.required_count ||
-        list.includes(p.branch_name)
-      );
-    }
-
-    return false;
-  });
+  // 🔥 STATIONARY ONLY: lock to current brand
+  const validBranches = branchBrandPairs.filter(
+    (p) => p.brand_name === currentBrand,
+  );
 
   const uniqueBranches = [...new Set(validBranches.map((p) => p.branch_name))];
 
@@ -291,16 +276,13 @@ function populateEditBranch(
           (p) => p.branch_name === b && p.brand_name === currentBrand,
         );
 
-        const isDisabled =
-          mode === "MULTI BRANCH" &&
-          pair &&
-          pair.assigned_count >= pair.required_count &&
-          !list.includes(b);
-
-        return `<option value="${b}" 
-          ${list.includes(b) ? "selected" : ""}
-          ${isDisabled ? "disabled" : ""}
-        >${b}</option>`;
+        return `
+          <option value="${b}"
+            ${list.includes(b) ? "selected" : ""}
+          >
+            ${b}
+          </option>
+        `;
       })
       .join("")}
   `;
@@ -317,50 +299,33 @@ function populateEditBrand(
 
   const list = safeArray(brands);
 
-  const validBrands = branchBrandPairs.filter((p) => {
-    if (mode === "MULTI BRAND") {
-      return p.branch_name === currentBranch;
-    }
-
-    if (mode === "MULTI BRANCH") {
-      return true;
-    }
-
-    if (mode === "STATIONARY") {
-      return (
-        (!currentBranch || p.branch_name === currentBranch) &&
-        (p.brand_name === baseBrand ||
-          p.assigned_count < p.required_count ||
-          list.includes(p.brand_name))
-      );
-    }
-
-    return false;
-  });
+  const validBrands = branchBrandPairs.filter(
+    (p) => p.branch_name === currentBranch,
+  );
 
   const uniqueBrands = [...new Set(validBrands.map((p) => p.brand_name))];
+
+  // 🔥 determine what should be selected
+  let selectedBrand =
+    baseBrand || list.find((b) => uniqueBrands.includes(b)) || "";
 
   brandSelect.innerHTML = `
     <option value="">Select brand</option>
     ${uniqueBrands
       .map((b) => {
-        const pair = branchBrandPairs.find(
-          (p) => p.brand_name === b && p.branch_name === currentBranch,
-        );
+        const isSelected = b === selectedBrand;
 
-        const isDisabled =
-          mode === "MULTI BRAND" &&
-          pair &&
-          pair.assigned_count >= pair.required_count &&
-          !list.includes(b);
-
-        return `<option value="${b}"
-          ${list.includes(b) ? "selected" : ""}
-          ${isDisabled ? "disabled" : ""}
-        >${b}</option>`;
+        return `
+          <option value="${b}" ${isSelected ? "selected" : ""}>
+            ${b}
+          </option>
+        `;
       })
       .join("")}
   `;
+
+  // 🔥 safety: force value after render (important for DOM sync)
+  brandSelect.value = selectedBrand;
 }
 
 function populateEditRoving(
@@ -1100,14 +1065,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // ✅ STATIONARY dynamic brand update
-  document.getElementById("editBranch")?.addEventListener("change", () => {
+  editBranch?.addEventListener("change", () => {
     const mode = document.getElementById("editSubStatus")?.value?.toUpperCase();
 
     if (mode === "STATIONARY") {
+      const currentBranch = editBranch.value;
+
       populateEditBrand(
-        [],
-        document.getElementById("editBranch").value,
-        null,
+        [editBrand.value], // keep current context
+        currentBranch,
+        editBrand.value,
         "STATIONARY",
       );
     }

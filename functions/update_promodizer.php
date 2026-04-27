@@ -173,7 +173,7 @@ if ($start_date && $end_date) {
 $empStatusUpper = $employment_status;
 
 $isReliever = in_array($empStatusUpper, ['RELIEVER', 'SEASONAL']);
-$isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER', 'CHANGE SUB STATUS', 'CHANGE EMPLOYMENT STATUS']);
+$isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER BRANCH', 'CHANGE SUB STATUS', 'CHANGE EMPLOYMENT STATUS']);
 
 if ($isReliever) {
 
@@ -192,7 +192,7 @@ if ($isReliever) {
     if (!$start_date) {
         echo json_encode([
             'status' => 'danger',
-            'message' => 'Start date is required for changing Sub-Status'
+            'message' => 'Start date is required for changing'
         ]);
         exit;
     }
@@ -240,7 +240,7 @@ if ($isInactiveReason) {
         in_array($reason_for_update, [
             'CHANGE SUB STATUS',
             'CHANGE EMPLOYMENT STATUS',
-            'BRANCH TRANSFER'
+            'TRANSFER BRANCH'
         ])
     )
     && $start_date && $end_date
@@ -275,7 +275,7 @@ if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
     }
 }
 
-if (in_array($reason_for_update, ['TRANSFER', 'REASSIGNED'])) {
+if (in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
     if (!isComboAvailable($pdo, $branch, $brand)) {
         echo json_encode([
             "status" => "error",
@@ -308,7 +308,7 @@ try {
     // =========================
     // UPDATE ORIGINAL ONLY HERE
     // =========================
-    $sendTransferFields = in_array($reason_for_update, ['TRANSFER', 'REASSIGNED']);
+    $sendTransferFields = in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED']);
 
     $branchParam = $sendTransferFields ? $branch : null;
     $brandParam  = $sendTransferFields ? $brand : null;

@@ -15,7 +15,8 @@ $stmt = $pdo->prepare("
         employee_id,
         reason_for_update,
         remarks,
-        update_date
+        update_date,
+        updated_by
     FROM employee_reason_history
     WHERE employee_id = :id
     ORDER BY update_date DESC
