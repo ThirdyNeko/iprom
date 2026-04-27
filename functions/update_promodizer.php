@@ -153,7 +153,6 @@ $sub_status = $_POST['sub_status'] ?? null;
 // VALIDATION
 // =========================
 $today = strtotime(date('Y-m-d'));
-
 // =========================
 // START/END DATE VALIDATION
 // =========================
@@ -223,14 +222,17 @@ $inactiveReasons = [
 $isInactiveReason = in_array($reason_for_update, $inactiveReasons);
 
 $dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
+$hidden = false;
+$today = strtotime(date('Y-m-d'));
+$hidden = false;
 
 if ($isInactiveReason) {
 
-    if (!$dateSeparatedValue || $dateSeparatedValue <= $today) {
-        $status = 'INACTIVE';
-    } else {
-        $status = 'ACTIVE';
-    }
+    $status = (!$dateSeparatedValue || $dateSeparatedValue <= $today)
+        ? 'INACTIVE'
+        : 'ACTIVE';
+
+    $hidden = ($status === 'INACTIVE');
 
 } else if (
     (
@@ -238,7 +240,7 @@ if ($isInactiveReason) {
         in_array($reason_for_update, [
             'CHANGE SUB STATUS',
             'CHANGE EMPLOYMENT STATUS',
-            'BRANCH TRANSFER' // use this instead of BRANCH TRANSFER if that's your actual value
+            'BRANCH TRANSFER'
         ])
     )
     && $start_date && $end_date
@@ -247,11 +249,24 @@ if ($isInactiveReason) {
     $start = strtotime($start_date);
     $end   = strtotime($end_date);
 
-    if ($start > $today || $end < $today) {
-        $status = 'INACTIVE';
-    } else {
-        $status = 'ACTIVE';
-    }
+    $status = ($start > $today || $end < $today)
+        ? 'INACTIVE'
+        : 'ACTIVE';
+
+    $hidden = ($start > $today); // future start = hidden
+
+} else if (
+    in_array(strtoupper(trim($sub_status)), ['MULTI BRANCH', 'MULTI BRAND']) &&
+    $start_date
+) {
+
+    $start = strtotime($start_date);
+
+    $status = ($start > $today)
+        ? 'INACTIVE'
+        : 'ACTIVE';
+
+    $hidden = ($start > $today); // future start = hidden
 }
 
 if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
@@ -447,7 +462,8 @@ try {
                 sub_status,
                 multi_brand_group_id,
                 gender,
-                birthday
+                birthday,
+                hidden
             )
             VALUES (
                 :employee_id,
@@ -473,7 +489,8 @@ try {
                 :sub_status,
                 :multi_brand_group_id,
                 :gender,
-                :birthday
+                :birthday,
+                :hidden
             )
         ");
 
@@ -531,7 +548,8 @@ try {
                     ':sub_status' => $sub_status,
                     ':multi_brand_group_id' => $base['multi_brand_group_id'],
                     ':gender'     => $base['gender'],
-                    ':birthday'   => $base['birthday']
+                    ':birthday'   => $base['birthday'],
+                    ':hidden' => $hidden
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -597,7 +615,8 @@ try {
                     ':sub_status' => $sub_status,
                     ':multi_brand_group_id' => $base['multi_brand_group_id'],
                     ':gender'     => $base['gender'],
-                    ':birthday'   => $base['birthday']
+                    ':birthday'   => $base['birthday'],
+                    ':hidden' => $hidden
                 ]);
 
                 $newId = $pdo->lastInsertId();
