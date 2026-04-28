@@ -119,9 +119,9 @@ $(document).ready(function () {
         if (assignedCount < required) {
           html += `
             <div class="mt-2 text-center">
-              <a href="promodizers.php?status=inactive" class="btn btn-sm btn-primary">
+              <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
                 + Add Promodizer
-              </a>
+              </button>
             </div>
           `;
         }

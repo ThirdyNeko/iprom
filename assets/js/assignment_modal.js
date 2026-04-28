@@ -123,12 +123,12 @@ function renderAssignedList(employees, required, assigned) {
 
   if (assigned < required) {
     html += `
-      <div class="mt-2 text-center">
-        <a href="promodizers.php?status=inactive" class="btn btn-sm btn-primary">
-          + Add Promodizer
-        </a>
-      </div>
-    `;
+    <div class="mt-2 text-center">
+      <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
+        + Add Promodizer
+      </button>
+    </div>
+  `;
   }
 
   $("#modalAssignedList").html(html);
@@ -229,4 +229,20 @@ $(document).on("click", ".edit-btn", function (e) {
   e.stopPropagation();
   const id = $(this).data("id");
   window.location.href = `promodizers.php?edit=${id}`;
+});
+
+// =========================
+// ADD PROMODIZER BUTTON
+// =========================
+$(document).on("click", ".add-promodizer-btn", function (e) {
+  e.stopPropagation();
+
+  const modalEl = document.getElementById("addEmployeeModal");
+
+  if (!modalEl) {
+    console.error("Modal not found");
+    return;
+  }
+
+  bootstrap.Modal.getOrCreateInstance(modalEl).show();
 });

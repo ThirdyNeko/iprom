@@ -1056,22 +1056,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
   }
 
-  // ✅ STATIONARY dynamic brand update
-  editBranch?.addEventListener("change", () => {
-    const mode = document.getElementById("editSubStatus")?.value?.toUpperCase();
-
-    if (mode === "STATIONARY") {
-      const currentBranch = editBranch.value;
-
-      populateEditBrand(
-        [editBrand.value], // keep current context
-        currentBranch,
-        editBrand.value,
-        "STATIONARY",
-      );
-    }
-  });
-
   function validateMainAssignment() {
     const reason = (
       document.getElementById("editReasonUpdate")?.value || ""
