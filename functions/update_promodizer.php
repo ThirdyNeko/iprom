@@ -98,13 +98,16 @@ if (!is_array($multiBrands)) $multiBrands = [$multiBrands];
 
 $rovingBranches = array_filter($rovingBranches);
 
-$isChangeSubStatus = ($reason_for_update === 'CHANGE SUB STATUS');
+$skipGroupValidation = in_array($reason_for_update, [
+    'CHANGE SUB STATUS',
+    'ADD BRANCH/BRAND'
+]);
 $hasRovingBranches = !empty($rovingBranches);
 
 // Only validate group ID if:
 // - there are branches involved AND
 // - it's NOT a fresh CHANGE SUB STATUS flow
-if ($hasRovingBranches && !$isChangeSubStatus) {
+if ($hasRovingBranches && !$skipGroupValidation) {
 
     $roving_group_id = $current['roving_group_id'];
 
@@ -127,7 +130,7 @@ $hasMultiBrands = !empty($multiBrands);
 // Only validate group ID if:
 // - there are brands involved AND
 // - it's NOT a fresh sub status change that may not yet have a group
-if ($hasMultiBrands && !$isChangeSubStatus) {
+if ($hasMultiBrands && !$skipGroupValidation) {
 
     if (empty($multi_brand_group_id)) {
         echo json_encode([
@@ -211,11 +214,9 @@ if ($isReliever) {
 $inactiveReasons = [
     'RESIGNED',
     'PULL-OUT / END OF CONTRACT',
-    'AWOL',
-    'END OF CONTRACT',
-    'BLACKLISTED',
-    'RETRENCHMENT',
+    'BLOCKLISTED / AWOL / TERMINATED',
     'MATERNITY LEAVE',
+    'EMERGENCY LEAVE',
     'REMOVE BRANCH/BRAND',
 ];
 
@@ -275,6 +276,12 @@ if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {
     }
 }
 
+if ($reason_for_update === 'EMERGENCY LEAVE' && $date_of_return) {
+    if (strtotime($date_of_return) <= $today) {
+        $status = 'ACTIVE';
+    }
+}
+
 if (in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
     if (!isComboAvailable($pdo, $branch, $brand)) {
         echo json_encode([
@@ -282,6 +289,28 @@ if (in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
             "message" => "Slot is already full."
         ]);
         exit;
+    }
+}
+
+// =========================
+// AUTO CREATE GROUP IDS (FIXED - STRING SAFE)
+// =========================
+$isMultiBranch = strtoupper(trim($sub_status)) === 'MULTI BRANCH';
+$isMultiBrand  = strtoupper(trim($sub_status)) === 'MULTI BRAND';
+
+if (
+    $reason_for_update === 'ADD BRANCH/BRAND' ||
+    ($reason_for_update === 'CHANGE SUB STATUS' && ($isMultiBranch || $isMultiBrand))
+) {
+
+    // ROVING GROUP
+    if ($isMultiBranch && empty($roving_group_id)) {
+        $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100,999);
+    }
+
+    // MULTI BRAND GROUP
+    if ($isMultiBrand && empty($multi_brand_group_id)) {
+        $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100,999);
     }
 }
 
@@ -544,9 +573,9 @@ try {
                     ':date_hired' => $base['date_hired'],
                     ':start_date' => $start_date,
                     ':end_date' => $end_date,
-                    ':roving_group_id' => $base['roving_group_id'],
+                    ':roving_group_id' => $roving_group_id,
                     ':sub_status' => $sub_status,
-                    ':multi_brand_group_id' => $base['multi_brand_group_id'],
+                    ':multi_brand_group_id' => $multi_brand_group_id,
                     ':gender'     => $base['gender'],
                     ':birthday'   => $base['birthday'],
                     ':hidden' => $hidden
@@ -611,9 +640,9 @@ try {
                     ':date_hired' => $base['date_hired'],
                     ':start_date' => $start_date,
                     ':end_date' => $end_date,
-                    ':roving_group_id' => $base['roving_group_id'],
+                    ':roving_group_id' => $roving_group_id,
                     ':sub_status' => $sub_status,
-                    ':multi_brand_group_id' => $base['multi_brand_group_id'],
+                    ':multi_brand_group_id' => $multi_brand_group_id,
                     ':gender'     => $base['gender'],
                     ':birthday'   => $base['birthday'],
                     ':hidden' => $hidden
