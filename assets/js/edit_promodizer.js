@@ -649,12 +649,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       });
 
       if (reasonSelect) {
-        const reasonValue = cleanValue(employee.reason_update).toUpperCase();
-        reasonSelect.value = [...reasonSelect.options].some(
-          (opt) => opt.value === reasonValue,
-        )
-          ? reasonValue
-          : "";
+        reasonSelect.selectedIndex = 0; // 🔥 ALWAYS show "-- Select Reason --"
       }
 
       toggleTransferEditable(); // 👈 ADD HERE
