@@ -70,16 +70,14 @@ $(document).ready(function () {
   // =========================
   if (addParam === "1") {
     setTimeout(() => {
-      const btn = document.querySelector(
-        '[data-bs-target="#addEmployeeModal"]',
-      );
+      const modalEl = document.getElementById("addEmployeeModal");
 
-      if (!btn) {
-        console.error("Add button not found");
+      if (!modalEl) {
+        console.error("addEmployeeModal not found");
         return;
       }
 
-      btn.click(); // 👈 THIS makes it identical to user click
+      bootstrap.Modal.getOrCreateInstance(modalEl).show();
     }, 200);
   }
 

@@ -236,13 +236,5 @@ $(document).on("click", ".edit-btn", function (e) {
 // =========================
 $(document).on("click", ".add-promodizer-btn", function (e) {
   e.stopPropagation();
-
-  const modalEl = document.getElementById("addEmployeeModal");
-
-  if (!modalEl) {
-    console.error("Modal not found");
-    return;
-  }
-
-  bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  window.location.href = "promodizers.php?add=1";
 });
