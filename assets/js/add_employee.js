@@ -100,16 +100,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (e.target.classList.contains("add-branch")) {
       const clone = row.cloneNode(true);
-      clone.querySelector("select").value = "";
-      requestAnimationFrame(() => {
-        populateMultiBrandSelect(
-          clone.querySelector("select"),
-          mainBranchSelect.value,
-          mainBrandSelect.value,
-        );
-      });
+      const select = clone.querySelector("select");
+
+      select.value = "";
       rovingContainer.appendChild(clone);
-      populateRovingSelect(clone.querySelector("select"));
+
+      requestAnimationFrame(() => {
+        document.querySelectorAll(".roving-select").forEach((sel) => {
+          populateRovingSelect(sel);
+        });
+      });
     }
 
     if (e.target.classList.contains("remove-branch")) {
@@ -201,6 +201,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   function populateRovingSelect(select) {
     const currentBranch = mainBranchSelect.value;
 
+    // get all selected roving branches (excluding this select)
+    const selectedBranches = Array.from(
+      rovingContainer.querySelectorAll(".roving-select"),
+    )
+      .filter((s) => s !== select)
+      .map((s) => s.value)
+      .filter(Boolean);
+
+    const currentValue = select.value; // preserve current selection
+
     const uniqueBranches = [
       ...new Set(branchBrandPairs.map((p) => p.branch_name)),
     ];
@@ -209,7 +219,11 @@ document.addEventListener("DOMContentLoaded", async function () {
       '<option value="" disabled selected>-- Select Branch --</option>';
 
     uniqueBranches.forEach((b) => {
-      if (b === currentBranch) return; // ❌ exclude selected branch
+      // ❌ exclude main branch
+      if (b === currentBranch) return;
+
+      // ❌ exclude already selected in other roving fields
+      if (selectedBranches.includes(b)) return;
 
       const opt = new Option(b, b);
 
@@ -224,6 +238,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       select.appendChild(opt);
     });
+
+    // ✅ restore previous value if still valid
+    if (
+      currentValue &&
+      !selectedBranches.includes(currentValue) &&
+      currentValue !== currentBranch
+    ) {
+      select.value = currentValue;
+    }
   }
 
   function populateMultiBrandSelect(select, selectedBranch, excludedBrand) {
@@ -259,8 +282,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     const brand = mainBrandSelect.value;
 
     requestAnimationFrame(() => {
+      // refresh multi-brand
       document.querySelectorAll(".multi-brand-select").forEach((sel) => {
         populateMultiBrandSelect(sel, branch, brand);
+      });
+
+      // ✅ refresh ALL roving selects immediately
+      document.querySelectorAll(".roving-select").forEach((sel) => {
+        populateRovingSelect(sel);
       });
     });
   });
@@ -288,6 +317,14 @@ document.addEventListener("DOMContentLoaded", async function () {
       mainBranchSelect.value,
       mainBrandSelect.value,
     );
+  });
+
+  rovingContainer.addEventListener("change", function (e) {
+    if (e.target.classList.contains("roving-select")) {
+      document.querySelectorAll(".roving-select").forEach((sel) => {
+        populateRovingSelect(sel);
+      });
+    }
   });
 
   // =========================
