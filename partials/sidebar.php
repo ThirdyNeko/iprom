@@ -1,7 +1,10 @@
 <div class="sidebar d-flex flex-column p-3">
 
     <!-- Logo / Title -->
-    <h5 class="text-white text-center mb-4">iProm</h5>
+    <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
+        <img src="assets/icons/LOGO ONLY RED.png" alt="iProm Logo" class="sidebar-logo">
+        <h5 class="text-white m-0">iProm</h5>
+    </div>
 
     <!-- Menu -->
     <ul class="nav nav-pills flex-column mb-3">

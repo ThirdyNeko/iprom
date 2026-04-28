@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>iProm</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link rel="icon" type="image/png" href="assets/icons/CROWN.png">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.min.css">
@@ -12,110 +12,147 @@
     <script src ="http://192.168.40.14/logger/hooks/qa_hook.js"></script>
     <!-- Custom CSS -->
     <style>
-        body {
-            overflow-x: hidden;
-        }
+body {
+    overflow-x: hidden;
+    background: #f8fafc; /* softer background */
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+.sidebar-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
 
-        .sidebar {
-            width: 240px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #343a40;
-            display: flex;
-            flex-direction: column;
-            padding: 1.5rem 1rem; /* bigger padding */
-        }
+/* When collapsed → hide text, keep logo centered */
+.collapsed .sidebar h5 {
+    display: none;
+}
 
-        .sidebar h5 {
-            font-size: 24px; /* bigger logo */
-        }
+.collapsed .sidebar-logo {
+    margin: 0 auto;
+    display: block;
+}
+/* SIDEBAR */
+.sidebar {
+    width: 240px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #111827; /* modern dark */
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    transition: width 0.25s ease;
+}
 
-        .sidebar a {
-            color: #adb5bd;
-            text-decoration: none;
-        }
+.sidebar h5 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
 
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: #495057;
-            color: #fff;
-        }
+/* LINKS */
+.sidebar a {
+    color: #9ca3af;
+    text-decoration: none;
+}
 
-        .content {
-            margin-left: 240px;
-            padding: 20px;
-        }
+.sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.2;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
 
-        .header {
-            height: 60px;
-            margin-left: 240px;
-        }
+.sidebar .nav-link i {
+    font-size: 16px;
+}
 
-        /* Collapsed sidebar (icon mode) */
-        .collapsed .sidebar {
-            width: 70px;
-        }
+/* HOVER */
+.sidebar .nav-link:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    transform: translateX(3px);
+}
 
-        .collapsed .content,
-        .collapsed .header {
-            margin-left: 70px;
-        }
+/* ACTIVE */
+.sidebar .nav-link.active {
+    background: #2563eb;
+    color: #fff;
+}
 
-        /* Hide text when collapsed */
-        .collapsed .sidebar span {
-            display: none;
-        }
+.sidebar .nav-link.active span {
+    font-weight: 500;
+}
 
-        /* Center icons */
-        .collapsed .sidebar .nav-link {
-            justify-content: center;
-        }
-        /* Hide text when sidebar is collapsed */
-        .collapsed .sidebar-text {
-            display: none;
-        }
+/* CONTENT */
+.content {
+    margin-left: 240px;
+    padding: 24px;
+    transition: margin-left 0.25s ease;
+}
 
-        /* Center icons when collapsed */
-        .collapsed .btn, 
-        .collapsed .d-flex.align-items-center.gap-2 {
-            justify-content: center !important;
-        }
+/* HEADER */
+.header {
+    height: 60px;
+    margin-left: 240px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    transition: margin-left 0.25s ease;
+}
 
-        /* Optional: center logo */
-        .collapsed .sidebar h5 {
-            font-size: 16px;
-        }
-        .sidebar .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 15px; /* more spacing between icon & text */
-            padding: 0.75rem 1rem; /* bigger clickable area */
-            font-size: 1.1rem; /* bigger text */
-        }
+/* TOGGLE BUTTON */
+.header .btn {
+    border-radius: 8px;
+}
 
-        .sidebar .nav-link i {
-            font-size: 1.4rem; /* bigger icons */
-        }
+/* COLLAPSED MODE */
+.collapsed .sidebar {
+    width: 70px;
+}
 
-        .sidebar .nav-link:hover {
-            background-color: #495057;
-            color: #fff;
-        }
+.collapsed .content,
+.collapsed .header {
+    margin-left: 70px;
+}
 
-        .sidebar .nav-link.active {
-            background-color: #0d6efd; /* Bootstrap primary color */
-            color: #fff;
-        }
-        .sidebar .nav-link.active i {
-            color: #fff; /* icon stays white */
-        }
+/* Hide text */
+.collapsed .sidebar span,
+.collapsed .sidebar-text {
+    display: none;
+}
 
-        .sidebar .nav-link.active span {
-            font-weight: 600; /* bold text */
-        }
-    </style>
+/* Center icons */
+.collapsed .sidebar .nav-link {
+    justify-content: center;
+}
+
+/* Center bottom section */
+.collapsed .btn,
+.collapsed .d-flex.align-items-center.gap-2 {
+    justify-content: center !important;
+}
+
+/* Logo shrink */
+.collapsed .sidebar h5 {
+    font-size: 16px;
+    text-align: center;
+}
+
+/* SMOOTH TRANSITIONS */
+.sidebar,
+.content,
+.header {
+    transition: all 0.25s ease;
+}
+</style>
 </head>
 <body>
 
