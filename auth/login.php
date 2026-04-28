@@ -103,12 +103,21 @@ body {
 .btn-primary {
     width: 100%;
 }
+
+.login-logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
 </style>
 </head>
 <body>
 
 <div class="login-card">
-    <h3 class="text-center mb-4">iProm</h3>
+    <div class="text-center mb-4">
+        <img src="../assets/icons/CROWN.png" alt="iProm Logo" class="login-logo mb-2">
+        <h3 class="m-0">iProm</h3>
+    </div>
 
     <?php if ($error): ?>
         <div class="alert alert-danger text-center small"><?= $error ?></div>

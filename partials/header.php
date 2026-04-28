@@ -159,7 +159,6 @@ body {
 <!-- Header -->
 <nav class="navbar navbar-light bg-light border-bottom header px-3">
     <button class="btn btn-outline-secondary" onclick="toggleSidebar()">☰</button>
-    <span class="ms-3 fw-semibold">iProm</span>
 </nav>
 
 <script>
