@@ -25,7 +25,12 @@
     opacity: 1;
     cursor: not-allowed;
 }
-</style>
+.centered-input {
+    text-align: center;
+    width: 100px;
+    margin: 0 auto;
+    display: block;
+}
 </style>
 <div class="modal fade" id="assignmentModal" tabindex="-1">
     <div class="modal-dialog modal-lg"> <!-- ✅ wider like promodizer -->
@@ -44,7 +49,7 @@
                 <div class="row">
                     <!-- Left: Assignment Info -->
                     <div class="col-md-6">
-                        <table class="table table-bordered table-sm mb-0">
+                        <table class="table table-bordered table-sm mb-0 text-center align-middle">
                             <tbody>
                                 <tr>
                                     <th>Branch</th>
@@ -55,9 +60,9 @@
                                     <td id="modalBrand" class="readonly-field"></td>
                                 </tr>
                                 <tr>
-                                    <th>Plantilla</th>
+                                    <th>Plantilla Count</th>
                                     <td>
-                                        <input type="number" id="modalRequired" class="form-control form-control-sm" min="0">
+                                        <input type="number" id="modalRequired" class="form-control form-control-sm centered-input" min="0">
                                     </td>
                                 </tr>
                                 <tr>
@@ -65,11 +70,11 @@
                                     <td id="modalStatus" class="readonly-field"></td>
                                 </tr>
                                 <tr>
-                                    <th>Updated At</th>
+                                    <th>Date Last Updated</th>
                                     <td id="modalUpdated" class="readonly-field"></td>
                                 </tr>
                                 <tr>
-                                    <th>Updated By</th>
+                                    <th>Last Updated By</th>
                                     <td id="modalUpdatedBy" class="readonly-field"></td>
                                 </tr>
                             </tbody>
