@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>iProm</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="assets/icons/CROWN.png">
+    <link rel="icon" type="image/png" href="assets/icons/LOGO ONLY RED.png">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.min.css">

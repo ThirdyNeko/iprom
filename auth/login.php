@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/png" href="../assets/icons/CROWN.png">
+<link rel="icon" type="image/png" href="../assets/icons/LOGO ONLY RED.png">
 <title>iProm</title>
 
 <!-- Bootstrap CSS -->
@@ -115,7 +115,7 @@ body {
 
 <div class="login-card">
     <div class="text-center mb-4">
-        <img src="../assets/icons/CROWN.png" alt="iProm Logo" class="login-logo mb-2">
+        <img src="../assets/icons/LOGO ONLY RED.png" alt="iProm Logo" class="login-logo mb-2">
         <h3 class="m-0">iProm</h3>
     </div>
 
