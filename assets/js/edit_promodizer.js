@@ -795,6 +795,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
 
   formData.set("start_date", startDateInput.value);
   formData.set("end_date", endDateInput.value);
+  formData.set("remarks", document.getElementById("editRemarks").value);
 
   // ✅ MAIN ASSIGNMENT
   formData.set("branch", branch);
