@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           bootstrap.Modal.getInstance(
             document.getElementById("addEmployeeModal"),
           ).hide();
-          location.reload();
+          window.location.href = "promodizers.php";
         });
       } else {
         Swal.fire("Oops...", data.message, "error");
