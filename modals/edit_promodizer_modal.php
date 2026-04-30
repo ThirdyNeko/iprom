@@ -105,8 +105,8 @@
                         </tr>
                        
                         <tr>
-                            <th>Last Name</th>
-                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
+                            <th>Middle Name</th>
+                            <td><input type="text" id="editMiddleName" class="form-control" readonly></td>
                             <th>Employment Status</th>
                             <td>
                                 <select id="editEmploymentStatus" class="form-select">
@@ -118,10 +118,8 @@
                         </tr>
 
                         <tr>
-                            <th>Gender</th>
-                            <td>
-                                <input type="text" id="editGender" class="form-control" readonly>
-                            </td>
+                            <th>Last Name</th>
+                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
                             <th>Sub-Status</th>
                             <td>
                                 <select id="editSubStatus" class="form-select">
@@ -133,15 +131,17 @@
                         </tr>
 
                         <tr>
-                            <th>Birthdate</th>
-                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
+                            <th>Suffix</th>
+                            <td><input type="text" id="editSuffix" class="form-control" readonly></td>
                             <th>Assignment Date</th>
                             <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>
                         </tr>
 
                         <tr>
-                            <th>Status</th>
-                            <td><input type="text" id="editStatus" class="form-control" readonly></td>
+                            <th>Gender</th>
+                            <td>
+                                <input type="text" id="editGender" class="form-control" readonly>
+                            </td>
                             <th>Last Assigned By</th>
                             <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
                         </tr>                                            
@@ -173,10 +173,16 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Last Updated By</th>
-                            <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
+                            <th>Birthdate</th>
+                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
                             <th>Date Last Updated</th>
                             <td><input type="date" id="editDateLastUpdated" class="form-control" readonly></td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td><input type="text" id="editStatus" class="form-control" readonly></td>
+                            <th>Last Updated By</th>
+                            <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
                         </tr>
                         <tr>
                             <th>Remarks</th>

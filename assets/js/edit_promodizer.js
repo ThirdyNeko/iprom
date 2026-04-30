@@ -496,9 +496,11 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
 
       const employee = {
         id: p.id,
-        employee_id: p.employee_id, // ✅ ADD THIS
+        employee_id: p.employee_id,
         first_name: p.first_name,
+        middle_name: p.middle_name,
         last_name: p.last_name,
+        suffix: p.suffix,
         branch: p.branch,
         brand: p.brand,
         assignment_date: p.assignment_date,
@@ -507,7 +509,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         date_of_return: p.date_of_return,
         date_separated: p.date_separated,
         employment_status: p.employment_status,
-        sub_status: p.sub_status, // ✅ FIXED (was missing)
+        sub_status: p.sub_status,
         remarks: p.remarks,
         last_updated_by: p.last_updated_by,
         reason_update: p.reason_for_update,
@@ -531,6 +533,12 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         el("editFirstName").value = cleanValue(employee.first_name);
       if (el("editLastName"))
         el("editLastName").value = cleanValue(employee.last_name);
+      if (el("editMiddleName")) {
+        el("editMiddleName").value = cleanValue(employee.middle_name);
+      }
+      if (el("editSuffix")) {
+        el("editSuffix").value = cleanValue(employee.suffix);
+      }
       if (el("editBranch")) {
         const value = cleanValue(employee.branch);
         populateEditBranch([employee.branch], employee.brand, employee.branch);
