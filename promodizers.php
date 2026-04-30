@@ -72,7 +72,9 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
     #promodizerTable td:last-child {
         border-right: none; /* remove extra line at end */
     }
-    
+    .card-body .col {
+        min-width: 150px;
+    }
     </style>
     <div class="container-fluid">
         <div class="row mb-3">
