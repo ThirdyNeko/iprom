@@ -54,6 +54,16 @@ $branch_brand_pairs = $pdo->query("
                             </div>
 
                             <div class="mb-3">
+                                <label class="form-label">Middle Name</label>
+                                <input type="text" placeholder = "optional..." name="middle_name" class="form-control" required style="text-transform: uppercase;">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Suffix</label>
+                                <input type="text" placeholder = "optional..." name="suffix" class="form-control" required style="text-transform: uppercase;">
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Gender</label>
                                 <select name="gender" class="form-select" required>
                                     <option value="" disabled selected>Select Gender</option>

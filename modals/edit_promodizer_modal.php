@@ -66,7 +66,26 @@
 
                 <table class="table table-bordered table-striped table-sm mb-3">
                     <tbody>
-                         <tr>
+                        <tr>
+                            <th>Reason for Update</th>
+                            <td colspan="3">
+                                <select id="editReasonUpdate" class="form-select" required>
+                                    <option value="" disabled selected>-- Select Reason --</option>
+                                    <option value="RESIGNED">RESIGNED</option>
+                                    <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
+                                    <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
+                                    <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
+                                    <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                                    <option value="BLOCKLISTED / AWOL / TERMINATED">BLOCKLISTED / AWOL / TERMINATED</option>
+                                    <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
+                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>                                                                        
+                                    <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
+                                    <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>                                                                 
+                                </select>
+                            </td>
+                        </tr>
+
+                        <tr>
                             <th>Branch</th>
                             <td>
                                 <select id="editBranch" class="form-control"></select>
@@ -125,26 +144,7 @@
                             <td><input type="text" id="editStatus" class="form-control" readonly></td>
                             <th>Last Assigned By</th>
                             <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
-                        </tr>
-                        
-                        <tr>
-                            <th>Reason for Update</th>
-                            <td colspan="3">
-                                <select id="editReasonUpdate" class="form-select" required>
-                                    <option value="" disabled selected>-- Select Reason --</option>
-                                    <option value="RESIGNED">RESIGNED</option>
-                                    <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
-                                    <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
-                                    <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
-                                    <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
-                                    <option value="BLOCKLISTED / AWOL / TERMINATED">BLOCKLISTED / AWOL / TERMINATED</option>
-                                    <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
-                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>                                                                        
-                                    <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
-                                    <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>                                                                 
-                                </select>
-                            </td>
-                        </tr>
+                        </tr>                                            
                         
                         <tr id="rowDateSeparated">
                             <th>Date Separated</th>
