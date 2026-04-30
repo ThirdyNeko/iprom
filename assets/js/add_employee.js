@@ -335,6 +335,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     e.preventDefault();
 
     const formData = new FormData(form);
+
+    // Handle optional middle name & suffix (send NULL instead of empty)
+    if (!formData.get("middle_name")) formData.delete("middle_name");
+    if (!formData.get("suffix")) formData.delete("suffix");
+
     // Start / End date validation
     const startDateInput = form.querySelector('input[name="start_date"]');
     const endDateInput = form.querySelector('input[name="end_date"]');

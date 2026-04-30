@@ -23,6 +23,8 @@ $start_date = $_POST['start_date'] ?? null;
 $end_date   = $_POST['end_date'] ?? null;
 $gender   = $_POST['gender'] ?? null;
 $birthday = $_POST['birthday'] ?? null;
+$middle_name = $_POST['middle_name'] ?? null;
+$suffix      = $_POST['suffix'] ?? null;
 $employee_id = 'EMP-' . date('YmdHis') . '-' . rand(100, 999);
 
 // =========================
@@ -81,6 +83,8 @@ try {
             EXEC add_employee
                 @first_name = :first_name,
                 @last_name = :last_name,
+                @middle_name = :middle_name,
+                @suffix = :suffix,
                 @branch = :branch,
                 @brand = :brand,
                 @status = :status,
@@ -101,6 +105,8 @@ try {
         $stmt->execute([
             ':first_name'           => $first_name,
             ':last_name'            => $last_name,
+            ':middle_name'          => $middle_name,
+            ':suffix'               => $suffix,
             ':branch'               => $branch,
             ':brand'                => $brand,
             ':status'               => $status,
@@ -135,6 +141,8 @@ try {
             EXEC add_employee
                 @first_name = :first_name,
                 @last_name = :last_name,
+                @middle_name = :middle_name,
+                @suffix = :suffix,
                 @branch = :branch,
                 @brand = :brand,
                 @status = :status,
@@ -155,6 +163,8 @@ try {
         $stmt->execute([
             ':first_name'        => $first_name,
             ':last_name'         => $last_name,
+            ':middle_name'       => $middle_name,
+            ':suffix'            => $suffix,
             ':branch'            => $rBranch,
             ':brand'             => $brand,
             ':status'            => $status,
@@ -182,6 +192,8 @@ try {
             EXEC add_employee
                 @first_name = :first_name,
                 @last_name = :last_name,
+                @middle_name = :middle_name,
+                @suffix = :suffix,
                 @branch = :branch,
                 @brand = :brand,
                 @status = :status,
@@ -202,6 +214,8 @@ try {
         $stmt->execute([
             ':first_name'            => $first_name,
             ':last_name'             => $last_name,
+            ':middle_name'           => $middle_name,
+            ':suffix'                => $suffix,
             ':branch'                => $branch,
             ':brand'                 => $mBrand,
             ':status'                => $status,
