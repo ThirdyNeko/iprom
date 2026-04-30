@@ -64,50 +64,89 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #343a40;
+    background: #f1f5f9; /* light background like dashboard */
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
+/* CARD */
 .login-card {
     width: 100%;
     max-width: 400px;
-    background-color: #495057;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    color: #fff;
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.3);
+    background: #ffffff;
+    padding: 2.2rem;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
 }
 
-.form-control {
-    background-color: #2a2a2a;
-    border: 1px solid #444;
-    color: #fff;
-}
-
-.form-control::placeholder {
-    color: #aaa;
-}
-
-.input-group-text.toggle-password {
-    background-color: #2a2a2a;
-    border: 1px solid #444;
-    color: #aaa;
-    cursor: pointer;
-    transition: color 0.2s, background-color 0.2s;
-}
-
-.input-group-text.toggle-password:hover {
-    color: #fff;
-    background-color: #333;
-}
-
-.btn-primary {
-    width: 100%;
-}
-
+/* LOGO */
 .login-logo {
     width: 60px;
     height: 60px;
     object-fit: contain;
+}
+
+/* TITLE */
+.login-card h3 {
+    color: #1e3a8a;
+    font-weight: 600;
+}
+
+/* INPUT */
+.form-control {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    color: #111827;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+/* INPUT FOCUS */
+.form-control:focus {
+    background: #fff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+/* PLACEHOLDER */
+.form-control::placeholder {
+    color: #9ca3af;
+}
+
+/* PASSWORD TOGGLE */
+.input-group-text.toggle-password {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    color: #6b7280;
+    cursor: pointer;
+    border-radius: 0 10px 10px 0;
+    transition: all 0.2s ease;
+}
+
+.input-group-text.toggle-password:hover {
+    background: #eef2ff;
+    color: #2563eb;
+}
+
+/* BUTTON */
+.btn-primary {
+    width: 100%;
+    border-radius: 10px;
+    background: #2563eb;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+/* ERROR ALERT */
+.alert-danger {
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    border-radius: 8px;
 }
 </style>
 </head>

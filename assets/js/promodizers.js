@@ -3,6 +3,13 @@ $(document).ready(function () {
     pageLength: 10,
     responsive: true,
     dom: "lrtip",
+    autoWidth: false, // 👈 IMPORTANT
+
+    columnDefs: [
+      { targets: 0, width: "20%" }, // Name (bigger)
+      { targets: 6, width: "12%" }, // Assignment Date (smaller)
+      { targets: 7, width: "12%" }, // Assigned By (smaller)
+    ],
   });
 
   // =========================

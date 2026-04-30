@@ -59,6 +59,20 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
         text-align: center;
         vertical-align: middle;
     }
+    table td {
+        text-align: left !important;
+    } 
+
+    #promodizerTable th,
+    #promodizerTable td {
+        border-right: 1px solid #dee2e6;
+    }
+
+    #promodizerTable th:last-child,
+    #promodizerTable td:last-child {
+        border-right: none; /* remove extra line at end */
+    }
+    
     </style>
     <div class="container-fluid">
         <div class="row mb-3">
