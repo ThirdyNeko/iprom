@@ -3,28 +3,28 @@
     <!-- Logo / Title -->
     <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
         <img src="assets/icons/LOGO ONLY RED.png" alt="iProm Logo" class="sidebar-logo">
-        <h5 class="text-white m-0">iProm</h5>
+        <h5 class="m-0">iProm</h5>
     </div>
 
     <!-- Menu -->
     <ul class="nav nav-pills flex-column mb-3">
 
         <li class="nav-item">
-            <a href="index.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'index.php' ? 'active' : '' ?>">
+            <a href="index.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'index.php' ? 'active' : '' ?>">
                 <i class="bi bi-speedometer2"></i>
                 <span>Dashboard</span>
             </a>
         </li>
 
         <li>
-            <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'promodizers.php' ? 'active' : '' ?>">
+            <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'promodizers.php' ? 'active' : '' ?>">
                 <i class="bi bi-people"></i>
                 <span>Promodisers</span>
             </a>
         </li>
 
         <li>
-            <a href="assignments.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'assignments.php' ? 'active' : '' ?>">
+            <a href="assignments.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'assignments.php' ? 'active' : '' ?>">
                 <i class="bi bi-diagram-3"></i>
                 <span>Assignments</span>
             </a>
@@ -33,7 +33,7 @@
         <!-- ✅ ADMIN ONLY: Users -->
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <li>
-            <a href="users.php" class="nav-link d-flex align-items-center gap-2 text-light <?= $current_page == 'users.php' ? 'active' : '' ?>">
+            <a href="users.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'users.php' ? 'active' : '' ?>">
                 <i class="bi bi-person-gear"></i>
                 <span>Users</span>
             </a>
@@ -43,7 +43,7 @@
         <!-- Change Password Sidebar Link (Modal Trigger) -->
         <li>
             <a href="#" 
-            class="nav-link d-flex align-items-center gap-2 text-light"
+            class="nav-link d-flex align-items-center gap-2 "
             data-bs-toggle="modal" 
             data-bs-target="#changePasswordModal">
                 <i class="bi bi-key"></i>
@@ -66,7 +66,7 @@
         $currentRole = $_SESSION['role'] ?? 'Guest';
         $roleDisplay = $roleLabels[$currentRole] ?? $currentRole;
         ?>
-        <div class="text-light small mb-2 d-flex align-items-center gap-2">
+        <div class="small mb-2 d-flex align-items-center gap-2">
             <i class="bi bi-person-circle"></i>
             <span class="sidebar-text"><?= htmlspecialchars($roleDisplay) ?></span>
         </div>
