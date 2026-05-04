@@ -30,6 +30,13 @@
             </a>
         </li>
 
+        <li>
+            <a href="logs.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'logs.php' ? 'active' : '' ?>">
+                <i class="bi bi-clock-history"></i>
+                <span>Logs</span>
+            </a>
+        </li>
+
         <!-- ✅ ADMIN ONLY: Users -->
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <li>
