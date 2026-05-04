@@ -56,10 +56,11 @@ $pdo = qa_db();
                             <option value="BLOCKLISTED / AWOL / TERMINATED">BLOCKLISTED / AWOL / TERMINATED</option>
                             <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
                             <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
-                            <option value="REMOVE CURRENT BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
-                            <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
+                            <option value="BRANCH/BRAND REMOVED">BRANCH/BRAND REMOVED</option>
+                            <option value="BRANCH/BRAND ADDED">BRANCH/BRAND ADDED</option>
                             <option value="AUTO REACTIVATED">AUTO REACTIVATED</option>
                             <option value="AUTO DEACTIVATED">AUTO DEACTIVATED</option>
+                            <option value="ADDED">ADDED EMPLOYEE</option>
                         </select>
                     </div>
 
