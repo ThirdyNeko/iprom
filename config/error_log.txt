@@ -345,3 +345,12 @@
 [2026-05-04 08:00:16] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
 [2026-05-04 08:00:16] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
 [2026-05-04 08:00:16] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74

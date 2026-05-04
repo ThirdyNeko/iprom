@@ -67,19 +67,45 @@ $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </thead>
 
                         <tbody>
-                            <?php foreach ($logs as $row): ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['updated_by'] ?? 'SYSTEM') ?></td>                                    
-                                    <td><?= htmlspecialchars($row['reason_for_update']) ?></td>                                    
-                                    <td><?= htmlspecialchars($row['remarks']) ?></td>            
-                                    <td>
-                                        <?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?>
-                                    </td>                        
-                                    <td>
-                                        <?= $row['update_date'] ? date('Y-m-d', strtotime($row['update_date'])) : '-' ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
+                        <?php foreach ($logs as $row): ?>
+                            <?php
+                                // Safe helper (local)
+                                $e = function($val, $default = '-') {
+                                    return htmlspecialchars($val ?? $default);
+                                };
+
+                                // Updated By (fallback: SYSTEM if null or empty)
+                                $updatedBy = !empty($row['updated_by']) ? $row['updated_by'] : 'SYSTEM';
+
+                                // Remarks
+                                $remarks = $row['remarks'] ?? '-';
+
+                                // Reason
+                                $reason = $row['reason_for_update'] ?? '-';
+
+                                // Employee full name
+                                $first = $row['first_name'] ?? '';
+                                $last  = $row['last_name'] ?? '';
+                                $fullName = trim("$first $last");
+                                if ($fullName === '') {
+                                    $fullName = '-';
+                                }
+
+                                // Date
+                                $date = !empty($row['update_date'])
+                                    ? date('Y-m-d', strtotime($row['update_date']))
+                                    : '-';
+                            ?>
+
+                            <tr>
+                                <td><?= $e($updatedBy) ?></td>
+                                <td><?= $e($reason) ?></td>
+                                <td><?= $e($remarks) ?></td>
+                                <td><?= $e($fullName) ?></td>
+                                <td><?= $e($date) ?></td>
+                            </tr>
+
+                        <?php endforeach; ?>
                         </tbody>
 
                     </table>
