@@ -38,6 +38,59 @@ if ($search !== '') {
 }
 
 // -------------------------
+// CUSTOM FILTERS
+// -------------------------
+$user       = trim($_POST['user'] ?? '');
+$reason     = trim($_POST['reason'] ?? '');
+$remarks    = trim($_POST['remarks'] ?? '');
+$from_date  = $_POST['from_date'] ?? null;
+$to_date    = $_POST['to_date'] ?? null;
+
+$conditions = [];
+$params = [];
+
+// 🔍 GLOBAL SEARCH (kept)
+if ($search !== '') {
+    $conditions[] = "(
+        h.reason_for_update LIKE :search
+        OR h.remarks LIKE :search
+        OR i.first_name LIKE :search
+        OR i.last_name LIKE :search
+        OR h.updated_by LIKE :search
+    )";
+    $params[':search'] = "%$search%";
+}
+
+// 🔽 INDIVIDUAL FILTERS
+if ($user !== '') {
+    $conditions[] = "h.updated_by LIKE :user";
+    $params[':user'] = "%$user%";
+}
+
+if ($reason !== '') {
+    $conditions[] = "h.reason_for_update LIKE :reason";
+    $params[':reason'] = "%$reason%";
+}
+
+if ($remarks !== '') {
+    $conditions[] = "h.remarks LIKE :remarks";
+    $params[':remarks'] = "%$remarks%";
+}
+
+if (!empty($from_date)) {
+    $conditions[] = "CAST(h.update_date AS DATE) >= :from_date";
+    $params[':from_date'] = $from_date;
+}
+
+if (!empty($to_date)) {
+    $conditions[] = "CAST(h.update_date AS DATE) <= :to_date";
+    $params[':to_date'] = $to_date;
+}
+
+// 🧠 BUILD WHERE
+$where = count($conditions) ? " WHERE " . implode(" AND ", $conditions) : "";
+
+// -------------------------
 // TOTAL RECORDS (NO FILTER)
 // -------------------------
 $totalStmt = $pdo->query("SELECT COUNT(*) FROM employee_reason_history");

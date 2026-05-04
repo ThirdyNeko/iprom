@@ -22,6 +22,9 @@ $pdo = qa_db();
     #logsTable td:last-child {
         border-right: none; /* remove extra line at end */
     }
+    .card-body .col {
+        min-width: 150px;
+    }
 </style>
 <div class="content">
     <div class="container-fluid">
@@ -34,6 +37,48 @@ $pdo = qa_db();
 
         <div class="card shadow-sm">
             <div class="card-body">
+                <div class="row g-2 mb-3">
+
+                    <div class="col">
+                        <label class="form-label">User</label>
+                        <input type="text" id="filterUser" class="form-control" placeholder="Search user">
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Reason</label>
+                        <select id="filterReason" class="form-select">
+                            <option value="">All</option>
+                            <option value="RESIGNED">RESIGNED</option>
+                            <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
+                            <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
+                            <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
+                            <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                            <option value="BLOCKLISTED / AWOL / TERMINATED">BLOCKLISTED / AWOL / TERMINATED</option>
+                            <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
+                            <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
+                            <option value="REMOVE CURRENT BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
+                            <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
+                            <option value="AUTO REACTIVATED">AUTO REACTIVATED</option>
+                            <option value="AUTO DEACTIVATED">AUTO DEACTIVATED</option>
+                        </select>
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Remarks</label>
+                        <input type="text" id="filterRemarks" class="form-control" placeholder="Search remarks">
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">From</label>
+                        <input type="date" id="filterFrom" class="form-control">
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">To</label>
+                        <input type="date" id="filterTo" class="form-control">
+                    </div>
+
+                </div>
 
                 <div class="table-responsive">
                     <table id="logsTable" class="table table-striped table-hover align-middle text-center">
@@ -61,22 +106,4 @@ $pdo = qa_db();
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
-
-<script>
-$(document).ready(function () {
-    $('#logsTable').DataTable({
-        processing: true,
-        serverSide: true,
-        pageLength: 10,
-        responsive: true,
-        dom: "lrtip",
-
-        ajax: {
-            url: "functions/fetch_logs.php",
-            type: "POST"
-        },
-
-        order: [[4, 'desc']]
-    });
-});
-</script>
+<script src="assets/js/logs.js"></script>

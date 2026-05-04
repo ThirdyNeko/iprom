@@ -40,6 +40,12 @@
         <!-- ✅ ADMIN ONLY: Users -->
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <li>
+            <a href="merge.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'merge.php' ? 'active' : '' ?>">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Merge Employees</span>
+            </a>
+        </li>
+        <li>
             <a href="users.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'users.php' ? 'active' : '' ?>">
                 <i class="bi bi-person-gear"></i>
                 <span>Users</span>
