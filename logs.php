@@ -8,25 +8,6 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
-$sql = "
-SELECT 
-    h.id,
-    h.reason_for_update,
-    h.update_date,
-    h.remarks,
-    h.employee_id,
-    h.updated_by,
-    i.first_name,
-    i.last_name
-FROM employee_reason_history h
-LEFT JOIN employee_info i 
-    ON h.employee_id = i.employee_id
-ORDER BY h.update_date DESC
-";
-
-$stmt = $pdo->prepare($sql);
-$stmt->execute();
-$logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <style>
     table td {
@@ -66,47 +47,7 @@ $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </tr>
                         </thead>
 
-                        <tbody>
-                        <?php foreach ($logs as $row): ?>
-                            <?php
-                                // Safe helper (local)
-                                $e = function($val, $default = '-') {
-                                    return htmlspecialchars($val ?? $default);
-                                };
-
-                                // Updated By (fallback: SYSTEM if null or empty)
-                                $updatedBy = !empty($row['updated_by']) ? $row['updated_by'] : 'SYSTEM';
-
-                                // Remarks
-                                $remarks = $row['remarks'] ?? '-';
-
-                                // Reason
-                                $reason = $row['reason_for_update'] ?? '-';
-
-                                // Employee full name
-                                $first = $row['first_name'] ?? '';
-                                $last  = $row['last_name'] ?? '';
-                                $fullName = trim("$first $last");
-                                if ($fullName === '') {
-                                    $fullName = '-';
-                                }
-
-                                // Date
-                                $date = !empty($row['update_date'])
-                                    ? date('Y-m-d', strtotime($row['update_date']))
-                                    : '-';
-                            ?>
-
-                            <tr>
-                                <td><?= $e($updatedBy) ?></td>
-                                <td><?= $e($reason) ?></td>
-                                <td><?= $e($remarks) ?></td>
-                                <td><?= $e($fullName) ?></td>
-                                <td><?= $e($date) ?></td>
-                            </tr>
-
-                        <?php endforeach; ?>
-                        </tbody>
+                        <tbody></tbody>
 
                     </table>
                 </div>
@@ -124,10 +65,18 @@ $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script>
 $(document).ready(function () {
     $('#logsTable').DataTable({
+        processing: true,
+        serverSide: true,
         pageLength: 10,
-        order: [[4, 'desc']], // sort by update date
-        responsive: true
+        responsive: true,
         dom: "lrtip",
+
+        ajax: {
+            url: "functions/fetch_logs.php",
+            type: "POST"
+        },
+
+        order: [[4, 'desc']]
     });
 });
 </script>

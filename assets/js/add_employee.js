@@ -519,29 +519,41 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       const blockedReasons = ["BLOCKLISTED / AWOL / TERMINATED"];
 
-      if (checkData.exists) {
+      if (checkData && checkData.exists === true) {
         const reason = (checkData.reason_for_update || "").toUpperCase();
+        const employeeId = checkData.employee_id;
 
-        // 🚫 HARD BLOCK
-        if (blockedReasons.includes(reason)) {
+        if (!employeeId) {
           return Swal.fire(
-            "Cannot Add Employee",
-            `This employee is ${reason}. Adding is not allowed.`,
+            "Error",
+            "Duplicate detected but employee ID is missing from server response.",
             "error",
           );
         }
 
-        // ⚠️ SOFT WARNING (duplicate but not blocked)
-        const proceed = await Swal.fire({
-          icon: "warning",
-          title: "Possible Duplicate",
-          text: "An employee with the same name and birthday already exists. Do you want to continue?",
+        const blockedReasons = ["BLOCKLISTED / AWOL / TERMINATED"];
+
+        if (blockedReasons.includes(reason)) {
+          return Swal.fire(
+            "Cannot Add Employee",
+            `This employee is ${reason}. Editing is not allowed.`,
+            "error",
+          );
+        }
+
+        const result = await Swal.fire({
+          icon: "info",
+          title: "Employee Already Exists",
+          text: "This employee already exists. Do you want to open their record instead?",
           showCancelButton: true,
-          confirmButtonText: "Yes, Continue",
+          confirmButtonText: "Yes, Open Record",
           cancelButtonText: "Cancel",
         });
 
-        if (!proceed.isConfirmed) return;
+        if (!result.isConfirmed) return;
+
+        window.location.href = `promodizers.php?edit=${employeeId}`;
+        return; // 🔥 HARD STOP — prevents form submission
       }
     } catch (err) {
       console.error(err);

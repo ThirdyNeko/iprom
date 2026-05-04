@@ -354,3 +354,8 @@
 [2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
 [2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
 [2026-05-04 08:01:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\logs.php on line 74
+[2026-05-04 10:54:36] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-04 10:54:46] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-04 10:54:55] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-04 10:55:40] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-04 10:56:30] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
