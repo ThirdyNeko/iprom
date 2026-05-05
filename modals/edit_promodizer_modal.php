@@ -79,6 +79,7 @@
                                     <option value="BLOCKLISTED / AWOL / TERMINATED">BLOCKLISTED / AWOL / TERMINATED</option>
                                     <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
                                     <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>                                                                        
+                                    <!-- <option value="REASSIGN">REASSIGN</option> -->
                                     <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
                                     <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>                                                                 
                                 </select>

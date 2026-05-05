@@ -72,6 +72,7 @@ function toggleReasonDates() {
   const shouldShowReason =
     reason === "TRANSFER BRANCH" ||
     reason === "CHANGE SUB STATUS" ||
+    reason === "REASSIGN" ||
     reason === "CHANGE EMPLOYMENT STATUS";
 
   // =========================
@@ -158,7 +159,7 @@ function toggleTransferEditable() {
   // =========================
   // ONLY APPLY IF TRANSFER
   // =========================
-  if (reason !== "TRANSFER BRANCH") return;
+  if (reason !== "TRANSFER BRANCH" && reason !== "REASSIGN") return;
 
   // =========================
   // RULES
@@ -166,6 +167,9 @@ function toggleTransferEditable() {
   if (subStatus === "STATIONARY" && employmentStatus !== "RELIEVER") {
     // ✅ only branch editable
     if (branchEl) branchEl.disabled = false;
+    if (reason === "REASSIGN") {
+      if (brandEl) brandEl.disabled = false;
+    }
   }
 }
 
@@ -726,7 +730,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   ).toUpperCase();
 
   const requiresAssignmentCheck =
-    reason === "TRANSFER" || reason === "REASSIGNED";
+    reason === "TRANSFER BRANCH" || reason === "REASSIGN";
 
   let isAvailable = true;
 
@@ -1071,7 +1075,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     ).toUpperCase();
 
     // 🚫 ONLY validate for transfer-related actions
-    if (reason !== "TRANSFER" && reason !== "REASSIGNED") {
+    if (reason !== "TRANSFER BRANCH" && reason !== "REASSIGN") {
       return true;
     }
 

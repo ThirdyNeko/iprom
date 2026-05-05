@@ -27,9 +27,11 @@ try {
     $sql = "
         SELECT TOP 1
             id,
+            employee_id,
             first_name,
             last_name,
             birthday,
+            status,
             reason_for_update
         FROM employee_info
         WHERE 
@@ -51,7 +53,8 @@ try {
     if ($row) {
         echo json_encode([
             'exists' => true,
-            'employee_id' => $row['id'],
+            'employee_id' => $row['employee_id'],
+            'status' => $row['status'],
             'reason_for_update' => $row['reason_for_update']
         ]);
     } else {

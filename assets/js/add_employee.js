@@ -336,6 +336,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const formData = new FormData(form);
 
+    let reassignEmployeeId = null;
+
     // Handle optional middle name & suffix (send NULL instead of empty)
     if (!formData.get("middle_name")) formData.delete("middle_name");
     if (!formData.get("suffix")) formData.delete("suffix");
@@ -522,17 +524,19 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (checkData && checkData.exists === true) {
         const reason = (checkData.reason_for_update || "").toUpperCase();
         const employeeId = checkData.employee_id;
+        const status = (checkData.status || "").toUpperCase();
 
         if (!employeeId) {
           return Swal.fire(
             "Error",
-            "Duplicate detected but employee ID is missing from server response.",
+            "Duplicate detected but employee ID is missing.",
             "error",
           );
         }
 
         const blockedReasons = ["BLOCKLISTED / AWOL / TERMINATED"];
 
+        // 🚫 Hard block
         if (blockedReasons.includes(reason)) {
           return Swal.fire(
             "Cannot Add Employee",
@@ -541,19 +545,38 @@ document.addEventListener("DOMContentLoaded", async function () {
           );
         }
 
-        const result = await Swal.fire({
-          icon: "info",
-          title: "Employee Already Exists",
-          text: "This employee already exists. Do you want to open their record instead?",
-          showCancelButton: true,
-          confirmButtonText: "Yes, Open Record",
-          cancelButtonText: "Cancel",
-        });
+        // 🟡 INACTIVE → offer reassign (NO redirect)
+        if (status === "INACTIVE") {
+          const result = await Swal.fire({
+            icon: "question",
+            title: "Employee is Inactive",
+            text: "This employee already exists but is inactive. Do you want to reassign and overwrite their record?",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Reassign",
+            cancelButtonText: "No",
+          });
 
-        if (!result.isConfirmed) return;
+          if (!result.isConfirmed) return;
 
-        window.location.href = `promodizers.php?edit=${employeeId}`;
-        return; // 🔥 HARD STOP — prevents form submission
+          // ✅ mark for reassignment (IMPORTANT)
+          formData.set("reassign", "1");
+          formData.set("employee_id", employeeId);
+        } else {
+          // 🟢 ACTIVE → open instead
+          const result = await Swal.fire({
+            icon: "info",
+            title: "Employee Already Exists",
+            text: "This employee already exists. Do you want to open their record?",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Open Record",
+            cancelButtonText: "Cancel",
+          });
+
+          if (!result.isConfirmed) return;
+
+          window.location.href = `promodizers.php?edit=${employeeId}`;
+          return;
+        }
       }
     } catch (err) {
       console.error(err);

@@ -78,7 +78,7 @@ $branch_brand_pairs = $pdo->query("
                                     type="date" 
                                     name="birthday" 
                                     class="form-control" 
-                                    max="<?= date('Y-m-d') ?>" 
+                                    max="<?= date('Y-m-d', strtotime('-18 years')) ?>" 
                                     required
                                 >
                             </div>

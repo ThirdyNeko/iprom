@@ -25,8 +25,13 @@ $gender   = $_POST['gender'] ?? null;
 $birthday = $_POST['birthday'] ?? null;
 $middle_name = $_POST['middle_name'] ?? null;
 $suffix      = $_POST['suffix'] ?? null;
-$employee_id = 'EMP-' . date('YmdHis') . '-' . rand(100, 999);
+$reassign = $_POST['reassign'] ?? null;
+$employee_id = $_POST['employee_id'] ?? null;
 
+// ✅ Only generate NEW ID if NOT reassigning
+if ($reassign !== '1') {
+    $employee_id = 'EMP-' . date('YmdHis') . '-' . rand(100, 999);
+}
 // =========================
 // ROVING BRANCHES
 // =========================
@@ -79,8 +84,12 @@ try {
     // MAIN BRANCH INSERT
     // =========================
     if ($branch) {
-        $stmt = $pdo->prepare("
-            EXEC add_employee
+
+        // ✅ decide which procedure to use
+        $procedure = ($reassign === '1') ? 'reassign_employee' : 'add_employee';
+
+        $sql = "
+            EXEC {$procedure}
                 @first_name = :first_name,
                 @last_name = :last_name,
                 @middle_name = :middle_name,
@@ -100,7 +109,9 @@ try {
                 @gender = :gender,
                 @birthday = :birthday,
                 @employee_id = :employee_id
-        ");
+        ";
+
+        $stmt = $pdo->prepare($sql);
 
         $stmt->execute([
             ':first_name'           => $first_name,
@@ -112,7 +123,7 @@ try {
             ':status'               => $status,
             ':assigned_by'          => $assigned_by,
             ':employment_status'    => $employment_status,
-            ':sub_status'           => $sub_status, // ✅ NEW
+            ':sub_status'           => $sub_status,
             ':roving_group_id'      => $roving_group_id,
             ':multi_brand_group_id' => $multi_brand_group_id,
             ':remarks'              => $remarks,
