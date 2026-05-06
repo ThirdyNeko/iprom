@@ -237,6 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
             "RESIGNED",
             "PULL-OUT / END OF CONTRACT",
             "BLOCKLISTED / AWOL / TERMINATED",
+            "CHANGE SUB STATUS",
+            "TRANSFER BRANCH",
         ];
 
         if (effectivityReasons.includes(value)) {
@@ -255,7 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // GROUP 3 → Transfer (Transfer Date)
-        if (value === "TRANSFER BRANCH") {
+        if (effectivityReasons.includes(value)) {
             thStartDate.textContent = "Effectivity Date";
         }
         
