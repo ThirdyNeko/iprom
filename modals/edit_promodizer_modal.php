@@ -87,27 +87,26 @@
                         </tr>
 
                         <tr>
+                            <th>First Name</th>
+                            <td><input type="text" id="editFirstName" class="form-control" readonly></td>
                             <th>Branch</th>
                             <td>
                                 <select id="editBranch" class="form-control"></select>
                             </td>
-
-                            <th>Brand</th>
-                            <td>
-                                <select id="editBrand" class="form-control"></select>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <th>First Name</th>
-                            <td><input type="text" id="editFirstName" class="form-control" readonly></td>
-                            <th>Date Hired</th>
-                            <td><input type="date" id="editDateHired" class="form-control" readonly></td>
-                        </tr>
+                        </tr>                        
                        
                         <tr>
                             <th>Middle Name</th>
                             <td><input type="text" id="editMiddleName" class="form-control" readonly></td>
+                            <th>Brand</th>
+                            <td>
+                                <select id="editBrand" class="form-control"></select>
+                            </td>                            
+                        </tr>
+
+                        <tr>
+                            <th>Last Name</th>
+                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
                             <th>Employment Status</th>
                             <td>
                                 <select id="editEmploymentStatus" class="form-select">
@@ -115,12 +114,12 @@
                                     <option value="RELIEVER">RELIEVER</option>
                                     <option value="SEASONAL">SEASONAL</option>
                                 </select>
-                            </td>
+                            </td>                            
                         </tr>
 
                         <tr>
-                            <th>Last Name</th>
-                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
+                            <th>Suffix</th>
+                            <td><input type="text" id="editSuffix" class="form-control" readonly></td>
                             <th>Sub-Status</th>
                             <td>
                                 <select id="editSubStatus" class="form-select">
@@ -128,14 +127,7 @@
                                     <option value="MULTI BRAND">MULTI BRAND</option>
                                     <option value="STATIONARY">STATIONARY</option>
                                 </select>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <th>Suffix</th>
-                            <td><input type="text" id="editSuffix" class="form-control" readonly></td>
-                            <th>Assignment Date</th>
-                            <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>
+                            </td>                            
                         </tr>
 
                         <tr>
@@ -143,22 +135,31 @@
                             <td>
                                 <input type="text" id="editGender" class="form-control" readonly>
                             </td>
-                            <th>Last Assigned By</th>
-                            <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
+                            <th>Assignment Date</th>
+                            <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>                            
                         </tr>                                            
                         
                         <tr>
                             <th>Birthdate</th>
                             <td><input type="date" id="editBirthday" class="form-control" readonly></td>
+                            <th>Last Assigned By</th>
+                            <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>                            
+                        </tr>
+
+                        <tr>                            
+                            <th>Date Hired</th>
+                            <td><input type="date" id="editDateHired" class="form-control" readonly></td>
                             <th>Date Last Updated</th>
                             <td><input type="date" id="editDateLastUpdated" class="form-control" readonly></td>
                         </tr>
+
                         <tr>
                             <th>Status</th>
                             <td><input type="text" id="editStatus" class="form-control" readonly></td>
                             <th>Last Updated By</th>
                             <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
                         </tr>
+
                         <tr id="rowDateSeparated">
                             <th id="thDateSeparated">Date Separated</th>
                             <td><input type="date" id="editDateSeparated" class="form-control"></td>
@@ -179,12 +180,14 @@
                                 <div id="editRovingContainer"></div>
                             </td>
                         </tr>
+
                         <tr id="editMultiBrandField" class="d-none">
                             <th>Multi Brands</th>
                             <td colspan="3">
                                 <div id="editMultiBrandContainer"></div>
                             </td>
                         </tr>
+                        
                         <tr>
                             <th>Remarks</th>
                             <td colspan="3">
