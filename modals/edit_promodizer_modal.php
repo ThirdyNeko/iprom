@@ -147,6 +147,18 @@
                             <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
                         </tr>                                            
                         
+                        <tr>
+                            <th>Birthdate</th>
+                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
+                            <th>Date Last Updated</th>
+                            <td><input type="date" id="editDateLastUpdated" class="form-control" readonly></td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td><input type="text" id="editStatus" class="form-control" readonly></td>
+                            <th>Last Updated By</th>
+                            <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
+                        </tr>
                         <tr id="rowDateSeparated">
                             <th>Date Separated</th>
                             <td><input type="date" id="editDateSeparated" class="form-control"></td>
@@ -172,18 +184,6 @@
                             <td colspan="3">
                                 <div id="editMultiBrandContainer"></div>
                             </td>
-                        </tr>
-                        <tr>
-                            <th>Birthdate</th>
-                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
-                            <th>Date Last Updated</th>
-                            <td><input type="date" id="editDateLastUpdated" class="form-control" readonly></td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td><input type="text" id="editStatus" class="form-control" readonly></td>
-                            <th>Last Updated By</th>
-                            <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
                         </tr>
                         <tr>
                             <th>Remarks</th>

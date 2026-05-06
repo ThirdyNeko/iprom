@@ -120,7 +120,7 @@ $(document).ready(function () {
           html += `
             <div class="mt-2 text-center">
               <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
-                + Add Promodizer
+                + Add Promodiser
               </button>
             </div>
           `;
