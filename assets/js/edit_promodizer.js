@@ -136,6 +136,32 @@ function toggleDateSeparated() {
   }
 }
 
+function toggleStatusesEditable() {
+  if (!reasonSelect) return;
+
+  const reason = (reasonSelect.value || "").toUpperCase();
+
+  const subStatusEl = document.getElementById("editSubStatus");
+  const employmentStatusEl = document.getElementById("editEmploymentStatus");
+
+  // =========================
+  // DEFAULT: lock both
+  // =========================
+  if (subStatusEl) subStatusEl.disabled = true;
+  if (employmentStatusEl) employmentStatusEl.disabled = true;
+
+  // =========================
+  // ENABLE BASED ON REASON
+  // =========================
+  if (reason === "CHANGE SUB STATUS") {
+    if (subStatusEl) subStatusEl.disabled = false;
+  }
+
+  if (reason === "CHANGE EMPLOYMENT STATUS") {
+    if (employmentStatusEl) employmentStatusEl.disabled = false;
+  }
+}
+
 function toggleTransferEditable() {
   if (!reasonSelect) return;
 
@@ -662,7 +688,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       }
 
       toggleTransferEditable(); // 👈 ADD HERE
-
+      toggleStatusesEditable();
       // =========================
       // EDITABLE FIELDS SAFE
       // =========================
@@ -687,8 +713,6 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       // DISABLE LOGIC
       // =========================
       const editable = [
-        "editEmploymentStatus",
-        "editSubStatus",
         "editReasonUpdate",
         "editDateSeparated",
         "editDateReturn",
@@ -982,6 +1006,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     reasonSelect.addEventListener("change", toggleDateReturned);
     reasonSelect.addEventListener("change", toggleReasonDates);
     reasonSelect.addEventListener("change", toggleTransferEditable); // ✅ ADD THIS
+    reasonSelect.addEventListener("change", toggleStatusesEditable); // ✅ ADD THIS
   }
 
   if (employmentStatusSelect) {
