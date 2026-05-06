@@ -96,6 +96,13 @@ $(document).ready(function () {
   }
 
   // =========================
+  // NAME FILTER
+  // =========================
+  $("#filterName").on("keyup", function () {
+    table.column(0).search(this.value).draw();
+  });
+
+  // =========================
   // BRANCH FILTER
   // =========================
   $("#filterBranch").on("change", function () {
@@ -121,7 +128,7 @@ $(document).ready(function () {
   // ASSIGNED BY FILTER
   // =========================
   $("#filterAssignedBy").on("keyup", function () {
-    table.column(6).search(this.value).draw();
+    table.column(7).search(this.value).draw();
   });
 
   // =========================
@@ -130,7 +137,7 @@ $(document).ready(function () {
   $.fn.dataTable.ext.search.push(function (settings, data) {
     var from = $("#filterFrom").val();
     var to = $("#filterTo").val();
-    var date = data[7];
+    var date = data[6];
 
     if (!date) return true;
 

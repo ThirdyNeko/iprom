@@ -93,6 +93,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                 <div class="row g-2">
 
                     <div class="col">
+                        <label class="form-label">Name</label>
+                        <input type="text" id="filterName" class="form-control" placeholder="Search...">
+                    </div>
+
+                    <div class="col">
                         <label class="form-label">Branch</label>
                         <select id="filterBranch" class="form-select">
                             <option value="">All</option>
