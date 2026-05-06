@@ -17,6 +17,9 @@ $pdo = qa_db();
     #logsTable td {
         border-right: 1px solid #dee2e6;
     }
+    #logsTable.table-hover tbody tr:hover > td {
+        background-color: #e6f0ff !important;
+    }
 
     #logsTable th:last-child,
     #logsTable td:last-child {

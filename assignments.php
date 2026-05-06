@@ -28,6 +28,9 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             text-align: center;
             vertical-align: middle;
         }
+        #assignmentTable.table-hover tbody tr:hover > td {
+            background-color: #e6f0ff !important;
+        }
 
         /* ✅ MAKE ROWS CLICKABLE */
         #assignmentTable tbody tr {

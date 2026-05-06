@@ -51,8 +51,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
         cursor: pointer;
         transition: background-color 0.2s;
     }
-    .clickable-row:hover {
-        background-color: #f1f1f1; /* light gray on hover */
+    #promodizerTable.table-hover tbody tr:hover > td {
+        background-color: #e6f0ff !important;
     }
     #promodizerTable th,
     #promodizerTable td {
