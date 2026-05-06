@@ -784,18 +784,41 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
 
   const dateSeparated = document.getElementById("editDateSeparated");
   const dateReturned = document.getElementById("editDateReturn");
+  const startDate = document.getElementById("editStartDate");
+  const endDate = document.getElementById("editEndDate");
 
   // VALIDATIONS
-  if (dateSeparated?.required && !dateSeparated.value) {
-    return Swal.fire({ icon: "warning", title: "Date Separated Required" });
+  if (
+    dateSeparated?.required &&
+    !dateSeparated.value &&
+    reason !== "MATERNITY LEAVE" &&
+    reason !== "EMERGENCY LEAVE"
+  ) {
+    return Swal.fire({ icon: "warning", title: "Effectivity Date  Required" });
+  }
+
+  if (
+    dateSeparated?.required &&
+    !dateSeparated.value &&
+    (reason === "MATERNITY LEAVE" || reason === "EMERGENCY LEAVE")
+  ) {
+    return Swal.fire({ icon: "warning", title: "Start Date Required" });
   }
 
   if (reason === "MATERNITY LEAVE" && !dateReturned.value) {
-    return Swal.fire({ icon: "warning", title: "Date Returned Required" });
+    return Swal.fire({ icon: "warning", title: "End Date Required" });
   }
 
   if (reason === "EMERGENCY LEAVE" && !dateReturned.value) {
-    return Swal.fire({ icon: "warning", title: "Date Returned Required" });
+    return Swal.fire({ icon: "warning", title: "End Date Required" });
+  }
+
+  if (reason === "CHANGE EMPLOYMENT STATUS" && !startDate.value) {
+    return Swal.fire({ icon: "warning", title: "Start Date Required" });
+  }
+
+  if (reason === "CHANGE SUB STATUS" && !startDate.value) {
+    return Swal.fire({ icon: "warning", title: "Effectivity Date Required" });
   }
 
   if (!reason) {
