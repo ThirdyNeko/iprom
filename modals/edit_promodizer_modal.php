@@ -220,22 +220,22 @@
 <script> 
 document.addEventListener("DOMContentLoaded", function () {
     const reasonSelect = document.getElementById("editReasonUpdate");
+    const employmentStatusSelect = document.getElementById("editEmploymentStatus");
 
     const thDateSeparated = document.querySelector("#rowDateSeparated th:nth-child(1)");
     const thDateReturned  = document.querySelector("#rowDateSeparated th:nth-child(3)");
     const thStartDate     = document.querySelector("#rowStartDate th:nth-child(1)");
     const thEndDate       = document.querySelector("#rowStartDate th:nth-child(3)");
 
-    reasonSelect.addEventListener("change", function () {
-        const value = this.value;
+    function updateHeaders() {
+        const value = reasonSelect.value;
 
-        // RESET DEFAULTS FIRST
+        // RESET DEFAULTS
         thDateSeparated.textContent = "Date Separated";
         thDateReturned.textContent  = "Date Returned";
         thStartDate.textContent     = "Start";
         thEndDate.textContent       = "End";
 
-        // GROUP 1 → Effectivity Date
         const effectivityReasons = [
             "RESIGNED",
             "PULL-OUT / END OF CONTRACT",
@@ -244,26 +244,30 @@ document.addEventListener("DOMContentLoaded", function () {
             "TRANSFER BRANCH",
         ];
 
-        if (effectivityReasons.includes(value)) {
-            thDateSeparated.textContent = "Effectivity Date";
-        }
-
-        // GROUP 2 → Leave (Start/End)
         const leaveReasons = [
             "EMERGENCY LEAVE",
             "MATERNITY LEAVE"
         ];
+
+        if (effectivityReasons.includes(value)) {
+            thDateSeparated.textContent = "Effectivity Date";
+            thStartDate.textContent = "Effectivity Date";
+        }
 
         if (leaveReasons.includes(value)) {
             thDateSeparated.textContent = "Start";
             thDateReturned.textContent  = "End";
         }
 
-        // GROUP 3 → Transfer (Transfer Date)
-        if (effectivityReasons.includes(value)) {
+        if (employmentStatusSelect.value === "PERMANENT") {
             thStartDate.textContent = "Effectivity Date";
         }
-        
-    });
+    }
+
+    reasonSelect.addEventListener("change", updateHeaders);
+    employmentStatusSelect.addEventListener("change", updateHeaders);
+
+    // run once on load (important for modal edit forms)
+    updateHeaders();
 });
 </script>

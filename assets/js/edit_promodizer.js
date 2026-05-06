@@ -45,34 +45,57 @@ function toggleEmploymentDates() {
 
   const isRelieverOrSeasonal = status === "RELIEVER" || status === "SEASONAL";
 
+  const isPermanent = status === "PERMANENT";
+
   const isCorrectReason = reason === "CHANGE EMPLOYMENT STATUS";
 
   // =========================
   // VISIBILITY
   // =========================
-  const shouldShow = isRelieverOrSeasonal;
+  const shouldShowStart = isRelieverOrSeasonal || isPermanent;
+  const shouldShowEnd = isRelieverOrSeasonal;
 
-  if (startDateRow) startDateRow.style.display = shouldShow ? "" : "none";
-  if (endDateRow) endDateRow.style.display = shouldShow ? "" : "none";
-
-  // =========================
-  // ENABLE / DISABLE
-  // =========================
-  const shouldEnable = isRelieverOrSeasonal && isCorrectReason;
-
-  if (startDateInput) {
-    startDateInput.disabled = !shouldEnable;
-    startDateInput.required = shouldEnable;
-
-    // ONLY clear if completely not applicable (not reliever/seasonal)
-    if (!shouldShow) startDateInput.value = "";
+  if (startDateRow) {
+    startDateRow.style.display = shouldShowStart ? "" : "none";
   }
 
-  if (endDateInput) {
-    endDateInput.disabled = !shouldEnable;
-    endDateInput.required = shouldEnable;
+  if (endDateRow) {
+    endDateRow.style.display = shouldShowEnd ? "" : "none";
+  }
 
-    if (!shouldShow) endDateInput.value = "";
+  // =========================
+  // START DATE
+  // =========================
+  const shouldEnableStart =
+    (isRelieverOrSeasonal || isPermanent) && isCorrectReason;
+
+  if (startDateInput) {
+    startDateInput.disabled = !shouldEnableStart;
+    startDateInput.required = shouldEnableStart;
+
+    if (!shouldShowStart) {
+      startDateInput.value = "";
+    }
+  }
+
+  // =========================
+  // END DATE
+  // =========================
+  const shouldEnableEnd = isRelieverOrSeasonal && isCorrectReason;
+
+  if (endDateInput) {
+    endDateInput.disabled = !shouldEnableEnd;
+    endDateInput.required = shouldEnableEnd;
+
+    // PERMANENT always disables end date
+    if (isPermanent) {
+      endDateInput.disabled = true;
+      endDateInput.required = false;
+    }
+
+    if (!shouldShowEnd) {
+      endDateInput.value = "";
+    }
   }
 }
 
