@@ -1,6 +1,6 @@
 $(document).ready(function () {
   var table = $("#promodizerTable").DataTable({
-    pageLength: 10,
+    pageLength: 25,
     responsive: true,
     dom: "lrtip",
     autoWidth: false, // 👈 IMPORTANT
