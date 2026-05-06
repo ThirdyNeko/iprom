@@ -162,6 +162,30 @@ function toggleStatusesEditable() {
   }
 }
 
+function toggleDatesEditable() {
+  if (!reasonSelect) return;
+
+  const reason = (reasonSelect.value || "").toUpperCase();
+
+  const startDateEl = document.getElementById("editStartDate");
+  const endDateEl = document.getElementById("editEndDate");
+
+  // =========================
+  // DEFAULT: lock both
+  // =========================
+  if (startDateEl) startDateEl.disabled = true;
+  if (endDateEl) endDateEl.disabled = true;
+
+  // =========================
+  // ENABLE BASED ON REASON
+  // =========================
+
+  if (reason === "CHANGE EMPLOYMENT STATUS") {
+    if (endDateEl) endDateEl.disabled = false;
+    if (startDateEl) startDateEl.disabled = false;
+  }
+}
+
 function toggleTransferEditable() {
   if (!reasonSelect) return;
 
@@ -689,6 +713,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
 
       toggleTransferEditable(); // 👈 ADD HERE
       toggleStatusesEditable();
+
       // =========================
       // EDITABLE FIELDS SAFE
       // =========================
@@ -731,6 +756,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       toggleDateReturned();
       toggleReasonDates();
       toggleEmploymentDates();
+      toggleDatesEditable();
     } catch (err) {
       console.error(err);
       Swal.fire({
@@ -1053,6 +1079,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     reasonSelect.addEventListener("change", toggleReasonDates);
     reasonSelect.addEventListener("change", toggleTransferEditable); // ✅ ADD THIS
     reasonSelect.addEventListener("change", toggleStatusesEditable); // ✅ ADD THIS
+    reasonSelect.addEventListener("change", toggleDatesEditable); // ✅ ADD THIS
   }
 
   if (employmentStatusSelect) {
