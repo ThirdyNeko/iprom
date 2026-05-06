@@ -25,6 +25,35 @@ $branch_brand_pairs = $pdo->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
+<style>
+/* =========================
+   ADD EMPLOYEE MODAL STYLING
+   ========================= */
+
+/* editable fields = yellow */
+#addEmployeeModal .form-control:not([readonly]):not([disabled]),
+#addEmployeeModal .form-select:not([disabled]) {
+    background-color: #fffbdf !important; /* editable */
+    opacity: 1;
+}
+
+/* readonly / disabled = grey */
+#addEmployeeModal .form-control[readonly],
+#addEmployeeModal .form-control[disabled],
+#addEmployeeModal .form-select[disabled] {
+    background-color: #e9ecef !important; /* disabled */
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+/* optional: nicer focus for editable fields */
+#addEmployeeModal .form-control:focus,
+#addEmployeeModal .form-select:focus {
+    box-shadow: 0 0 0 0.15rem rgba(255, 193, 7, 0.25);
+    border-color: #ffc107;
+}
+</style>
+
 <!-- ADD EMPLOYEE MODAL -->
 <div class="modal fade" id="addEmployeeModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
