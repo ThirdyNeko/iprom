@@ -160,16 +160,16 @@
                             <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
                         </tr>
                         <tr id="rowDateSeparated">
-                            <th>Date Separated</th>
+                            <th id="thDateSeparated">Date Separated</th>
                             <td><input type="date" id="editDateSeparated" class="form-control"></td>
-                            <th>Date Returned</th>
+                            <th id="thDateReturned">Date Returned</th>
                             <td><input type="date" id="editDateReturn" class="form-control"></td>
                         </tr>
 
                         <tr id="rowStartDate">
-                            <th>Start Date</th>
+                            <th id="thStartDate">Start</th>
                             <td><input type="date" id="editStartDate" class="form-control"></td>
-                            <th>End Date</th>
+                            <th id="thEndDate">End</th>
                             <td><input type="date" id="editEndDate" class="form-control"></td>
                         </tr>
 
@@ -214,3 +214,51 @@
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/history.js"></script>
 <script src="assets/js/edit_promodizer.js"></script>
+<script> 
+document.addEventListener("DOMContentLoaded", function () {
+    const reasonSelect = document.getElementById("editReasonUpdate");
+
+    const thDateSeparated = document.querySelector("#rowDateSeparated th:nth-child(1)");
+    const thDateReturned  = document.querySelector("#rowDateSeparated th:nth-child(3)");
+    const thStartDate     = document.querySelector("#rowStartDate th:nth-child(1)");
+    const thEndDate       = document.querySelector("#rowStartDate th:nth-child(3)");
+
+    reasonSelect.addEventListener("change", function () {
+        const value = this.value;
+
+        // RESET DEFAULTS FIRST
+        thDateSeparated.textContent = "Date Separated";
+        thDateReturned.textContent  = "Date Returned";
+        thStartDate.textContent     = "Start";
+        thEndDate.textContent       = "End";
+
+        // GROUP 1 → Effectivity Date
+        const effectivityReasons = [
+            "RESIGNED",
+            "PULL-OUT / END OF CONTRACT",
+            "BLOCKLISTED / AWOL / TERMINATED",
+        ];
+
+        if (effectivityReasons.includes(value)) {
+            thDateSeparated.textContent = "Effectivity Date";
+        }
+
+        // GROUP 2 → Leave (Start/End)
+        const leaveReasons = [
+            "EMERGENCY LEAVE",
+            "MATERNITY LEAVE"
+        ];
+
+        if (leaveReasons.includes(value)) {
+            thDateSeparated.textContent = "Start";
+            thDateReturned.textContent  = "End";
+        }
+
+        // GROUP 3 → Transfer (Transfer Date)
+        if (value === "TRANSFER BRANCH") {
+            thStartDate.textContent = "Effectivity Date";
+        }
+        
+    });
+});
+</script>
