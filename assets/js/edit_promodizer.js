@@ -805,6 +805,39 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     });
   }
 
+  const subStatus = (
+    document.getElementById("editSubStatus")?.value || ""
+  ).toUpperCase();
+
+  const rovingBranches = Array.from(
+    document.querySelectorAll("#editRovingContainer select"),
+  )
+    .map((s) => s.value)
+    .filter(Boolean);
+
+  const multiBrands = Array.from(
+    document.querySelectorAll("#editMultiBrandContainer select"),
+  )
+    .map((s) => s.value)
+    .filter(Boolean);
+
+  // 🚫 VALIDATION
+  if (subStatus === "MULTI BRANCH" && rovingBranches.length === 0) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Required",
+      text: "Please select at least one branch.",
+    });
+  }
+
+  if (subStatus === "MULTI BRAND" && multiBrands.length === 0) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Required",
+      text: "Please select at least one brand.",
+    });
+  }
+
   // =========================
   // BUILD FORM DATA
   // =========================
@@ -840,11 +873,6 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // =========================
   // MULTI BRANCH
   // =========================
-  const rovingBranches = Array.from(
-    document.querySelectorAll("#editRovingContainer select"),
-  )
-    .map((s) => s.value)
-    .filter(Boolean);
 
   rovingBranches.forEach((b) => {
     formData.append("roving_branches[]", b);
@@ -853,11 +881,6 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // =========================
   // MULTI BRAND
   // =========================
-  const multiBrands = Array.from(
-    document.querySelectorAll("#editMultiBrandContainer select"),
-  )
-    .map((s) => s.value)
-    .filter(Boolean);
 
   multiBrands.forEach((b) => {
     formData.append("multi_brands[]", b);
