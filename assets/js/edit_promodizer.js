@@ -935,9 +935,9 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     .then((res) => res.json())
     .then((data) => {
       if (data.status === "success") {
-        Swal.fire("Success", data.message, "success").then(() =>
-          location.reload(),
-        );
+        Swal.fire("Success", data.message, "success").then(() => {
+          window.location.href = "promodizers.php";
+        });
       } else {
         Swal.fire("Error", data.message, "error");
       }

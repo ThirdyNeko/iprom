@@ -247,9 +247,7 @@ try {
 
     echo json_encode([
         'status' => 'success',
-        'message' => 'Employee added successfully!',
-        'roving_group_id' => $roving_group_id,
-        'multi_brand_group_id' => $multi_brand_group_id
+        'message' => 'Employee added successfully!'
     ]);
 
 } catch (PDOException $e) {

@@ -662,7 +662,7 @@ try {
 
     echo json_encode([
         'status' => 'success',
-        'message' => 'Employee updated and duplicated successfully'
+        'message' => 'Employee record updated successfully!',
     ]);
     exit;
 
