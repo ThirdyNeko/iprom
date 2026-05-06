@@ -61,6 +61,11 @@ $cards = [
     transform: scale(1.05);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
+.chart-container {
+    position: relative;
+    height: 420px;   /* stable dashboard height */
+    width: 100%;
+}
 </style>
 
 <div class="content">
@@ -117,22 +122,24 @@ $cards = [
         <!-- CHARTS -->
         <div class="row g-3 mt-4">
 
-            <!-- Promodizer -->
-            <div class="col-md-6">
+            <div class="col-12 col-lg-6">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h6 class="text-muted">Promodiser Status</h6>
-                        <canvas id="promodizerChart"></canvas>
+                        <div class="chart-container">
+                            <canvas id="promodizerChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Assignment -->
-            <div class="col-md-6">
+            <div class="col-12 col-lg-6">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <h6 class="text-muted">Assignments Status</h6>
-                        <canvas id="assignmentChart"></canvas>
+                        <div class="chart-container">
+                            <canvas id="assignmentChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -156,7 +163,7 @@ new Chart(document.getElementById('promodizerChart'), {
             backgroundColor:['#198754','#dc3545']
         }]
     },
-    options:{plugins:{legend:{position:'bottom'}}}
+    options:{plugins:{legend:{position:'bottom'}}, responsive: true, maintainAspectRatio: false}
 });
 
 // ASSIGNMENT CHART
@@ -169,7 +176,7 @@ new Chart(document.getElementById('assignmentChart'), {
             backgroundColor:['#198754','#ffc107','#dc3545']
         }]
     },
-    options:{plugins:{legend:{position:'bottom'}}}
+    options:{plugins:{legend:{position:'bottom'}}, responsive: true, maintainAspectRatio: false}
 });
 </script>
 
