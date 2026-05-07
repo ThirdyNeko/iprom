@@ -126,6 +126,7 @@
                                     <option value="MULTI BRANCH">MULTI BRANCH</option>
                                     <option value="MULTI BRAND">MULTI BRAND</option>
                                     <option value="STATIONARY">STATIONARY</option>
+                                    <option value="HYBRID">HYBRID</option>
                                 </select>
                             </td>                            
                         </tr>
