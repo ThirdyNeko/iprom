@@ -260,15 +260,33 @@ function safeArray(value) {
 function syncMultiUI(status) {
   const value = (status || "").toUpperCase();
 
+  // hide first
   if (editRovingField) editRovingField.classList.add("d-none");
   if (editMultiBrandField) editMultiBrandField.classList.add("d-none");
 
+  // MULTI BRANCH
   if (value === "MULTI BRANCH") {
-    if (editRovingField) editRovingField.classList.remove("d-none");
+    if (editRovingField) {
+      editRovingField.classList.remove("d-none");
+    }
   }
 
+  // MULTI BRAND
   if (value === "MULTI BRAND") {
-    if (editMultiBrandField) editMultiBrandField.classList.remove("d-none");
+    if (editMultiBrandField) {
+      editMultiBrandField.classList.remove("d-none");
+    }
+  }
+
+  // HYBRID = show both
+  if (value === "HYBRID") {
+    if (editRovingField) {
+      editRovingField.classList.remove("d-none");
+    }
+
+    if (editMultiBrandField) {
+      editMultiBrandField.classList.remove("d-none");
+    }
   }
 }
 
@@ -280,6 +298,7 @@ function toggleSubStatusOptions() {
   const multiBranchOpt = editSubStatus.querySelector(
     'option[value="MULTI BRANCH"]',
   );
+
   const multiBrandOpt = editSubStatus.querySelector(
     'option[value="MULTI BRAND"]',
   );
@@ -295,6 +314,8 @@ function toggleSubStatusOptions() {
   if (value === "MULTI BRANCH" && multiBrandOpt) {
     multiBrandOpt.disabled = true;
   }
+
+  // HYBRID disables neither
 }
 
 // =========================
@@ -541,12 +562,21 @@ function collectAssignments() {
     removedBrands: [],
   };
 }
+function resetEditModal() {
+  editRovingContainer.innerHTML = "";
+  editMultiBrandContainer.innerHTML = "";
+
+  const selects = modalEl.querySelectorAll("select");
+  selects.forEach((s) => (s.value = ""));
+}
 
 // =========================
 // POPULATE MODAL
 // =========================
 document.querySelectorAll(".clickable-row").forEach((row) => {
   row.addEventListener("click", async () => {
+    resetEditModal();
+
     const id = row.dataset.id;
     const modal = new bootstrap.Modal(modalEl);
 
@@ -711,12 +741,12 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
 
       // render AFTER UI sync
       requestAnimationFrame(() => {
-        if (subStatus === "MULTI BRANCH") {
+        if (subStatus === "MULTI BRANCH" || subStatus === "HYBRID") {
           populateEditRoving(branches, employee.brand, employee.branch);
           updateBranchOptions();
         }
 
-        if (subStatus === "MULTI BRAND") {
+        if (subStatus === "MULTI BRAND" || subStatus === "HYBRID") {
           populateEditBrands(brands, employee.branch, employee.brand);
           updateBrandOptions();
         }
@@ -872,13 +902,13 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   ).toUpperCase();
 
   const rovingBranches = Array.from(
-    document.querySelectorAll("#editRovingContainer select"),
+    modalEl.querySelectorAll("#editRovingContainer select"),
   )
     .map((s) => s.value)
     .filter(Boolean);
 
   const multiBrands = Array.from(
-    document.querySelectorAll("#editMultiBrandContainer select"),
+    modalEl.querySelectorAll("#editMultiBrandContainer select"),
   )
     .map((s) => s.value)
     .filter(Boolean);
@@ -1162,17 +1192,22 @@ document.addEventListener("DOMContentLoaded", async function () {
     editSubStatus.addEventListener("change", () => {
       const value = (editSubStatus.value || "").toUpperCase();
 
-      // ✅ ADD THIS
       toggleSubStatusOptions();
-
       syncMultiUI(value);
 
-      if (value === "MULTI BRANCH") {
+      // ONLY initialize if container is empty
+      if (
+        (value === "MULTI BRANCH" || value === "HYBRID") &&
+        editRovingContainer.children.length === 0
+      ) {
         populateEditRoving([""]);
         updateBranchOptions();
       }
 
-      if (value === "MULTI BRAND") {
+      if (
+        (value === "MULTI BRAND" || value === "HYBRID") &&
+        editMultiBrandContainer.children.length === 0
+      ) {
         populateEditBrands([""]);
         updateBrandOptions();
       }
@@ -1255,5 +1290,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     updateBrandOptions();
+  });
+
+  modalEl.addEventListener("hidden.bs.modal", () => {
+    editRovingContainer.innerHTML = "";
+    editMultiBrandContainer.innerHTML = "";
   });
 });
