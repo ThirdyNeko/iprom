@@ -422,37 +422,44 @@ function populateEditRoving(
 ) {
   if (!editRovingContainer) return;
 
-  let list = safeArray(branches);
+  let list = [...new Set(safeArray(branches))]; // remove duplicates immediately
 
-  // ❗ STRICT: only rows with this brand AND available
   const validBranches = branchBrandPairs
     .filter(
       (p) =>
         p.brand_name === currentBrand &&
-        p.branch_name !== baseBranch && // ❌ exclude itself
+        p.branch_name !== baseBranch &&
         (p.assigned_count < p.required_count || list.includes(p.branch_name)),
     )
     .map((p) => p.branch_name);
 
   const uniqueBranches = [...new Set(validBranches)];
 
-  // remove already selected
   const finalAvailable = uniqueBranches.filter((b) => !list.includes(b));
 
-  // 🚫 nothing valid → show nothing
+  // 🚫 nothing usable
   if (list.length === 0 && finalAvailable.length === 0) {
     editRovingContainer.innerHTML = "";
     return;
   }
 
-  // only allow empty row if something valid exists
+  // only allow one empty row if there are available options
   if (list.length === 0 && finalAvailable.length > 0) {
     list = [""];
   }
 
+  // 🔥 FINAL CLEAN: remove empty rows that should NOT exist
+  list = list.filter((b, i) => {
+    if (b !== "") return true;
+    return i === 0; // only keep first empty row
+  });
+
   editRovingContainer.innerHTML = list
     .map((b, index) => {
       const isExisting = b !== "";
+
+      // ❌ extra safety: skip invalid existing values
+      if (isExisting && !uniqueBranches.includes(b)) return "";
 
       return `
         <div class="d-flex gap-2 mb-2 align-items-center roving-row">
@@ -489,14 +496,13 @@ function populateEditBrands(
 ) {
   if (!editMultiBrandContainer) return;
 
-  let list = safeArray(brands);
+  let list = [...new Set(safeArray(brands))]; // remove duplicates
 
-  // ❗ STRICT: only rows with this branch AND available
   const validBrands = branchBrandPairs
     .filter(
       (p) =>
         p.branch_name === currentBranch &&
-        p.brand_name !== baseBrand && // ❌ exclude itself
+        p.brand_name !== baseBrand &&
         (p.assigned_count < p.required_count || list.includes(p.brand_name)),
     )
     .map((p) => p.brand_name);
@@ -514,9 +520,17 @@ function populateEditBrands(
     list = [""];
   }
 
+  // 🔥 CLEAN empty/invalid rows
+  list = list.filter((b, i) => {
+    if (b !== "") return true;
+    return i === 0;
+  });
+
   editMultiBrandContainer.innerHTML = list
     .map((b, index) => {
       const isExisting = b !== "";
+
+      if (isExisting && !uniqueBrands.includes(b)) return "";
 
       return `
         <div class="d-flex gap-2 mb-2 align-items-center brand-row">

@@ -295,20 +295,33 @@ if (in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
 // =========================
 // AUTO CREATE GROUP IDS (FIXED - STRING SAFE)
 // =========================
+$isHybrid = strtoupper(trim($sub_status)) === 'HYBRID';
 $isMultiBranch = strtoupper(trim($sub_status)) === 'MULTI BRANCH';
 $isMultiBrand  = strtoupper(trim($sub_status)) === 'MULTI BRAND';
 
 if (
     $reason_for_update === 'ADD BRANCH/BRAND' ||
-    ($reason_for_update === 'CHANGE SUB STATUS' && ($isMultiBranch || $isMultiBrand))
+    $reason_for_update === 'CHANGE SUB STATUS'
 ) {
 
-    // ROVING GROUP
+    // HYBRID = must have both groups
+    if ($isHybrid) {
+
+        if (empty($roving_group_id)) {
+            $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100,999);
+        }
+
+        if (empty($multi_brand_group_id)) {
+            $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100,999);
+        }
+    }
+
+    // MULTI BRANCH only
     if ($isMultiBranch && empty($roving_group_id)) {
         $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100,999);
     }
 
-    // MULTI BRAND GROUP
+    // MULTI BRAND only
     if ($isMultiBrand && empty($multi_brand_group_id)) {
         $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100,999);
     }
