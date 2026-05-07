@@ -669,6 +669,85 @@ try {
                 $hasInserted = true;
             }
         }
+
+        // =========================
+        // HYBRID DUPLICATION (BRANCH × BRAND)
+        // =========================
+        $isHybrid = strtoupper(trim($sub_status)) === 'HYBRID';
+
+        if (
+            $isHybrid &&
+            !empty($rovingBranches) &&
+            !empty($multiBrands)
+        ) {
+
+            $rovingBranches = array_filter($rovingBranches);
+            $multiBrands    = array_filter($multiBrands);
+
+            foreach ($rovingBranches as $branchItem) {
+                foreach ($multiBrands as $brandItem) {
+
+                    // Prevent duplicate active record
+                    $check = $pdo->prepare("
+                        SELECT COUNT(*) 
+                        FROM employee_info
+                        WHERE first_name = ?
+                        AND last_name = ?
+                        AND branch = ?
+                        AND brand = ?
+                        AND status = 'ACTIVE'
+                        AND roving_group_id = ?
+                        AND multi_brand_group_id = ?
+                    ");
+
+                    $check->execute([
+                        $base['first_name'],
+                        $base['last_name'],
+                        $branchItem,
+                        $brandItem,
+                        $roving_group_id,
+                        $multi_brand_group_id
+                    ]);
+
+                    if ($check->fetchColumn() > 0) {
+                        continue;
+                    }
+
+                    $stmtInsert->execute([
+                        ':employee_id' => $_POST['employee_id'] ?? $id,
+                        ':first_name' => $base['first_name'],
+                        ':last_name'  => $base['last_name'],
+                        ':branch'     => $branchItem,
+                        ':brand'      => $brandItem,
+                        ':assignment_date' => date('Y-m-d'),
+                        ':last_assigned_by' => $last_assigned_by,
+                        ':status' => $status,
+                        ':date_of_return' => $date_of_return,
+                        ':date_separated' => $date_separated,
+                        ':employment_status' => $employment_status,
+                        ':remarks' => $remarks,
+                        ':last_updated_by' => $last_updated_by,
+                        ':reason_for_update' => $reason_for_update,
+                        ':date_hired' => $base['date_hired'],
+                        ':start_date' => $start_date,
+                        ':end_date' => $end_date,
+                        ':roving_group_id' => $roving_group_id,
+                        ':sub_status' => $sub_status,
+                        ':multi_brand_group_id' => $multi_brand_group_id,
+                        ':gender' => $base['gender'],
+                        ':birthday' => $base['birthday'],
+                        ':hidden' => $hidden
+                    ]);
+
+                    $newId = $pdo->lastInsertId();
+                    if ($newId) {
+                        $insertedIds[] = $newId;
+                    }
+
+                    $hasInserted = true;
+                }
+            }
+        }
     }
 
     $pdo->commit();
