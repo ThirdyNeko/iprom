@@ -299,6 +299,16 @@ if (in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
     }
 }
 
+$stmt = $pdo->prepare("
+    SELECT sub_status
+    FROM employee_info
+    WHERE id = ?
+");
+
+$stmt->execute([$id]);
+
+$old_sub_status = $stmt->fetchColumn();
+
 function validateAssignmentSlot($pdo, $branch, $brand) {
 
     if (!$branch || !$brand) {
@@ -372,6 +382,7 @@ if (
 // MULTI BRANCH validation
 if (
     strtoupper(trim($sub_status)) === 'MULTI BRANCH' &&
+    $old_sub_status !== 'HYBRID' &&
     !empty($rovingBranches)
 ) {
 
@@ -391,6 +402,7 @@ if (
 // MULTI BRAND validation
 if (
     strtoupper(trim($sub_status)) === 'MULTI BRAND' &&
+    $old_sub_status !== 'HYBRID' &&
     !empty($multiBrands)
 ) {
 
@@ -654,7 +666,7 @@ try {
         // =========================
         // BRANCH DUPLICATION
         // =========================
-        if (!empty($rovingBranches)) {
+        if (!empty($rovingBranches) && ($sub_status === 'MULTI BRANCH' || $sub_status === 'HYBRID') ) {
 
             $rovingBranches = array_filter($rovingBranches);
 
@@ -721,7 +733,7 @@ try {
         // =========================
         // BRAND DUPLICATION
         // =========================
-        if (!empty($multiBrands)) {
+        if (!empty($multiBrands) && ($sub_status === 'MULTI BRAND' || $sub_status === 'HYBRID') ) {
 
             $multiBrands = array_filter($multiBrands);
 
@@ -791,7 +803,8 @@ try {
 
         if (
             !empty($rovingBranches) &&
-            !empty($multiBrands)
+            !empty($multiBrands) &&
+            strtoupper(trim($sub_status)) === 'HYBRID'
         ) {
 
             $rovingBranches = array_filter($rovingBranches);
