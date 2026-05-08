@@ -58,6 +58,48 @@ $multi_brands = array_unique(array_filter($multi_brands, fn($b) => $b !== $brand
 // =========================
 $multi_brand_group_id = null;
 
+function validateAssignmentSlot($pdo, $branch, $brand) {
+
+    if (!$branch || !$brand) {
+        return [
+            'valid' => false,
+            'message' => 'Invalid branch/brand combination.'
+        ];
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT required_count, assigned_count
+        FROM assignment
+        WHERE branch_name = ?
+        AND brand_name = ?
+    ");
+
+    $stmt->execute([$branch, $brand]);
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // assignment setup missing
+    if (!$row) {
+        return [
+            'valid' => false,
+            'message' => "No assignment setup found for {$branch} - {$brand}."
+        ];
+    }
+
+    // slot full
+    if ((int)$row['assigned_count'] >= (int)$row['required_count']) {
+        return [
+            'valid' => false,
+            'message' => "Slot is already full for {$branch} - {$brand}."
+        ];
+    }
+
+    return [
+        'valid' => true,
+        'message' => null
+    ];
+}
+
 if ($sub_status === 'MULTI BRAND' || $sub_status === 'HYBRID') {
     $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100, 999);
 }
@@ -76,6 +118,99 @@ if ($birthday && $birthday > date('Y-m-d')) {
         'message' => 'Birthday cannot be in the future.'
     ]);
     exit;
+}
+
+// =========================
+// ASSIGNMENT VALIDATION
+// =========================
+
+// MAIN RECORD
+if ($branch && $brand) {
+
+    $validation = validateAssignmentSlot(
+        $pdo,
+        $branch,
+        $brand
+    );
+
+    if (!$validation['valid']) {
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => $validation['message']
+        ]);
+
+        exit;
+    }
+}
+
+// ROVING BRANCHES
+foreach ($roving_branches as $rBranch) {
+
+    $validation = validateAssignmentSlot(
+        $pdo,
+        $rBranch,
+        $brand
+    );
+
+    if (!$validation['valid']) {
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => $validation['message']
+        ]);
+
+        exit;
+    }
+}
+
+// MULTI BRANDS
+foreach ($multi_brands as $mBrand) {
+
+    $validation = validateAssignmentSlot(
+        $pdo,
+        $branch,
+        $mBrand
+    );
+
+    if (!$validation['valid']) {
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => $validation['message']
+        ]);
+
+        exit;
+    }
+}
+
+// HYBRID COMBINATIONS
+if (
+    strtoupper(trim($sub_status)) === 'HYBRID' &&
+    !empty($roving_branches) &&
+    !empty($multi_brands)
+) {
+
+    foreach ($roving_branches as $rBranch) {
+        foreach ($multi_brands as $mBrand) {
+
+            $validation = validateAssignmentSlot(
+                $pdo,
+                $rBranch,
+                $mBrand
+            );
+
+            if (!$validation['valid']) {
+
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => $validation['message']
+                ]);
+
+                exit;
+            }
+        }
+    }
 }
 
 try {

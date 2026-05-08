@@ -282,13 +282,128 @@ if ($reason_for_update === 'EMERGENCY LEAVE' && $date_of_return) {
     }
 }
 
+// =========================
+// ASSIGNMENT SLOT VALIDATION
+// =========================
+
+// single transfer/reassign
 if (in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
+
     if (!isComboAvailable($pdo, $branch, $brand)) {
+
         echo json_encode([
             "status" => "error",
-            "message" => "Slot is already full."
+            "message" => "Slot is already full for {$branch} - {$brand}."
         ]);
         exit;
+    }
+}
+
+function validateAssignmentSlot($pdo, $branch, $brand) {
+
+    if (!$branch || !$brand) {
+        return [
+            'valid' => false,
+            'message' => 'Invalid branch/brand combination.'
+        ];
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT required_count, assigned_count
+        FROM assignment
+        WHERE branch_name = ?
+        AND brand_name = ?
+    ");
+
+    $stmt->execute([$branch, $brand]);
+
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // assignment does not exist
+    if (!$row) {
+        return [
+            'valid' => false,
+            'message' => "No assignment setup for {$branch} - {$brand}."
+        ];
+    }
+
+    // slot full
+    if ($row['assigned_count'] >= $row['required_count']) {
+        return [
+            'valid' => false,
+            'message' => "Slot is already full for {$branch} - {$brand}."
+        ];
+    }
+
+    return [
+        'valid' => true,
+        'message' => null
+    ];
+}
+// HYBRID validation
+if (
+    strtoupper(trim($sub_status)) === 'HYBRID' &&
+    !empty($rovingBranches) &&
+    !empty($multiBrands)
+) {
+
+    foreach ($rovingBranches as $branchItem) {
+        foreach ($multiBrands as $brandItem) {
+
+            $validation = validateAssignmentSlot(
+                $pdo,
+                $branchItem,
+                $brandItem
+            );
+
+            if (!$validation['valid']) {
+
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => $validation['message']
+                ]);
+
+                exit;
+            }
+        }
+    }
+}
+
+// MULTI BRANCH validation
+if (
+    strtoupper(trim($sub_status)) === 'MULTI BRANCH' &&
+    !empty($rovingBranches)
+) {
+
+    foreach ($rovingBranches as $branchItem) {
+
+        if (!isComboAvailable($pdo, $branchItem, $brand)) {
+
+            echo json_encode([
+                "status" => "error",
+                "message" => "Slot is already full for {$branchItem} - {$brand}."
+            ]);
+            exit;
+        }
+    }
+}
+
+// MULTI BRAND validation
+if (
+    strtoupper(trim($sub_status)) === 'MULTI BRAND' &&
+    !empty($multiBrands)
+) {
+
+    foreach ($multiBrands as $brandItem) {
+
+        if (!isComboAvailable($pdo, $branch, $brandItem)) {
+
+            echo json_encode([
+                "status" => "error",
+                "message" => "Slot is already full for {$branch} - {$brandItem}."
+            ]);
+            exit;
+        }
     }
 }
 
