@@ -788,10 +788,8 @@ try {
         // =========================
         // HYBRID DUPLICATION (BRANCH × BRAND)
         // =========================
-        $isHybrid = strtoupper(trim($sub_status)) === 'HYBRID';
 
         if (
-            $isHybrid &&
             !empty($rovingBranches) &&
             !empty($multiBrands)
         ) {
