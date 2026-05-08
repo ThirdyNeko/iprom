@@ -77,13 +77,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // ✅ NEW: Show roving when MULTI BRANCH
-    if (sub === "MULTI BRANCH") {
+    if (sub === "MULTI BRANCH" || sub === "HYBRID") {
       rovingField.classList.remove("d-none");
       rovingField
         .querySelectorAll(".roving-select")
         .forEach((s) => (s.required = true));
     }
-    if (sub === "MULTI BRAND") {
+    if (sub === "MULTI BRAND" || sub === "HYBRID") {
       multiBrandField.classList.remove("d-none");
       multiBrandField
         .querySelectorAll(".multi-brand-select")

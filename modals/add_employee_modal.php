@@ -170,6 +170,7 @@ $branch_brand_pairs = $pdo->query("
                                     <option value="MULTI BRAND">MULTI BRAND</option>
                                     <option value="MULTI BRANCH">MULTI BRANCH</option>
                                     <option value="STATIONARY">STATIONARY</option>
+                                    <option value="HYBRID">HYBRID</option>
                                 </select>
                             </div>
 

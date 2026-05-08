@@ -43,7 +43,7 @@ $roving_branches = array_unique(array_filter($roving_branches, fn($b) => $b !== 
 // =========================
 $roving_group_id = null;
 
-if ($sub_status === 'MULTI BRANCH') { // ✅ FIXED
+if ($sub_status === 'MULTI BRANCH' || $sub_status === 'HYBRID') { // ✅ FIXED
     $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100, 999);
 }
 
@@ -58,7 +58,7 @@ $multi_brands = array_unique(array_filter($multi_brands, fn($b) => $b !== $brand
 // =========================
 $multi_brand_group_id = null;
 
-if ($sub_status === 'MULTI BRAND') {
+if ($sub_status === 'MULTI BRAND' || $sub_status === 'HYBRID') {
     $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100, 999);
 }
 
@@ -160,6 +160,7 @@ try {
                 @assigned_by = :assigned_by,
                 @employment_status = :employment_status,
                 @sub_status = :sub_status,
+                @multi_brand_group_id = :multi_brand_group_id,
                 @roving_group_id = :roving_group_id,
                 @remarks = :remarks,
                 @date_hired = :date_hired,
@@ -182,6 +183,7 @@ try {
             ':assigned_by'       => $assigned_by,
             ':employment_status' => $employment_status,
             ':sub_status'        => $sub_status,
+            ':multi_brand_group_id'  => $multi_brand_group_id,
             ':roving_group_id'   => $roving_group_id,
             ':remarks'           => $remarks,
             ':date_hired'        => $date_hired,
@@ -212,6 +214,7 @@ try {
                 @employment_status = :employment_status,
                 @sub_status = :sub_status,
                 @multi_brand_group_id = :multi_brand_group_id,
+                @roving_group_id = :roving_group_id,
                 @remarks = :remarks,
                 @date_hired = :date_hired,
                 @start_date = :start_date,
@@ -234,6 +237,7 @@ try {
             ':employment_status'     => $employment_status,
             ':sub_status'            => $sub_status,
             ':multi_brand_group_id'  => $multi_brand_group_id,
+            ':roving_group_id'       => $roving_group_id,
             ':remarks'               => $remarks,
             ':date_hired'            => $date_hired,
             ':start_date'            => $start_date,
@@ -243,6 +247,82 @@ try {
             ':employee_id'           => $employee_id,
             ':hidden'                => $hidden
         ]);
+    }
+    
+    // =========================
+    // HYBRID INSERTS
+    // (ROVING BRANCH × MULTI BRAND)
+    // =========================
+    $isHybrid = strtoupper(trim($sub_status)) === 'HYBRID';
+
+    if (
+        $isHybrid &&
+        !empty($roving_branches) &&
+        !empty($multi_brands)
+    ) {
+
+        $roving_branches = array_unique(array_filter($roving_branches));
+        $multi_brands    = array_unique(array_filter($multi_brands));
+
+        foreach ($roving_branches as $rBranch) {
+            foreach ($multi_brands as $mBrand) {
+
+                // skip if same as main record
+                if (
+                    strtoupper(trim($rBranch)) === strtoupper(trim($branch)) &&
+                    strtoupper(trim($mBrand)) === strtoupper(trim($brand))
+                ) {
+                    continue;
+                }
+
+                $stmt = $pdo->prepare("
+                    EXEC add_employee
+                        @first_name = :first_name,
+                        @last_name = :last_name,
+                        @middle_name = :middle_name,
+                        @suffix = :suffix,
+                        @branch = :branch,
+                        @brand = :brand,
+                        @status = :status,
+                        @assigned_by = :assigned_by,
+                        @employment_status = :employment_status,
+                        @sub_status = :sub_status,
+                        @multi_brand_group_id = :multi_brand_group_id,
+                        @roving_group_id = :roving_group_id,
+                        @remarks = :remarks,
+                        @date_hired = :date_hired,
+                        @start_date = :start_date,
+                        @end_date = :end_date,
+                        @gender = :gender,
+                        @birthday = :birthday,
+                        @employee_id = :employee_id,
+                        @hidden = :hidden
+                ");
+
+                $stmt->execute([
+                    ':first_name'            => $first_name,
+                    ':last_name'             => $last_name,
+                    ':middle_name'           => $middle_name,
+                    ':suffix'                => $suffix,
+                    ':branch'                => $rBranch,
+                    ':brand'                 => $mBrand,
+                    ':status'                => $status,
+                    ':assigned_by'           => $assigned_by,
+                    ':employment_status'     => $employment_status,
+                    ':sub_status'            => $sub_status,
+                    ':multi_brand_group_id'  => $multi_brand_group_id,
+                    ':roving_group_id'       => $roving_group_id,
+                    ':remarks'               => $remarks,
+                    ':date_hired'            => $date_hired,
+                    ':start_date'            => $start_date,
+                    ':end_date'              => $end_date,
+                    ':gender'                => $gender,
+                    ':birthday'              => $birthday,
+                    ':employee_id'           => $employee_id,
+                    ':hidden'                => $hidden
+                ]);
+            }
+        }
     }
 
     echo json_encode([
