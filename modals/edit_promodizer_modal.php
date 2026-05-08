@@ -217,7 +217,7 @@
 <!-- SweetAlert2 -->
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/history.js"></script>
-<script src="assets/js/edit_promodizer.js"></script>
+<script src="assets/js/edit_employee/edit_promodizer.js"></script>
 <script> 
 document.addEventListener("DOMContentLoaded", function () {
     const reasonSelect = document.getElementById("editReasonUpdate");
