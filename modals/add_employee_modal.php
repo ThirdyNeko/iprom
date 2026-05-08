@@ -228,4 +228,4 @@ $branch_brand_pairs = $pdo->query("
 <script>
     window.branchBrandMapping = <?= json_encode($branch_brand_pairs) ?>;
 </script>
-<script src="assets/js/add_employee.js"></script>
+<script src="assets/js/employee/add_employee.js"></script>

@@ -103,4 +103,4 @@ $pdo = qa_db();
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 
-<script src="assets/js/merge_employees.js"></script>
+<script src="assets/js/merge/merge_employees.js"></script>

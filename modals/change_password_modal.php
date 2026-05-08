@@ -51,4 +51,4 @@
 
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
-<script src="assets/js/change_password.js"></script>
+<script src="assets/js/password/change_password.js"></script>

@@ -101,5 +101,5 @@
 
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
-<script src="assets/js/assignment_modal.js"></script>
+<script src="assets/js/assignment/assignment_modal.js"></script>
 

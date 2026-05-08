@@ -60,4 +60,4 @@ try {
 </div>
 
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
-<script src="assets/js/add_plantilla.js"></script>
+<script src="assets/js/assignment/add_plantilla.js"></script>

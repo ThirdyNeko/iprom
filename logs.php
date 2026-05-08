@@ -110,4 +110,4 @@ $pdo = qa_db();
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
-<script src="assets/js/logs.js"></script>
+<script src="assets/js/log/logs.js"></script>
