@@ -175,6 +175,24 @@ function toggleDateSeparated() {
   }
 }
 
+function toggleAddButtons() {
+  const selectedReason = cleanValue(reasonSelect?.value).toUpperCase();
+
+  const canAdd =
+    selectedReason === "ADD BRANCH/BRAND" ||
+    selectedReason === "CHANGE SUB STATUS";
+
+  // BRANCH BUTTONS
+  document.querySelectorAll(".btn-add-branch").forEach((btn) => {
+    btn.style.display = canAdd ? "" : "none";
+  });
+
+  // BRAND BUTTONS
+  document.querySelectorAll(".btn-add-brand").forEach((btn) => {
+    btn.style.display = canAdd ? "" : "none";
+  });
+}
+
 function toggleStatusesEditable() {
   if (!reasonSelect) return;
 
@@ -423,6 +441,11 @@ function populateEditRoving(
   if (!editRovingContainer) return;
 
   let list = [...new Set(safeArray(branches))]; // remove duplicates immediately
+  const selectedReason = cleanValue(reasonSelect?.value).toUpperCase();
+
+  const canAddBranch =
+    selectedReason === "ADD BRANCH/BRAND" ||
+    selectedReason === "CHANGE SUB STATUS";
 
   const validBranches = branchBrandPairs
     .filter(
@@ -476,7 +499,12 @@ function populateEditRoving(
                   .join("")}
             </select>
 
-            <button type="button" class="btn btn-success btn-add-branch">+</button>
+            <button
+                type="button"
+                class="btn btn-success btn-add-branch"
+                style="${canAddBranch ? "" : "display:none;"}">
+                +
+            </button>
 
             <button type="button"
                 class="btn btn-danger btn-remove-branch"
@@ -497,6 +525,12 @@ function populateEditBrands(
   if (!editMultiBrandContainer) return;
 
   let list = [...new Set(safeArray(brands))]; // remove duplicates
+
+  const selectedReason = cleanValue(reasonSelect?.value).toUpperCase();
+
+  const canAddBrand =
+    selectedReason === "ADD BRANCH/BRAND" ||
+    selectedReason === "CHANGE SUB STATUS";
 
   const validBrands = branchBrandPairs
     .filter(
@@ -547,7 +581,12 @@ function populateEditBrands(
                   .join("")}
             </select>
 
-            <button type="button" class="btn btn-success btn-add-brand">+</button>
+            <button
+                type="button"
+                class="btn btn-success btn-add-brand"
+                style="${canAddBrand ? "" : "display:none;"}">
+                +
+            </button>
 
             <button type="button"
                 class="btn btn-danger btn-remove-brand"
@@ -814,6 +853,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       toggleEmploymentDates();
       toggleTransferEditable(); // 👈 ADD HERE
       toggleStatusesEditable();
+      toggleAddButtons();
     } catch (err) {
       console.error(err);
       Swal.fire({
@@ -1136,6 +1176,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     reasonSelect.addEventListener("change", toggleReasonDates);
     reasonSelect.addEventListener("change", toggleTransferEditable); // ✅ ADD THIS
     reasonSelect.addEventListener("change", toggleStatusesEditable); // ✅ ADD THIS
+    reasonSelect.addEventListener("change", toggleAddButtons);
   }
 
   if (employmentStatusSelect) {
