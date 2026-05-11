@@ -260,7 +260,7 @@ if ($isInactiveReason) {
     $hidden = ($start > $today); // future start = hidden
 
 } else if (
-    in_array(strtoupper(trim($sub_status)), ['MULTI BRANCH', 'MULTI BRAND']) &&
+    in_array(strtoupper(trim($sub_status)), ['MULTI BRANCH', 'MULTI BRAND', 'HYBRID', 'STATIONARY']) &&
     $start_date
 ) {
 
