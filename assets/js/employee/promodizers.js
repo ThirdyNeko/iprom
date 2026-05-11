@@ -4,6 +4,7 @@ $(document).ready(function () {
     responsive: true,
     dom: "lrtip",
     autoWidth: false, // 👈 IMPORTANT
+    ordering: false,
 
     columnDefs: [
       { targets: 0, width: "20%" }, // Name (bigger)

@@ -14,6 +14,7 @@ $(document).ready(function () {
   window.assignmentTable = $("#assignmentTable").DataTable({
     processing: true,
     serverSide: true,
+    ordering: false,
     ajax: {
       url: "functions/fetch_assignments.php",
       type: "POST",
