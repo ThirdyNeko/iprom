@@ -20,6 +20,11 @@ $pdo = qa_db();
     #logsTable.table-hover tbody tr:hover > td {
         background-color: #e6f0ff !important;
     }
+    #logsTable th
+    {
+        text-align: center;
+        vertical-align: middle;
+    }
 
     #logsTable th:last-child,
     #logsTable td:last-child {

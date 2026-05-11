@@ -22,11 +22,11 @@ $(document).ready(function () {
     order: [[4, "desc"]],
 
     columnDefs: [
-      { width: "15%", targets: 0 }, // User
-      { width: "20%", targets: 1 }, // Reason
+      { width: "10%", targets: 0 }, // User
+      { width: "35%", targets: 1 }, // Reason
       { width: "35%", targets: 2 }, // 🔥 Remarks (bigger)
-      { width: "15%", targets: 3 }, // Employee
-      { width: "15%", targets: 4 }, // Date
+      { width: "10%", targets: 3 }, // Employee
+      { width: "10%", targets: 4 }, // Date
     ],
   });
 
