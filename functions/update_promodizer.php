@@ -501,7 +501,10 @@ try {
 
     $existingBrands = $stmt->fetchAll(PDO::FETCH_COLUMN);
     $newBrands = array_diff($multiBrands, $existingBrands);
-
+    
+    $removedBranches = array_unique($existingBranches ?? []);
+    $removedBrands   = array_unique($existingBrands ?? []);
+    
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
@@ -519,6 +522,8 @@ try {
             @multi_brand_group_id = :multi_brand_group_id,
             @roving_branches = :roving_branches,
             @multi_brands = :multi_brands,
+            @removedBranch = :removedBranch,
+            @removedBrand = :removedBrand,
             @branch = :branch,
             @brand = :brand
     ");
@@ -539,6 +544,13 @@ try {
         ':multi_brand_group_id' => $multi_brand_group_id,
         ':roving_branches' => !empty($newBranches) ? implode(',', $newBranches) : null,
         ':multi_brands'    => !empty($newBrands) ? implode(',', $newBrands) : null,
+        ':removedBranch' => !empty($removedBranches)
+            ? implode(',', $removedBranches)
+            : null,
+
+        ':removedBrand' => !empty($removedBrands)
+            ? implode(',', $removedBrands)
+            : null,
         ':branch' => $branchParam,
         ':brand' => $brandParam
     ]);
