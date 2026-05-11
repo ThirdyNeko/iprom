@@ -3,7 +3,7 @@
     <!-- Logo / Title -->
     <div class="d-flex align-items-center justify-content-center gap-2 mb-4">
         <img src="assets/icons/LOGO ONLY RED.png" alt="iProm Logo" class="sidebar-logo">
-        <h5 class="m-0">iProm</h5>
+        <h5 class="m-0" style="transform: translateY(2px);">iProm</h5>
     </div>
 
     <!-- Menu -->

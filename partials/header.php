@@ -123,6 +123,13 @@ body {
 /* LOGOUT BUTTON */
 .sidebar .btn-danger {
     border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.sidebar .btn-danger:hover {
+    background-color: #b91c1c;
+    transform: translateX(2px);
+    color: #fff;
 }
 
 /* COLLAPSED MODE */
@@ -140,6 +147,14 @@ body {
 .collapsed .sidebar-text,
 .collapsed .sidebar h5 {
     display: none;
+}
+
+.sidebar .btn-danger:hover .sidebar-text {
+    color: #fff !important;
+}
+
+.sidebar .sidebar-text {
+    transition: color 0.2s ease;
 }
 
 /* CENTER ICONS */
