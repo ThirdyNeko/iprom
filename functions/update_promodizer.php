@@ -227,7 +227,6 @@ $inactiveReasons = [
 $isInactiveReason = in_array($reason_for_update, $inactiveReasons);
 
 $dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
-$hidden = false;
 $today = strtotime(date('Y-m-d'));
 $hidden = false;
 
