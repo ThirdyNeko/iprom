@@ -617,8 +617,9 @@ try {
     // ONLY RUN IF ADD BRANCH/BRAND
     // =========================
     if (
-        $reason_for_update === 'ADD BRANCH/BRAND' ||
-        ($reason_for_update === 'CHANGE SUB STATUS' && $sub_status !== 'STATIONARY')
+        ($reason_for_update === 'ADD BRANCH/BRAND' ||
+        ($reason_for_update === 'CHANGE SUB STATUS' && $sub_status !== 'STATIONARY')) &&
+        $start_date <= $today
     ) {
 
         // =========================
