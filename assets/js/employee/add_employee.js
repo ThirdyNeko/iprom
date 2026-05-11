@@ -646,6 +646,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             document.getElementById("addEmployeeModal"),
           ).hide();
           window.location.href = "promodizers.php";
+          window.assignmentTable?.ajax.reload(null, false);
         });
       } else {
         Swal.fire("Oops...", data.message, "error");

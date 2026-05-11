@@ -73,6 +73,10 @@ $status = 'ACTIVE';
 $employment_status = strtoupper(trim($_POST['employment_status'] ?? ''));
 $reason_for_update = strtoupper(trim($_POST['reason_update'] ?? ''));
 
+$skipSlotValidation = in_array($reason_for_update, [
+    'REMOVE BRANCH/BRAND',
+]);
+
 $remarks = trim($_POST['remarks'] ?? '');
 
 $last_updated_by  = $_SESSION['username'] ?? 'System';
@@ -287,7 +291,7 @@ if ($reason_for_update === 'EMERGENCY LEAVE' && $date_of_return) {
 // =========================
 
 // single transfer/reassign
-if (in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
+if (!$skipSlotValidation && in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
 
     if (!isComboAvailable($pdo, $branch, $brand)) {
 
@@ -352,6 +356,7 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
 }
 // HYBRID validation
 if (
+    !$skipSlotValidation &&
     strtoupper(trim($sub_status)) === 'HYBRID' &&
     !empty($rovingBranches) &&
     !empty($multiBrands)
@@ -381,6 +386,7 @@ if (
 
 // MULTI BRANCH validation
 if (
+    !$skipSlotValidation &&
     strtoupper(trim($sub_status)) === 'MULTI BRANCH' &&
     $old_sub_status !== 'HYBRID' &&
     !empty($rovingBranches)
@@ -401,6 +407,7 @@ if (
 
 // MULTI BRAND validation
 if (
+    !$skipSlotValidation &&
     strtoupper(trim($sub_status)) === 'MULTI BRAND' &&
     $old_sub_status !== 'HYBRID' &&
     !empty($multiBrands)
@@ -504,7 +511,7 @@ try {
     
     $removedBranches = array_unique($existingBranches ?? []);
     $removedBrands   = array_unique($existingBrands ?? []);
-    
+
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
