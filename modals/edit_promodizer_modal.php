@@ -50,6 +50,35 @@
     font-weight: 600;
     color: #333;
 }
+
+.remarks-input::placeholder {
+    color: #cccccc; /* lighter gray */
+    opacity: 1; /* ensures consistent appearance */
+}
+
+.reason-select {
+    color: #b0b0b0; /* default gray */
+}
+
+.reason-select:valid {
+    color: #212529; /* normal text color once selected */
+}
+
+.reason-select option {
+    color: #212529;
+}
+
+.reason-select option[value=""] {
+    color: #b0b0b0;
+}
+
+.date-input {
+    color: #b0b0b0; /* gray when empty */
+}
+
+.date-input:valid {
+    color: #212529; /* dark when date selected */
+}
 </style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -69,7 +98,7 @@
                         <tr>
                             <th>Reason for Update</th>
                             <td colspan="3">
-                                <select id="editReasonUpdate" class="form-select" required>
+                                <select id="editReasonUpdate" class="form-select reason-select" required>
                                     <option value="" disabled selected>-- Select Reason --</option>
                                     <option value="RESIGNED">RESIGNED</option>
                                     <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
@@ -163,16 +192,16 @@
 
                         <tr id="rowDateSeparated">
                             <th id="thDateSeparated">Date Separated</th>
-                            <td><input type="date" id="editDateSeparated" class="form-control"></td>
+                            <td><input type="date" id="editDateSeparated" class="form-control date-input"></td>
                             <th id="thDateReturned">Date Returned</th>
-                            <td><input type="date" id="editDateReturn" class="form-control"></td>
+                            <td><input type="date" id="editDateReturn" class="form-control date-input"></td>
                         </tr>
 
                         <tr id="rowStartDate">
                             <th id="thStartDate">Start</th>
-                            <td><input type="date" id="editStartDate" class="form-control"></td>
+                            <td><input type="date" id="editStartDate" class="form-control date-input"></td>
                             <th id="thEndDate">End</th>
-                            <td><input type="date" id="editEndDate" class="form-control"></td>
+                            <td><input type="date" id="editEndDate" class="form-control date-input"></td>
                         </tr>
 
                         <tr id="editRovingField" class="d-none">
@@ -192,7 +221,7 @@
                         <tr>
                             <th>Remarks</th>
                             <td colspan="3">
-                                <input type="text" id="editRemarks" class="form-control" maxlength="100" placeholder="e.g. immediate resignation, pull out product">
+                                <input type="text" id="editRemarks" class="form-control remarks-input" maxlength="100" placeholder="e.g. immediate resignation, pull out product">
                             </td>
                         </tr>
                     </tbody>

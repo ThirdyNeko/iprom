@@ -123,7 +123,7 @@ function renderAssignedList(employees, required, assigned) {
 
   if (assigned < required) {
     html += `
-    <div class="mt-2 text-center">
+    <div class="mt-2 text-left">
       <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
         + Add Promodiser
       </button>
