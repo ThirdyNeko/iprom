@@ -28,7 +28,12 @@ try {
 
     $stmt = $pdo->prepare("
         UPDATE employee_info
-        SET hidden = 1
+        SET 
+        hidden = 1,
+        status = 'INACTIVE',
+        start_date = NULL,
+        end_date = NULL
+
         WHERE employee_id = ?
     ");
     $stmt->execute([$secondary]);
