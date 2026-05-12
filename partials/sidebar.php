@@ -76,7 +76,7 @@
             'hr'    => 'HUMAN RESOURCES',
             'manager' => 'MANAGER', // optional if you have manager too
         ];
-        $currentRole = $_SESSION['role'] ?? 'Guest';
+        $currentRole = $_SESSION['username'] ?? 'Guest';
         $roleDisplay = $roleLabels[$currentRole] ?? $currentRole;
         ?>
         <div class="small mb-2 d-flex align-items-center gap-2">
