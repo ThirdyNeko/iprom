@@ -616,10 +616,16 @@ try {
     // =========================
     // ONLY RUN IF ADD BRANCH/BRAND
     // =========================
+    $startTimestamp = $start_date ? strtotime($start_date) : null;
     if (
-        ($reason_for_update === 'ADD BRANCH/BRAND' ||
-        ($reason_for_update === 'CHANGE SUB STATUS' && $sub_status !== 'STATIONARY')) &&
-        $start_date <= $today
+        (
+            $reason_for_update === 'ADD BRANCH/BRAND' ||
+            ($reason_for_update === 'CHANGE SUB STATUS' && $sub_status !== 'STATIONARY')
+        ) &&
+        (
+            $startTimestamp === null ||
+            $startTimestamp <= $today
+        )
     ) {
 
         // =========================
