@@ -91,7 +91,7 @@ $pdo = qa_db();
 
                 <div class="table-responsive">
                     <table id="logsTable" class="table table-striped table-hover align-middle text-center">
-                        <thead class="table-dark">
+                        <thead class="table-primary">
                             <tr>
                                 <th>User</th>                                
                                 <th>Reason</th>

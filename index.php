@@ -71,77 +71,122 @@ $cards = [
 <div class="content">
     <div class="container-fluid">
 
-        <h4 class="fw-bold mb-3">Dashboard</h4>
+        <h4 class="fw-bold mb-4">Dashboard</h4>
 
-        <!-- FIRST ROW (Promodizers) -->
-        <div class="row g-3 justify-content-center">
-            <?php foreach(array_slice($cards,0,3) as $card): ?>
-                <div class="col-md-3">
-                    <a href="<?= $card['link'] ?>" class="text-decoration-none">
-                        <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale"
-                             data-bs-toggle="tooltip"
-                             title="<?= $card['label'] ?> Details">
-                            <div class="card-body text-center">
-                                <h6 class="text-muted"><?= $card['icon'] ?> <?= $card['label'] ?></h6>
-                                <h3>
-                                    <?= $card['value'] ?>
-                                    <?php if(isset($card['percent'])): ?>
-                                        <small class="text-muted">(<?= $card['percent'] ?>%)</small>
-                                    <?php endif; ?>
-                                </h3>
-                            </div>
+        <div class="row g-4">
+
+            <!-- LEFT SIDE -->
+            <div class="col-12 col-lg-6 d-flex flex-column">
+
+                <!-- ONE ROW ONLY -->
+                <div class="row g-3 mb-4">
+
+                    <?php foreach(array_slice($cards,0,3) as $card): ?>
+
+                        <div class="col-4">
+
+                            <a href="<?= $card['link'] ?>" class="text-decoration-none">
+
+                                <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale h-100"
+                                     data-bs-toggle="tooltip"
+                                     title="<?= $card['label'] ?> Details">
+
+                                    <div class="card-body text-center py-2">
+
+                                        <small class="text-muted d-block">
+                                            <?= $card['icon'] ?> <?= $card['label'] ?>
+                                        </small>
+
+                                        <h5 class="mb-0">
+                                            <?= $card['value'] ?>
+
+                                            <?php if(isset($card['percent'])): ?>
+                                                <small class="text-muted">
+                                                    (<?= $card['percent'] ?>%)
+                                                </small>
+                                            <?php endif; ?>
+                                        </h5>
+
+                                    </div>
+
+                                </div>
+
+                            </a>
+
                         </div>
-                    </a>
+
+                    <?php endforeach; ?>
+
                 </div>
-            <?php endforeach; ?>
-        </div>
 
-        <!-- SECOND ROW (Assignments including Zero Assigned) -->
-        <div class="row g-3 mt-3 justify-content-center">
-            <?php foreach(array_slice($cards,3,4) as $card): // now 4 cards in second row ?>
-                <div class="col-md-3">
-                    <a href="<?= $card['link'] ?>" class="text-decoration-none">
-                        <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale"
-                             data-bs-toggle="tooltip"
-                             title="<?= $card['label'] ?> Details">
-                            <div class="card-body text-center">
-                                <h6 class="text-muted"><?= $card['icon'] ?> <?= $card['label'] ?></h6>
-                                <h3>
-                                    <?= $card['value'] ?>
-                                    <?php if(isset($card['percent'])): ?>
-                                        <small class="text-muted">(<?= $card['percent'] ?>%)</small>
-                                    <?php endif; ?>
-                                </h3>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- CHARTS -->
-        <div class="row g-3 mt-4">
-
-            <div class="col-12 col-lg-6">
-                <div class="card shadow-sm">
+                <!-- LEFT CHART -->
+                <div class="card shadow-sm flex-fill">
                     <div class="card-body">
-                        <h6 class="text-muted">Promodiser Status</h6>
+                        <small class="text-muted">Promodiser Status</small>
+
                         <div class="chart-container">
                             <canvas id="promodizerChart"></canvas>
                         </div>
                     </div>
                 </div>
+
             </div>
 
-            <div class="col-12 col-lg-6">
-                <div class="card shadow-sm">
+            <!-- RIGHT SIDE -->
+            <div class="col-12 col-lg-6 d-flex flex-column">
+
+                <!-- ONE ROW ONLY -->
+                <div class="row g-3 mb-4">
+
+                    <?php foreach(array_slice($cards,3,4) as $card): ?>
+
+                        <div class="col-3">
+
+                            <a href="<?= $card['link'] ?>" class="text-decoration-none">
+
+                                <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale h-100"
+                                     data-bs-toggle="tooltip"
+                                     title="<?= $card['label'] ?> Details">
+
+                                    <div class="card-body text-center py-2">
+
+                                        <small class="text-muted d-block">
+                                            <?= $card['icon'] ?> <?= $card['label'] ?>
+                                        </small>
+
+                                        <h5 class="mb-0">
+                                            <?= $card['value'] ?>
+
+                                            <?php if(isset($card['percent'])): ?>
+                                                <small class="text-muted">
+                                                    (<?= $card['percent'] ?>%)
+                                                </small>
+                                            <?php endif; ?>
+                                        </h5>
+
+                                    </div>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+                    <?php endforeach; ?>
+
+                </div>
+
+                <!-- RIGHT CHART -->
+                <div class="card shadow-sm flex-fill">
                     <div class="card-body">
-                        <h6 class="text-muted">Assignments Status</h6>
+                        <small class="text-muted">Assignments Status</small>
+
                         <div class="chart-container">
                             <canvas id="assignmentChart"></canvas>
                         </div>
                     </div>
                 </div>
+
             </div>
 
         </div>

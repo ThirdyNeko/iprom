@@ -118,7 +118,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="assignmentTable" class="table table-striped table-hover align-middle text-center">
-                        <thead class="table-dark">
+                        <thead class="table-primary">
                             <tr>
                                 <th>Branch</th>
                                 <th>Brand</th>
