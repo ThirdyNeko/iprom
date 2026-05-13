@@ -516,8 +516,13 @@ try {
     $existingBrands = $stmt->fetchAll(PDO::FETCH_COLUMN);
     $newBrands = array_diff($multiBrands, $existingBrands);
     
-    $removedBranches = array_unique($existingBranches ?? []);
-    $removedBrands   = array_unique($existingBrands ?? []);
+    $removedBranches = array_unique(
+        array_diff($existingBranches ?? [], [$currentBranch])
+    );
+
+    $removedBrands = array_unique(
+        array_diff($existingBrands ?? [], [$currentBrand])
+    );
 
     $stmt = $pdo->prepare("
         EXEC update_employee
