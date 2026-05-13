@@ -52,6 +52,10 @@
     color: #333;
 }
 
+th{
+    vertical-align: middle;
+}
+
 .remarks-input::placeholder {
     color: #cccccc; /* lighter gray */
     opacity: 1; /* ensures consistent appearance */
