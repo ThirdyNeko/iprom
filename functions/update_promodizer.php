@@ -156,6 +156,14 @@ $date_of_return = (!empty($_POST['date_returned'])) ? $_POST['date_returned'] : 
 
 $sub_status = $_POST['sub_status'] ?? null;
 
+if (in_array($reason_for_update, [
+    'RESIGNED',
+    'PULL-OUT / END OF CONTRACT',
+    'BLOCKLISTED / AWOL / TERMINATED'
+])) {
+    $start_date = null;
+}
+
 // =========================
 // VALIDATION
 // =========================
