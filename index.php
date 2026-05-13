@@ -63,7 +63,7 @@ $cards = [
 }
 .chart-container {
     position: relative;
-    height: 420px;   /* stable dashboard height */
+    height: 580px;   /* stable dashboard height */
     width: 100%;
 }
 </style>
@@ -79,7 +79,7 @@ $cards = [
             <div class="col-12 col-lg-6 d-flex flex-column">
 
                 <!-- ONE ROW ONLY -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-5">
 
                     <?php foreach(array_slice($cards,0,3) as $card): ?>
 
@@ -136,7 +136,7 @@ $cards = [
             <div class="col-12 col-lg-6 d-flex flex-column">
 
                 <!-- ONE ROW ONLY -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-5">
 
                     <?php foreach(array_slice($cards,3,4) as $card): ?>
 
