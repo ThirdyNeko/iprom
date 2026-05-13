@@ -37,10 +37,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             border-right: 1px solid #dee2e6;
         }
 
-        #assignmentTable th:last-child,
-        #assignmentTable td:last-child {
-            border-right: none; /* remove extra line at end */
+        #assignmentTable th:first-child,
+        #assignmentTable td:first-child {
+            border-left: 1px solid #dee2e6; /* remove extra line at start */
         }
+
 
         /* ✅ MAKE ROWS CLICKABLE */
         #assignmentTable tbody tr {

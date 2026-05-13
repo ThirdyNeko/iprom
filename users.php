@@ -39,6 +39,16 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
         text-align: center;
         vertical-align: middle;
     }
+    #usersTable th,
+    #usersTable td {
+        border-right: 1px solid #dee2e6;
+    }
+    
+    #usersTable th:first-child,
+    #usersTable td:first-child {
+        border-left: 1px solid #dee2e6; /* remove extra line at start */
+    }
+    
     #usersTable.table-hover tbody tr:hover > td {
         background-color: #e6f0ff !important;
     }

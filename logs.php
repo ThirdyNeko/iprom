@@ -26,10 +26,11 @@ $pdo = qa_db();
         vertical-align: middle;
     }
 
-    #logsTable th:last-child,
-    #logsTable td:last-child {
-        border-right: none; /* remove extra line at end */
+    #logsTable th:first-child,
+    #logsTable td:first-child {
+        border-left: 1px solid #dee2e6; /* remove extra line at start */
     }
+
     .card-body .col {
         min-width: 150px;
     }
