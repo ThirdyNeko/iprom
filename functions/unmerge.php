@@ -25,7 +25,8 @@ try {
     // 2. Unhide employee
     $stmt = $pdo->prepare("
         UPDATE employee_info
-        SET hidden = 0
+        SET hidden = 0,
+            status = 'ACTIVE'
         WHERE employee_id = ?
     ");
     $stmt->execute([$employee]);
