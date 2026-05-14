@@ -2,81 +2,113 @@
 session_start();
 include '../config/db.php';
 
+header('Content-Type: application/json');
+
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../index.php");
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Unauthorized'
+    ]);
     exit;
 }
 
 $pdo = qa_db();
 
-// Inputs
-$username   = isset($_POST['username']) ? strtoupper(trim($_POST['username'])) : null;
-$role       = $_POST['role'] ?? null;
+try {
 
-$branch     = !empty($_POST['branch']) ? $_POST['branch'] : null;
-$brand      = !empty($_POST['brand']) ? $_POST['brand'] : null;
+    $username   = strtoupper(trim($_POST['username'] ?? ''));
+    $role       = $_POST['role'] ?? null;
 
-$first_name = !empty($_POST['first_name']) ? strtoupper(trim($_POST['first_name'])) : null;
-$last_name  = !empty($_POST['last_name']) ? strtoupper(trim($_POST['last_name'])) : null;
-$position   = !empty($_POST['position']) ? strtoupper(trim($_POST['position'])) : null;
-$department = !empty($_POST['department']) ? strtoupper(trim($_POST['department'])) : null;
+    $branch     = !empty($_POST['branch']) ? $_POST['branch'] : null;
+    $brand      = !empty($_POST['brand']) ? $_POST['brand'] : null;
 
-// Validation
-if (!$username || !$role || !$first_name || !$last_name || !$position) {
-    header("Location: ../users.php?error=invalid");
-    exit;
+    $first_name = strtoupper(trim($_POST['first_name'] ?? ''));
+    $last_name  = strtoupper(trim($_POST['last_name'] ?? ''));
+    $position   = strtoupper(trim($_POST['position'] ?? ''));
+    $department = strtoupper(trim($_POST['department'] ?? ''));
+
+    if (!$username || !$role || !$first_name || !$last_name || !$position) {
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Please fill in required fields'
+        ]);
+
+        exit;
+    }
+
+    // duplicate check
+    $check = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM users 
+        WHERE username = ?
+    ");
+
+    $check->execute([$username]);
+
+    if ($check->fetchColumn() > 0) {
+
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Username already exists'
+        ]);
+
+        exit;
+    }
+
+    $defaultPassword = 'Password123';
+
+    $hashedPassword = password_hash(
+        $defaultPassword,
+        PASSWORD_DEFAULT
+    );
+
+    $stmt = $pdo->prepare("
+        INSERT INTO users (
+            username,
+            password,
+            role,
+            branch,
+            brand,
+            first_name,
+            last_name,
+            position,
+            department
+        )
+        VALUES (
+            :username,
+            :password,
+            :role,
+            :branch,
+            :brand,
+            :first_name,
+            :last_name,
+            :position,
+            :department
+        )
+    ");
+
+    $stmt->execute([
+        ':username'   => $username,
+        ':password'   => $hashedPassword,
+        ':role'       => $role,
+        ':branch'     => $branch,
+        ':brand'      => $brand,
+        ':first_name' => $first_name,
+        ':last_name'  => $last_name,
+        ':position'   => $position,
+        ':department' => $department
+    ]);
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'User created successfully'
+    ]);
+
+} catch (PDOException $e) {
+
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
 }
-
-// Default password
-$defaultPassword = 'Password123';
-$hashedPassword  = password_hash($defaultPassword, PASSWORD_DEFAULT);
-
-// Duplicate check
-$check = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
-$check->execute([$username]);
-
-if ($check->fetchColumn() > 0) {
-    header("Location: ../users.php?error=exists");
-    exit;
-}
-
-// INSERT (UPDATED TABLE STRUCTURE)
-$stmt = $pdo->prepare("
-    INSERT INTO users (
-        username,
-        password,
-        role,
-        branch,
-        brand,
-        first_name,
-        last_name,
-        position,
-        department
-    )
-    VALUES (
-        :username,
-        :password,
-        :role,
-        :branch,
-        :brand,
-        :first_name,
-        :last_name,
-        :position,
-        :department
-    )
-");
-
-$stmt->execute([
-    ':username'   => $username,
-    ':password'   => $hashedPassword,
-    ':role'       => $role,
-    ':branch'     => $branch,
-    ':brand'      => $brand,
-    ':first_name' => $first_name,
-    ':last_name'  => $last_name,
-    ':position'   => $position,
-    ':department' => $department
-]);
-
-header("Location: ../users.php?success=1");
-exit;
