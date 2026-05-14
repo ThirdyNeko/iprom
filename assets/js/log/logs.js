@@ -2,7 +2,7 @@ $(document).ready(function () {
   const table = $("#logsTable").DataTable({
     processing: true,
     serverSide: true,
-    pageLength: 10,
+    pageLength: 25,
     responsive: true,
     dom: "lrtip",
     ordering: false,
@@ -22,11 +22,11 @@ $(document).ready(function () {
     order: [[4, "desc"]],
 
     columnDefs: [
-      { width: "10%", targets: 0 }, // User
-      { width: "35%", targets: 1 }, // Reason
-      { width: "35%", targets: 2 }, // 🔥 Remarks (bigger)
-      { width: "10%", targets: 3 }, // Employee
-      { width: "10%", targets: 4 }, // Date
+      { width: "14%", targets: 0 }, // User
+      { width: "30%", targets: 1 }, // Reason
+      { width: "30%", targets: 2 }, // 🔥 Remarks (bigger)
+      { width: "20%", targets: 3 }, // Employee
+      { width: "6%", targets: 4 }, // Date
     ],
   });
 

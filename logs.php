@@ -26,9 +26,20 @@ $pdo = qa_db();
         vertical-align: middle;
     }
 
+    #logsTable td {
+        font-size: 14px;
+    }
+
     #logsTable th:first-child,
     #logsTable td:first-child {
         border-left: 1px solid #dee2e6; /* remove extra line at start */
+        text-align: center !important;
+    }
+    #logsTable td:nth-child(4) {
+        text-align: center !important;
+    }
+    #logsTable td:last-child {
+        text-align: center !important;
     }
 
     .card-body .col {
