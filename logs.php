@@ -24,6 +24,8 @@ $pdo = qa_db();
     {
         text-align: center;
         vertical-align: middle;
+        background-color: #2d68c4;
+        color : white;
     }
 
     #logsTable td {

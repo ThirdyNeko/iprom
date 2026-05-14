@@ -52,6 +52,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
         #assignmentTable tbody tr:hover {
             background-color: #f1f1f1;
         }
+
+        #assignmentTable th{
+            background-color: #2d68c4;
+            color : white;
+        }
     </style>
 
     <div class="container-fluid">

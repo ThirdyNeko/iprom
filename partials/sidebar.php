@@ -17,18 +17,18 @@
         </li>
 
         <li>
-            <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'promodizers.php' ? 'active' : '' ?>">
-                <i class="bi bi-people"></i>
-                <span>Promodisers</span>
-            </a>
-        </li>
-
-        <li>
             <a href="assignments.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'assignments.php' ? 'active' : '' ?>">
                 <i class="bi bi-diagram-3"></i>
                 <span>Assignments</span>
             </a>
         </li>
+
+        <li>
+            <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'promodizers.php' ? 'active' : '' ?>">
+                <i class="bi bi-people"></i>
+                <span>Promodisers</span>
+            </a>
+        </li>        
 
         <li>
             <a href="logs.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'logs.php' ? 'active' : '' ?>">

@@ -31,6 +31,12 @@
     margin: 0 auto;
     display: block;
 }
+
+#assignmentModal th{
+    text-align: left;
+    width: 45%;
+}
+
 </style>
 <div class="modal fade" id="assignmentModal" tabindex="-1">
     <div class="modal-dialog modal-lg"> <!-- ✅ wider like promodizer -->

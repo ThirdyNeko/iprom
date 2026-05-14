@@ -75,6 +75,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
     .card-body .col {
         min-width: 150px;
     }
+
+    #promodizerTable th{
+        background-color: #2d68c4;
+        color : white;
+    }
     </style>
     <div class="container-fluid">
         <div class="row mb-3">
