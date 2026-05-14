@@ -200,7 +200,7 @@ body {
                    placeholder="Enter Password"
                    required>
             <span class="input-group-text toggle-password" id="togglePassword">
-                <i class="bi bi-eye"></i>
+                <i class="bi bi-eye-slash"></i>
             </span>
         </div>
 
@@ -219,8 +219,8 @@ const icon = togglePassword.querySelector('i');
 togglePassword.addEventListener('click', () => {
     const type = passwordInput.type === 'password' ? 'text' : 'password';
     passwordInput.type = type;
-    icon.classList.toggle('bi-eye');
     icon.classList.toggle('bi-eye-slash');
+    icon.classList.toggle('bi-eye');
 });
 </script>
 

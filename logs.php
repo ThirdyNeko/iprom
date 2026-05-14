@@ -28,6 +28,15 @@ $pdo = qa_db();
         color : white;
     }
 
+    .card-body .row.g-2 .col {
+        min-width: 160px;
+    }
+
+    .filter-control {
+        height: 32px !important;
+        font-size: 14px;
+    }
+
     #logsTable td {
         font-size: 14px;
     }
@@ -47,6 +56,32 @@ $pdo = qa_db();
     .card-body .col {
         min-width: 150px;
     }
+
+    .clear-input {
+        position: relative;
+    }
+
+    .clear-input input {
+        padding-right: 28px; /* space for X */
+    }
+
+    .clear-btn {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        font-size: 18px;
+        line-height: 1;
+        color: #999;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .clear-btn:hover {
+        color: #333;
+    }
 </style>
 <div class="content">
     <div class="container-fluid">
@@ -63,12 +98,21 @@ $pdo = qa_db();
 
                     <div class="col">
                         <label class="form-label">User</label>
-                        <input type="text" id="filterUser" class="form-control" placeholder="Search user">
+
+                        <div class="clear-input">
+                            <input type="text"
+                                id="filterUser"
+                                class="form-control form-control-sm filter-control"
+                                placeholder="Search user">
+
+                            <button type="button" class="clear-btn" data-target="filterUser">×</button>
+                        </div>
                     </div>
+
 
                     <div class="col">
                         <label class="form-label">Reason</label>
-                        <select id="filterReason" class="form-select">
+                        <select id="filterReason" class="form-select filter-control">
                             <option value="">All</option>
                             <option value="RESIGNED">RESIGNED</option>
                             <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
@@ -81,6 +125,8 @@ $pdo = qa_db();
                             <option value="REMOVED CURRENT BRANCH/BRAND">REMOVED CURRENT BRANCH/BRAND</option>
                             <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
                             <option value="AUTO REACTIVATED">AUTO REACTIVATED</option>
+                            <option value="AUTO UPDATED">AUTO UPDATED</option>
+                            <option value="AUTO ACTIVATED">AUTO ACTIVATED</option>
                             <option value="AUTO DEACTIVATED">AUTO DEACTIVATED</option>
                             <option value="ADDED EMPLOYEE">ADDED EMPLOYEE</option>
                         </select>
@@ -88,17 +134,25 @@ $pdo = qa_db();
 
                     <div class="col">
                         <label class="form-label">Remarks</label>
-                        <input type="text" id="filterRemarks" class="form-control" placeholder="Search remarks">
+
+                        <div class="clear-input">
+                            <input type="text"
+                                id="filterRemarks"
+                                class="form-control form-control-sm filter-control"
+                                placeholder="Search remarks">
+
+                            <button type="button" class="clear-btn" data-target="filterRemarks">×</button>
+                        </div>
                     </div>
 
                     <div class="col">
                         <label class="form-label">From</label>
-                        <input type="date" id="filterFrom" class="form-control">
+                        <input type="date" id="filterFrom" class="form-control filter-control">
                     </div>
 
                     <div class="col">
                         <label class="form-label">To</label>
-                        <input type="date" id="filterTo" class="form-control">
+                        <input type="date" id="filterTo" class="form-control filter-control">
                     </div>
 
                 </div>
@@ -130,3 +184,19 @@ $pdo = qa_db();
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/log/logs.js"></script>
+
+<script>
+document.querySelectorAll(".clear-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    const targetId = btn.getAttribute("data-target");
+    const input = document.getElementById(targetId);
+
+    input.value = "";
+
+    // trigger DataTable refresh
+    input.dispatchEvent(new Event("input"));
+  });
+});
+</script>
+<?php include 'modals/change_password_modal.php'; ?>

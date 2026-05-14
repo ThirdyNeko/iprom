@@ -104,3 +104,5 @@ $pdo = qa_db();
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 
 <script src="assets/js/merge/merge_employees.js"></script>
+
+<?php include 'modals/change_password_modal.php'; ?>

@@ -76,9 +76,44 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
         min-width: 150px;
     }
 
+    .card-body .row.g-2 .col {
+        min-width: 160px;
+    }
+
+    .filter-control {
+        height: 32px !important;
+        font-size: 14px;
+    }
+
     #promodizerTable th{
         background-color: #2d68c4;
         color : white;
+    }
+
+    .clear-input {
+        position: relative;
+    }
+
+    .clear-input input {
+        padding-right: 28px; /* space for X */
+    }
+
+    .clear-btn {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        font-size: 18px;
+        line-height: 1;
+        color: #999;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .clear-btn:hover {
+        color: #333;
     }
     </style>
     <div class="container-fluid">
@@ -99,12 +134,15 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col">
                         <label class="form-label">Name</label>
-                        <input type="text" id="filterName" class="form-control" placeholder="Search...">
+                        <div class="clear-input">
+                            <input type="text" id="filterName" class="form-control form-control-sm filter-control" placeholder="Search...">
+                            <button type="button" class="clear-btn" data-target="filterName">×</button>
+                        </div>
                     </div>
 
                     <div class="col">
                         <label class="form-label">Branch</label>
-                        <select id="filterBranch" class="form-select">
+                        <select id="filterBranch" class="form-select filter-control">
                             <option value="">All</option>
                             <?php foreach($branches as $b): ?>
                                 <option value="<?= $b ?>"><?= $b ?></option>
@@ -114,7 +152,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col">
                         <label class="form-label">Brand</label>
-                        <select id="filterBrand" class="form-select">
+                        <select id="filterBrand" class="form-select filter-control">
                             <option value="">All</option>
                             <?php foreach($brands as $b): ?>
                                 <option value="<?= $b ?>"><?= $b ?></option>
@@ -124,7 +162,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col">
                         <label class="form-label">Status</label>
-                        <select id="filterStatus" class="form-select">
+                        <select id="filterStatus" class="form-select filter-control">
                             <option value="">All</option>
                             <option value="ACTIVE" selected>ACTIVE</option>
                             <option value="INACTIVE">INACTIVE</option>
@@ -133,7 +171,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col">
                         <label class="form-label">Employment Status</label>
-                        <select id="filterEmploymentStatus" class="form-select">
+                        <select id="filterEmploymentStatus" class="form-select filter-control">
                             <option value="">All</option>
                             <option value="PERMANENT">PERMANENT</option>
                             <option value="SEASONAL">SEASONAL</option>
@@ -143,7 +181,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col">
                         <label class="form-label">Sub Status</label>
-                        <select id="filterSubStatus" class="form-select">
+                        <select id="filterSubStatus" class="form-select filter-control">
                             <option value="">All</option>
                             <option value="STATIONARY">STATIONARY</option>
                             <option value="MULTI BRANCH">MULTI BRANCH</option>
@@ -153,17 +191,20 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col">
                         <label class="form-label">Assigned By</label>
-                        <input type="text" id="filterAssignedBy" class="form-control" placeholder="Search...">
+                        <div class="clear-input">
+                            <input type="text" id="filterAssignedBy" class="form-control form-control-sm filter-control" placeholder="Search...">
+                            <button type="button" class="clear-btn" data-target="filterAssignedBy">×</button>
+                        </div>
                     </div>
 
                     <div class="col">
                         <label class="form-label">From</label>
-                        <input type="date" id="filterFrom" class="form-control">
+                        <input type="date" id="filterFrom" class="form-control filter-control">
                     </div>
 
                     <div class="col">
                         <label class="form-label">To</label>
-                        <input type="date" id="filterTo" class="form-control">
+                        <input type="date" id="filterTo" class="form-control filter-control">
                     </div>
 
                 </div>

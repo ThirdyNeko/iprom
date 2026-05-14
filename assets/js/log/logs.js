@@ -24,9 +24,9 @@ $(document).ready(function () {
     columnDefs: [
       { width: "14%", targets: 0 }, // User
       { width: "30%", targets: 1 }, // Reason
-      { width: "30%", targets: 2 }, // 🔥 Remarks (bigger)
+      { width: "28%", targets: 2 }, // 🔥 Remarks (bigger)
       { width: "20%", targets: 3 }, // Employee
-      { width: "6%", targets: 4 }, // Date
+      { width: "8%", targets: 4 }, // Date
     ],
   });
 
@@ -34,8 +34,13 @@ $(document).ready(function () {
     table.draw();
   });
 
+  // TEXT INPUTS (includes clear button + typing + paste)
+  $("#filterUser, #filterRemarks").on("input", function () {
+    table.draw();
+  });
+
   // 🔥 AUTO RELOAD ON FILTER CHANGE
-  $("#filterUser, #filterReason, #filterRemarks").on("keyup", function () {
+  $("#filterReason").on("change", function () {
     table.draw();
   });
 

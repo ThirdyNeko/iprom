@@ -21,7 +21,7 @@ try {
         <div class="modal-content">
             <form id="addPlantillaForm">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Plantilla</h5>
+                    <h5 class="modal-title">Create Plantilla</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

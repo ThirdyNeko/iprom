@@ -64,7 +64,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             <div class="col d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold mb-0">Assignments</h4>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal">
-                    <i class="bi bi-plus-circle"></i> Add Plantilla
+                    <i class="bi bi-plus-circle"></i> Create Plantilla
                 </button>
             </div>
         </div>
