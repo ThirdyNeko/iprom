@@ -99,7 +99,7 @@ $(document).ready(function () {
   // =========================
   // NAME FILTER
   // =========================
-  $("#filterName").on("keyup", function () {
+  $("#filterName").on("input", function () {
     table.column(0).search(this.value).draw();
   });
 
@@ -128,7 +128,7 @@ $(document).ready(function () {
   // =========================
   // ASSIGNED BY FILTER
   // =========================
-  $("#filterAssignedBy").on("keyup", function () {
+  $("#filterAssignedBy").on("input", function () {
     table.column(7).search(this.value).draw();
   });
 

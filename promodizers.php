@@ -254,6 +254,20 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 </div>
 
 <!-- JS -->
+<script>
+document.querySelectorAll(".clear-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    const targetId = btn.getAttribute("data-target");
+    const input = document.getElementById(targetId);
+
+    input.value = "";
+
+    // trigger DataTable refresh
+    input.dispatchEvent(new Event("input"));
+  });
+});
+</script>
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>

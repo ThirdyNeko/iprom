@@ -57,6 +57,41 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
     #usersTable.table-hover tbody tr:hover > td {
         background-color: #e6f0ff !important;
     }
+    
+    .card-body .row.g-2 .col {
+        min-width: 160px;
+    }
+
+    .filter-control {
+        height: 32px !important;
+        font-size: 14px;
+    }
+    
+    .clear-input {
+        position: relative;
+    }
+
+    .clear-input input {
+        padding-right: 28px; /* space for X */
+    }
+
+    .clear-btn {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        font-size: 18px;
+        line-height: 1;
+        color: #999;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .clear-btn:hover {
+        color: #333;
+    }
 </style>
 
 <div class="content">
@@ -81,7 +116,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col-md-3">
                         <label class="form-label">Role</label>
-                        <select id="filterRole" class="form-select">
+                        <select id="filterRole" class="form-select filter-control">
                             <option value="">All</option>
                             <option value="admin">ADMIN</option>
                             <option value="human resources">HUMAN RESOURCES</option>
@@ -90,7 +125,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col-md-3">
                         <label class="form-label">Branch</label>
-                        <select id="filterBranch" class="form-select">
+                        <select id="filterBranch" class="form-select filter-control">
                             <option value="">All</option>
                             <?php foreach($branches as $b): ?>
                                 <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
@@ -100,7 +135,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col-md-3">
                         <label class="form-label">Brand</label>
-                        <select id="filterBrand" class="form-select">
+                        <select id="filterBrand" class="form-select filter-control">
                             <option value="">All</option>
                             <?php foreach($brands as $b): ?>
                                 <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
@@ -110,7 +145,10 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
                     <div class="col-md-3">
                         <label class="form-label">Username</label>
-                        <input type="text" id="filterUsername" class="form-control" placeholder="Search...">
+                        <div class="clear-input">
+                            <input type="text" id="filterUsername" class="form-control filter-control" placeholder="Search...">
+                            <button class="clear-btn">&times;</button>
+                        </div>
                     </div>
 
                 </div>
@@ -160,6 +198,20 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 
 <script>
+document.querySelectorAll(".clear-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    const targetId = btn.getAttribute("data-target");
+    const input = document.getElementById(targetId);
+
+    input.value = "";
+
+    // trigger DataTable refresh
+    input.dispatchEvent(new Event("input"));
+  });
+});
+</script>
+<script>
 $(document).ready(function() {
     var table = $('#usersTable').DataTable({
         pageLength: 10,
@@ -182,6 +234,9 @@ $(document).ready(function() {
     });
     $('#filterUsername').on('keyup', function() {
         table.column(0).search(this.value).draw();
+    });
+    $('.clear-btn').on('click', function() {
+        $(this).siblings('input').val('').trigger('keyup');
     });
 });
 </script>
