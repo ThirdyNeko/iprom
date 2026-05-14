@@ -462,7 +462,6 @@ try {
 
     echo json_encode([
         'status' => 'success',
-        'message' => 'Employee added successfully!'
     ]);
 
 } catch (PDOException $e) {

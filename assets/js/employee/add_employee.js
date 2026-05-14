@@ -587,7 +587,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const confirm = await Swal.fire({
       icon: "warning",
       title: "Are you sure?",
-      text: "This action cannot be easily changed once saved.",
       showCancelButton: true,
       confirmButtonText: "Yes, Save",
       cancelButtonText: "Cancel",
