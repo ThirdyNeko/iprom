@@ -112,6 +112,7 @@ function toggleReasonDates() {
     reason === "TRANSFER BRANCH" ||
     reason === "CHANGE SUB STATUS" ||
     reason === "REASSIGN" ||
+    reason === "ADD BRANCH/BRAND" ||
     reason === "CHANGE EMPLOYMENT STATUS";
 
   // =========================
@@ -969,6 +970,10 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   }
 
   if (reason === "CHANGE SUB STATUS" && !startDate.value) {
+    return Swal.fire({ icon: "warning", title: "Effectivity Date Required" });
+  }
+
+  if (reason === "ADD BRANCH/BRAND" && !startDate.value) {
     return Swal.fire({ icon: "warning", title: "Effectivity Date Required" });
   }
 

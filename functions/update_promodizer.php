@@ -73,8 +73,20 @@ $status = 'ACTIVE';
 $employment_status = strtoupper(trim($_POST['employment_status'] ?? ''));
 $reason_for_update = strtoupper(trim($_POST['reason_update'] ?? ''));
 
+$raw_start_date = $_POST['start_date'] ?? null;
+$raw_end_date   = $_POST['end_date'] ?? null;
+
+if ($reason_for_update === 'ADD BRANCH/BRAND' && empty($raw_start_date)) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Start date is required for ADD BRANCH/BRAND'
+    ]);
+    exit;
+}
+
 $skipSlotValidation = in_array($reason_for_update, [
     'REMOVE BRANCH/BRAND',
+    'ADD BRANCH/BRAND',
 ]);
 
 $remarks = trim($_POST['remarks'] ?? '');
@@ -148,8 +160,8 @@ if ($hasMultiBrands && !$skipGroupValidation) {
 // =========================
 // DATE VALUES (SAFE)
 // =========================
-$start_date = (!empty($_POST['start_date'])) ? $_POST['start_date'] : null;
-$end_date   = (!empty($_POST['end_date'])) ? $_POST['end_date'] : null;
+$start_date = !empty($raw_start_date) ? $raw_start_date : null;
+$end_date   = !empty($raw_end_date) ? $raw_end_date : null;
 
 $date_separated = (!empty($_POST['date_separated'])) ? $_POST['date_separated'] : null;
 $date_of_return = (!empty($_POST['date_returned'])) ? $_POST['date_returned'] : null;
@@ -188,7 +200,7 @@ if ($start_date && $end_date) {
 $empStatusUpper = $employment_status;
 
 $isReliever = in_array($empStatusUpper, ['RELIEVER', 'SEASONAL']);
-$isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER BRANCH', 'CHANGE SUB STATUS', 'CHANGE EMPLOYMENT STATUS']);
+$isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER BRANCH', 'CHANGE SUB STATUS', 'CHANGE EMPLOYMENT STATUS', 'ADD BRANCH/BRAND']);
 
 if ($isReliever) {
 
@@ -233,7 +245,7 @@ $inactiveReasons = [
 $isInactiveReason = in_array($reason_for_update, $inactiveReasons);
 
 $dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
-$today = strtotime('today');
+$today = strtotime(date('Y-m-d'));
 $hidden = false;
 
 if ($isInactiveReason) {
@@ -439,6 +451,8 @@ if (
     }
 }
 
+
+
 // =========================
 // AUTO CREATE GROUP IDS (FIXED - STRING SAFE)
 // =========================
@@ -640,11 +654,9 @@ try {
         (
             $reason_for_update === 'ADD BRANCH/BRAND' ||
             ($reason_for_update === 'CHANGE SUB STATUS' && $sub_status !== 'STATIONARY')
-        ) &&
-        (
-            $startTimestamp === null ||
-            $startTimestamp <= $today
         )
+        && $startTimestamp !== false
+        && $startTimestamp <= $today
     ) {
 
         // =========================
