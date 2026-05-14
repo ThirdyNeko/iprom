@@ -153,7 +153,7 @@ if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
 const showDateSeparatedReasons = [
   "RESIGNED",
   "PULL-OUT / END OF CONTRACT",
-  "BLOCKLISTED / AWOL / TERMINATED",
+  "BLACKLISTED / AWOL / TERMINATED",
   "MATERNITY LEAVE",
   "EMERGENCY LEAVE",
 ];

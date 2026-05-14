@@ -26,12 +26,33 @@ try {
     $brands   = [];
 
 }
-
 ?>
+
+<style>
+    .modal .form-label {
+        font-weight: 600;
+    }
+
+    .modal .form-control,
+    .modal .form-select {
+        border-radius: 0.25rem;
+    }
+    .modal .form-control[readonly] {
+        background-color: #e9ecef;
+        opacity: 1;
+    }
+    .modal .form-control.text-uppercase {
+        text-transform: uppercase;
+    }
+    .modal .form-select {
+        background-color: #fffbdf !important; /* editable */
+        opacity: 1;
+    }
+</style>
 
 <div class="modal fade" id="createUserModal" tabindex="-1">
 
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
 
         <div class="modal-content">
 
@@ -51,116 +72,166 @@ try {
 
                 <div class="modal-body">
 
-                    <!-- USERNAME -->
-                    <div class="mb-3">
+                    <div class="row g-3">
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    First Name
+                                </label>
+                                <input type="text"
+                                    name="first_name"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    required>
+                            </div>
 
-                        <label class="form-label">
-                            Username
-                        </label>
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    Last Name
+                                </label>
+                                <input type="text"
+                                    name="last_name"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    required>
+                            </div>
 
-                        <input type="text"
-                               name="username"
-                               class="form-control text-uppercase"
-                               style="text-transform: uppercase;"
-                               required>
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    Position
+                                </label>
+                                <input type="text"
+                                    name="position"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    required>
+                            </div>
 
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    Default Password
+                                </label>
+                                <input type="text"
+                                    name="default_password"
+                                    class="form-control"
+                                    value="Password123"
+                                    readonly>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <!-- USERNAME -->
+                            <div class="mb-3">
+
+                                <label class="form-label">
+                                    Username
+                                </label>
+
+                                <input type="text"
+                                    name="username"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    required>
+
+                            </div>
+
+                            <!-- ROLE -->
+                            <div class="mb-3">
+
+                                <label class="form-label">
+                                    Role
+                                </label>
+
+                                <select name="role"
+                                        class="form-select"
+                                        required>
+
+                                    <option value=""
+                                            disabled
+                                            selected>
+
+                                        Select Role
+
+                                    </option>
+
+                                    <option value="admin">
+                                        ADMIN
+                                    </option>
+
+                                    <option value="hr">
+                                        HUMAN RESOURCES
+                                    </option>
+
+                                    <option value="manager">
+                                        MANAGER
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <!-- BRANCH -->
+                            <div class="mb-3">
+
+                                <label class="form-label">
+                                    Branch
+                                    <small class="text-muted">(Optional)</small>
+                                </label>
+
+                                <select name="branch"
+                                        id="branchSelect"
+                                        class="form-select">
+
+                                    <option value="">
+                                        NONE
+                                    </option>
+
+                                    <?php foreach ($branches as $branch): ?>
+
+                                        <option value="<?= htmlspecialchars($branch) ?>">
+
+                                            <?= htmlspecialchars($branch) ?>
+
+                                        </option>
+
+                                    <?php endforeach; ?>
+
+                                </select>
+
+                            </div>
+
+                            <!-- BRAND -->
+                            <div class="mb-3">
+
+                                <label class="form-label">
+                                    Brand
+                                    <small class="text-muted">(Optional)</small>
+                                </label>
+
+                                <select name="brand"
+                                        id="brandSelect"
+                                        class="form-select">
+
+                                    <option value="">
+                                        NONE
+                                    </option>
+
+                                    <?php foreach ($brands as $brand): ?>
+
+                                        <option value="<?= htmlspecialchars($brand) ?>">
+
+                                            <?= htmlspecialchars($brand) ?>
+
+                                        </option>
+
+                                    <?php endforeach; ?>
+
+                                </select>
+
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- ROLE -->
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Role
-                        </label>
-
-                        <select name="role"
-                                class="form-select"
-                                required>
-
-                            <option value=""
-                                    disabled
-                                    selected>
-
-                                Select Role
-
-                            </option>
-
-                            <option value="admin">
-                                ADMIN
-                            </option>
-
-                            <option value="hr">
-                                HUMAN RESOURCES
-                            </option>
-
-                            <option value="manager">
-                                MANAGER
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <!-- BRANCH -->
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Branch
-                            <small class="text-muted">(Optional)</small>
-                        </label>
-
-                        <select name="branch"
-                                id="branchSelect"
-                                class="form-select">
-
-                            <option value="">
-                                NONE
-                            </option>
-
-                            <?php foreach ($branches as $branch): ?>
-
-                                <option value="<?= htmlspecialchars($branch) ?>">
-
-                                    <?= htmlspecialchars($branch) ?>
-
-                                </option>
-
-                            <?php endforeach; ?>
-
-                        </select>
-
-                    </div>
-
-                    <!-- BRAND -->
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Brand
-                            <small class="text-muted">(Optional)</small>
-                        </label>
-
-                        <select name="brand"
-                                id="brandSelect"
-                                class="form-select">
-
-                            <option value="">
-                                NONE
-                            </option>
-
-                            <?php foreach ($brands as $brand): ?>
-
-                                <option value="<?= htmlspecialchars($brand) ?>">
-
-                                    <?= htmlspecialchars($brand) ?>
-
-                                </option>
-
-                            <?php endforeach; ?>
-
-                        </select>
-
-                    </div>
-
                 </div>
 
                 <div class="modal-footer">

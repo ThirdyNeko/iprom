@@ -159,7 +159,7 @@ $sub_status = $_POST['sub_status'] ?? null;
 if (in_array($reason_for_update, [
     'RESIGNED',
     'PULL-OUT / END OF CONTRACT',
-    'BLOCKLISTED / AWOL / TERMINATED'
+    'BLACKLISTED / AWOL / TERMINATED'
 ])) {
     $start_date = null;
 }
@@ -226,7 +226,7 @@ if ($isReliever) {
 $inactiveReasons = [
     'RESIGNED',
     'PULL-OUT / END OF CONTRACT',
-    'BLOCKLISTED / AWOL / TERMINATED',
+    'BLACKLISTED / AWOL / TERMINATED',
     'MATERNITY LEAVE',
     'EMERGENCY LEAVE',
     'REMOVE BRANCH/BRAND',

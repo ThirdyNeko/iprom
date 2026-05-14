@@ -486,7 +486,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // =========================
-    // DUPLICATE + BLOCKLIST CHECK
+    // DUPLICATE + BLACKLIST CHECK
     // =========================
 
     // adjust these depending on your actual inputs
@@ -517,9 +517,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       const checkData = await checkRes.json();
 
       // expected response example:
-      // { exists: true, reason_for_update: "BLOCKLISTED" }
+      // { exists: true, reason_for_update: "BLACKLISTED" }
 
-      const blockedReasons = ["BLOCKLISTED / AWOL / TERMINATED"];
+      const blockedReasons = ["BLACKLISTED / AWOL / TERMINATED"];
 
       if (checkData && checkData.exists === true) {
         const reason = (checkData.reason_for_update || "").toUpperCase();
@@ -534,7 +534,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           );
         }
 
-        const blockedReasons = ["BLOCKLISTED / AWOL / TERMINATED"];
+        const blockedReasons = ["BLACKLISTED / AWOL / TERMINATED"];
 
         // 🚫 Hard block
         if (blockedReasons.includes(reason)) {

@@ -110,7 +110,7 @@ th{
                                     <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
                                     <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
                                     <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
-                                    <option value="BLOCKLISTED / AWOL / TERMINATED">BLOCKLISTED / AWOL / TERMINATED</option>
+                                    <option value="BLACKLISTED / AWOL / TERMINATED">BLACKLISTED / AWOL / TERMINATED</option>
                                     <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
                                     <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>                                                                        
                                     <!-- <option value="REASSIGN">REASSIGN</option> -->
