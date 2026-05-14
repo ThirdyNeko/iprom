@@ -36,6 +36,7 @@ try {
     .modal .form-control,
     .modal .form-select {
         border-radius: 0.25rem;
+        background-color: #fffbdf; /* default to editable style */
     }
     .modal .form-control[readonly] {
         background-color: #e9ecef;
@@ -47,6 +48,12 @@ try {
     .modal .form-select {
         background-color: #fffbdf !important; /* editable */
         opacity: 1;
+    }
+    .modal .form-control[disabled],
+    .modal .form-select[disabled] {
+        background-color: #e9ecef !important; /* readonly/disabled */
+        opacity: 1;
+        cursor: not-allowed;
     }
 </style>
 
@@ -73,69 +80,7 @@ try {
                 <div class="modal-body">
 
                     <div class="row g-3">
-                        
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class = "form-label">
-                                    First Name
-                                </label>
-                                <input type="text"
-                                    name="first_name"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
-                                    required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class = "form-label">
-                                    Last Name
-                                </label>
-                                <input type="text"
-                                    name="last_name"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
-                                    required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class = "form-label">
-                                    Position
-                                </label>
-                                <input type="text"
-                                    name="position"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
-                                    required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class = "form-label">
-                                    Default Password
-                                </label>
-                                <input type="text"
-                                    name="default_password"
-                                    class="form-control"
-                                    value="Password123"
-                                    readonly>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <!-- USERNAME -->
-                            <div class="mb-3">
-
-                                <label class="form-label">
-                                    Username
-                                </label>
-
-                                <input type="text"
-                                    name="username"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
-                                    required>
-
-                            </div>
-
                             <!-- ROLE -->
                             <div class="mb-3">
 
@@ -163,8 +108,12 @@ try {
                                         HUMAN RESOURCES
                                     </option>
 
-                                    <option value="manager">
-                                        MANAGER
+                                    <option value="inhouse_manager">
+                                        INHOUSE MANAGER
+                                    </option>
+
+                                    <option value="branch_manager">
+                                        BRANCH MANAGER
                                     </option>
 
                                 </select>
@@ -181,7 +130,8 @@ try {
 
                                 <select name="branch"
                                         id="branchSelect"
-                                        class="form-select">
+                                        class="form-select"
+                                        disabled>
 
                                     <option value="">
                                         NONE
@@ -211,7 +161,8 @@ try {
 
                                 <select name="brand"
                                         id="brandSelect"
-                                        class="form-select">
+                                        class="form-select"
+                                        disabled>
 
                                     <option value="">
                                         NONE
@@ -229,6 +180,77 @@ try {
 
                                 </select>
 
+                            </div>
+
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    Department
+                                </label>
+                                <input type="text"
+                                    id="departmentInput"
+                                    name="department"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    disabled>
+                            </div>
+
+                        </div>
+                        <div class="col-md-6">
+
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    First Name
+                                </label>
+                                <input type="text"
+                                    id="first_name"
+                                    name="first_name"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    Last Name
+                                </label>
+                                <input type="text"
+                                    id="last_name"
+                                    name="last_name"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    required>
+                            </div>                 
+
+                            <!-- USERNAME -->
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text"
+                                    id="username"
+                                    name="username"
+                                    class="form-control text-uppercase"
+                                    readonly>
+                            </div>     
+                            
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    Position
+                                </label>
+                                <input type="text"
+                                    name="position"
+                                    class="form-control text-uppercase"
+                                    style="text-transform: uppercase;"
+                                    required>
+                            </div>   
+
+                            <div class="mb-3">
+                                <label class = "form-label">
+                                    Default Password
+                                </label>
+                                <input type="text"
+                                    name="default_password"
+                                    class="form-control"
+                                    value="Password123"
+                                    readonly>
                             </div>
                         </div>
                     </div>
@@ -253,3 +275,57 @@ try {
     </div>
 
 </div>
+
+<script>
+const roleSelect = document.querySelector('select[name="role"]');
+const branchSelect = document.getElementById('branchSelect');
+const brandSelect = document.getElementById('brandSelect');
+const departmentInput = document.getElementById('departmentInput');
+
+function updateFieldsByRole() {
+    const role = roleSelect.value;
+
+    // reset first
+    branchSelect.disabled = true;
+    brandSelect.disabled = true;
+    departmentInput.disabled = true;
+
+    if (role === 'hr') {
+        // HR: branch + department only
+        departmentInput.disabled = false;
+
+    } else if (role === 'inhouse_manager') {
+        // inhouse manager: branch + brand only
+        departmentInput.disabled = false;
+        brandSelect.disabled = false;
+    } else if (role === 'branch_manager') {
+        // branch manager: branch + department only
+        branchSelect.disabled = false;        
+    }
+}
+
+roleSelect.addEventListener('change', updateFieldsByRole);
+
+// run on page load in case of pre-filled value
+updateFieldsByRole();
+</script>
+
+<script>
+const firstName = document.getElementById('first_name');
+const lastName  = document.getElementById('last_name');
+const username   = document.getElementById('username');
+
+function updateUsername() {
+    const first = firstName.value.trim();
+    const last  = lastName.value.trim();
+
+    username.value = [first, last]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+}
+
+// runs WHILE typing
+firstName.addEventListener('input', updateUsername);
+lastName.addEventListener('input', updateUsername);
+</script>

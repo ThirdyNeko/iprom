@@ -385,3 +385,4 @@
 [2026-05-08 16:55:01] Error [2]: Undefined variable $employee_id in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 308
 [2026-05-08 16:55:28] Error [2]: Undefined variable $employee_id in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 308
 [2026-05-08 16:55:34] Error [2]: Undefined variable $employee_id in C:\xampp\htdocs\iprom\functions\update_promodizer.php on line 308
+[2026-05-14 13:15:29] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
