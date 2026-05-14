@@ -77,13 +77,6 @@ th{
     color: #b0b0b0;
 }
 
-.date-input {
-    color: #b0b0b0; /* gray when empty */
-}
-
-.date-input:valid {
-    color: #212529; /* dark when date selected */
-}
 </style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -277,6 +270,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "BLOCKLISTED / AWOL / TERMINATED",
             "CHANGE SUB STATUS",
             "TRANSFER BRANCH",
+            "REMOVE BRANCH/BRAND",
         ];
 
         const leaveReasons = [

@@ -124,7 +124,10 @@ function toggleReasonDates() {
   if (startDateInput) {
     startDateInput.disabled = !showStart;
     startDateInput.required = showStart;
-    if (!showStart) startDateInput.value = "";
+    if (!showStart) {
+      startDateInput.disabled = true;
+      startDateInput.required = false;
+    }
   }
 
   // =========================
@@ -138,7 +141,11 @@ function toggleReasonDates() {
     endDateInput.disabled = !showEnd;
     endDateInput.required = showEnd;
 
-    if (!showEnd) endDateInput.value = "";
+    if (!showEnd) {
+      endDateInput.disabled = true;
+      endDateInput.required = false;
+      endDateInput.value = "";
+    }
   }
 }
 
@@ -156,6 +163,7 @@ const showDateSeparatedReasons = [
   "BLACKLISTED / AWOL / TERMINATED",
   "MATERNITY LEAVE",
   "EMERGENCY LEAVE",
+  "REMOVE BRANCH/BRAND",
 ];
 
 function toggleDateSeparated() {
@@ -305,6 +313,16 @@ function syncMultiUI(status) {
     if (editMultiBrandField) {
       editMultiBrandField.classList.remove("d-none");
     }
+  }
+}
+
+function updateDateStyle(input) {
+  if (!input) return;
+
+  if (input.value) {
+    input.classList.add("has-value");
+  } else {
+    input.classList.remove("has-value");
   }
 }
 
@@ -619,8 +637,17 @@ function resetEditModal() {
   editRovingContainer.innerHTML = "";
   editMultiBrandContainer.innerHTML = "";
 
-  const selects = modalEl.querySelectorAll("select");
-  selects.forEach((s) => (s.value = ""));
+  const protectedSelects = [
+    "editReasonUpdate",
+    "editEmploymentStatus",
+    "editSubStatus",
+  ];
+
+  modalEl.querySelectorAll("select").forEach((s) => {
+    if (!protectedSelects.includes(s.id)) {
+      s.value = "";
+    }
+  });
 }
 
 // =========================
@@ -732,8 +759,9 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
           el("editAssignmentDate").value = "";
         }
       }
-      if (el("editStartDate"))
-        el("editStartDate").value = cleanValue(employee.start_date);
+      if (el("editStartDate") && employee.start_date) {
+        el("editStartDate").value = employee.start_date; // already YYYY-MM-DD
+      }
       if (el("editEndDate"))
         el("editEndDate").value = cleanValue(employee.end_date);
 

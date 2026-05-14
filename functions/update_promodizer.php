@@ -227,18 +227,24 @@ $inactiveReasons = [
     'RESIGNED',
     'PULL-OUT / END OF CONTRACT',
     'BLACKLISTED / AWOL / TERMINATED',
-    'MATERNITY LEAVE',
-    'EMERGENCY LEAVE',
     'REMOVE BRANCH/BRAND',
 ];
 
 $isInactiveReason = in_array($reason_for_update, $inactiveReasons);
 
 $dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
-$today = strtotime(date('Y-m-d'));
+$today = strtotime('today');
 $hidden = false;
 
 if ($isInactiveReason) {
+
+    $status = (!$dateSeparatedValue || $dateSeparatedValue < $today)
+        ? 'INACTIVE'
+        : 'ACTIVE';
+
+    $hidden = ($status === 'INACTIVE');
+
+} else if (in_array($reason_for_update, ['MATERNITY LEAVE', 'EMERGENCY LEAVE'])) {
 
     $status = (!$dateSeparatedValue || $dateSeparatedValue <= $today)
         ? 'INACTIVE'
