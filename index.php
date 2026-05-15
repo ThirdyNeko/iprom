@@ -198,17 +198,6 @@ $cards = [
 <script src="assets/js/dashboard/chart.js"></script>
 
 <script>
-  const isFirstLogin = <?= json_encode(!empty($_SESSION['first_login'])) ?>;
-
-  document.addEventListener("DOMContentLoaded", function () {
-    if (isFirstLogin) {
-      const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-      modal.show();
-    }
-  });
-</script>
-
-<script>
 // PROMODIZER CHART
 new Chart(document.getElementById('promodizerChart'), {
     type:'doughnut',

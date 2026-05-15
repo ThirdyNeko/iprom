@@ -66,6 +66,22 @@ try {
         ':password' => $newHashedPassword
     ]);
 
+    // =========================
+    // 🔥 FIX: update first_login
+    // =========================
+    $stmt2 = $pdo->prepare("
+        UPDATE users
+        SET first_login = 0
+        WHERE username = :username
+    ");
+
+    $stmt2->execute([
+        ':username' => $_SESSION['username']
+    ]);
+
+    // update session so UI updates immediately
+    $_SESSION['first_login'] = 0;
+
     echo json_encode(['status' => 'success', 'message' => 'Password changed successfully!']);
     exit;
 

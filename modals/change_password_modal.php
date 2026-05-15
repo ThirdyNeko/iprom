@@ -49,6 +49,29 @@
   </div>
 </div>
 
+
+
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
 <script src="assets/js/password/change_password.js"></script>
+
+<script>
+const isFirstLogin = <?= json_encode(!empty($_SESSION['first_login'])) ?>;
+
+document.addEventListener("DOMContentLoaded", function () {
+  const modalEl = document.getElementById('changePasswordModal');
+
+  const modal = new bootstrap.Modal(modalEl, {
+    backdrop: isFirstLogin ? 'static' : true,
+    keyboard: !isFirstLogin
+  });
+
+  if (isFirstLogin) {
+    modal.show();
+
+    modalEl.addEventListener('hide.bs.modal', function (e) {
+      e.preventDefault();
+    });
+  }
+});
+</script>

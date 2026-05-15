@@ -29,6 +29,10 @@ document
           title: data.status === "success" ? "Password Changed!" : "Oops...",
           text: data.message,
           confirmButtonText: "OK",
+        }).then(() => {
+          if (data.status === "success") {
+            location.reload(); // 🔥 refresh after success
+          }
         });
 
         if (data.status === "success") this.reset();
