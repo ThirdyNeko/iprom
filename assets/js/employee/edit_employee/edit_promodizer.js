@@ -118,6 +118,10 @@ function toggleReasonDates() {
   // =========================
   // START DATE LOGIC
   // =========================
+  // clear existing value once reason is selected
+  if (shouldShowReason && startDateInput.value) {
+    startDateInput.value = "";
+  }
   const showStart = shouldShowReason || shouldShow;
 
   if (startDateRow) startDateRow.style.display = showStart ? "" : "none";
