@@ -43,6 +43,7 @@ $recordsTotal = count($rows);
 // -------------------------
 // STATUS FILTER
 // -------------------------
+
 if ($status) {
     $rows = array_filter($rows, function ($a) use ($status) {
         $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
