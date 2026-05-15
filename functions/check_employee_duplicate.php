@@ -53,6 +53,7 @@ try {
     if ($row) {
         echo json_encode([
             'exists' => true,
+            'id' => $row['id'], // ✅ add this
             'employee_id' => $row['employee_id'],
             'status' => $row['status'],
             'reason_for_update' => $row['reason_for_update']

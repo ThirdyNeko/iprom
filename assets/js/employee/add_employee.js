@@ -524,6 +524,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (checkData && checkData.exists === true) {
         const reason = (checkData.reason_for_update || "").toUpperCase();
         const employeeId = checkData.employee_id;
+        const id = checkData.id;
         const status = (checkData.status || "").toUpperCase();
 
         if (!employeeId) {
@@ -549,11 +550,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (status === "INACTIVE") {
           const result = await Swal.fire({
             icon: "question",
-            title: "Employee is Inactive",
-            text: "This employee already exists but is inactive. Do you want to reassign and overwrite their record?",
+            title: "Duplicate Record Found",
+            html: "This employee already exists but is currently inactive. Would you like to <b>reassign and overwrite</b> the existing record?",
             showCancelButton: true,
-            confirmButtonText: "Yes, Reassign",
-            cancelButtonText: "No",
+            confirmButtonText: "Yes",
+            cancelButtonText: "Cancel",
           });
 
           if (!result.isConfirmed) return;
@@ -565,16 +566,16 @@ document.addEventListener("DOMContentLoaded", async function () {
           // 🟢 ACTIVE → open instead
           const result = await Swal.fire({
             icon: "info",
-            title: "Employee Already Exists",
-            text: "This employee already exists. Do you want to open their record?",
+            title: "Duplicate Record Found",
+            html: "This employee already exists. Do you want to <b>open their record</b>?",
             showCancelButton: true,
-            confirmButtonText: "Yes, Open Record",
+            confirmButtonText: "Yes",
             cancelButtonText: "Cancel",
           });
 
           if (!result.isConfirmed) return;
 
-          window.location.href = `promodizers.php?edit=${employeeId}`;
+          window.location.href = `promodizers.php?edit=${id}`;
           return;
         }
       }
