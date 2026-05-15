@@ -119,7 +119,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
     <div class="container-fluid">
         <div class="row mb-3">
             <div class="col d-flex justify-content-between align-items-center">
-                <h4 class="fw-bold mb-0">Promodisers</h4>
+                <h4 class="fw-bold mb-0">Promodiser Overview</h4>
 
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
                     <i class="bi bi-plus-circle"></i> Add Employee
