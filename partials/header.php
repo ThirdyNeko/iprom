@@ -20,8 +20,8 @@ body {
 
 /* LOGO */
 .sidebar-logo {
-    width: 28px;
-    height: 28px;
+    width: 50px;
+    height: 50px;
     object-fit: contain;
 }
 
@@ -42,7 +42,7 @@ body {
 
 /* TITLE */
 .sidebar h5 {
-    font-size: 20px;
+    font-size: 35px;
     font-weight: 600;
     color: #1e3a8a;
     letter-spacing: 0.3px;
