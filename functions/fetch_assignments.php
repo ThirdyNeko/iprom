@@ -43,22 +43,22 @@ $recordsTotal = count($rows);
 // -------------------------
 // STATUS FILTER
 // -------------------------
-if ($status) {
-    $rows = array_filter($rows, function ($a) use ($status) {
-        $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
+// if ($status) {
+//     $rows = array_filter($rows, function ($a) use ($status) {
+//         $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
 
-        if ($status === 'zero') {
-            return (int)$a['assigned_count'] === 0;
-        }
-        if ($status === 'complete') {
-            return $shortage === 0;
-        }
-        if ($status === 'lacking') {
-            return (int)$a['assigned_count'] > 0 && $shortage > 0;
-        }
-        return true;
-    });
-}
+//         if ($status === 'zero') {
+//             return (int)$a['assigned_count'] === 0;
+//         }
+//         if ($status === 'complete') {
+//             return $shortage === 0;
+//         }
+//         if ($status === 'lacking') {
+//             return (int)$a['assigned_count'] > 0 && $shortage > 0;
+//         }
+//         return true;
+//     });
+// }
 
 // Reindex
 $rows = array_values($rows);
@@ -75,13 +75,14 @@ $result = [];
 foreach ($paged as $a) {
 
     $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
-
-    if ((int)$a['assigned_count'] === 0) {
-        $statusLabel = "<span class='badge bg-danger'>INACTIVE</span>";
+    if ((int)$a['required_count'] === 0) {
+        $statusLabel = "<span class='badge bg-secondary'>INACTIVE</span>";
+    }elseif ((int)$a['assigned_count'] === 0) {
+        $statusLabel = "<span class='badge bg-danger'>VACANT</span>";
     } elseif ($shortage > 0) {
-        $statusLabel = "<span class='badge bg-warning'>VACANT: $shortage</span>";
+        $statusLabel = "<span class='badge bg-orange'>PARTIAL: $shortage</span>";
     } else {
-        $statusLabel = "<span class='badge bg-success'>ACTIVE</span>";
+        $statusLabel = "<span class='badge bg-success'>COMPLETE</span>";
     }
 
     $result[] = [

@@ -47,8 +47,8 @@ $cards = [
     ['label'=>'INACTIVE','value'=>$unassigned,'percent'=>$unassignedPct,'color'=>'danger','icon'=>'⚠️','link'=>'promodizers.php?status=inactive'],
 
     ['label'=>'Total Assignments','value'=>$totalAssignments,'color'=>'primary','icon'=>'📋','link'=>'assignments.php'],
-    ['label'=>'ACTIVE','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
-    ['label'=>'VACANT','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'warning','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
+    ['label'=>'COMPLETE','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
+    ['label'=>'PARTIAL','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'orange','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
     ['label'=>'INACTIVE','value'=>$zeroAssigned,'percent'=>$zeroAssignedPct,'color'=>'danger','icon'=>'0️⃣','link'=>'assignments.php?status=zero'], // placed last
 ];
 ?>
@@ -65,6 +65,10 @@ $cards = [
     position: relative;
     height: 580px;   /* stable dashboard height */
     width: 100%;
+}
+
+.border-orange{
+    border-color: #ffd700 !important;
 }
 </style>
 
@@ -87,7 +91,7 @@ $cards = [
 
                             <a href="<?= $card['link'] ?>" class="text-decoration-none">
 
-                                <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale h-100"
+                                <div class="card <?= $card['color'] ?> border-<?= $card['color'] ?> hover-scale h-100"
                                      data-bs-toggle="tooltip"
                                      title="<?= $card['label'] ?> Details">
 
@@ -144,7 +148,7 @@ $cards = [
 
                             <a href="<?= $card['link'] ?>" class="text-decoration-none">
 
-                                <div class="card shadow-sm border-<?= $card['color'] ?> hover-scale h-100"
+                                <div class="card <?= $card['color'] ?> border-<?= $card['color'] ?> hover-scale h-100"
                                      data-bs-toggle="tooltip"
                                      title="<?= $card['label'] ?> Details">
 
@@ -215,10 +219,10 @@ new Chart(document.getElementById('promodizerChart'), {
 new Chart(document.getElementById('assignmentChart'), {
     type:'doughnut',
     data:{
-        labels:['ACTIVE','VACANT','INACTIVE'],
+        labels:['COMPLETE','PARTIAL','INACTIVE'],
         datasets:[{
             data:[<?= $completeAssignments ?>, <?= $lackingAssignments ?>, <?= $zeroAssigned ?>],
-            backgroundColor:['#198754','#ffc107','#dc3545']
+            backgroundColor:['#198754','#ffd700','#dc3545']
         }]
     },
     options:{plugins:{legend:{position:'bottom'}}, responsive: true, maintainAspectRatio: false}

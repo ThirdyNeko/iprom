@@ -6,16 +6,19 @@ let currentAssigned = 0;
 // =========================
 function getStatusBadge(required, assigned) {
   const shortage = required - assigned;
+  if (required === 0) {
+    return `<span class="badge bg-secondary">INACTIVE</span>`;
+  }
 
   if (assigned === 0) {
-    return `<span class="badge bg-danger">INACTIVE</span>`;
+    return `<span class="badge bg-danger">VACANT</span>`;
   }
 
   if (shortage > 0) {
-    return `<span class="badge bg-warning">VACANT: ${shortage}</span>`;
+    return `<span class="badge bg-orange">PARTIAL: ${shortage}</span>`;
   }
 
-  return `<span class="badge bg-success">ACTIVE</span>`;
+  return `<span class="badge bg-success">COMPLETE</span>`;
 }
 
 // =========================

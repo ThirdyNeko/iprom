@@ -66,6 +66,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
             height: 32px !important;
             font-size: 14px;
         }
+
+        .bg-orange {
+            background-color: #ffd700 !important;
+            color: #fff !important;
+        }
     </style>
 
     <div class="container-fluid">
