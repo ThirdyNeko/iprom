@@ -551,7 +551,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           const result = await Swal.fire({
             icon: "question",
             title: "Duplicate Record Found",
-            html: "This employee already exists but is currently inactive. Would you like to <b>reassign and overwrite</b> the existing record?",
+            html: "This employee already exists but is currently <b>inactive</b>. Would you like to <b>reassign and overwrite</b> the existing record?",
             showCancelButton: true,
             confirmButtonText: "Yes",
             cancelButtonText: "Cancel",
@@ -567,7 +567,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           const result = await Swal.fire({
             icon: "info",
             title: "Duplicate Record Found",
-            html: "This employee already exists. Do you want to <b>open their record</b>?",
+            html: "This employee already exists but is currently <b>active</b>. Would you like to <b>open</b> the existing record?",
             showCancelButton: true,
             confirmButtonText: "Yes",
             cancelButtonText: "Cancel",
