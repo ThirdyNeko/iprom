@@ -43,22 +43,22 @@ $recordsTotal = count($rows);
 // -------------------------
 // STATUS FILTER
 // -------------------------
-// if ($status) {
-//     $rows = array_filter($rows, function ($a) use ($status) {
-//         $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
+if ($status) {
+    $rows = array_filter($rows, function ($a) use ($status) {
+        $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
 
-//         if ($status === 'zero') {
-//             return (int)$a['assigned_count'] === 0;
-//         }
-//         if ($status === 'complete') {
-//             return $shortage === 0;
-//         }
-//         if ($status === 'lacking') {
-//             return (int)$a['assigned_count'] > 0 && $shortage > 0;
-//         }
-//         return true;
-//     });
-// }
+        if ($status === 'zero') {
+            return (int)$a['assigned_count'] === 0 && (int)$a['required_count'] > 0;
+        }
+        if ($status === 'complete') {
+            return $shortage === 0 && (int)$a['required_count'] > 0;
+        }
+        if ($status === 'lacking') {
+            return (int)$a['assigned_count'] > 0 && $shortage > 0 ;
+        }
+        return true;
+    });
+}
 
 // Reindex
 $rows = array_values($rows);
