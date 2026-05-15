@@ -26,17 +26,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 🔐 Always check user first
         if ($user && password_verify($password, $user['password'])) {
 
-            // 🔥 Regenerate session ID (VERY IMPORTANT)
-            session_regenerate_id(true);
+            // ❌ Prevent inactive users from logging in
+            if (strtoupper(trim($user['status'] ?? '')) === 'INACTIVE') {
+                $error = "Your account is inactive. Please contact the administrator.";
+            } else {
 
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['branch'] = $user['branch'] ?? null;
-            $_SESSION['brand']  = $user['brand'] ?? null;
+                // 🔥 Regenerate session ID (VERY IMPORTANT)
+                session_regenerate_id(true);
 
-            header("Location: ../index.php");
-            exit;
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['role'] = $user['role'];
+                $_SESSION['branch'] = $user['branch'] ?? null;
+                $_SESSION['brand']  = $user['brand'] ?? null;
+                $_SESSION['position'] = $user['position'] ?? null;
+                $_SESSION['department'] = $user['department'] ?? null;
+                $_SESSION['status'] = $user['status'] ?? null;
+                $_SESSION['first_login'] = $user['first_login'] ?? null;
+
+                header("Location: ../index.php");
+                exit;
+            }
 
         } else {
             $error = "Invalid ID or password.";
