@@ -48,4 +48,21 @@ $(document).ready(function () {
   $("#filterRemarksEmpty").on("change", function () {
     table.draw();
   });
+
+  $("#filterRemarksEmpty").on("change", function () {
+    const isChecked = $(this).is(":checked");
+    const input = $("#filterRemarks");
+
+    if (isChecked) {
+      // disable + clear
+      input.val("");
+      input.prop("disabled", true);
+    } else {
+      // enable again
+      input.prop("disabled", false);
+    }
+
+    // reload table
+    $("#logsTable").DataTable().draw();
+  });
 });

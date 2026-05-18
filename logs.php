@@ -125,6 +125,12 @@ table td {
     color: #555;
 }
 
+#filterRemarks:disabled {
+    background-color: #f1f3f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 /* =========================
    CARD CLEANUP
 ========================= */
