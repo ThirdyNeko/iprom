@@ -39,6 +39,41 @@
 
         <!-- ✅ ADMIN ONLY: Users -->
         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <li class="nav-item">
+            <a class="nav-link d-flex align-items-center gap-2 <?= in_array($current_page, ['branches.php', 'agencies.php']) ? '' : 'collapsed' ?>"
+            data-bs-toggle="collapse"
+            href="#settingsSubmenu"
+            role="button"
+            aria-expanded="<?= in_array($current_page, ['branches.php', 'agencies.php']) ? 'true' : 'false' ?>"
+            aria-controls="settingsSubmenu">
+
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+                <i class="bi bi-chevron-down ms-auto"></i>
+            </a>
+
+            <div class="collapse <?= in_array($current_page, ['branches.php', 'agencies.php']) ? 'show' : '' ?>"
+                id="settingsSubmenu">
+
+                <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small ms-4">
+
+                    <li>
+                        <a href="branches.php"
+                        class="nav-link <?= $current_page == 'branches.php' ? 'active' : '' ?>">
+                            Branches
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="agencies.php"
+                        class="nav-link <?= $current_page == 'agencies.php' ? 'active' : '' ?>">
+                            Agencies
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </li>
         <li>
             <a href="merge.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'merge.php' ? 'active' : '' ?>">
                 <i class="bi bi-arrow-left-right"></i>
