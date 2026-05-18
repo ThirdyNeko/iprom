@@ -19,6 +19,7 @@ $(document).ready(function () {
       { data: "corpo" },
       { data: "region" },
       { data: "area" },
+      { data: "director" },
 
       {
         data: "status",

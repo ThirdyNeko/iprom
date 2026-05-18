@@ -70,9 +70,10 @@ $pdo = qa_db();
                         <thead class="table-primary">
                             <tr>
                                 <th>Branch</th>
-                                <th>Corpo</th>
+                                <th>Company</th>
                                 <th>Region</th>
                                 <th>Area</th>
+                                <th>Director</th>
                                 <th>Status</th>
                             </tr>
                         </thead>

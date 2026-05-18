@@ -14,7 +14,8 @@ $columns = [
     1 => 'corpo',
     2 => 'region',
     3 => 'area',
-    4 => 'status'
+    4 => 'director',
+    5 => 'status'
 ];
 
 $orderColumnIndex = $_POST['order'][0]['column'] ?? 0;
@@ -54,6 +55,7 @@ FROM (
         corpo,
         region,
         area,
+        director,
         status,
         branch_code,
         ROW_NUMBER() OVER (ORDER BY $orderColumn $orderDir) AS rownum

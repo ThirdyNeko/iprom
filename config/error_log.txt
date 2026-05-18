@@ -639,3 +639,4 @@
 [2026-05-18 10:05:40] Error [8192]: strtoupper(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 165
 [2026-05-18 10:06:03] Error [8192]: strtoupper(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 165
 [2026-05-18 10:08:19] Error [8192]: strtoupper(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 165
+[2026-05-18 13:05:54] Error [8192]: strtoupper(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 165
