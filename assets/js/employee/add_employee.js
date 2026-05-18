@@ -492,10 +492,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     // adjust these depending on your actual inputs
     const firstName =
       form.querySelector('input[name="first_name"]')?.value || "";
+    const middleName =
+      form.querySelector('input[name="middle_name"]')?.value || "";
     const lastName = form.querySelector('input[name="last_name"]')?.value || "";
     const birthdayValue = birthdayInput.value;
 
-    if (!firstName || !lastName || !birthdayValue) {
+    if (!firstName || !middleName || !lastName || !birthdayValue) {
       return Swal.fire(
         "Missing Data",
         "Name and birthday are required for validation.",
@@ -509,6 +511,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           first_name: firstName,
+          middle_name: middleName,
           last_name: lastName,
           birthday: birthdayValue,
         }),
