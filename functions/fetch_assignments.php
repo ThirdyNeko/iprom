@@ -3,19 +3,18 @@ header('Content-Type: application/json');
 include '../config/db.php';
 $pdo = qa_db();
 
-// DataTables params (SAFE)
+// DataTables params
 $draw   = $_POST['draw'] ?? 1;
 $start  = $_POST['start'] ?? 0;
 $length = $_POST['length'] ?? 50;
 
-// Filters (SAFE FIX - avoid undefined index warnings)
+// Filters
 $branch = $_POST['branch'] ?? null;
 $brand  = $_POST['brand'] ?? null;
 $status = $_POST['status'] ?? null;
 $from   = $_POST['from_date'] ?? null;
 $to     = $_POST['to_date'] ?? null;
 
-// Clean nulls
 function clean($v) {
     return ($v === "" || $v === null) ? null : $v;
 }
@@ -37,48 +36,78 @@ $stmt = $pdo->prepare("
 $stmt->execute([$branch, $brand, $from, $to]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// TOTAL BEFORE FILTER (IMPORTANT FIX)
+// TOTAL
 $recordsTotal = count($rows);
 
-// -------------------------
 // STATUS FILTER
-// -------------------------
-
 if ($status) {
     $rows = array_filter($rows, function ($a) use ($status) {
-        $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
+
+        $required = (int)$a['required_count'];
+        $assigned = (int)$a['assigned_count'];
+        $shortage = $required - $assigned;
 
         if ($status === 'zero') {
-            return (int)$a['assigned_count'] === 0 && (int)$a['required_count'] > 0;
+            return $assigned === 0 && $required > 0;
         }
+
         if ($status === 'complete') {
-            return $shortage === 0 && (int)$a['required_count'] > 0;
+            return $shortage === 0 && $required > 0;
         }
+
         if ($status === 'lacking') {
-            return (int)$a['assigned_count'] > 0 && $shortage > 0 ;
+            return $assigned > 0 && $shortage > 0;
         }
+
         return true;
     });
 }
 
-// Reindex
 $rows = array_values($rows);
-
-// FILTERED COUNT (IMPORTANT FIX)
 $recordsFiltered = count($rows);
+
+// ======================================================
+// ✅ ORDER: BRAND FIRST, THEN DATE
+// ======================================================
+$orderDir = strtolower($_POST['order'][0]['dir'] ?? 'asc');
+
+usort($rows, function ($a, $b) use ($orderDir) {
+
+    $brandA = $a['brand_name'] ?? '';
+    $brandB = $b['brand_name'] ?? '';
+
+    $dateA = strtotime($a['updated_at'] ?? '1970-01-01');
+    $dateB = strtotime($b['updated_at'] ?? '1970-01-01');
+
+    // PRIMARY SORT: brand_name
+    if ($brandA !== $brandB) {
+        $cmp = strcmp($brandA, $brandB);
+        return $orderDir === 'asc' ? $cmp : -$cmp;
+    }
+
+    // SECONDARY SORT: updated_at
+    if ($dateA === $dateB) return 0;
+
+    $cmp = $dateA <=> $dateB;
+
+    return $orderDir === 'desc' ? $cmp : -$cmp;
+});
 
 // PAGINATION
 $paged = array_slice($rows, $start, $length);
 
-// FORMAT OUTPUT (UNCHANGED STRUCTURE — SAFE)
+// FORMAT OUTPUT
 $result = [];
 
 foreach ($paged as $a) {
 
-    $shortage = (int)$a['required_count'] - (int)$a['assigned_count'];
-    if ((int)$a['required_count'] === 0) {
+    $required = (int)$a['required_count'];
+    $assigned = (int)$a['assigned_count'];
+    $shortage = $required - $assigned;
+
+    if ($required === 0) {
         $statusLabel = "<span class='badge bg-secondary'>INACTIVE</span>";
-    }elseif ((int)$a['assigned_count'] === 0) {
+    } elseif ($assigned === 0) {
         $statusLabel = "<span class='badge bg-danger'>VACANT</span>";
     } elseif ($shortage > 0) {
         $statusLabel = "<span class='badge bg-orange'>PARTIAL: $shortage</span>";
@@ -97,7 +126,7 @@ foreach ($paged as $a) {
     ];
 }
 
-// RESPONSE (FIXED TOTALS ONLY)
+// RESPONSE
 echo json_encode([
     "draw" => intval($draw),
     "recordsTotal" => $recordsTotal,

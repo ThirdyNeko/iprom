@@ -30,7 +30,7 @@ $(document).ready(function () {
     lengthMenu: [10, 25, 50, 100],
     responsive: true,
     dom: "lrtip",
-    order: [[5, "desc"]], // FIXED (was 6, but safer depending on columns)
+    order: [[3, "desc"]], // FIXED (was 6, but safer depending on columns)
   });
 
   // =========================
