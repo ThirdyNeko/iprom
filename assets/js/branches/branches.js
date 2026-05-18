@@ -1,5 +1,7 @@
+var table;
+
 $(document).ready(function () {
-  let table = $("#Branchtable").DataTable({
+  table = $("#Branchtable").DataTable({
     processing: true,
     serverSide: true,
     pageLength: 25,
@@ -21,25 +23,39 @@ $(document).ready(function () {
       {
         data: "status",
         render: function (data, type, row) {
-          const checked =
-            String(data).toLowerCase() === "active" ? "checked" : "";
+          const isActive = String(data).toLowerCase() === "active";
+          const checked = isActive ? "checked" : "";
+
+          const label = isActive ? "Active" : "Inactive";
+          const badgeClass = isActive ? "bg-success" : "bg-secondary";
 
           return `
-        <div class="form-check form-switch d-flex justify-content-center">
-          <input
-            class="form-check-input branch-status-switch"
-            type="checkbox"
-            role="switch"
-            data-code="${row.branch_code}"
-            ${checked}
-          >
-        </div>
-      `;
+            <div class="d-flex align-items-center justify-content-center gap-2">
+
+              <div class="form-check form-switch m-0">
+                <input
+                  class="form-check-input branch-status-switch"
+                  type="checkbox"
+                  role="switch"
+                  data-code="${row.branch_code}"
+                  ${checked}
+                >
+              </div>
+
+              <span class="badge ${badgeClass}">
+                ${label}
+              </span>
+
+            </div>
+          `;
         },
       },
     ],
   });
 
+  // =========================
+  // SYNC BRANCHES
+  // =========================
   $(document).on("click", "#syncBranchesBtn", function () {
     const btn = $(this);
 
@@ -57,7 +73,6 @@ $(document).ready(function () {
 
       btn.prop("disabled", true);
 
-      // SHOW LOADING SCREEN
       Swal.fire({
         title: "Syncing Branches...",
         html: "Please wait while branch data is updating.",
@@ -75,12 +90,12 @@ $(document).ready(function () {
 
         success: function (res) {
           if (res.success) {
-            // WAIT FOR DATATABLE TO FINISH RELOADING
             table.ajax.reload(function () {
               Swal.fire({
                 title: "Success!",
                 text: res.message,
                 icon: "success",
+                timer: 1500,
                 showConfirmButton: false,
               });
             }, false);
@@ -111,13 +126,15 @@ $(document).ready(function () {
   });
 });
 
-// CHANGE STATUS
+// =========================
+// CHANGE STATUS SWITCH
+// =========================
 $(document).on("change", ".branch-status-switch", function () {
   const toggle = $(this);
-
   const code = toggle.data("code");
-
   const status = toggle.is(":checked") ? 1 : 0;
+
+  toggle.prop("disabled", true);
 
   $.ajax({
     url: "functions/update_branch_status.php",
@@ -131,13 +148,24 @@ $(document).on("change", ".branch-status-switch", function () {
 
     success: function (res) {
       if (res.success) {
-        const statusText = status == 1 ? "ACTIVE" : "INACTIVE";
+        const row = table.row(toggle.closest("tr"));
+        const rowData = row.data();
+
+        const statusText = status == 1 ? "active" : "inactive";
+
+        // ✅ update row safely
+        row
+          .data({
+            ...rowData,
+            status: statusText,
+          })
+          .invalidate();
 
         Swal.fire({
           icon: "success",
           title: "Updated",
-          text: `Branch status changed to ${statusText}`,
-          timer: 1500,
+          text: `Branch status changed to ${statusText.toUpperCase()}`,
+          timer: 1200,
           showConfirmButton: false,
         });
       } else {
@@ -159,6 +187,10 @@ $(document).on("change", ".branch-status-switch", function () {
       });
 
       toggle.prop("checked", !toggle.is(":checked"));
+    },
+
+    complete: function () {
+      toggle.prop("disabled", false);
     },
   });
 });
