@@ -12,7 +12,17 @@ $length = (int)($_POST['length'] ?? 10);
 $search = trim($_POST['search']['value'] ?? '');
 
 // -------------------------
-// BASE QUERY (USED IN BOTH COUNT + DATA)
+// CUSTOM FILTERS
+// -------------------------
+$user       = trim($_POST['user'] ?? '');
+$reason     = trim($_POST['reason'] ?? '');
+$remarks    = trim($_POST['remarks'] ?? '');
+$remarksEmpty = (int)($_POST['remarks_empty'] ?? 0); // ✅ FIX ADDED
+$from_date  = $_POST['from_date'] ?? null;
+$to_date    = $_POST['to_date'] ?? null;
+
+// -------------------------
+// BASE QUERY
 // -------------------------
 $baseQuery = "
 FROM employee_reason_history h
@@ -21,35 +31,12 @@ LEFT JOIN employee_info i
 ";
 
 // -------------------------
-// SEARCH FILTER
+// CONDITIONS
 // -------------------------
-$where = "";
-$params = [];
-
-if ($search !== '') {
-    $where = " WHERE 
-        h.reason_for_update LIKE :search
-        OR h.remarks LIKE :search
-        OR i.first_name LIKE :search
-        OR i.last_name LIKE :search
-        OR h.updated_by LIKE :search
-    ";
-    $params[':search'] = "%$search%";
-}
-
-// -------------------------
-// CUSTOM FILTERS
-// -------------------------
-$user       = trim($_POST['user'] ?? '');
-$reason     = trim($_POST['reason'] ?? '');
-$remarks    = trim($_POST['remarks'] ?? '');
-$from_date  = $_POST['from_date'] ?? null;
-$to_date    = $_POST['to_date'] ?? null;
-
 $conditions = [];
 $params = [];
 
-// 🔍 GLOBAL SEARCH (kept)
+// GLOBAL SEARCH
 if ($search !== '') {
     $conditions[] = "(
         h.reason_for_update LIKE :search
@@ -61,22 +48,33 @@ if ($search !== '') {
     $params[':search'] = "%$search%";
 }
 
-// 🔽 INDIVIDUAL FILTERS
+// USER FILTER
 if ($user !== '') {
     $conditions[] = "h.updated_by LIKE :user";
     $params[':user'] = "%$user%";
 }
 
+// REASON FILTER
 if ($reason !== '') {
     $conditions[] = "h.reason_for_update LIKE :reason";
     $params[':reason'] = "%$reason%";
 }
 
-if ($remarks !== '') {
+// =========================
+// REMARKS FILTER (FIXED)
+// =========================
+if ($remarksEmpty) {
+
+    // ONLY EMPTY / NULL REMARKS
+    $conditions[] = "(h.remarks IS NULL OR LTRIM(RTRIM(h.remarks)) = '')";
+
+} elseif ($remarks !== '') {
+
     $conditions[] = "h.remarks LIKE :remarks";
     $params[':remarks'] = "%$remarks%";
 }
 
+// DATE FILTERS
 if (!empty($from_date)) {
     $conditions[] = "CAST(h.update_date AS DATE) >= :from_date";
     $params[':from_date'] = $from_date;
@@ -87,11 +85,11 @@ if (!empty($to_date)) {
     $params[':to_date'] = $to_date;
 }
 
-// 🧠 BUILD WHERE
+// BUILD WHERE
 $where = count($conditions) ? " WHERE " . implode(" AND ", $conditions) : "";
 
 // -------------------------
-// TOTAL RECORDS (NO FILTER)
+// TOTAL RECORDS
 // -------------------------
 $totalStmt = $pdo->query("SELECT COUNT(*) FROM employee_reason_history");
 $recordsTotal = (int)$totalStmt->fetchColumn();
@@ -115,13 +113,13 @@ $countStmt->execute();
 $recordsFiltered = (int)$countStmt->fetchColumn();
 
 // -------------------------
-// PAGINATION (SQL SERVER 2012 SAFE)
+// PAGINATION (ROW_NUMBER)
 // -------------------------
 $startRow = $start + 1;
 $endRow   = $start + $length;
 
 // -------------------------
-// MAIN DATA QUERY (ROW_NUMBER FIX)
+// MAIN QUERY
 // -------------------------
 $sql = "
 SELECT *
@@ -144,12 +142,12 @@ WHERE t.rn BETWEEN :startRow AND :endRow
 
 $stmt = $pdo->prepare($sql);
 
-// bind search params
+// bind filters
 foreach ($params as $key => $val) {
     $stmt->bindValue($key, $val);
 }
 
-// bind paging
+// bind pagination
 $stmt->bindValue(':startRow', $startRow, PDO::PARAM_INT);
 $stmt->bindValue(':endRow', $endRow, PDO::PARAM_INT);
 
@@ -157,13 +155,14 @@ $stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // -------------------------
-// FORMAT OUTPUT FOR DATATABLES
+// FORMAT OUTPUT
 // -------------------------
 $rows = [];
 
 foreach ($data as $row) {
 
     $fullName = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+
     if ($fullName === '') {
         $fullName = '-';
     }
@@ -171,7 +170,7 @@ foreach ($data as $row) {
     $rows[] = [
         $row['updated_by'] ?: 'SYSTEM',
         $row['reason_for_update'] ?? '-',
-        $row['remarks'] ?? '-',
+        trim($row['remarks'] ?? '') !== '' ? $row['remarks'] : '-',
         $fullName,
         !empty($row['update_date'])
             ? date('Y-m-d', strtotime($row['update_date']))

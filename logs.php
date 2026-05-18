@@ -10,78 +10,148 @@ $pdo = qa_db();
 
 ?>
 <style>
-    table td {
-        text-align: left !important;
-    } 
-    #logsTable th,
-    #logsTable td {
-        border-right: 1px solid #dee2e6;
-    }
-    #logsTable.table-hover tbody tr:hover > td {
-        background-color: #e6f0ff !important;
-    }
-    #logsTable th
-    {
-        text-align: center;
-        vertical-align: middle;
-        background-color: #2d68c4;
-        color : white;
+table td {
+    text-align: left !important;
+}
+
+/* =========================
+   TABLE STYLING
+========================= */
+
+#logsTable th,
+#logsTable td {
+    border-right: 1px solid #dee2e6;
+}
+
+#logsTable.table-hover tbody tr:hover > td {
+    background-color: #e6f0ff !important;
+}
+
+#logsTable th {
+    text-align: center;
+    vertical-align: middle;
+    background-color: #2d68c4;
+    color: white;
+}
+
+#logsTable td {
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+#logsTable th:first-child,
+#logsTable td:first-child {
+    border-left: 1px solid #dee2e6;
+    text-align: center !important;
+}
+
+#logsTable td:nth-child(4),
+#logsTable td:last-child {
+    text-align: center !important;
+}
+
+/* =========================
+   FILTER BAR LAYOUT
+========================= */
+
+.filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 15px;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 180px;
+}
+
+/* Label */
+.filter-label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #555;
+}
+
+/* Inputs */
+.filter-control {
+    height: 34px !important;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+/* =========================
+   CLEAR INPUT BUTTON
+========================= */
+
+.clear-input {
+    position: relative;
+}
+
+.clear-input input {
+    padding-right: 30px;
+    border-radius: 6px;
+}
+
+.clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.clear-btn:hover {
+    color: #000;
+}
+
+/* =========================
+   CHECKBOX (Remarks filter)
+========================= */
+
+.form-check {
+    margin-top: 4px;
+}
+
+.form-check-label {
+    font-size: 12px;
+    color: #555;
+}
+
+/* =========================
+   CARD CLEANUP
+========================= */
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Remove old Bootstrap column conflicts */
+.card-body .row.g-2 .col,
+.card-body .col {
+    min-width: unset;
+}
+
+/* =========================
+   RESPONSIVE FIX
+========================= */
+
+@media (max-width: 768px) {
+    .filters-row {
+        flex-direction: column;
     }
 
-    .card-body .row.g-2 .col {
-        min-width: 160px;
+    .filter-group {
+        width: 100%;
     }
-
-    .filter-control {
-        height: 32px !important;
-        font-size: 14px;
-    }
-
-    #logsTable td {
-        font-size: 14px;
-    }
-
-    #logsTable th:first-child,
-    #logsTable td:first-child {
-        border-left: 1px solid #dee2e6; /* remove extra line at start */
-        text-align: center !important;
-    }
-    #logsTable td:nth-child(4) {
-        text-align: center !important;
-    }
-    #logsTable td:last-child {
-        text-align: center !important;
-    }
-
-    .card-body .col {
-        min-width: 150px;
-    }
-
-    .clear-input {
-        position: relative;
-    }
-
-    .clear-input input {
-        padding-right: 28px; /* space for X */
-    }
-
-    .clear-btn {
-        position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: none;
-        background: transparent;
-        font-size: 18px;
-        line-height: 1;
-        color: #999;
-        cursor: pointer;
-        padding: 0;
-    }
-
-    .clear-btn:hover {
-        color: #333;
-    }
+}
 </style>
 <div class="content">
     <div class="container-fluid">
@@ -94,25 +164,21 @@ $pdo = qa_db();
 
         <div class="card shadow-sm">
             <div class="card-body">
-                <div class="row g-2 mb-3">
+                <div class="filters-row mb-3">
 
-                    <div class="col">
-                        <label class="form-label">User</label>
-
+                    <!-- USER -->
+                    <div class="filter-group">
+                        <div class="filter-label">User</div>
                         <div class="clear-input">
-                            <input type="text"
-                                id="filterUser"
-                                class="form-control form-control-sm filter-control"
-                                placeholder="Search user">
-
+                            <input type="text" id="filterUser" class="form-control form-control-sm filter-control" placeholder="Search user">
                             <button type="button" class="clear-btn" data-target="filterUser">×</button>
                         </div>
                     </div>
 
-
-                    <div class="col">
-                        <label class="form-label">Reason</label>
-                        <select id="filterReason" class="form-select filter-control">
+                    <!-- REASON -->
+                    <div class="filter-group">
+                        <div class="filter-label">Reason</div>
+                        <select id="filterReason" class="form-select form-select-sm filter-control">
                             <option value="">All</option>
                             <option value="RESIGNED">RESIGNED</option>
                             <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
@@ -132,8 +198,21 @@ $pdo = qa_db();
                         </select>
                     </div>
 
-                    <div class="col">
-                        <label class="form-label">Remarks</label>
+                    <!-- REMARKS -->
+                    <div class="filter-group">
+
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+
+                            <div class="filter-label mb-0">Remarks</div>
+
+                            <div class="form-check m-0">
+                                <input class="form-check-input" type="checkbox" id="filterRemarksEmpty">
+                                <label class="form-check-label small" for="filterRemarksEmpty">
+                                    Empty only
+                                </label>
+                            </div>
+
+                        </div>
 
                         <div class="clear-input">
                             <input type="text"
@@ -143,16 +222,19 @@ $pdo = qa_db();
 
                             <button type="button" class="clear-btn" data-target="filterRemarks">×</button>
                         </div>
+
                     </div>
 
-                    <div class="col">
-                        <label class="form-label">From</label>
-                        <input type="date" id="filterFrom" class="form-control filter-control">
+                    <!-- FROM -->
+                    <div class="filter-group">
+                        <div class="filter-label">From</div>
+                        <input type="date" id="filterFrom" class="form-control form-control-sm filter-control">
                     </div>
 
-                    <div class="col">
-                        <label class="form-label">To</label>
-                        <input type="date" id="filterTo" class="form-control filter-control">
+                    <!-- TO -->
+                    <div class="filter-group">
+                        <div class="filter-label">To</div>
+                        <input type="date" id="filterTo" class="form-control form-control-sm filter-control">
                     </div>
 
                 </div>
