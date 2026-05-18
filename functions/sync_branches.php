@@ -13,74 +13,72 @@ try {
     $inserted = 0;
     $updated = 0;
 
+    // 🔥 prevent duplicate processing in SAME result set
+    $seen = [];
+
+    // prepared statements (reuse = faster)
+    $checkStmt = $pdo->prepare("
+        SELECT TOP 1 1 
+        FROM branches 
+        WHERE branch_code = :code
+    ");
+
+    $updateStmt = $pdo->prepare("
+        UPDATE branches
+        SET branch = :branch,
+            region = :region,
+            corpo  = :corpo,
+            area   = :area
+        WHERE branch_code = :code
+    ");
+
+    $insertStmt = $pdo->prepare("
+        INSERT INTO branches (
+            branch_code,
+            branch,
+            region,
+            corpo,
+            area,
+            status
+        )
+        VALUES (
+            :code,
+            :branch,
+            :region,
+            :corpo,
+            :area,
+            1
+        )
+    ");
+
     foreach ($rows as $row) {
 
         $branchCode = $row['BranchCode'] ?? null;
         if (!$branchCode) continue;
 
-        // Check existing
-        $check = $pdo->prepare("
-            SELECT COUNT(*) 
-            FROM branches 
-            WHERE branch_code = :code
-        ");
-        $check->execute([':code' => $branchCode]);
+        // 🔥 skip duplicates from SP output
+        if (isset($seen[$branchCode])) continue;
+        $seen[$branchCode] = true;
 
-        $exists = $check->fetchColumn();
+        $checkStmt->execute([':code' => $branchCode]);
+        $exists = (bool) $checkStmt->fetchColumn();
+
+        $data = [
+            ':code'   => $branchCode,
+            ':branch' => $row['Branch'] ?? null,
+            ':region' => $row['Location'] ?? null,
+            ':corpo'  => $row['Company'] ?? null,
+            ':area'   => $row['DM'] ?? null
+        ];
 
         if ($exists) {
 
-            // UPDATE
-            $update = $pdo->prepare("
-                UPDATE branches
-                SET
-                    branch = :branch,
-                    region = :region,
-                    corpo = :corpo,
-                    area = :area
-                WHERE branch_code = :code
-            ");
-
-            $update->execute([
-                ':branch' => $row['Branch'],
-                ':region' => $row['Location'],
-                ':corpo'  => $row['Company'],
-                ':area'   => $row['DM'],   // ✅ IMPORTANT FIX
-                ':code'   => $branchCode
-            ]);
-
+            $updateStmt->execute($data);
             $updated++;
 
         } else {
 
-            // INSERT
-            $insert = $pdo->prepare("
-                INSERT INTO branches (
-                    branch_code,
-                    branch,
-                    region,
-                    corpo,
-                    area,
-                    status
-                )
-                VALUES (
-                    :BranchCode,
-                    :Branch,
-                    :Location,
-                    :Company,
-                    :area,
-                    1
-                )
-            ");
-
-            $insert->execute([
-                ':BranchCode' => $row['BranchCode'],
-                ':Branch' => $row['Branch'],
-                ':Location' => $row['Location'],
-                ':Company' => $row['Company'],
-                ':area'   => $row['DM']   // ✅ IMPORTANT FIX
-            ]);
-
+            $insertStmt->execute($data);
             $inserted++;
         }
     }
