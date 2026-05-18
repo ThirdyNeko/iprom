@@ -16,19 +16,54 @@ $(document).ready(function () {
 
     columns: [
       { data: "branch" },
-      { data: "corpo" },
+      {
+        data: "corpo",
+        render: function (data) {
+          return (data ?? "").toString().toUpperCase();
+        },
+      },
       { data: "region" },
       { data: "area" },
-      { data: "director" },
 
+      // DIRECTOR
+      {
+        data: "director",
+        render: function (data) {
+          const value = (data ?? "").toString().toUpperCase();
+
+          return `
+            <input
+              type="text"
+              class="form-control form-control-sm director-input text-uppercase"
+              value="${value}"
+            >
+          `;
+        },
+      },
+
+      // STATUS TEXT ONLY
       {
         data: "status",
-        render: function (data, type, row) {
+        render: function (data) {
           const isActive = String(data).toLowerCase() === "active";
-          const checked = isActive ? "checked" : "";
 
-          const label = isActive ? "Active" : "Inactive";
-          const badgeClass = isActive ? "bg-success" : "bg-secondary";
+          return `
+            <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
+              ${isActive ? "Active" : "Inactive"}
+            </span>
+          `;
+        },
+      },
+
+      // ACTIONS
+      {
+        data: null,
+        orderable: false,
+        searchable: false,
+
+        render: function (data, type, row) {
+          const isActive = String(row.status).toLowerCase() === "active";
+          const checked = isActive ? "checked" : "";
 
           return `
             <div class="d-flex align-items-center justify-content-center gap-2">
@@ -37,21 +72,30 @@ $(document).ready(function () {
                 <input
                   class="form-check-input branch-status-switch"
                   type="checkbox"
-                  role="switch"
                   data-code="${row.branch_code}"
                   ${checked}
                 >
               </div>
 
-              <span class="badge ${badgeClass}">
-                ${label}
-              </span>
+              <button
+                class="btn btn-sm btn-primary update-branch-btn"
+                data-code="${row.branch_code}"
+              >
+                Update
+              </button>
 
             </div>
           `;
         },
       },
     ],
+  });
+
+  // =========================
+  // FORCE UPPERCASE INPUT
+  // =========================
+  $(document).on("input", ".director-input", function () {
+    this.value = this.value.toUpperCase();
   });
 
   // =========================
@@ -67,21 +111,15 @@ $(document).ready(function () {
       showCancelButton: true,
       confirmButtonText: "Yes, Sync",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
     }).then((result) => {
       if (!result.isConfirmed) return;
 
       btn.prop("disabled", true);
 
       Swal.fire({
-        title: "Syncing Branches...",
-        html: "Please wait while branch data is updating.",
+        title: "Syncing...",
         allowOutsideClick: false,
-        allowEscapeKey: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
+        didOpen: () => Swal.showLoading(),
       });
 
       $.ajax({
@@ -93,30 +131,20 @@ $(document).ready(function () {
           if (res.success) {
             table.ajax.reload(function () {
               Swal.fire({
-                title: "Success!",
-                text: res.message,
                 icon: "success",
+                title: "Success",
+                text: res.message,
                 timer: 1500,
                 showConfirmButton: false,
               });
             }, false);
           } else {
-            Swal.fire({
-              title: "Sync Failed",
-              text: res.message || "Something went wrong.",
-              icon: "error",
-            });
+            Swal.fire("Error", res.message, "error");
           }
         },
 
-        error: function (xhr) {
-          console.log(xhr.responseText);
-
-          Swal.fire({
-            title: "Server Error",
-            text: "Sync failed. Check console/network.",
-            icon: "error",
-          });
+        error: function () {
+          Swal.fire("Error", "Server error", "error");
         },
 
         complete: function () {
@@ -124,6 +152,43 @@ $(document).ready(function () {
         },
       });
     });
+  });
+});
+
+// =========================
+// STATUS SWITCH (SEPARATE)
+// =========================
+$(document).on("change", ".branch-status-switch", function () {
+  const toggle = $(this);
+  const code = toggle.data("code");
+  const status = toggle.is(":checked") ? 1 : 0;
+
+  toggle.prop("disabled", true);
+
+  $.ajax({
+    url: "functions/update_branch_status.php",
+    type: "POST",
+    dataType: "json",
+    data: {
+      branch_code: code,
+      status: status,
+    },
+
+    success: function (res) {
+      if (!res.success) {
+        toggle.prop("checked", !toggle.is(":checked"));
+        Swal.fire("Error", res.message, "error");
+      }
+    },
+
+    error: function () {
+      toggle.prop("checked", !toggle.is(":checked"));
+      Swal.fire("Error", "Server error", "error");
+    },
+
+    complete: function () {
+      toggle.prop("disabled", false);
+    },
   });
 });
 
@@ -141,7 +206,6 @@ $(document).on("change", ".branch-status-switch", function () {
     url: "functions/update_branch_status.php",
     type: "POST",
     dataType: "json",
-
     data: {
       branch_code: code,
       status: status,
@@ -150,48 +214,94 @@ $(document).on("change", ".branch-status-switch", function () {
     success: function (res) {
       if (res.success) {
         const row = table.row(toggle.closest("tr"));
-        const rowData = row.data();
 
-        const statusText = status == 1 ? "active" : "inactive";
+        if (row) {
+          const rowData = row.data();
 
-        // ✅ update row safely
-        row
-          .data({
-            ...rowData,
-            status: statusText,
-          })
-          .invalidate();
+          const statusText = status === 1 ? "active" : "inactive";
+
+          row
+            .data({
+              ...rowData,
+              status: statusText,
+            })
+            .invalidate();
+        }
 
         Swal.fire({
           icon: "success",
           title: "Updated",
-          text: `Branch status changed to ${statusText.toUpperCase()}`,
+          text: `Branch status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
           timer: 1200,
           showConfirmButton: false,
         });
       } else {
+        toggle.prop("checked", !toggle.is(":checked"));
+
         Swal.fire({
           icon: "error",
           title: "Update Failed",
           text: res.message || "Something went wrong.",
         });
-
-        toggle.prop("checked", !toggle.is(":checked"));
       }
     },
 
     error: function () {
+      toggle.prop("checked", !toggle.is(":checked"));
+
       Swal.fire({
         icon: "error",
         title: "Server Error",
         text: "Failed to update status.",
       });
-
-      toggle.prop("checked", !toggle.is(":checked"));
     },
 
     complete: function () {
       toggle.prop("disabled", false);
+    },
+  });
+});
+
+// =========================
+// UPDATE BUTTON (SEPARATE)
+// =========================
+$(document).on("click", ".update-branch-btn", function () {
+  const code = $(this).data("code");
+
+  const rowNode = table.row($(this).closest("tr")).node();
+
+  const director = $(rowNode).find(".director-input").val();
+  const status = $(rowNode).find(".branch-status-switch").is(":checked")
+    ? 1
+    : 0;
+
+  $.ajax({
+    url: "functions/update_branch.php",
+    type: "POST",
+    dataType: "json",
+    data: {
+      branch_code: code,
+      director: director,
+      status: status,
+    },
+
+    success: function (res) {
+      if (res.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          timer: 1200,
+          showConfirmButton: false,
+        });
+
+        table.ajax.reload(null, false);
+      } else {
+        Swal.fire("Error", res.message, "error");
+      }
+    },
+
+    error: function () {
+      Swal.fire("Error", "Server error", "error");
     },
   });
 });
