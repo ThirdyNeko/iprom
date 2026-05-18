@@ -641,3 +641,9 @@
 [2026-05-18 10:08:19] Error [8192]: strtoupper(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 165
 [2026-05-18 13:05:54] Error [8192]: strtoupper(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 165
 [2026-05-18 13:30:34] Error [8192]: strtoupper(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 165
+[2026-05-18 14:05:26] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-18 14:05:31] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-18 14:06:02] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-18 14:06:39] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-18 14:07:09] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-18 14:11:20] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311

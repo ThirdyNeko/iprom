@@ -11,14 +11,14 @@ $pdo = qa_db();
 ?>
 
 <style>
-    #Branchtable th,
-    #Branchtable td {
+    #Brandtable th,
+    #Brandtable td {
         border-right: 1px solid #dee2e6;
     }
-    #Branchtable.table-hover tbody tr:hover > td {
+    #Brandtable.table-hover tbody tr:hover > td {
         background-color: #e6f0ff !important;
     }
-    #Branchtable th
+    #Brandtable th
     {
         text-align: center;
         vertical-align: middle;
@@ -35,19 +35,19 @@ $pdo = qa_db();
         font-size: 14px;
     }
 
-    #Branchtable td {
+    #Brandtable td {
         font-size: 14px;
     }
 
-    #Branchtable th:first-child,
-    #Branchtable td:first-child {
+    #Brandtable th:first-child,
+    #Brandtable td:first-child {
         border-left: 1px solid #dee2e6; /* remove extra line at start */
         text-align: center !important;
     }
-    #Branchtable td:nth-child(4) {
+    #Brandtable td:nth-child(4) {
         text-align: center !important;
     }
-    #Branchtable td:last-child {
+    #Brandtable td:last-child {
         text-align: center !important;
     }
 </style>
@@ -56,23 +56,21 @@ $pdo = qa_db();
     <div class="container-fluid">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">Branches</h4>
+            <h4 class="fw-bold mb-0">Agencies</h4>
 
-            <button id="syncBranchesBtn" class="btn btn-success">
-                ⟳ Sync Branches
+            <button id="syncBrandsBtn" class="btn btn-success">
+                ⟳ Sync Brands
             </button>
         </div>
 
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table id="Branchtable" class="table table-striped table-hover align-middle text-center">
+                    <table id="Brandtable" class="table table-striped table-hover align-middle text-center">
                         <thead class="table-primary">
                             <tr>
-                                <th>Branch</th>
-                                <th>Corpo</th>
-                                <th>Region</th>
-                                <th>Area</th>
+                                <th>Brand</th>
+                                <th>Agency</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -89,6 +87,6 @@ $pdo = qa_db();
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
-<script src="assets/js/branches/branches.js"></script>
+<script src="assets/js/agencies/agencies.js"></script>
 
 <?php include 'modals/change_password_modal.php'; ?>

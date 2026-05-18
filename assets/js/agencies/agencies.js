@@ -1,7 +1,7 @@
 var table;
 
 $(document).ready(function () {
-  table = $("#Branchtable").DataTable({
+  table = $("#Brandtable").DataTable({
     processing: true,
     serverSide: true,
     pageLength: 25,
@@ -10,31 +10,22 @@ $(document).ready(function () {
     ordering: false,
 
     ajax: {
-      url: "functions/fetch_branches.php",
+      url: "functions/fetch_brands.php",
       type: "POST",
     },
 
     columns: [
-      { data: "branch" },
+      { data: "brand" },
+      // AGENCY
       {
-        data: "corpo",
-        render: function (data) {
-          return (data ?? "").toString().toUpperCase();
-        },
-      },
-      { data: "region" },
-      { data: "area" },
-
-      // DIRECTOR
-      {
-        data: "director",
+        data: "agency",
         render: function (data) {
           const value = (data ?? "").toString().toUpperCase();
 
           return `
             <input
               type="text"
-              class="form-control form-control-sm director-input text-uppercase"
+              class="form-control form-control-sm agency-input text-uppercase"
               value="${value}"
             >
           `;
@@ -70,16 +61,16 @@ $(document).ready(function () {
 
               <div class="form-check form-switch m-0">
                 <input
-                  class="form-check-input branch-status-switch"
+                  class="form-check-input brand-status-switch"
                   type="checkbox"
-                  data-code="${row.branch_code}"
+                  data-id="${row.id}"
                   ${checked}
                 >
               </div>
 
               <button
-                class="btn btn-sm btn-primary update-branch-btn"
-                data-code="${row.branch_code}"
+                class="btn btn-sm btn-primary update-brand-btn"
+                data-id="${row.id}"
               >
                 Update
               </button>
@@ -94,19 +85,19 @@ $(document).ready(function () {
   // =========================
   // FORCE UPPERCASE INPUT
   // =========================
-  $(document).on("input", ".director-input", function () {
+  $(document).on("input", ".agency-input", function () {
     this.value = this.value.toUpperCase();
   });
 
   // =========================
-  // SYNC BRANCHES
+  // SYNC BRANDS
   // =========================
-  $(document).on("click", "#syncBranchesBtn", function () {
+  $(document).on("click", "#syncBrandsBtn", function () {
     const btn = $(this);
 
     Swal.fire({
-      title: "Sync Branches?",
-      text: "This will sync branches from the source system.",
+      title: "Sync Brands?",
+      text: "This will sync brands from the source system.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, Sync",
@@ -123,7 +114,7 @@ $(document).ready(function () {
       });
 
       $.ajax({
-        url: "functions/sync_branches.php",
+        url: "functions/sync_brands.php",
         type: "POST",
         dataType: "json",
 
@@ -148,7 +139,7 @@ $(document).ready(function () {
         },
 
         complete: function () {
-          btn.prop("disabled", false).html("⟳ Sync Branches");
+          btn.prop("disabled", false).html("⟳ Sync Brands");
         },
       });
     });
@@ -156,58 +147,21 @@ $(document).ready(function () {
 });
 
 // =========================
-// STATUS SWITCH (SEPARATE)
-// =========================
-$(document).on("change", ".branch-status-switch", function () {
-  const toggle = $(this);
-  const code = toggle.data("code");
-  const status = toggle.is(":checked") ? 1 : 0;
-
-  toggle.prop("disabled", true);
-
-  $.ajax({
-    url: "functions/update_branch_status.php",
-    type: "POST",
-    dataType: "json",
-    data: {
-      branch_code: code,
-      status: status,
-    },
-
-    success: function (res) {
-      if (!res.success) {
-        toggle.prop("checked", !toggle.is(":checked"));
-        Swal.fire("Error", res.message, "error");
-      }
-    },
-
-    error: function () {
-      toggle.prop("checked", !toggle.is(":checked"));
-      Swal.fire("Error", "Server error", "error");
-    },
-
-    complete: function () {
-      toggle.prop("disabled", false);
-    },
-  });
-});
-
-// =========================
 // CHANGE STATUS SWITCH
 // =========================
-$(document).on("change", ".branch-status-switch", function () {
+$(document).on("change", ".brand-status-switch", function () {
   const toggle = $(this);
-  const code = toggle.data("code");
+  const id = toggle.data("id");
   const status = toggle.is(":checked") ? 1 : 0;
 
   toggle.prop("disabled", true);
 
   $.ajax({
-    url: "functions/update_branch_status.php",
+    url: "functions/update_brand_status.php",
     type: "POST",
     dataType: "json",
     data: {
-      branch_code: code,
+      id: id,
       status: status,
     },
 
@@ -231,7 +185,7 @@ $(document).on("change", ".branch-status-switch", function () {
         Swal.fire({
           icon: "success",
           title: "Updated",
-          text: `Branch status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
+          text: `Brand status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
           timer: 1200,
           showConfirmButton: false,
         });
@@ -265,23 +219,21 @@ $(document).on("change", ".branch-status-switch", function () {
 // =========================
 // UPDATE BUTTON (SEPARATE)
 // =========================
-$(document).on("click", ".update-branch-btn", function () {
-  const code = $(this).data("code");
+$(document).on("click", ".update-brand-btn", function () {
+  const id = $(this).data("id");
 
   const rowNode = table.row($(this).closest("tr")).node();
 
-  const director = $(rowNode).find(".director-input").val();
-  const status = $(rowNode).find(".branch-status-switch").is(":checked")
-    ? 1
-    : 0;
+  const agency = $(rowNode).find(".agency-input").val();
+  const status = $(rowNode).find(".brand-status-switch").is(":checked") ? 1 : 0;
 
   $.ajax({
-    url: "functions/update_branch.php",
+    url: "functions/update_brand.php",
     type: "POST",
     dataType: "json",
     data: {
-      branch_code: code,
-      director: director,
+      id: id,
+      agency: agency,
     },
 
     success: function (res) {
