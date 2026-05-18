@@ -81,7 +81,6 @@ $(document).ready(function () {
                 title: "Success!",
                 text: res.message,
                 icon: "success",
-                timer: 2000,
                 showConfirmButton: false,
               });
             }, false);
