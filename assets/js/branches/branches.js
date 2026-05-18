@@ -17,7 +17,26 @@ $(document).ready(function () {
       { data: "corpo" },
       { data: "region" },
       { data: "area" },
-      { data: "status" },
+
+      {
+        data: "status",
+        render: function (data, type, row) {
+          const checked =
+            String(data).toLowerCase() === "active" ? "checked" : "";
+
+          return `
+        <div class="form-check form-switch d-flex justify-content-center">
+          <input
+            class="form-check-input branch-status-switch"
+            type="checkbox"
+            role="switch"
+            data-code="${row.branch_code}"
+            ${checked}
+          >
+        </div>
+      `;
+        },
+      },
     ],
   });
 
@@ -90,5 +109,57 @@ $(document).ready(function () {
         },
       });
     });
+  });
+});
+
+// CHANGE STATUS
+$(document).on("change", ".branch-status-switch", function () {
+  const toggle = $(this);
+
+  const code = toggle.data("code");
+
+  const status = toggle.is(":checked") ? 1 : 0;
+
+  $.ajax({
+    url: "functions/update_branch_status.php",
+    type: "POST",
+    dataType: "json",
+
+    data: {
+      branch_code: code,
+      status: status,
+    },
+
+    success: function (res) {
+      if (res.success) {
+        const statusText = status == 1 ? "ACTIVE" : "INACTIVE";
+
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          text: `Branch status changed to ${statusText}`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: res.message || "Something went wrong.",
+        });
+
+        toggle.prop("checked", !toggle.is(":checked"));
+      }
+    },
+
+    error: function () {
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Failed to update status.",
+      });
+
+      toggle.prop("checked", !toggle.is(":checked"));
+    },
   });
 });

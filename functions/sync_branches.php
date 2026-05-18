@@ -37,8 +37,7 @@ try {
                     branch = :branch,
                     region = :region,
                     corpo = :corpo,
-                    area = :area,
-                    status = 1
+                    area = :area
                 WHERE branch_code = :code
             ");
 

@@ -86,7 +86,7 @@ $pdo = qa_db();
 </div>
 
 <script src="assets/js/jquery-4.0.0.min.js"></script>
-<script src="sweetalert2/sweetalert2.all.min.js"></script>
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/branches/branches.js"></script>
