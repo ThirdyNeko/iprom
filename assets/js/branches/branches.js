@@ -1,5 +1,3 @@
-var table;
-
 $(document).ready(function () {
   table = $("#Branchtable").DataTable({
     processing: true,
@@ -16,70 +14,48 @@ $(document).ready(function () {
 
     columns: [
       { data: "branch" },
+
       {
         data: "corpo",
         render: function (data) {
           return (data ?? "").toString().toUpperCase();
         },
       },
+
       { data: "region" },
       { data: "area" },
 
-      // STATUS TEXT ONLY
-      {
-        data: "status",
-        render: function (data) {
-          const isActive = String(data).toLowerCase() === "active";
-
-          return `
-            <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
-              ${isActive ? "Active" : "Inactive"}
-            </span>
-          `;
-        },
-      },
-
-      // ACTIONS
+      // STATUS + SWITCH IN SAME COLUMN
       {
         data: null,
-        orderable: false,
-        searchable: false,
-
+        width: "120px",
+        className: "text-center",
         render: function (data, type, row) {
           const isActive = String(row.status).toLowerCase() === "active";
+
           const checked = isActive ? "checked" : "";
 
           return `
-            <div class="d-flex align-items-center justify-content-center gap-2">
+      <div class="d-flex align-items-center justify-content-center gap-1">
 
-              <div class="form-check form-switch m-0">
-                <input
-                  class="form-check-input branch-status-switch"
-                  type="checkbox"
-                  data-code="${row.branch_code}"
-                  ${checked}
-                >
-              </div>
+        <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
+          ${isActive ? "Active" : "Inactive"}
+        </span>
 
-              <button
-                class="btn btn-sm btn-primary update-branch-btn"
-                data-code="${row.branch_code}"
-              >
-                Update
-              </button>
+        <div class="form-check form-switch m-0">
+          <input
+            class="form-check-input branch-status-switch"
+            type="checkbox"
+            data-code="${row.branch_code}"
+            ${checked}
+          >
+        </div>
 
-            </div>
-          `;
+      </div>
+    `;
         },
       },
     ],
-  });
-
-  // =========================
-  // FORCE UPPERCASE INPUT
-  // =========================
-  $(document).on("input", ".director-input", function () {
-    this.value = this.value.toUpperCase();
   });
 
   // =========================
@@ -243,55 +219,5 @@ $(document).on("change", ".branch-status-switch", function () {
     complete: function () {
       toggle.prop("disabled", false);
     },
-  });
-});
-
-// =========================
-// UPDATE BUTTON (SEPARATE)
-// =========================
-$(document).on("click", ".update-branch-btn", function () {
-  const code = $(this).data("code");
-  const rowNode = table.row($(this).closest("tr")).node();
-
-  const director = $(rowNode).find(".director-input").val();
-
-  Swal.fire({
-    title: "Confirm Update",
-    text: "Save changes to this branch?",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Update",
-    cancelButtonText: "Cancel",
-  }).then((result) => {
-    if (!result.isConfirmed) return;
-
-    $.ajax({
-      url: "functions/update_branch.php",
-      type: "POST",
-      dataType: "json",
-      data: {
-        branch_code: code,
-        director: director,
-      },
-
-      success: function (res) {
-        if (res.success) {
-          Swal.fire({
-            icon: "success",
-            title: "Updated",
-            timer: 1200,
-            showConfirmButton: false,
-          });
-
-          table.ajax.reload(null, false);
-        } else {
-          Swal.fire("Error", res.message, "error");
-        }
-      },
-
-      error: function () {
-        Swal.fire("Error", "Server error", "error");
-      },
-    });
   });
 });
