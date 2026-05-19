@@ -1,258 +1,194 @@
-var table;
-
 $(document).ready(function () {
-  table = $("#Brandtable").DataTable({
-    processing: true,
-    serverSide: true,
+  // =========================
+  // DATATABLE (INIT ONCE ONLY)
+  // =========================
+  const table = $("#agencyTable").DataTable({
     pageLength: 25,
+    ordering: false,
     responsive: true,
     dom: "lrtip",
-    ordering: false,
-
-    ajax: {
-      url: "functions/fetch_brands.php",
-      type: "POST",
-    },
-
-    columns: [
-      { data: "brand" },
-      // AGENCY
-      {
-        data: "agency",
-        render: function (data) {
-          const value = (data ?? "").toString().toUpperCase();
-
-          return `
-            <input
-              type="text"
-              class="form-control form-control-sm agency-input text-uppercase"
-              value="${value}"
-            >
-          `;
-        },
-      },
-
-      // STATUS TEXT ONLY
-      {
-        data: "status",
-        render: function (data) {
-          const isActive = String(data).toLowerCase() === "active";
-
-          return `
-            <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
-              ${isActive ? "Active" : "Inactive"}
-            </span>
-          `;
-        },
-      },
-
-      // ACTIONS
-      {
-        data: null,
-        orderable: false,
-        searchable: false,
-
-        render: function (data, type, row) {
-          const isActive = String(row.status).toLowerCase() === "active";
-          const checked = isActive ? "checked" : "";
-
-          return `
-            <div class="d-flex align-items-center justify-content-center gap-2">
-
-              <div class="form-check form-switch m-0">
-                <input
-                  class="form-check-input brand-status-switch"
-                  type="checkbox"
-                  data-id="${row.id}"
-                  ${checked}
-                >
-              </div>
-
-              <button
-                class="btn btn-sm btn-primary update-brand-btn"
-                data-id="${row.id}"
-              >
-                Update
-              </button>
-
-            </div>
-          `;
-        },
-      },
-    ],
   });
 
   // =========================
-  // FORCE UPPERCASE INPUT
+  // OPEN ADD MODAL
   // =========================
-  $(document).on("input", ".agency-input", function () {
-    this.value = this.value.toUpperCase();
+  $(document).on("click", ".addAgencyBtn", function () {
+    $("#agencyId").val("");
+    $("#agencyName").val("");
+
+    $(".modal-title").text("Add Agency");
+
+    $("#agencyModal").modal("show");
   });
 
   // =========================
-  // SYNC BRANDS
+  // EDIT
   // =========================
-  $(document).on("click", "#syncBrandsBtn", function () {
-    const btn = $(this);
+  $(document).on("click", ".editAgencyBtn", function () {
+    $("#agencyId").val($(this).data("id"));
+    $("#agencyName").val($(this).data("name"));
+
+    $(".modal-title").text("Edit Agency");
+
+    $("#agencyModal").modal("show");
+  });
+
+  // =========================
+  // SAVE (ADD / EDIT)
+  // =========================
+  $("#agencyForm").on("submit", function (e) {
+    e.preventDefault();
+
+    const id = $("#agencyId").val();
+    const agency = $("#agencyName").val().trim();
+
+    if (agency === "") {
+      Swal.fire({
+        icon: "warning",
+        title: "Required",
+        text: "Agency name is required.",
+      });
+      return;
+    }
+
+    const isEdit = id !== "";
 
     Swal.fire({
-      title: "Sync Brands?",
-      text: "This will sync brands from the source system.",
-      icon: "warning",
+      title: isEdit ? "Update this agency?" : "Add this agency?",
+      text: agency,
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: "Yes, Sync",
-      cancelButtonText: "Cancel",
+      confirmButtonColor: "#2d68c4",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes",
     }).then((result) => {
       if (!result.isConfirmed) return;
 
-      btn.prop("disabled", true);
+      submitAgency(id, agency, isEdit);
+    });
+  });
 
-      Swal.fire({
-        title: "Syncing...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+  // =========================
+  // ACTUAL AJAX
+  // =========================
+  function submitAgency(id, agency, isEdit) {
+    $.ajax({
+      url: "functions/save_agency.php",
+      type: "POST",
+      dataType: "json",
+      data: {
+        id: id,
+        agency: agency,
+      },
+
+      beforeSend: function () {
+        Swal.fire({
+          title: isEdit ? "Updating..." : "Saving...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+      },
+
+      success: function (res) {
+        Swal.close();
+
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: isEdit ? "Updated!" : "Added!",
+            text: isEdit
+              ? "Agency updated successfully."
+              : "Agency added successfully.",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+
+          $("#agencyModal").modal("hide");
+
+          setTimeout(() => location.reload(), 800);
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: res.message || "Operation failed.",
+          });
+        }
+      },
+
+      error: function () {
+        Swal.close();
+
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: "Something went wrong.",
+        });
+      },
+    });
+  }
+
+  // =========================
+  // DELETE
+  // =========================
+  $(document).on("click", ".deleteAgencyBtn", function () {
+    const id = $(this).data("id");
+
+    Swal.fire({
+      title: "Remove Agency?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (!result.isConfirmed) return;
 
       $.ajax({
-        url: "functions/sync_brands.php",
+        url: "functions/delete_agency.php",
         type: "POST",
         dataType: "json",
+        data: { id: id },
+
+        beforeSend: function () {
+          Swal.fire({
+            title: "Removing...",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+          });
+        },
 
         success: function (res) {
+          Swal.close();
+
           if (res.success) {
-            table.ajax.reload(function () {
-              Swal.fire({
-                icon: "success",
-                title: "Success",
-                text: res.message,
-                timer: 1500,
-                showConfirmButton: false,
-              });
-            }, false);
+            Swal.fire({
+              icon: "success",
+              title: "Removed",
+              timer: 1500,
+              showConfirmButton: false,
+            });
+
+            location.reload();
           } else {
-            Swal.fire("Error", res.message, "error");
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: res.message || "Delete failed.",
+            });
           }
         },
 
         error: function () {
-          Swal.fire("Error", "Server error", "error");
-        },
+          Swal.close();
 
-        complete: function () {
-          btn.prop("disabled", false).html("⟳ Sync Brands");
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: "Something went wrong.",
+          });
         },
       });
     });
-  });
-});
-
-// =========================
-// CHANGE STATUS SWITCH
-// =========================
-$(document).on("change", ".brand-status-switch", function () {
-  const toggle = $(this);
-  const id = toggle.data("id");
-  const status = toggle.is(":checked") ? 1 : 0;
-
-  toggle.prop("disabled", true);
-
-  $.ajax({
-    url: "functions/update_brand_status.php",
-    type: "POST",
-    dataType: "json",
-    data: {
-      id: id,
-      status: status,
-    },
-
-    success: function (res) {
-      if (res.success) {
-        const row = table.row(toggle.closest("tr"));
-
-        if (row) {
-          const rowData = row.data();
-
-          const statusText = status === 1 ? "active" : "inactive";
-
-          row
-            .data({
-              ...rowData,
-              status: statusText,
-            })
-            .invalidate();
-        }
-
-        Swal.fire({
-          icon: "success",
-          title: "Updated",
-          text: `Brand status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
-          timer: 1200,
-          showConfirmButton: false,
-        });
-      } else {
-        toggle.prop("checked", !toggle.is(":checked"));
-
-        Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: res.message || "Something went wrong.",
-        });
-      }
-    },
-
-    error: function () {
-      toggle.prop("checked", !toggle.is(":checked"));
-
-      Swal.fire({
-        icon: "error",
-        title: "Server Error",
-        text: "Failed to update status.",
-      });
-    },
-
-    complete: function () {
-      toggle.prop("disabled", false);
-    },
-  });
-});
-
-// =========================
-// UPDATE BUTTON (SEPARATE)
-// =========================
-$(document).on("click", ".update-brand-btn", function () {
-  const id = $(this).data("id");
-
-  const rowNode = table.row($(this).closest("tr")).node();
-
-  const agency = $(rowNode).find(".agency-input").val();
-  const status = $(rowNode).find(".brand-status-switch").is(":checked") ? 1 : 0;
-
-  $.ajax({
-    url: "functions/update_brand.php",
-    type: "POST",
-    dataType: "json",
-    data: {
-      id: id,
-      agency: agency,
-    },
-
-    success: function (res) {
-      if (res.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Updated",
-          timer: 1200,
-          showConfirmButton: false,
-        });
-
-        table.ajax.reload(null, false);
-      } else {
-        Swal.fire("Error", res.message, "error");
-      }
-    },
-
-    error: function () {
-      Swal.fire("Error", "Server error", "error");
-    },
   });
 });
