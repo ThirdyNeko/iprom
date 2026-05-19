@@ -25,22 +25,6 @@ $(document).ready(function () {
       { data: "region" },
       { data: "area" },
 
-      // DIRECTOR
-      {
-        data: "director",
-        render: function (data) {
-          const value = (data ?? "").toString().toUpperCase();
-
-          return `
-            <input
-              type="text"
-              class="form-control form-control-sm director-input text-uppercase"
-              value="${value}"
-            >
-          `;
-        },
-      },
-
       // STATUS TEXT ONLY
       {
         data: "status",

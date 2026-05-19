@@ -1,3 +1,9 @@
+<?php
+$isAllowed =
+    (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+    (isset($_SESSION['position']) && $_SESSION['position'] === 'SUPERVISOR');
+?>
+
 <style>
 /* =========================
    ONLY APPLY INSIDE ASSIGNMENT MODAL
@@ -68,7 +74,7 @@
                                 <tr>
                                     <th>Plantilla Count</th>
                                     <td>
-                                        <input type="number" id="modalRequired" class="form-control form-control-sm centered-input" min="0">
+                                        <input type="number" id="modalRequired" class="form-control form-control-sm centered-input" min="0" <?= !$isAllowed ? 'disabled' : '' ?>>
                                     </td>
                                 </tr>
                                 <tr>
@@ -98,7 +104,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="saveRequiredBtn">Save</button>
+                <button type="button" class="btn btn-primary" id="saveRequiredBtn" <?= !$isAllowed ? 'disabled' : '' ?>>Save</button>
             </div>
 
         </div>

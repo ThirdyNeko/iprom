@@ -73,7 +73,6 @@ $pdo = qa_db();
                                 <th>Company</th>
                                 <th>Region</th>
                                 <th>Area</th>
-                                <th>Director</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
