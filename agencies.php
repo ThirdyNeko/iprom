@@ -55,6 +55,7 @@ $pdo = qa_db();
 #agencyTable td {
     vertical-align: middle;
     font-size: 14px;
+    text-align: center;
 }
 
 #agencyTable.table-hover tbody tr:hover > td {
@@ -91,6 +92,7 @@ $pdo = qa_db();
 .text-uppercase {
   text-transform: uppercase;
 }
+
 </style>
 
 <div class="content">
@@ -115,58 +117,19 @@ $pdo = qa_db();
 
                 <div class="table-responsive">
                     <table id="agencyTable"
-                           class="table table-bordered table-hover align-middle">
+                        class="table table-bordered table-hover align-middle">
 
                         <thead>
                             <tr>
-                                <th width="10%">ID</th>
                                 <th>Agency</th>
+                                <th>Contact Person</th>
+                                <th>Contact #</th>
+                                <th>Status</th>
                                 <th width="18%">Actions</th>
                             </tr>
                         </thead>
 
-                        <tbody>
-                            <?php
-
-                            $stmt = $pdo->query("
-                                SELECT id, agencies
-                                FROM agencies
-                                ORDER BY agencies ASC
-                            ");
-
-                            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) :
-                            ?>
-
-                            <tr>
-
-                                <td class="text-center">
-                                    <?= $row['id'] ?>
-                                </td>
-
-                                <td>
-                                    <?= htmlspecialchars($row['agencies']) ?>
-                                </td>
-
-                                <td>
-
-                                    <div class="action-btns">
-
-                                        <button
-                                            class="btn btn-warning btn-sm editAgencyBtn"
-                                            data-id="<?= $row['id'] ?>"
-                                            data-name="<?= htmlspecialchars($row['agencies']) ?>">
-                                            Edit
-                                        </button>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                            <?php endwhile; ?>
-                        </tbody>
-
+                        <tbody></tbody>
                     </table>
                 </div>
 
@@ -201,17 +164,31 @@ $pdo = qa_db();
 
                     <input type="hidden" id="agencyId">
 
+                    <!-- Agency Name -->
                     <div class="mb-3">
-
-                        <label class="form-label">
-                            Agency Name
-                        </label>
-
+                        <label class="form-label">Agency Name</label>
                         <input type="text"
-                               id="agencyName"
-                               class="form-control text-uppercase"
-                               required>
+                            id="agencyName"
+                            class="form-control text-uppercase"
+                            required>
+                    </div>
 
+                    <!-- Contact Person -->
+                    <div class="mb-3">
+                        <label class="form-label">Contact Person</label>
+                        <input type="text"
+                            id="contactPerson"
+                            class="form-control text-uppercase"
+                            required>
+                    </div>
+
+                    <!-- Contact Number -->
+                    <div class="mb-3">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text"
+                            id="contactNumber"
+                            class="form-control"
+                            required>
                     </div>
 
                 </div>
@@ -240,7 +217,7 @@ $pdo = qa_db();
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
-<script src="swweetalert/dist/sweetalert2.all.min.js"></script>
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
 <script src="assets/js/agencies/agencies.js"></script>
 

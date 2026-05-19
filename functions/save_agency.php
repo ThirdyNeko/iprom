@@ -5,10 +5,18 @@ include '../config/db.php';
 
 $pdo = qa_db();
 
+// =========================
+// INPUTS
+// =========================
 $id = $_POST['id'] ?? null;
-$name = trim($_POST['agency'] ?? '');
+$agency = trim($_POST['agency'] ?? '');
+$person = trim($_POST['contact_person'] ?? '');
+$number = trim($_POST['contact_number'] ?? '');
 
-if ($name === '') {
+// =========================
+// VALIDATION
+// =========================
+if ($agency === '') {
     echo json_encode([
         'success' => false,
         'message' => 'Agency name is required.'
@@ -16,8 +24,24 @@ if ($name === '') {
     exit;
 }
 
+if ($person === '') {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Contact person is required.'
+    ]);
+    exit;
+}
+
+if ($number === '') {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Contact number is required.'
+    ]);
+    exit;
+}
+
 // =========================
-// CHECK DUPLICATE
+// DUPLICATE CHECK (AGENCY NAME)
 // =========================
 $check = $pdo->prepare("
     SELECT COUNT(*)
@@ -27,18 +51,16 @@ $check = $pdo->prepare("
 ");
 
 $check->execute([
-    $name,
+    $agency,
     $id,
     $id
 ]);
 
 if ($check->fetchColumn() > 0) {
-
     echo json_encode([
         'success' => false,
         'message' => 'Agency already exists.'
     ]);
-
     exit;
 }
 
@@ -48,11 +70,15 @@ if ($check->fetchColumn() > 0) {
 if (empty($id)) {
 
     $stmt = $pdo->prepare("
-        INSERT INTO agencies (agencies)
-        VALUES (?)
+        INSERT INTO agencies (agencies, contact_person, contact_number, status)
+        VALUES (?, ?, ?, 1)
     ");
 
-    $stmt->execute([$name]);
+    $stmt->execute([
+        $agency,
+        $person,
+        $number
+    ]);
 
 } else {
 
@@ -61,16 +87,25 @@ if (empty($id)) {
     // =========================
     $stmt = $pdo->prepare("
         UPDATE agencies
-        SET agencies = ?
+        SET 
+            agencies = ?,
+            contact_person = ?,
+            contact_number = ?
         WHERE id = ?
     ");
 
     $stmt->execute([
-        $name,
+        $agency,
+        $person,
+        $number,
         $id
     ]);
 }
 
+// =========================
+// RESPONSE
+// =========================
 echo json_encode([
-    'success' => true
+    'success' => true,
+    'message' => empty($id) ? 'Agency added successfully.' : 'Agency updated successfully.'
 ]);

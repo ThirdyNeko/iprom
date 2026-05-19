@@ -115,46 +115,6 @@ $(document).ready(function () {
   });
 });
 
-// =========================
-// STATUS SWITCH (SEPARATE)
-// =========================
-$(document).on("change", ".branch-status-switch", function () {
-  const toggle = $(this);
-  const code = toggle.data("code");
-  const status = toggle.is(":checked") ? 1 : 0;
-
-  toggle.prop("disabled", true);
-
-  $.ajax({
-    url: "functions/update_branch_status.php",
-    type: "POST",
-    dataType: "json",
-    data: {
-      branch_code: code,
-      status: status,
-    },
-
-    success: function (res) {
-      if (!res.success) {
-        toggle.prop("checked", !toggle.is(":checked"));
-        Swal.fire("Error", res.message, "error");
-      }
-    },
-
-    error: function () {
-      toggle.prop("checked", !toggle.is(":checked"));
-      Swal.fire("Error", "Server error", "error");
-    },
-
-    complete: function () {
-      toggle.prop("disabled", false);
-    },
-  });
-});
-
-// =========================
-// CHANGE STATUS SWITCH
-// =========================
 $(document).on("change", ".branch-status-switch", function () {
   const toggle = $(this);
   const code = toggle.data("code");
@@ -173,29 +133,34 @@ $(document).on("change", ".branch-status-switch", function () {
 
     success: function (res) {
       if (res.success) {
+        // =========================
+        // LIVE TABLE UPDATE
+        // =========================
         const row = table.row(toggle.closest("tr"));
 
         if (row) {
           const rowData = row.data();
 
-          const statusText = status === 1 ? "active" : "inactive";
-
           row
             .data({
               ...rowData,
-              status: statusText,
+              status: status === 1 ? "active" : "inactive",
             })
             .invalidate();
         }
 
+        // =========================
+        // SWEETALERT SUCCESS
+        // =========================
         Swal.fire({
           icon: "success",
           title: "Updated",
-          text: `Branch status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
+          text: `Status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
           timer: 1200,
           showConfirmButton: false,
         });
       } else {
+        // rollback if failed
         toggle.prop("checked", !toggle.is(":checked"));
 
         Swal.fire({
@@ -207,6 +172,7 @@ $(document).on("change", ".branch-status-switch", function () {
     },
 
     error: function () {
+      // rollback if server error
       toggle.prop("checked", !toggle.is(":checked"));
 
       Swal.fire({

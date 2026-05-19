@@ -1,12 +1,73 @@
 $(document).ready(function () {
   // =========================
-  // DATATABLE (INIT ONCE ONLY)
+  // DATATABLE
   // =========================
-  const table = $("#agencyTable").DataTable({
+  window.table = $("#agencyTable").DataTable({
+    processing: true,
+    serverSide: true,
     pageLength: 25,
     ordering: false,
     responsive: true,
     dom: "lrtip",
+
+    ajax: {
+      url: "functions/fetch_agencies.php",
+      type: "POST",
+    },
+
+    columns: [
+      { data: "agencies" },
+      { data: "contact_person" },
+      { data: "contact_number" },
+
+      // STATUS SWITCH
+      {
+        data: null,
+        width: "120px",
+        className: "text-center",
+        render: function (data, type, row) {
+          const isActive = String(row.status) === "1";
+
+          return `
+            <div class="d-flex align-items-center justify-content-center gap-1">
+
+              <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
+                ${isActive ? "Active" : "Inactive"}
+              </span>
+
+              <div class="form-check form-switch m-0">
+                <input
+                  class="form-check-input agency-status-switch"
+                  type="checkbox"
+                  data-id="${row.id}"
+                  ${isActive ? "checked" : ""}
+                >
+              </div>
+
+            </div>
+          `;
+        },
+      },
+
+      // ACTIONS
+      {
+        data: null,
+        orderable: false,
+        render: function (data) {
+          return `
+            <div class="action-btns">
+              <button class="btn btn-warning btn-sm editAgencyBtn"
+                data-id="${data.id}"
+                data-name="${data.agencies}"
+                data-person="${data.contact_person}"
+                data-number="${data.contact_number}">
+                Edit
+              </button>
+            </div>
+          `;
+        },
+      },
+    ],
   });
 
   // =========================
@@ -14,15 +75,14 @@ $(document).ready(function () {
   // =========================
   $(document).on("click", ".addAgencyBtn", function () {
     $("#agencyId").val("");
-    $("#agencyName").val("");
+
+    $("#agencyName").val("").trigger("input");
+    $("#contactPerson").val("").trigger("input");
+    $("#contactNumber").val("");
 
     $(".modal-title").text("Add Agency");
 
     $("#agencyModal").modal("show");
-  });
-
-  $(document).on("input", "#agencyName", function () {
-    this.value = this.value.toUpperCase();
   });
 
   // =========================
@@ -31,31 +91,54 @@ $(document).ready(function () {
   $(document).on("click", ".editAgencyBtn", function () {
     $("#agencyId").val($(this).data("id"));
     $("#agencyName").val($(this).data("name"));
+    $("#contactPerson").val($(this).data("person"));
+    $("#contactNumber").val($(this).data("number"));
 
     $(".modal-title").text("Edit Agency");
 
     $("#agencyModal").modal("show");
   });
 
+  $("#agencyModal").on("hidden.bs.modal", function () {
+    $("#agencyId").val("");
+
+    $("#agencyName").val("");
+    $("#contactPerson").val("");
+    $("#contactNumber").val("");
+
+    $(".modal-title").text("Add Agency");
+  });
+
   // =========================
-  // SAVE (ADD / EDIT)
+  // FORCE UPPERCASE
+  // =========================
+  $(document).on("input", "#agencyName, #contactPerson", function () {
+    this.value = this.value.toUpperCase();
+  });
+
+  // =========================
+  // SAVE (FIXED INSERT/UPDATE LOGIC)
   // =========================
   $("#agencyForm").on("submit", function (e) {
     e.preventDefault();
 
     const id = $("#agencyId").val();
-    const agency = $("#agencyName").val().trim().toUpperCase();
 
-    if (agency === "") {
+    const agency = $("#agencyName").val()?.trim().toUpperCase() || "";
+    const contact_person =
+      $("#contactPerson").val()?.trim().toUpperCase() || "";
+    const contact_number = $("#contactNumber").val()?.trim() || "";
+
+    const isEdit = id && id !== "";
+
+    if (!agency || !contact_person || !contact_number) {
       Swal.fire({
         icon: "warning",
         title: "Required",
-        text: "Agency name is required.",
+        text: "All fields are required.",
       });
       return;
     }
-
-    const isEdit = id !== "";
 
     Swal.fire({
       title: isEdit ? "Update this agency?" : "Add this agency?",
@@ -68,21 +151,23 @@ $(document).ready(function () {
     }).then((result) => {
       if (!result.isConfirmed) return;
 
-      submitAgency(id, agency, isEdit);
+      submitAgency(id, agency, contact_person, contact_number, isEdit);
     });
   });
 
   // =========================
-  // ACTUAL AJAX
+  // AJAX SAVE
   // =========================
-  function submitAgency(id, agency, isEdit) {
+  function submitAgency(id, agency, contact_person, contact_number, isEdit) {
     $.ajax({
       url: "functions/save_agency.php",
       type: "POST",
       dataType: "json",
       data: {
-        id: id,
-        agency: agency,
+        id,
+        agency,
+        contact_person,
+        contact_number,
       },
 
       beforeSend: function () {
@@ -100,16 +185,14 @@ $(document).ready(function () {
           Swal.fire({
             icon: "success",
             title: isEdit ? "Updated!" : "Added!",
-            text: isEdit
-              ? "Agency updated successfully."
-              : "Agency added successfully.",
-            timer: 1500,
+            text: res.message,
+            timer: 1200,
             showConfirmButton: false,
           });
 
           $("#agencyModal").modal("hide");
 
-          setTimeout(() => location.reload(), 800);
+          window.table.ajax.reload(null, false);
         } else {
           Swal.fire({
             icon: "error",
@@ -130,4 +213,72 @@ $(document).ready(function () {
       },
     });
   }
+});
+
+// =========================
+// STATUS SWITCH (AGENCY)
+// =========================
+$(document).on("change", ".agency-status-switch", function () {
+  const toggle = $(this);
+  const id = toggle.data("id");
+  const status = toggle.is(":checked") ? 1 : 0;
+
+  toggle.prop("disabled", true);
+
+  $.ajax({
+    url: "functions/update_agency_status.php",
+    type: "POST",
+    dataType: "json",
+    data: {
+      id: id,
+      status: status,
+    },
+
+    success: function (res) {
+      if (res.success) {
+        const row = window.table.row(toggle.closest("tr"));
+
+        if (row) {
+          const rowData = row.data();
+
+          row
+            .data({
+              ...rowData,
+              status: status.toString(),
+            })
+            .invalidate();
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          text: `Agency is now ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
+          timer: 1200,
+          showConfirmButton: false,
+        });
+      } else {
+        toggle.prop("checked", !toggle.is(":checked"));
+
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: res.message,
+        });
+      }
+    },
+
+    error: function () {
+      toggle.prop("checked", !toggle.is(":checked"));
+
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: "Failed to update status.",
+      });
+    },
+
+    complete: function () {
+      toggle.prop("disabled", false);
+    },
+  });
 });
