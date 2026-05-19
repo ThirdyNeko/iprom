@@ -69,7 +69,7 @@ table td {
 
 /* Label */
 .filter-label {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
     margin-bottom: 4px;
     color: #555;
@@ -121,7 +121,7 @@ table td {
 }
 
 .form-check-label {
-    font-size: 12px;
+    font-size: 13px;
     color: #555;
 }
 
@@ -207,14 +207,14 @@ table td {
                     <!-- REMARKS -->
                     <div class="filter-group">
 
-                        <div class="d-flex justify-content-between align-items-center mb-1">
+                        <div class="d-flex align-items-center mb-1 gap-2">
 
-                            <div class="filter-label mb-0">Remarks</div>
+                            <div class="filter-label mb-0 me-1">Remarks</div>
 
                             <div class="form-check m-0">
                                 <input class="form-check-input" type="checkbox" id="filterRemarksEmpty">
                                 <label class="form-check-label small" for="filterRemarksEmpty">
-                                    Empty only
+                                    Empty
                                 </label>
                             </div>
 
