@@ -158,12 +158,6 @@ $pdo = qa_db();
                                             Edit
                                         </button>
 
-                                        <button
-                                            class="btn btn-danger btn-sm deleteAgencyBtn"
-                                            data-id="<?= $row['id'] ?>">
-                                            Remove
-                                        </button>
-
                                     </div>
 
                                 </td>
