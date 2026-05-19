@@ -267,40 +267,47 @@ $(document).on("change", ".branch-status-switch", function () {
 // =========================
 $(document).on("click", ".update-branch-btn", function () {
   const code = $(this).data("code");
-
   const rowNode = table.row($(this).closest("tr")).node();
 
   const director = $(rowNode).find(".director-input").val();
-  const status = $(rowNode).find(".branch-status-switch").is(":checked")
-    ? 1
-    : 0;
 
-  $.ajax({
-    url: "functions/update_branch.php",
-    type: "POST",
-    dataType: "json",
-    data: {
-      branch_code: code,
-      director: director,
-    },
+  Swal.fire({
+    title: "Confirm Update",
+    text: "Save changes to this branch?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Update",
+    cancelButtonText: "Cancel",
+  }).then((result) => {
+    if (!result.isConfirmed) return;
 
-    success: function (res) {
-      if (res.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Updated",
-          timer: 1200,
-          showConfirmButton: false,
-        });
+    $.ajax({
+      url: "functions/update_branch.php",
+      type: "POST",
+      dataType: "json",
+      data: {
+        branch_code: code,
+        director: director,
+      },
 
-        table.ajax.reload(null, false);
-      } else {
-        Swal.fire("Error", res.message, "error");
-      }
-    },
+      success: function (res) {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Updated",
+            timer: 1200,
+            showConfirmButton: false,
+          });
 
-    error: function () {
-      Swal.fire("Error", "Server error", "error");
-    },
+          table.ajax.reload(null, false);
+        } else {
+          Swal.fire("Error", res.message, "error");
+        }
+      },
+
+      error: function () {
+        Swal.fire("Error", "Server error", "error");
+      },
+    });
   });
 });

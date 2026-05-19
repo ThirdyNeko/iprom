@@ -87,6 +87,10 @@ $pdo = qa_db();
     font-size: 16px;
     font-weight: 600;
 }
+
+.text-uppercase {
+  text-transform: uppercase;
+}
 </style>
 
 <div class="content">
@@ -211,7 +215,7 @@ $pdo = qa_db();
 
                         <input type="text"
                                id="agencyName"
-                               class="form-control"
+                               class="form-control text-uppercase"
                                required>
 
                     </div>

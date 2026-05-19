@@ -21,6 +21,10 @@ $(document).ready(function () {
     $("#agencyModal").modal("show");
   });
 
+  $(document).on("input", "#agencyName", function () {
+    this.value = this.value.toUpperCase();
+  });
+
   // =========================
   // EDIT
   // =========================
@@ -40,7 +44,7 @@ $(document).ready(function () {
     e.preventDefault();
 
     const id = $("#agencyId").val();
-    const agency = $("#agencyName").val().trim();
+    const agency = $("#agencyName").val().trim().toUpperCase();
 
     if (agency === "") {
       Swal.fire({
