@@ -26,6 +26,7 @@ try {
     $last_name  = strtoupper(trim($_POST['last_name'] ?? ''));
     $position   = strtoupper(trim($_POST['position'] ?? ''));
     $department = strtoupper(trim($_POST['department'] ?? ''));
+    $status = "ACTIVE";
 
     if (!$username || !$role || !$first_name || !$last_name || !$position) {
 
@@ -73,7 +74,8 @@ try {
             first_name,
             last_name,
             position,
-            department
+            department,
+            status
         )
         VALUES (
             :username,
@@ -84,7 +86,8 @@ try {
             :first_name,
             :last_name,
             :position,
-            :department
+            :department,
+            :status
         )
     ");
 
@@ -97,7 +100,8 @@ try {
         ':first_name' => $first_name,
         ':last_name'  => $last_name,
         ':position'   => $position,
-        ':department' => $department
+        ':department' => $department,
+        ':status'     => $status
     ]);
 
     echo json_encode([
