@@ -3,6 +3,18 @@ header('Content-Type: application/json');
 include '../config/db.php';
 $pdo = qa_db();
 
+$branchMap = [];
+
+$stmt = $pdo->query("
+    SELECT branch_code, branch
+    FROM IPROM.dbo.branches
+    WHERE status = 1
+");
+
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $branchMap[$row['branch_code']] = $row['branch'];
+}
+
 // DataTables params
 $draw   = $_POST['draw'] ?? 1;
 $start  = $_POST['start'] ?? 0;
@@ -116,7 +128,7 @@ foreach ($paged as $a) {
     }
 
     $result[] = [
-        $a['branch_name'],
+        $branchMap[$a['branch_name']] ?? $a['branch_name'], // 🔥 FIXED
         $a['brand_name'],
         '<span class="required-cell">'.$a['required_count'].'</span>',
         $a['assigned_count'],

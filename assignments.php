@@ -8,9 +8,30 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
+/* ✅ PUT IT HERE (top PHP section) */
+$branchMap = [];
+
+$stmt = $pdo->query("
+    SELECT branch_code, branch
+    FROM IPROM.dbo.branches
+    WHERE status = 1
+");
+
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $branchMap[$row['branch_code']] = $row['branch'];
+}
+
+
 // Fetch branches & brands for filter dropdowns
-$branches = $pdo->query("SELECT DISTINCT branch_name FROM assignment ORDER BY branch_name")
-                ->fetchAll(PDO::FETCH_COLUMN);
+$branches = $pdo->query("
+    SELECT DISTINCT 
+        a.branch_name AS branch_code,
+        b.branch AS branch
+    FROM assignment a
+    LEFT JOIN IPROM.dbo.branches b
+        ON a.branch_name = b.branch_code
+    ORDER BY b.branch
+")->fetchAll(PDO::FETCH_ASSOC);
 
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
              ->fetchAll(PDO::FETCH_COLUMN);
@@ -93,8 +114,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         <select id="filterBranch" class="form-select filter-control">
                             <option value="">All</option>
                             <?php foreach($branches as $b): ?>
-                                <option value="<?= htmlspecialchars($b) ?>">
-                                    <?= htmlspecialchars($b) ?>
+                                <option value="<?= htmlspecialchars($b['branch_code']) ?>">
+                                    <?= htmlspecialchars($b['branch']) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -159,6 +180,10 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 </div>
 
 <!-- JS -->
+
+<script>
+const branchMap = <?= json_encode($branchMap) ?>;
+</script>
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>

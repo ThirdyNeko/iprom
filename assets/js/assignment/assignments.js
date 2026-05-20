@@ -51,7 +51,8 @@ $(document).ready(function () {
     if (!rowData) return;
 
     // because PHP returns ARRAY (not object)
-    const branch = rowData[0];
+    const branchCode = rowData[0];
+    const branch = branchMap[branchCode] || branchCode;
     const brand = rowData[1];
     const required = parseInt($(rowData[2]).text()) || 0;
     const assigned = parseInt(rowData[3]) || 0;
