@@ -399,16 +399,18 @@ function populateEditBranch(
   branchSelect.innerHTML = `
     <option value="">Select branch</option>
     ${uniqueBranches
-      .map((b) => {
+      .map((code) => {
         const pair = branchBrandPairs.find(
-          (p) => p.branch_code === b && p.brand_name === currentBrand,
+          (p) => p.branch_code === code && p.brand_name === currentBrand,
         );
 
+        const displayName = pair?.branch_name || code;
+
         return `
-          <option value="${b}"
-            ${list.includes(b) ? "selected" : ""}
+          <option value="${code}"
+            ${list.includes(code) ? "selected" : ""}
           >
-            ${b}
+            ${displayName}
           </option>
         `;
       })
@@ -463,7 +465,8 @@ function populateEditRoving(
 ) {
   if (!editRovingContainer) return;
 
-  let list = [...new Set(safeArray(branches))]; // remove duplicates immediately
+  let list = [...new Set(safeArray(branches))];
+
   const selectedReason = cleanValue(reasonSelect?.value).toUpperCase();
 
   const canAddBranch =
@@ -489,36 +492,42 @@ function populateEditRoving(
     return;
   }
 
-  // only allow one empty row if there are available options
+  // allow one empty row if options exist
   if (list.length === 0 && finalAvailable.length > 0) {
     list = [""];
   }
 
-  // 🔥 FINAL CLEAN: remove empty rows that should NOT exist
+  // remove extra empty rows
   list = list.filter((b, i) => {
     if (b !== "") return true;
-    return i === 0; // only keep first empty row
+    return i === 0;
   });
 
   editRovingContainer.innerHTML = list
     .map((b, index) => {
       const isExisting = b !== "";
 
-      // ❌ extra safety: skip invalid existing values
+      // ❌ skip invalid existing values
       if (isExisting && !uniqueBranches.includes(b)) return "";
 
       return `
         <div class="d-flex gap-2 mb-2 align-items-center roving-row">
             <select class="form-control" ${isExisting ? "disabled" : ""}>
                 <option value="">Select branch</option>
+
                 ${uniqueBranches
-                  .map(
-                    (branch) => `
-                    <option value="${branch}" ${branch === b ? "selected" : ""}>
-                        ${branch}
-                    </option>
-                `,
-                  )
+                  .map((branchCode) => {
+                    const displayName =
+                      branchBrandPairs.find((p) => p.branch_code === branchCode)
+                        ?.branch_name || branchCode;
+
+                    return `
+                      <option value="${branchCode}"
+                        ${branchCode === b ? "selected" : ""}>
+                        ${displayName}
+                      </option>
+                    `;
+                  })
                   .join("")}
             </select>
 
@@ -529,13 +538,14 @@ function populateEditRoving(
                 +
             </button>
 
-            <button type="button"
+            <button
+                type="button"
                 class="btn btn-danger btn-remove-branch"
                 style="${isExisting || index === 0 ? "display:none;" : ""}">
                 −
             </button>
         </div>
-        `;
+      `;
     })
     .join("");
 }
