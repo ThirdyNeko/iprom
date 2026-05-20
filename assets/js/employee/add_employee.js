@@ -161,17 +161,27 @@ document.addEventListener("DOMContentLoaded", async function () {
     const uniqueBranches = [
       ...new Set(branchBrandPairs.map((p) => p.branch_code)),
     ];
+
     mainBranchSelect.innerHTML =
       '<option value="" disabled selected>-- Select Branch --</option>';
-    uniqueBranches.forEach((b) => {
-      const opt = new Option(b, b);
+
+    uniqueBranches.forEach((code) => {
+      // get readable name
+      const displayName =
+        branchBrandPairs.find((p) => p.branch_code === code)?.branch_name ||
+        code;
+
+      const opt = new Option(displayName, code); // 👈 label = name, value = code
+
       const allFull = branchBrandPairs
-        .filter((p) => p.branch_code === b)
+        .filter((p) => p.branch_code === code)
         .every((p) => p.assigned_count >= p.required_count);
+
       if (allFull) {
         opt.disabled = true;
         opt.text += " (Full)";
       }
+
       mainBranchSelect.appendChild(opt);
     });
   }
@@ -201,7 +211,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   function populateRovingSelect(select) {
     const currentBranch = mainBranchSelect.value;
 
-    // get all selected roving branches (excluding this select)
     const selectedBranches = Array.from(
       rovingContainer.querySelectorAll(".roving-select"),
     )
@@ -209,7 +218,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       .map((s) => s.value)
       .filter(Boolean);
 
-    const currentValue = select.value; // preserve current selection
+    const currentValue = select.value;
 
     const uniqueBranches = [
       ...new Set(branchBrandPairs.map((p) => p.branch_code)),
@@ -218,17 +227,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     select.innerHTML =
       '<option value="" disabled selected>-- Select Branch --</option>';
 
-    uniqueBranches.forEach((b) => {
-      // ❌ exclude main branch
-      if (b === currentBranch) return;
+    uniqueBranches.forEach((code) => {
+      const displayName =
+        branchBrandPairs.find((p) => p.branch_code === code)?.branch_name ||
+        code;
 
-      // ❌ exclude already selected in other roving fields
-      if (selectedBranches.includes(b)) return;
+      // ❌ exclude main branch (by code)
+      if (code === currentBranch) return;
 
-      const opt = new Option(b, b);
+      // ❌ exclude already selected
+      if (selectedBranches.includes(code)) return;
+
+      const opt = new Option(displayName, code); // 👈 label=name, value=code
 
       const allFull = branchBrandPairs
-        .filter((p) => p.branch_code === b)
+        .filter((p) => p.branch_code === code)
         .every((p) => p.assigned_count >= p.required_count);
 
       if (allFull) {
@@ -239,7 +252,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       select.appendChild(opt);
     });
 
-    // ✅ restore previous value if still valid
+    // restore previous value if still valid
     if (
       currentValue &&
       !selectedBranches.includes(currentValue) &&
