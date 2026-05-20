@@ -159,14 +159,14 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================
   function populateBranchSelect() {
     const uniqueBranches = [
-      ...new Set(branchBrandPairs.map((p) => p.branch_name)),
+      ...new Set(branchBrandPairs.map((p) => p.branch_code)),
     ];
     mainBranchSelect.innerHTML =
       '<option value="" disabled selected>-- Select Branch --</option>';
     uniqueBranches.forEach((b) => {
       const opt = new Option(b, b);
       const allFull = branchBrandPairs
-        .filter((p) => p.branch_name === b)
+        .filter((p) => p.branch_code === b)
         .every((p) => p.assigned_count >= p.required_count);
       if (allFull) {
         opt.disabled = true;
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     selectBrand.innerHTML =
       '<option value="" disabled selected>-- Select Brand --</option>';
     branchBrandPairs
-      .filter((p) => p.branch_name === branch)
+      .filter((p) => p.branch_code === branch)
       .forEach((p) => {
         const opt = new Option(p.brand_name, p.brand_name);
         if (p.assigned_count >= p.required_count) {
@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const currentValue = select.value; // preserve current selection
 
     const uniqueBranches = [
-      ...new Set(branchBrandPairs.map((p) => p.branch_name)),
+      ...new Set(branchBrandPairs.map((p) => p.branch_code)),
     ];
 
     select.innerHTML =
@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       const opt = new Option(b, b);
 
       const allFull = branchBrandPairs
-        .filter((p) => p.branch_name === b)
+        .filter((p) => p.branch_code === b)
         .every((p) => p.assigned_count >= p.required_count);
 
       if (allFull) {
@@ -258,7 +258,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!branch) return;
 
-    const filtered = branchBrandPairs.filter((p) => p.branch_name === branch);
+    const filtered = branchBrandPairs.filter((p) => p.branch_code === branch);
 
     filtered.forEach((p) => {
       // ✅ IMPORTANT FIX: use passed value, not global only
@@ -463,7 +463,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (sub === "MULTI BRAND") {
       for (let b of multiBrands) {
         const combo = branchBrandPairs.find(
-          (p) => p.branch_name === branch && p.brand_name === b,
+          (p) => p.branch_code === branch && p.brand_name === b,
         );
         if (!combo || combo.assigned_count >= combo.required_count) {
           return Swal.fire("Cannot Save", `Invalid: ${branch} & ${b}`, "error");
@@ -474,7 +474,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Client-side check: prevent saving full branch/brand combos
     for (let b of branchesToCheck) {
       const combo = branchBrandPairs.find(
-        (p) => p.branch_name === b && p.brand_name === brand,
+        (p) => p.branch_code === b && p.brand_name === brand,
       );
       if (!combo || combo.assigned_count >= combo.required_count) {
         return Swal.fire(

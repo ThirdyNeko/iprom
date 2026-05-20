@@ -394,14 +394,14 @@ function populateEditBranch(
     (p) => p.brand_name === currentBrand,
   );
 
-  const uniqueBranches = [...new Set(validBranches.map((p) => p.branch_name))];
+  const uniqueBranches = [...new Set(validBranches.map((p) => p.branch_code))];
 
   branchSelect.innerHTML = `
     <option value="">Select branch</option>
     ${uniqueBranches
       .map((b) => {
         const pair = branchBrandPairs.find(
-          (p) => p.branch_name === b && p.brand_name === currentBrand,
+          (p) => p.branch_code === b && p.brand_name === currentBrand,
         );
 
         return `
@@ -428,7 +428,7 @@ function populateEditBrand(
   const list = safeArray(brands);
 
   const validBrands = branchBrandPairs.filter(
-    (p) => p.branch_name === currentBranch,
+    (p) => p.branch_code === currentBranch,
   );
 
   const uniqueBrands = [...new Set(validBrands.map((p) => p.brand_name))];
@@ -474,10 +474,10 @@ function populateEditRoving(
     .filter(
       (p) =>
         p.brand_name === currentBrand &&
-        p.branch_name !== baseBranch &&
-        (p.assigned_count < p.required_count || list.includes(p.branch_name)),
+        p.branch_code !== baseBranch &&
+        (p.assigned_count < p.required_count || list.includes(p.branch_code)),
     )
-    .map((p) => p.branch_name);
+    .map((p) => p.branch_code);
 
   const uniqueBranches = [...new Set(validBranches)];
 
@@ -558,7 +558,7 @@ function populateEditBrands(
   const validBrands = branchBrandPairs
     .filter(
       (p) =>
-        p.branch_name === currentBranch &&
+        p.branch_code === currentBranch &&
         p.brand_name !== baseBrand &&
         (p.assigned_count < p.required_count || list.includes(p.brand_name)),
     )
@@ -1118,11 +1118,11 @@ function updateBranchOptions() {
     .filter(
       (p) =>
         p.brand_name === currentBrand &&
-        p.branch_name !== baseBranch &&
+        p.branch_code !== baseBranch &&
         (p.assigned_count < p.required_count ||
-          selectedValues.includes(p.branch_name)),
+          selectedValues.includes(p.branch_code)),
     )
-    .map((p) => p.branch_name);
+    .map((p) => p.branch_code);
 
   const uniqueBranches = [...new Set(validBranches)];
 
@@ -1160,7 +1160,7 @@ function updateBrandOptions() {
   const validBrands = branchBrandPairs
     .filter(
       (p) =>
-        p.branch_name === currentBranch &&
+        p.branch_code === currentBranch &&
         p.brand_name !== baseBrand &&
         (p.assigned_count < p.required_count ||
           selectedValues.includes(p.brand_name)),
@@ -1194,7 +1194,7 @@ function updateBrandOptions() {
 
 function isComboAvailable(branch, brand) {
   const combo = branchBrandPairs.find(
-    (p) => p.branch_name === branch && p.brand_name === brand,
+    (p) => p.branch_code === branch && p.brand_name === brand,
   );
 
   if (!combo) return false;

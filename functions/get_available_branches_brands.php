@@ -5,16 +5,23 @@ $pdo = qa_db();
 
 $sql = "
     SELECT
-        a.branch_name,
+        a.branch_name AS branch_code,
+        b.branch AS branch_name,
         a.brand_name,
         a.required_count,
         COUNT(e.id) AS assigned_count
     FROM assignment a
+    LEFT JOIN IPROM.dbo.branches b
+        ON b.branch_code = a.branch_name
     LEFT JOIN employee_info e
         ON e.branch = a.branch_name
        AND e.brand = a.brand_name
        AND e.status = 'ACTIVE'
-    GROUP BY a.branch_name, a.brand_name, a.required_count
+    GROUP BY
+        a.branch_name,
+        b.branch,
+        a.brand_name,
+        a.required_count
 ";
 
 $stmt = $pdo->query($sql);
