@@ -5,7 +5,7 @@ try {
     // Fetch branches only
     $stmt = $pdo->prepare("EXEC dbo.get_branches_brands @branch = NULL");
     $stmt->execute();
-    $plantillaBranches = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $plantillaBranches = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
     // Optional: log error
@@ -32,9 +32,13 @@ try {
                                 <option value="">System under maintenance</option>
                             <?php else: ?>
                                 <option value="">Select Branch</option>
+
                                 <?php foreach($plantillaBranches as $b): ?>
-                                    <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                                    <option value="<?= htmlspecialchars($b['branch_code']) ?>">
+                                        <?= htmlspecialchars($b['branch']) ?>
+                                    </option>
                                 <?php endforeach; ?>
+
                             <?php endif; ?>
                         </select>
                     </div>
