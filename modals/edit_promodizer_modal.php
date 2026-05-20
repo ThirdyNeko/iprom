@@ -77,6 +77,14 @@ th{
     color: #b0b0b0;
 }
 
+.date-input {
+    color: #000;
+}
+
+.date-input:invalid {
+    color: #b0b0b0;
+}
+
 </style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -190,16 +198,16 @@ th{
 
                         <tr id="rowDateSeparated">
                             <th id="thDateSeparated">Date Separated</th>
-                            <td><input type="date" id="editDateSeparated" class="form-control date-input"></td>
+                            <td><input type="date" id="editDateSeparated" class="form-control date-input required"></td>
                             <th id="thDateReturned">Date Returned</th>
-                            <td><input type="date" id="editDateReturn" class="form-control date-input"></td>
+                            <td><input type="date" id="editDateReturn" class="form-control date-input required"></td>
                         </tr>
 
                         <tr id="rowStartDate">
                             <th id="thStartDate">Start</th>
-                            <td><input type="date" id="editStartDate" class="form-control date-input"></td>
+                            <td><input type="date" id="editStartDate" class="form-control date-input required"></td>
                             <th id="thEndDate">End</th>
-                            <td><input type="date" id="editEndDate" class="form-control date-input"></td>
+                            <td><input type="date" id="editEndDate" class="form-control date-input required"></td>
                         </tr>
 
                         <tr id="editRovingField" class="d-none">
