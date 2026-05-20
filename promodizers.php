@@ -256,7 +256,9 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                     data-brand="<?= htmlspecialchars($p['brand']) ?>">
                                     
                                     <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></td>
-                                    <td><?= htmlspecialchars($p['branch'] ?? '-') ?></td>
+                                    <td data-branch="<?= htmlspecialchars($p['branch']) ?>">
+                                        <?= htmlspecialchars($branchMap[$p['branch']] ?? '-') ?>
+                                    </td>
                                     <td><?= htmlspecialchars($p['brand'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars($p['status'] ?? '-') ?></td>
 
