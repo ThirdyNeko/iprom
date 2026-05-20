@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const effectivityReasons = [
             "RESIGNED",
             "PULL-OUT / END OF CONTRACT",
-            "BLOCKLISTED / AWOL / TERMINATED",
+            "BLACKLISTED / AWOL / TERMINATED",
             "CHANGE SUB STATUS",
             "TRANSFER BRANCH",
             "REMOVE BRANCH/BRAND",
