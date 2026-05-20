@@ -1,4 +1,13 @@
 $(document).ready(function () {
+  let branchMap = {};
+
+  // 1. LOAD BRANCH LOOKUP FIRST
+  $.getJSON("functions/get_branches.php", function (res) {
+    branchMap = res;
+
+    // 2. ONLY AFTER DATA IS READY → INIT TABLE
+    initTable();
+  });
   function applyFiltersFromURL() {
     const params = new URLSearchParams(window.location.search);
 
@@ -11,27 +20,49 @@ $(document).ready(function () {
 
   applyFiltersFromURL();
 
-  window.assignmentTable = $("#assignmentTable").DataTable({
-    processing: true,
-    serverSide: true,
-    ordering: false,
-    ajax: {
-      url: "functions/fetch_assignments.php",
-      type: "POST",
-      data: function (d) {
-        d.branch = $("#filterBranch").val();
-        d.brand = $("#filterBrand").val();
-        d.status = $("#filterStatus").val();
-        d.from_date = $("#filterFrom").val();
-        d.to_date = $("#filterTo").val();
+  function initTable() {
+    window.assignmentTable = $("#assignmentTable").DataTable({
+      processing: true,
+      serverSide: true,
+      ordering: false,
+
+      ajax: {
+        url: "functions/fetch_assignments.php",
+        type: "POST",
+        data: function (d) {
+          d.branch = $("#filterBranch").val();
+          d.brand = $("#filterBrand").val();
+          d.status = $("#filterStatus").val();
+          d.from_date = $("#filterFrom").val();
+          d.to_date = $("#filterTo").val();
+        },
       },
-    },
-    pageLength: 50,
-    lengthMenu: [10, 25, 50, 100],
-    responsive: true,
-    dom: "lrtip",
-    order: [[3, "desc"]], // FIXED (was 6, but safer depending on columns)
-  });
+
+      pageLength: 50,
+      lengthMenu: [10, 25, 50, 100],
+      responsive: true,
+      dom: "lrtip",
+      order: [[3, "desc"]],
+
+      columns: [
+        {
+          data: 0,
+          render: function (data, type, row) {
+            if (type === "display") {
+              return branchMap[data] || data;
+            }
+            return data; // 👈 keeps BACD for logic
+          },
+        },
+        { data: 1 }, // brand
+        { data: 2 }, // required
+        { data: 3 }, // assigned
+        { data: 4 }, // status
+        { data: 5 }, // updated_at
+        { data: 6 }, // updated_by
+      ],
+    });
+  }
 
   // =========================
   // FILTER CHANGE
@@ -50,9 +81,10 @@ $(document).ready(function () {
     const rowData = window.assignmentTable.row(this).data();
     if (!rowData) return;
 
-    // because PHP returns ARRAY (not object)
+    // ✅ ALWAYS raw BACD (safe because of render fix above)
     const branch = rowData[0];
     const brand = rowData[1];
+
     const required = parseInt($(rowData[2]).text()) || 0;
     const assigned = parseInt(rowData[3]) || 0;
     const updated = rowData[5];
@@ -60,13 +92,14 @@ $(document).ready(function () {
 
     if (!branch || !brand) return;
 
-    // store modal data
+    // store modal data (still BACD)
     $("#assignmentModal").data("branch", branch);
     $("#assignmentModal").data("brand", brand);
 
-    // fill modal (assumes your modal JS exists)
-    $("#modalBranch").text(branch);
+    // UI shows FULL NAME (already mapped or fallback)
+    $("#modalBranch").text(branchMap[branch] || branch);
     $("#modalBrand").text(brand);
+
     $("#modalRequired").val(required);
     $("#modalStatus").html(getStatusBadge(required, assigned));
 
@@ -74,12 +107,10 @@ $(document).ready(function () {
       '<small class="text-muted">Loading...</small>',
     );
 
-    // OPEN MODAL
     bootstrap.Modal.getOrCreateInstance(
       document.getElementById("assignmentModal"),
     ).show();
 
-    // FETCH ASSIGNED
     fetch("functions/get_assigned_promodizers.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -103,13 +134,13 @@ $(document).ready(function () {
 
           res.data.forEach((emp) => {
             html += `
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            ${emp.first_name} ${emp.last_name}
-                            <button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
-                                Edit
-                            </button>
-                        </li>
-                    `;
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              ${emp.first_name} ${emp.last_name}
+              <button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
+                Edit
+              </button>
+            </li>
+          `;
           });
 
           html += "</ul>";
@@ -119,16 +150,15 @@ $(document).ready(function () {
 
         if (assignedCount < required) {
           html += `
-            <div class="mt-2 text-left">
-              <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
-                + Add Promodiser
-              </button>
-            </div>
-          `;
+          <div class="mt-2 text-left">
+            <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
+              + Add Promodiser
+            </button>
+          </div>
+        `;
         }
 
         $("#modalAssignedList").html(html);
-
         $("#modalStatus").html(getStatusBadge(required, assignedCount));
       })
       .catch((err) => {
@@ -138,7 +168,6 @@ $(document).ready(function () {
         );
       });
 
-    // update date fields
     $("#modalUpdated").text(updated || "-");
     $("#modalUpdatedBy").text(updatedBy || "-");
   });
