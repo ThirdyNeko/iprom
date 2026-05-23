@@ -106,17 +106,20 @@ th{
                             <td colspan="3">
                                 <select id="editReasonUpdate" class="form-select reason-select" required>
                                     <option value="" disabled selected>-- Select Reason --</option>
-                                    <option value="RESIGNED">RESIGNED</option>
-                                    <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
-                                    <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
-                                    <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
-                                    <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                                    <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>  
                                     <option value="BLACKLISTED / AWOL / TERMINATED">BLACKLISTED / AWOL / TERMINATED</option>
+                                    <option value="CHANGE AGENCY">CHANGE AGENCY</option>
                                     <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
-                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>                                                                        
-                                    <!-- <option value="REASSIGN">REASSIGN</option> -->
+                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
+                                    <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
+                                    <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>                                    
+                                    <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
                                     <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
-                                    <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>                                                                 
+                                    <option value="RESIGNED">RESIGNED</option>                                    
+                                    <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>                                                                                                                
+                                    <!-- <option value="REASSIGN">REASSIGN</option> -->
+                                    
+                                                                                                   
                                 </select>
                             </td>
                         </tr>
@@ -168,7 +171,7 @@ th{
 
                         <tr>
                             <th>Agency</th>
-                            <td><input type="text" id="editAgency" class="form-control" readonly></td>
+                            <td><select id="editAgency" class="form-select"></select></td>
                             <th>Company</th>
                             <td><input type="text" id="editCorpo" class="form-control" readonly></td>
                         </tr>

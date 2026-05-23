@@ -220,23 +220,21 @@ function toggleStatusesEditable() {
 
   const subStatusEl = document.getElementById("editSubStatus");
   const employmentStatusEl = document.getElementById("editEmploymentStatus");
+  const agencyEl = document.getElementById("editAgency");
 
-  // =========================
-  // DEFAULT: lock both
-  // =========================
+  // default lock all
   if (subStatusEl) subStatusEl.disabled = true;
   if (employmentStatusEl) employmentStatusEl.disabled = true;
+  if (agencyEl) agencyEl.disabled = true;
 
-  // =========================
-  // ENABLE BASED ON REASON
-  // =========================
-  if (reason === "CHANGE SUB STATUS") {
-    if (subStatusEl) subStatusEl.disabled = false;
-  }
+  // enable based on reason
+  const map = {
+    "CHANGE SUB STATUS": () => subStatusEl && (subStatusEl.disabled = false),
+    "CHANGE EMPLOYMENT STATUS": () => employmentStatusEl && (employmentStatusEl.disabled = false),
+    "CHANGE AGENCY": () => agencyEl && (agencyEl.disabled = false),
+  };
 
-  if (reason === "CHANGE EMPLOYMENT STATUS") {
-    if (employmentStatusEl) employmentStatusEl.disabled = false;
-  }
+  if (map[reason]) map[reason]();
 }
 
 function toggleTransferEditable() {
@@ -756,7 +754,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         populateEditBrand([employee.brand], employee.branch, employee.brand);
       }
       if (el("editAgency")) {
-        el("editAgency").value = cleanValue(employee.agency);
+        populateAgencyDropdown(cleanValue(employee.agency));
       }
 
       // ✅ FIXED DATE HANDLING (NO "-")
@@ -897,6 +895,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         "editDateSeparated",
         "editDateReturn",
         "editRemarks",
+        "editAgency",
       ];
 
       modalEl.querySelectorAll("input, select, textarea").forEach((el) => {
@@ -1128,6 +1127,50 @@ async function loadBranchBrandPairs() {
   }
 }
 
+let agencyList = [];
+
+async function loadAgencies() {
+  try {
+    const res = await fetch("functions/get_agencies.php");
+    agencyList = await res.json();
+  } catch (err) {
+    console.error("Failed to load agencies", err);
+  }
+}
+
+function populateAgencyDropdown(selected = "") {
+  const agencyEl = document.getElementById("editAgency");
+  if (!agencyEl) return;
+
+  const normalizedSelected = cleanValue(selected);
+
+  // ensure selected value exists in list
+  const existsInList = agencyList.some(
+    (a) => cleanValue(a).toUpperCase() === normalizedSelected.toUpperCase()
+  );
+
+  let finalList = [...agencyList];
+
+  // if current value is NOT in DB list, inject it at top
+  if (normalizedSelected && !existsInList) {
+    finalList.unshift(normalizedSelected);
+  }
+
+  agencyEl.innerHTML = `
+    ${finalList
+      .map(
+        (a) => `
+          <option value="${a}">
+            ${a}
+          </option>
+        `
+      )
+      .join("")}
+  `;
+
+  agencyEl.value = normalizedSelected;
+}
+
 function getSelectedValues(container, selector) {
   return [...container.querySelectorAll(selector)]
     .map((s) => s.value)
@@ -1232,6 +1275,7 @@ function isComboAvailable(branch, brand) {
 // INIT LISTENERS
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
+  await loadAgencies(); 
   await loadBranchBrandPairs(); // 🔥 ADD THIS
 
   if (reasonSelect) {
