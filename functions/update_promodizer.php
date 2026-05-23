@@ -667,6 +667,8 @@ try {
                 employee_id,
                 first_name,
                 last_name,
+                middle_name,
+                suffix,
                 branch,
                 brand,
                 assignment_date,
@@ -694,6 +696,8 @@ try {
                 :employee_id,
                 :first_name,
                 :last_name,
+                :middle_name,
+                :suffix,
                 :branch,
                 :brand,
                 :assignment_date,
@@ -733,6 +737,8 @@ try {
                     FROM employee_info
                     WHERE first_name = ?
                     AND last_name = ?
+                    AND middle_name = ?
+                    AND suffix = ?
                     AND branch = ?
                     AND brand = ?
                     AND status = 'ACTIVE'
@@ -742,6 +748,8 @@ try {
                 $check->execute([
                     $base['first_name'],
                     $base['last_name'],
+                    $base['middle_name'],
+                    $base['suffix'],
                     $branch,
                     $currentBrand,
                     $base['roving_group_id']
@@ -755,6 +763,8 @@ try {
                     ':employee_id' => $_POST['employee_id'] ?? $id,
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
+                    ':middle_name' => $base['middle_name'],
+                    ':suffix'      => $base['suffix'],
                     ':branch'     => $branch,
                     ':brand'      => $currentBrand,
                     ':assignment_date' => date('Y-m-d'),
@@ -800,6 +810,8 @@ try {
                     FROM employee_info
                     WHERE first_name = ?
                     AND last_name = ?
+                    AND middle_name = ?
+                    AND suffix = ?
                     AND branch = ?
                     AND brand = ?
                     AND status = 'ACTIVE'
@@ -809,6 +821,8 @@ try {
                 $check->execute([
                     $base['first_name'],
                     $base['last_name'],
+                    $base['middle_name'],
+                    $base['suffix'],
                     $currentBranch,
                     $brand,
                     $base['multi_brand_group_id']
@@ -822,6 +836,8 @@ try {
                     ':employee_id' => $_POST['employee_id'] ?? $id,
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
+                    ':middle_name' => $base['middle_name'],
+                    ':suffix'      => $base['suffix'],
                     ':branch'     => $currentBranch,
                     ':brand'      => $brand,
                     ':assignment_date' => date('Y-m-d'),
@@ -875,6 +891,8 @@ try {
                         FROM employee_info
                         WHERE first_name = ?
                         AND last_name = ?
+                        AND middle_name = ?
+                        AND suffix = ?
                         AND branch = ?
                         AND brand = ?
                         AND status = 'ACTIVE'
@@ -885,6 +903,8 @@ try {
                     $check->execute([
                         $base['first_name'],
                         $base['last_name'],
+                        $base['middle_name'],
+                        $base['suffix'],
                         $branchItem,
                         $brandItem,
                         $roving_group_id,
@@ -899,6 +919,8 @@ try {
                         ':employee_id' => $_POST['employee_id'] ?? $id,
                         ':first_name' => $base['first_name'],
                         ':last_name'  => $base['last_name'],
+                        ':middle_name' => $base['middle_name'],
+                        ':suffix'      => $base['suffix'],
                         ':branch'     => $branchItem,
                         ':brand'      => $brandItem,
                         ':assignment_date' => date('Y-m-d'),

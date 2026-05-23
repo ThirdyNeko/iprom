@@ -79,7 +79,7 @@ $branch_brand_pairs = $pdo->query("
 
                             <div class="mb-3">
                                 <label class="form-label">Middle Name </label>
-                                <input type="text" name="middle_name" class="form-control" style="text-transform: uppercase;">
+                                <input type="text" name="middle_name" class="form-control" required style="text-transform: uppercase;">
                             </div>
 
                             <div class="mb-3">
