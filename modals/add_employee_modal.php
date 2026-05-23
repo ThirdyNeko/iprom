@@ -86,8 +86,22 @@ $branch_brand_pairs = $pdo->query("
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Middle Name </label>
-                                <input type="text" name="middle_name" class="form-control" required style="text-transform: uppercase;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label class="form-label mb-0">Middle Name</label>
+
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="noMiddleName">
+                                        <label class="form-check-label" for="noMiddleName">
+                                            No Middle Name
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <input type="text"
+                                    name="middle_name"
+                                    id="middleName"
+                                    class="form-control"
+                                    style="text-transform: uppercase;">
                             </div>
 
                             <div class="mb-3">

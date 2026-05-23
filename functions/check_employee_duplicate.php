@@ -39,7 +39,7 @@ try {
         WHERE 
             UPPER(first_name) = :first_name
             AND UPPER(last_name) = :last_name
-            AND UPPER(middle_name) = :middle_name
+            AND ISNULL(UPPER(LTRIM(RTRIM(middle_name))), '') = :middle_name
             AND birthday = :birthday
         ORDER BY id DESC
     ";

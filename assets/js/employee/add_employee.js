@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   const subStatus = document.getElementById("subStatus");
   const genderInput = form.querySelector('select[name="gender"]');
   const birthdayInput = form.querySelector('input[name="birthday"]');
+  const noMiddleName = document.getElementById("noMiddleName");
+  const middleNameInput = document.getElementById("middleName");    
 
   const mainBranchSelect = form.querySelector('select[name="branch"]');
   const mainBrandSelect = form.querySelector('select[name="brand"]');
@@ -17,6 +19,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const multiBrandField = document.getElementById("multiBrandField");
   const multiBrandContainer = document.getElementById("multiBrandContainer");
+
+  noMiddleName.addEventListener("change", function () {
+      if (this.checked) {
+          middleNameInput.value = "";
+          middleNameInput.disabled = true;
+      } else {
+          middleNameInput.disabled = false;
+      }
+  });
 
   // =========================
   // Fetch branch-brand availability mapping
@@ -516,16 +527,32 @@ document.addEventListener("DOMContentLoaded", async function () {
     // adjust these depending on your actual inputs
     const firstName =
       form.querySelector('input[name="first_name"]')?.value || "";
+
     const middleName =
-      form.querySelector('input[name="middle_name"]')?.value || "";
-    const lastName = form.querySelector('input[name="last_name"]')?.value || "";
+      noMiddleName.checked
+        ? ""
+        : (form.querySelector('input[name="middle_name"]')?.value || "").trim();
+
+    const lastName =
+      form.querySelector('input[name="last_name"]')?.value || "";
+
     const birthdayValue = birthdayInput.value;
 
-    if (!firstName || !middleName || !lastName || !birthdayValue) {
+    // only require middle name IF toggle is NOT checked
+    if (!firstName || !lastName || !birthdayValue) {
       return Swal.fire(
         "Missing Data",
-        "Name and birthday are required for validation.",
-        "warning",
+        "First name, last name, and birthday are required.",
+        "warning"
+      );
+    }
+
+    // optional: only enforce middle name when NOT disabled
+    if (!noMiddleName.checked && !middleName) {
+      return Swal.fire(
+        "Missing Data",
+        "Middle name is required.",
+        "warning"
       );
     }
 
@@ -535,7 +562,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           first_name: firstName,
-          middle_name: middleName,
+          middle_name: noMiddleName.checked || !middleName ? null : middleName,
           last_name: lastName,
           birthday: birthdayValue,
         }),
