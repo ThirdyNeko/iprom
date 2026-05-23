@@ -17,6 +17,14 @@ $brands = $pdo->query("
     ORDER BY brand_name
 ")->fetchAll(PDO::FETCH_COLUMN);
 
+$agencies = $pdo->query("
+    SELECT DISTINCT agencies
+    FROM agencies
+    WHERE agencies IS NOT NULL
+    AND status = 1
+    ORDER BY agencies
+")->fetchAll(PDO::FETCH_COLUMN);
+
 // Fetch branch-brand pairs for JS mapping
 $branch_brand_pairs = $pdo->query("
     SELECT branch_name, brand_name, assigned_count, required_count
@@ -138,6 +146,16 @@ $branch_brand_pairs = $pdo->query("
                                     <option value="" selected disabled>Unassigned</option>
                                     <?php foreach($brands as $brand): ?>
                                         <option value="<?= htmlspecialchars($brand) ?>"><?= htmlspecialchars($brand) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Agency</label>
+                                <select name="agency" id="agency" class="form-select" required>
+                                    <option value="" selected disabled>Select Agency</option>
+                                    <?php foreach($agencies as $agency): ?>
+                                        <option value="<?= htmlspecialchars($agency) ?>"><?= htmlspecialchars($agency) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>

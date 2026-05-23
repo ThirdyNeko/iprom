@@ -14,6 +14,7 @@ $first_name = $_POST['first_name'] ?? null;
 $last_name  = $_POST['last_name'] ?? null;
 $branch     = $_POST['branch'] ?: null;
 $brand      = $_POST['brand'] ?: null;
+$agency     = $_POST['agency'] ?: null;
 $status     = $_POST['status'] ?: null;
 $employment_status = $_POST['employment_status'] ?? null;
 $sub_status = $_POST['sub_status'] ?? null; // ✅ NEW
@@ -231,6 +232,7 @@ try {
                 @suffix = :suffix,
                 @branch = :branch,
                 @brand = :brand,
+                @agency = :agency,
                 @status = :status,
                 @assigned_by = :assigned_by,
                 @employment_status = :employment_status,
@@ -255,6 +257,7 @@ try {
             ':suffix'               => $suffix,
             ':branch'               => $branch,
             ':brand'                => $brand,
+            ':agency'               => $agency,
             ':status'               => $status,
             ':assigned_by'          => $assigned_by,
             ':employment_status'    => $employment_status,
@@ -291,6 +294,7 @@ try {
                 @suffix = :suffix,
                 @branch = :branch,
                 @brand = :brand,
+                @agency = :agency,
                 @status = :status,
                 @assigned_by = :assigned_by,
                 @employment_status = :employment_status,
@@ -314,6 +318,7 @@ try {
             ':suffix'            => $suffix,
             ':branch'            => $rBranch,
             ':brand'             => $brand,
+            ':agency'            => $agency,
             ':status'            => $status,
             ':assigned_by'       => $assigned_by,
             ':employment_status' => $employment_status,
@@ -344,6 +349,7 @@ try {
                 @suffix = :suffix,
                 @branch = :branch,
                 @brand = :brand,
+                @agency = :agency,
                 @status = :status,
                 @assigned_by = :assigned_by,
                 @employment_status = :employment_status,
@@ -367,6 +373,7 @@ try {
             ':suffix'                => $suffix,
             ':branch'                => $branch,
             ':brand'                 => $mBrand,
+            ':agency'                => $agency,
             ':status'                => $status,
             ':assigned_by'           => $assigned_by,
             ':employment_status'     => $employment_status,
@@ -418,6 +425,7 @@ try {
                         @suffix = :suffix,
                         @branch = :branch,
                         @brand = :brand,
+                        @agency = :agency,
                         @status = :status,
                         @assigned_by = :assigned_by,
                         @employment_status = :employment_status,
@@ -441,6 +449,7 @@ try {
                     ':suffix'                => $suffix,
                     ':branch'                => $rBranch,
                     ':brand'                 => $mBrand,
+                    ':agency'                => $agency,
                     ':status'                => $status,
                     ':assigned_by'           => $assigned_by,
                     ':employment_status'     => $employment_status,

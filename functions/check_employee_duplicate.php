@@ -11,6 +11,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 
 $first_name = strtoupper(trim($input['first_name'] ?? ''));
 $last_name  = strtoupper(trim($input['last_name'] ?? ''));
+$middle_name = strtoupper(trim($input['middle_name'] ?? ''));
 $birthday   = $input['birthday'] ?? '';
 
 if (!$first_name || !$last_name || !$birthday) {
@@ -30,6 +31,7 @@ try {
             employee_id,
             first_name,
             last_name,
+            middle_name,
             birthday,
             status,
             reason_for_update
@@ -37,6 +39,7 @@ try {
         WHERE 
             UPPER(first_name) = :first_name
             AND UPPER(last_name) = :last_name
+            AND UPPER(middle_name) = :middle_name
             AND birthday = :birthday
         ORDER BY id DESC
     ";
@@ -45,6 +48,7 @@ try {
     $stmt->execute([
         ':first_name' => $first_name,
         ':last_name'  => $last_name,
+        ':middle_name'=> $middle_name,
         ':birthday'   => $birthday
     ]);
 

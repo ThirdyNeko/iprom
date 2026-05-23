@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   const mainBranchSelect = form.querySelector('select[name="branch"]');
   const mainBrandSelect = form.querySelector('select[name="brand"]');
+  const agencySelect = form.querySelector('select[name="agency"]');
 
   const multiBrandField = document.getElementById("multiBrandField");
   const multiBrandContainer = document.getElementById("multiBrandContainer");
@@ -368,6 +369,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const dateHiredInput = form.querySelector('input[name="date_hired"]');
     const gender = genderInput.value;
     const birthday = birthdayInput.value;
+    const agency = agencySelect.value;
 
     // Gender validation
     if (!gender) {
@@ -379,6 +381,15 @@ document.addEventListener("DOMContentLoaded", async function () {
       return Swal.fire(
         "Missing Birthday",
         "Please select birthday.",
+        "warning",
+      );
+    }
+
+    // Agency validation
+    if (!agency) {
+      return Swal.fire(
+        "Missing Agency",
+        "Please select agency.",
         "warning",
       );
     }
@@ -639,6 +650,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       formData.set("updated_by", window.currentUser || "SYSTEM");
       formData.set("gender", gender);
       formData.set("birthday", birthday);
+      formData.set("agency", agency);
 
       const res = await fetch("functions/add_employee.php", {
         method: "POST",
