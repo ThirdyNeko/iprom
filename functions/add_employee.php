@@ -29,6 +29,19 @@ $suffix      = $_POST['suffix'] ?? null;
 $reassign = $_POST['reassign'] ?? null;
 $employee_id = $_POST['employee_id'] ?? null;
 
+$stmt = $pdo->prepare("
+    SELECT TOP 1 corpo
+    FROM branches
+    WHERE branch_code = :branch
+    ORDER BY corpo
+");
+
+$stmt->execute([
+    ':branch' => $branch
+]);
+
+$corpo = $stmt->fetchColumn();
+
 // ✅ Only generate NEW ID if NOT reassigning
 if ($reassign !== '1') {
     $employee_id = 'EMP-' . date('YmdHis') . '-' . rand(100, 999);
@@ -231,6 +244,7 @@ try {
                 @middle_name = :middle_name,
                 @suffix = :suffix,
                 @branch = :branch,
+                @corpo = :corpo,
                 @brand = :brand,
                 @agency = :agency,
                 @status = :status,
@@ -256,6 +270,7 @@ try {
             ':middle_name'          => $middle_name,
             ':suffix'               => $suffix,
             ':branch'               => $branch,
+            ':corpo'                => $corpo,
             ':brand'                => $brand,
             ':agency'               => $agency,
             ':status'               => $status,
@@ -293,6 +308,7 @@ try {
                 @middle_name = :middle_name,
                 @suffix = :suffix,
                 @branch = :branch,
+                @corpo = :corpo,
                 @brand = :brand,
                 @agency = :agency,
                 @status = :status,
@@ -317,6 +333,7 @@ try {
             ':middle_name'       => $middle_name,
             ':suffix'            => $suffix,
             ':branch'            => $rBranch,
+            ':corpo'             => $corpo,
             ':brand'             => $brand,
             ':agency'            => $agency,
             ':status'            => $status,
@@ -348,6 +365,7 @@ try {
                 @middle_name = :middle_name,
                 @suffix = :suffix,
                 @branch = :branch,
+                @corpo = :corpo,
                 @brand = :brand,
                 @agency = :agency,
                 @status = :status,
@@ -372,6 +390,7 @@ try {
             ':middle_name'           => $middle_name,
             ':suffix'                => $suffix,
             ':branch'                => $branch,
+            ':corpo'                 => $corpo,
             ':brand'                 => $mBrand,
             ':agency'                => $agency,
             ':status'                => $status,
@@ -424,6 +443,7 @@ try {
                         @middle_name = :middle_name,
                         @suffix = :suffix,
                         @branch = :branch,
+                        @corpo = :corpo,
                         @brand = :brand,
                         @agency = :agency,
                         @status = :status,
@@ -448,6 +468,7 @@ try {
                     ':middle_name'           => $middle_name,
                     ':suffix'                => $suffix,
                     ':branch'                => $rBranch,
+                    ':corpo'                 => $corpo,
                     ':brand'                 => $mBrand,
                     ':agency'                => $agency,
                     ':status'                => $status,
