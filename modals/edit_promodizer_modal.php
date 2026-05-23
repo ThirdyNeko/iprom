@@ -167,6 +167,12 @@ th{
                         </tr>
 
                         <tr>
+                            <th>Agency</th>
+                            <td><input type="text" id="editAgency" class="form-control" readonly></td>
+                            <th>Company</th>
+                            <td><input type="text" id="editCorpo" class="form-control" readonly></td>
+                        </tr>
+                        <tr>
                             <th>Gender</th>
                             <td>
                                 <input type="text" id="editGender" class="form-control" readonly>

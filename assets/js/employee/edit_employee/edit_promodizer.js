@@ -8,6 +8,13 @@ function cleanValue(value) {
   return trimmed.toLowerCase() === "null" || trimmed === "" ? "" : trimmed;
 }
 
+function autoResizeInput(input) {
+  if (!input) return;
+
+  const minSize = 10;
+  input.size = Math.max(input.value.length, minSize);
+}
+
 // =========================
 // ELEMENT SAFETY CHECKS
 // =========================
@@ -696,7 +703,9 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         last_name: p.last_name,
         suffix: p.suffix,
         branch: p.branch,
+        corpo: p.corpo,
         brand: p.brand,
+        agency: p.agency,
         assignment_date: p.assignment_date,
         last_assigned_by: p.last_assigned_by,
         status: p.status,
@@ -737,9 +746,17 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         const value = cleanValue(employee.branch);
         populateEditBranch([employee.branch], employee.brand, employee.branch);
       }
+      if (el("editCorpo")) {
+        const input = el("editCorpo");
+        input.value = cleanValue(employee.corpo);
+        autoResizeInput(input);
+      }
       if (el("editBrand")) {
         const value = cleanValue(employee.brand);
         populateEditBrand([employee.brand], employee.branch, employee.brand);
+      }
+      if (el("editAgency")) {
+        el("editAgency").value = cleanValue(employee.agency);
       }
 
       // ✅ FIXED DATE HANDLING (NO "-")
