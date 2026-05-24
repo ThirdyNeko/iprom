@@ -9,10 +9,25 @@ function cleanValue(value) {
 }
 
 function autoResizeInput(input) {
-  if (!input) return;
+    if (!input) return;
 
-  const minSize = 10;
-  input.size = Math.max(input.value.length, minSize);
+    const minSize = 10;
+    input.size = Math.max(input.value.length, minSize);
+}
+
+function autoResizeSelectText(select) {
+    if (!select) return;
+
+    const textLength =
+        select.options[select.selectedIndex]?.text.length || 0;
+
+    if (textLength > 35) {
+        select.style.fontSize = "11px";
+    } else if (textLength > 25) {
+        select.style.fontSize = "12px";
+    } else {
+        select.style.fontSize = "14px";
+    }
 }
 
 // =========================
@@ -768,7 +783,8 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         populateEditBrand([employee.brand], employee.branch, employee.brand);
       }
       if (editAgency) {
-        populateAgencyDropdown(employee.agency);
+          populateAgencyDropdown(employee.agency);
+          autoResizeSelectText(editAgency);
       }
 
       // ✅ FIXED DATE HANDLING (NO "-")
