@@ -75,6 +75,7 @@ $reason_for_update = strtoupper(trim($_POST['reason_update'] ?? ''));
 
 $raw_start_date = $_POST['start_date'] ?? null;
 $raw_end_date   = $_POST['end_date'] ?? null;
+$agency         = $_POST['agency'] ?? null;
 
 if ($reason_for_update === 'ADD BRANCH/BRAND' && empty($raw_start_date)) {
     echo json_encode([
@@ -87,6 +88,7 @@ if ($reason_for_update === 'ADD BRANCH/BRAND' && empty($raw_start_date)) {
 $skipSlotValidation = in_array($reason_for_update, [
     'REMOVE BRANCH/BRAND',
     'ADD BRANCH/BRAND',
+    'CHANGE AGENCY'
 ]);
 
 $remarks = trim($_POST['remarks'] ?? '');
@@ -316,7 +318,7 @@ if ($reason_for_update === 'EMERGENCY LEAVE' && $date_of_return) {
 // =========================
 
 // single transfer/reassign
-if (!$skipSlotValidation && in_array($reason_for_update, ['TRANSFER BRANCH', 'REASSIGNED'])) {
+if (!$skipSlotValidation && in_array($reason_for_update, ['TRANSFER BRANCH', 'CHANGE AGENCY'])) {
 
     if (!isComboAvailable($pdo, $branch, $brand)) {
 
@@ -564,7 +566,8 @@ try {
             @removedBranch = :removedBranch,
             @removedBrand = :removedBrand,
             @branch = :branch,
-            @brand = :brand
+            @brand = :brand,
+            @agency = :agency
     ");
 
     $stmt->execute([
@@ -591,7 +594,8 @@ try {
             ? implode(',', $removedBrands)
             : null,
         ':branch' => $branchParam,
-        ':brand' => $brandParam
+        ':brand' => $brandParam,
+        ':agency'=> $agency
     ]);
 
     $filteredBranches = [];
@@ -690,7 +694,9 @@ try {
                 multi_brand_group_id,
                 gender,
                 birthday,
-                hidden
+                hidden,
+                agency,
+                corpo
             )
             VALUES (
                 :employee_id,
@@ -719,7 +725,9 @@ try {
                 :multi_brand_group_id,
                 :gender,
                 :birthday,
-                :hidden
+                :hidden,
+                :agency,
+                :corpo
             )
         ");
 
@@ -743,6 +751,7 @@ try {
                     AND brand = ?
                     AND status = 'ACTIVE'
                     AND roving_group_id = ?
+                    AND corpo = ?
                 ");
 
                 $check->execute([
@@ -752,7 +761,8 @@ try {
                     $base['suffix'],
                     $branch,
                     $currentBrand,
-                    $base['roving_group_id']
+                    $base['roving_group_id'],
+                    $base['corpo']
                 ]);
 
                 if ($check->fetchColumn() > 0) {
@@ -784,7 +794,9 @@ try {
                     ':multi_brand_group_id' => $multi_brand_group_id,
                     ':gender'     => $base['gender'],
                     ':birthday'   => $base['birthday'],
-                    ':hidden' => $hidden
+                    ':hidden' => $hidden,
+                    ':agency' => $agency,
+                    ':corpo'  => $base['corpo']
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -816,6 +828,7 @@ try {
                     AND brand = ?
                     AND status = 'ACTIVE'
                     AND multi_brand_group_id = ?
+                    AND corpo = ?
                 ");
 
                 $check->execute([
@@ -825,7 +838,8 @@ try {
                     $base['suffix'],
                     $currentBranch,
                     $brand,
-                    $base['multi_brand_group_id']
+                    $base['multi_brand_group_id'],
+                    $base['corpo']
                 ]);
 
                 if ($check->fetchColumn() > 0) {
@@ -857,7 +871,9 @@ try {
                     ':multi_brand_group_id' => $multi_brand_group_id,
                     ':gender'     => $base['gender'],
                     ':birthday'   => $base['birthday'],
-                    ':hidden' => $hidden
+                    ':hidden' => $hidden,
+                    ':agency' => $agency,
+                    ':corpo' => $base['corpo']
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -898,6 +914,7 @@ try {
                         AND status = 'ACTIVE'
                         AND roving_group_id = ?
                         AND multi_brand_group_id = ?
+                        AND corpo = ?
                     ");
 
                     $check->execute([
@@ -908,7 +925,8 @@ try {
                         $branchItem,
                         $brandItem,
                         $roving_group_id,
-                        $multi_brand_group_id
+                        $multi_brand_group_id,
+                        $base['corpo']
                     ]);
 
                     if ($check->fetchColumn() > 0) {
@@ -940,7 +958,9 @@ try {
                         ':multi_brand_group_id' => $multi_brand_group_id,
                         ':gender' => $base['gender'],
                         ':birthday' => $base['birthday'],
-                        ':hidden' => $hidden
+                        ':hidden' => $hidden,
+                        ':agency' => $agency,
+                        ':corpo' => $base['corpo']
                     ]);
 
                     $newId = $pdo->lastInsertId();

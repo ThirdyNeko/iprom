@@ -25,6 +25,7 @@ const dateSeparatedInput = document.getElementById("editDateSeparated");
 const dateReturnedRow = document.getElementById("rowDateReturned");
 const dateReturnedInput = document.getElementById("editDateReturn");
 const employmentStatusSelect = document.getElementById("editEmploymentStatus");
+const editAgency = document.getElementById("editAgency");
 
 const startDateRow = document.getElementById("rowStartDate");
 const startDateInput = document.getElementById("editStartDate");
@@ -222,19 +223,25 @@ function toggleStatusesEditable() {
   const employmentStatusEl = document.getElementById("editEmploymentStatus");
   const agencyEl = document.getElementById("editAgency");
 
-  // default lock all
+  // reset all first
   if (subStatusEl) subStatusEl.disabled = true;
   if (employmentStatusEl) employmentStatusEl.disabled = true;
   if (agencyEl) agencyEl.disabled = true;
 
   // enable based on reason
-  const map = {
-    "CHANGE SUB STATUS": () => subStatusEl && (subStatusEl.disabled = false),
-    "CHANGE EMPLOYMENT STATUS": () => employmentStatusEl && (employmentStatusEl.disabled = false),
-    "CHANGE AGENCY": () => agencyEl && (agencyEl.disabled = false),
-  };
+  switch (reason) {
+    case "CHANGE SUB STATUS":
+      if (subStatusEl) subStatusEl.disabled = false;
+      break;
 
-  if (map[reason]) map[reason]();
+    case "CHANGE EMPLOYMENT STATUS":
+      if (employmentStatusEl) employmentStatusEl.disabled = false;
+      break;
+
+    case "CHANGE AGENCY":
+      if (agencyEl) agencyEl.disabled = false;
+      break;
+  }
 }
 
 function toggleTransferEditable() {
@@ -666,8 +673,15 @@ function resetEditModal() {
   modalEl.querySelectorAll("select").forEach((s) => {
     if (!protectedSelects.includes(s.id)) {
       s.value = "";
+      s.disabled = false; // 🔥 important reset
     }
   });
+
+  // 🔥 explicitly reset agency
+  if (editAgency) {
+    editAgency.value = "";
+    editAgency.disabled = true;
+  }
 }
 
 // =========================
@@ -753,8 +767,8 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         const value = cleanValue(employee.brand);
         populateEditBrand([employee.brand], employee.branch, employee.brand);
       }
-      if (el("editAgency")) {
-        populateAgencyDropdown(cleanValue(employee.agency));
+      if (editAgency) {
+        populateAgencyDropdown(employee.agency);
       }
 
       // ✅ FIXED DATE HANDLING (NO "-")
@@ -1078,6 +1092,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // ✅ MAIN ASSIGNMENT
   formData.set("branch", branch);
   formData.set("brand", brand);
+  formData.set("agency", document.getElementById("editAgency")?.value || "");
 
   // =========================
   // MULTI BRANCH
