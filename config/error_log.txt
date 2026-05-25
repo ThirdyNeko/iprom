@@ -675,3 +675,348 @@
 [2026-05-21 14:05:39] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-05-25 10:17:09] Error [2]: Undefined global variable $_SESSION in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 140
 [2026-05-25 10:17:09] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 140
+[2026-05-25 14:19:26] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:24] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:32] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:33] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:34] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:37] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:41] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:26:44] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:14] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:27:15] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\promodizers.php on line 340
+[2026-05-25 14:29:13] Error [2]: Undefined array key "branch_code" in C:\xampp\htdocs\iprom\promodizers.php on line 345
+[2026-05-25 14:32:41] Error [2]: Undefined variable $branches in C:\xampp\htdocs\iprom\promodizers.php on line 201
+[2026-05-25 14:32:41] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\promodizers.php on line 201
+[2026-05-25 14:34:57] Error [2]: Undefined variable $branches in C:\xampp\htdocs\iprom\promodizers.php on line 201
+[2026-05-25 14:34:57] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\promodizers.php on line 201
+[2026-05-25 15:00:59] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-25 15:01:14] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311

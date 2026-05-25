@@ -107,11 +107,63 @@ $(document).ready(function () {
   // BRANCH FILTER
   // =========================
   $("#filterBranch").on("change", function () {
-    var val = this.value;
-    table
-      .column(1)
-      .search(val ? "^" + val + "$" : "", true, false)
-      .draw();
+    table.draw();
+  });
+
+  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    var selectedBranch = $("#filterBranch").val();
+
+    if (!selectedBranch) return true;
+
+    var row = table.row(dataIndex).node();
+    var branchCode = $(row).find("td[data-branch-code]").data("branch-code");
+
+    return branchCode === selectedBranch;
+  });
+
+  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    var area = $("#filterArea").val();
+    var region = $("#filterRegion").val();
+
+    // get row element
+    var row = table.row(dataIndex).node();
+
+    // branch_code must come from HTML (we will use data-branch-code)
+    var branchCode = $(row).data("branch");
+
+    if (!branchCode) return true;
+
+    var info = branchMap[branchCode];
+
+    if (!info) return true;
+
+    if (area && info.area !== area) return false;
+    if (region && info.region !== region) return false;
+
+    return true;
+  });
+
+  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    var company = ($("#filterCompany").val() || "").toLowerCase().trim();
+    var agency = ($("#filterAgency").val() || "").toLowerCase().trim();
+
+    var row = table.row(dataIndex).node();
+
+    var rowCompany = ($(row).data("company") || "").toLowerCase().trim();
+    var rowAgency = ($(row).data("agency") || "").toLowerCase().trim();
+
+    if (company && rowCompany !== company) return false;
+    if (agency && rowAgency !== agency) return false;
+
+    return true;
+  });
+
+  $("#filterCompany, #filterAgency").on("change", function () {
+    table.draw();
+  });
+
+  $("#filterArea, #filterRegion").on("change", function () {
+    table.draw();
   });
 
   // =========================

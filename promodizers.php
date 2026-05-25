@@ -11,16 +11,18 @@ $pdo = qa_db();
 $branchMap = [];
 
 $stmt = $pdo->query("
-    SELECT branch_code, branch
+    SELECT branch_code, branch, area, region
     FROM IPROM.dbo.branches
     WHERE status = 1
 ");
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $branchMap[$row['branch_code']] = $row['branch'];
+    $branchMap[$row['branch_code']] = [
+        'branch' => $row['branch'],
+        'area'   => $row['area'],
+        'region' => $row['region']
+    ];
 }
-
-
 
 /* =========================
    FETCH PROMODIZERS
@@ -32,7 +34,13 @@ $filters = [
     ':status' => $_GET['status'] ?? null,
     ':assigned_by' => $_GET['assigned_by'] ?? null,
     ':from_date' => $_GET['from_date'] ?? null,
-    ':to_date' => $_GET['to_date'] ?? null
+    ':to_date' => $_GET['to_date'] ?? null,
+
+    ':employment_status' => $_GET['employment_status'] ?? null,
+    ':sub_status' => $_GET['sub_status'] ?? null,
+    ':search' => $_GET['search'] ?? null,
+    ':corpo' => $_GET['corpo'] ?? null,
+    ':agency' => $_GET['agency'] ?? null
 ];
 
 $stmt = $pdo->prepare("EXEC get_promodizers 
@@ -41,17 +49,18 @@ $stmt = $pdo->prepare("EXEC get_promodizers
     @status = :status,
     @assigned_by = :assigned_by,
     @from_date = :from_date,
-    @to_date = :to_date
+    @to_date = :to_date,
+    @employment_status = :employment_status,
+    @sub_status = :sub_status,
+    @search = :search,
+    @corpo = :corpo,
+    @agency = :agency
 ");
 
 foreach ($filters as $key => $value) {
     $stmt->bindValue($key, $value);
 }
 
-$stmt->execute();
-$promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-// Fetch branches & brands for filter dropdowns
-// Fetch branches & brands for filter dropdowns
 $branches = $pdo->query("
     SELECT DISTINCT 
         a.branch_name AS branch_code,
@@ -62,9 +71,24 @@ $branches = $pdo->query("
     ORDER BY b.branch
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+$stmt->execute();
+$promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch branches & brands for filter dropdowns
+
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
              ->fetchAll(PDO::FETCH_COLUMN);
 
+$regions = $pdo->query("SELECT DISTINCT region FROM branches ORDER BY region")
+             ->fetchAll(PDO::FETCH_COLUMN);
+
+$areas = $pdo->query("SELECT DISTINCT area FROM branches ORDER BY area")
+             ->fetchAll(PDO::FETCH_COLUMN);
+
+$corpos = $pdo->query("SELECT DISTINCT corpo FROM branches ORDER BY corpo")
+             ->fetchAll(PDO::FETCH_COLUMN);
+
+$agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencies")
+             ->fetchAll(PDO::FETCH_COLUMN);
 ?>
 
 <div class="content">
@@ -151,86 +175,182 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 
         <!-- Table -->
         <div class="card shadow-sm">
+            <!-- CARD BODY -->
             <div class="card-body">
-                <div class="row g-2">
+                <div class="row g-2 align-items-end">
 
-                    <div class="col">
+                    <!-- NAME SEARCH -->
+                    <div class="col-md-4">
                         <label class="form-label">Name</label>
                         <div class="clear-input">
-                            <input type="text" id="filterName" class="form-control form-control-sm filter-control" placeholder="Search...">
+                            <input type="text" id="filterName"
+                                class="form-control form-control-sm filter-control"
+                                placeholder="Search...">
                             <button type="button" class="clear-btn" data-target="filterName">×</button>
                         </div>
                     </div>
 
-                    <div class="col">
-                        <label class="form-label">Branch</label>
-                        <select id="filterBranch" class="form-select filter-control">
-                            <option value="">All</option>
-                            <?php foreach($branches as $b): ?>
-                                <option value="<?= htmlspecialchars($b['branch_code']) ?>">
-                                    <?= htmlspecialchars($b['branch']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                    <!-- ADVANCE SEARCH BUTTON -->
+                    <div class="col-auto">
+                        <button type="button"
+                            class="btn btn-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#advanceSearchModal">
+                            Advance Search
+                        </button>
                     </div>
 
-                    <div class="col">
-                        <label class="form-label">Brand</label>
-                        <select id="filterBrand" class="form-select filter-control">
-                            <option value="">All</option>
-                            <?php foreach($brands as $b): ?>
-                                <option value="<?= $b ?>"><?= $b ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                </div>
+            </div>
 
-                    <div class="col">
-                        <label class="form-label">Status</label>
-                        <select id="filterStatus" class="form-select filter-control">
-                            <option value="">All</option>
-                            <option value="ACTIVE" selected>ACTIVE</option>
-                            <option value="INACTIVE">INACTIVE</option>
-                        </select>
-                    </div>
+            <!-- ADVANCE SEARCH MODAL -->
+            <div class="modal fade" id="advanceSearchModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content">
 
-                    <div class="col">
-                        <label class="form-label">Employment Status</label>
-                        <select id="filterEmploymentStatus" class="form-select filter-control">
-                            <option value="">All</option>
-                            <option value="PERMANENT">PERMANENT</option>
-                            <option value="SEASONAL">SEASONAL</option>
-                            <option value="RELIEVER">RELIEVER</option>
-                        </select>
-                    </div>
-
-                    <div class="col">
-                        <label class="form-label">Sub Status</label>
-                        <select id="filterSubStatus" class="form-select filter-control">
-                            <option value="">All</option>
-                            <option value="STATIONARY">STATIONARY</option>
-                            <option value="MULTI BRANCH">MULTI BRANCH</option>
-                            <option value="MULTI BRAND">MULTI BRAND</option>
-                        </select>
-                    </div>
-
-                    <div class="col">
-                        <label class="form-label">Assigned By</label>
-                        <div class="clear-input">
-                            <input type="text" id="filterAssignedBy" class="form-control form-control-sm filter-control" placeholder="Search...">
-                            <button type="button" class="clear-btn" data-target="filterAssignedBy">×</button>
+                        <!-- HEADER -->
+                        <div class="modal-header">
+                            <h5 class="modal-title">Advance Search</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                    </div>
 
-                    <div class="col">
-                        <label class="form-label">From</label>
-                        <input type="date" id="filterFrom" class="form-control filter-control">
-                    </div>
+                        <!-- BODY -->
+                        <div class="modal-body">
 
-                    <div class="col">
-                        <label class="form-label">To</label>
-                        <input type="date" id="filterTo" class="form-control filter-control">
-                    </div>
+                            <div class="row g-3">
 
+                                <!-- BRANCH -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Branch</label>
+                                    <select id="filterBranch" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <?php foreach($branches as $b): ?>
+                                            <option value="<?= htmlspecialchars($b['branch_code']) ?>">
+                                                <?= htmlspecialchars($b['branch']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <!-- BRAND -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Brand</label>
+                                    <select id="filterBrand" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <?php foreach($brands as $b): ?>
+                                            <option value="<?= $b ?>"><?= $b ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <!-- STATUS -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Status</label>
+                                    <select id="filterStatus" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <option value="ACTIVE" selected>ACTIVE</option>
+                                        <option value="INACTIVE">INACTIVE</option>
+                                    </select>
+                                </div>
+
+                                <!-- EMPLOYMENT STATUS -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Employment Status</label>
+                                    <select id="filterEmploymentStatus" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <option value="PERMANENT">PERMANENT</option>
+                                        <option value="SEASONAL">SEASONAL</option>
+                                        <option value="RELIEVER">RELIEVER</option>
+                                    </select>
+                                </div>
+
+                                <!-- SUB STATUS -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Sub Status</label>
+                                    <select id="filterSubStatus" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <option value="STATIONARY">STATIONARY</option>
+                                        <option value="MULTI BRANCH">MULTI BRANCH</option>
+                                        <option value="MULTI BRAND">MULTI BRAND</option>
+                                    </select>
+                                </div>
+
+                                <!-- ASSIGNED BY -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Assigned By</label>
+                                    <div class="clear-input">
+                                        <input type="text" id="filterAssignedBy"
+                                            class="form-control form-control-sm filter-control"
+                                            placeholder="Search...">
+                                        <button type="button" class="clear-btn" data-target="filterAssignedBy">×</button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Region</label>
+                                    <select id="filterRegion" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <?php foreach($regions as $r): ?>
+                                            <option value="<?= $r ?>"><?= $r ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Area</label>
+                                    <select id="filterArea" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <?php foreach($areas as $a): ?>
+                                            <option value="<?= $a ?>"><?= $a ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Company</label>
+                                    <select id="filterCompany" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <?php foreach($corpos as $c): ?>
+                                            <option value="<?= $c ?>"><?= $c ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Agency</label>
+                                    <select id="filterAgency" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <?php foreach($agencies as $ag): ?>
+                                            <option value="<?= $ag ?>"><?= $ag ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <!-- FROM -->
+                                <div class="col-md-6">
+                                    <label class="form-label">From</label>
+                                    <input type="date" id="filterFrom" class="form-control filter-control">
+                                </div>
+
+                                <!-- TO -->
+                                <div class="col-md-6">
+                                    <label class="form-label">To</label>
+                                    <input type="date" id="filterTo" class="form-control filter-control">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary btn-sm"
+                                data-bs-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -250,14 +370,16 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         </thead>
                         <tbody>
                             <?php foreach($promodizers as $p): ?>
-                                <tr class="clickable-row" 
-                                    data-id="<?= $p['id'] ?>" 
-                                    data-branch="<?= htmlspecialchars($p['branch']) ?>" 
-                                    data-brand="<?= htmlspecialchars($p['brand']) ?>">
+                                <tr class="clickable-row"
+                                    data-id="<?= $p['id'] ?>"
+                                    data-branch="<?= htmlspecialchars($p['branch']) ?>"
+                                    data-brand="<?= htmlspecialchars($p['brand']) ?>"
+                                    data-company="<?= htmlspecialchars($p['corpo'] ?? '') ?>"
+                                    data-agency="<?= htmlspecialchars($p['agency'] ?? '') ?>">
                                     
                                     <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></td>
-                                    <td data-branch="<?= htmlspecialchars($p['branch']) ?>">
-                                        <?= htmlspecialchars($branchMap[$p['branch']] ?? '-') ?>
+                                    <td data-branch-code="<?= htmlspecialchars($p['branch']) ?>">
+                                        <?= htmlspecialchars($branchMap[$p['branch']]['branch'] ?? '-') ?>
                                     </td>
                                     <td><?= htmlspecialchars($p['brand'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars($p['status'] ?? '-') ?></td>
@@ -280,6 +402,9 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 </div>
 
 <!-- JS -->
+<script>
+const branchMap = <?= json_encode($branchMap, JSON_UNESCAPED_UNICODE); ?>;
+</script>
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {
   btn.addEventListener("click", () => {
