@@ -5,14 +5,36 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   openPrintModalBtn.addEventListener("click", () => {
+    // get date hired from employee modal
+    const dateHired = document.getElementById("editDateHired").value;
+
+    // display it inside LOA modal
+    document.getElementById("loaDateHired").value = dateHired;
+
+    // auto compute +6 months
+    if (dateHired) {
+      const hiredDate = new Date(dateHired);
+
+      hiredDate.setMonth(hiredDate.getMonth() + 6);
+
+      // format YYYY-MM-DD
+      const formatted = hiredDate.toISOString().split("T")[0];
+
+      document.getElementById("recipientEndDate").value = formatted;
+    }
+
     printPdfModal.show();
   });
 
   document.getElementById("generatePdfBtn").addEventListener("click", () => {
-    const recipientName = document.getElementById("recipientName").value.trim();
+    const recipientName = document
+      .getElementById("recipientName")
+      .value.trim()
+      .toUpperCase();
     const recipientPosition = document
       .getElementById("recipientPosition")
-      .value.trim();
+      .value.trim()
+      .toUpperCase();
 
     if (!recipientName || !recipientPosition) {
       Swal.fire({
@@ -70,8 +92,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const a = document.createElement("a");
         a.href = url;
-        a.target = "_blank";
+
+        // 🔥 THIS is what fixes filename
+        a.download = "letter_of_advice.pdf";
+
+        document.body.appendChild(a);
         a.click();
+        a.remove();
+
+        window.URL.revokeObjectURL(url);
       })
       .catch((error) => {
         console.error(error);

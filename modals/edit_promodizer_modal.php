@@ -85,6 +85,25 @@ th{
     color: #b0b0b0;
 }
 
+/* editable fields */
+#printPdfModal .form-control:not([readonly]):not([disabled]) {
+    background-color: #fffbdf !important;
+    opacity: 1;
+}
+
+/* readonly / disabled */
+#printPdfModal .form-control[readonly],
+#printPdfModal .form-control[disabled] {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+/* force uppercase display */
+#printPdfModal #recipientName,
+#printPdfModal #recipientPosition {
+    text-transform: uppercase;
+}
 </style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -253,7 +272,7 @@ th{
 
             <div class="modal-footer d-flex justify-content-between">
                 <button type="button" class="btn btn-danger" id="openPrintModalBtn">
-                    Print PDF
+                    Print LOA
                 </button>
 
                 <button type="button" class="btn btn-primary" id="saveBtn">
@@ -285,8 +304,17 @@ th{
                     <input type="text" id="recipientPosition" class="form-control" required>
                 </div>
 
+                <!-- DATE HIRED DISPLAY -->
                 <div class="mb-3">
-                    <label class="form-label">End Date <small>(optional)</small></label>
+                    <label class="form-label">Date Hired</label>
+                    <input type="date" id="loaDateHired" class="form-control" readonly>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        End Date <small>(optional)</small>
+                    </label>
+
                     <input type="date" id="recipientEndDate" class="form-control">
                 </div>
 
@@ -298,7 +326,7 @@ th{
                 </button>
 
                 <button type="button" class="btn btn-danger" id="generatePdfBtn">
-                    Generate PDF
+                    Generate LOA
                 </button>
             </div>
 

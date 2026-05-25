@@ -189,7 +189,7 @@ $pdf->Cell($lineWidth, 6, $_SESSION['username'], 0, 1, 'C');
 // underline directly under same width
 $pdf->SetX(10);
 $pdf->Cell($lineWidth, 0, '', 'B', 1);
-
+$pdf->Ln(15);
 // Position
 $pdf->SetX(10);
 $pdf->Cell($lineWidth, 6, $_SESSION['position'] ?? '', 0, 1, 'C');
