@@ -251,9 +251,57 @@ th{
                 </div>
             </div>
 
-            <div class="modal-footer d-flex justify-content-end">
-                <button type="button" class="btn btn-primary" id="saveBtn">Save Changes</button>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-danger" id="openPrintModalBtn">
+                    Print PDF
+                </button>
+
+                <button type="button" class="btn btn-primary" id="saveBtn">
+                    Save Changes
+                </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="printPdfModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Letter of Advice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <label class="form-label">Recipient Full Name</label>
+                    <input type="text" id="recipientName" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Position</label>
+                    <input type="text" id="recipientPosition" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">End Date <small>(optional)</small></label>
+                    <input type="date" id="recipientEndDate" class="form-control">
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button" class="btn btn-danger" id="generatePdfBtn">
+                    Generate PDF
+                </button>
+            </div>
+
         </div>
     </div>
 </div>
@@ -317,3 +365,4 @@ document.addEventListener("DOMContentLoaded", function () {
     updateHeaders();
 });
 </script>
+<script src ="assets/js/employee/edit_employee/pdf.js"></script>

@@ -673,3 +673,5 @@
 [2026-05-21 14:04:25] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-05-21 14:05:38] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-05-21 14:05:39] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-25 10:17:09] Error [2]: Undefined global variable $_SESSION in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 140
+[2026-05-25 10:17:09] Error [2]: Trying to access array offset on value of type null in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 140
