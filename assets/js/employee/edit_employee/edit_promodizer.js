@@ -9,25 +9,24 @@ function cleanValue(value) {
 }
 
 function autoResizeInput(input) {
-    if (!input) return;
+  if (!input) return;
 
-    const minSize = 10;
-    input.size = Math.max(input.value.length, minSize);
+  const minSize = 10;
+  input.size = Math.max(input.value.length, minSize);
 }
 
 function autoResizeSelectText(select) {
-    if (!select) return;
+  if (!select) return;
 
-    const textLength =
-        select.options[select.selectedIndex]?.text.length || 0;
+  const textLength = select.options[select.selectedIndex]?.text.length || 0;
 
-    if (textLength > 35) {
-        select.style.fontSize = "11px";
-    } else if (textLength > 25) {
-        select.style.fontSize = "12px";
-    } else {
-        select.style.fontSize = "14px";
-    }
+  if (textLength > 35) {
+    select.style.fontSize = "11px";
+  } else if (textLength > 25) {
+    select.style.fontSize = "12px";
+  } else {
+    select.style.fontSize = "14px";
+  }
 }
 
 // =========================
@@ -545,8 +544,11 @@ function populateEditRoving(
                 ${uniqueBranches
                   .map((branchCode) => {
                     const displayName =
-                      branchBrandPairs.find((p) => p.branch_code === branchCode)
-                        ?.branch_name || branchCode;
+                      branchBrandPairs.find(
+                        (p) =>
+                          p.branch_code === branchCode &&
+                          p.brand_name === currentBrand,
+                      )?.branch_name || branchCode;
 
                     return `
                       <option value="${branchCode}"
@@ -783,8 +785,8 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         populateEditBrand([employee.brand], employee.branch, employee.brand);
       }
       if (editAgency) {
-          populateAgencyDropdown(employee.agency);
-          autoResizeSelectText(editAgency);
+        populateAgencyDropdown(employee.agency);
+        autoResizeSelectText(editAgency);
       }
 
       // ✅ FIXED DATE HANDLING (NO "-")
@@ -1177,7 +1179,7 @@ function populateAgencyDropdown(selected = "") {
 
   // ensure selected value exists in list
   const existsInList = agencyList.some(
-    (a) => cleanValue(a).toUpperCase() === normalizedSelected.toUpperCase()
+    (a) => cleanValue(a).toUpperCase() === normalizedSelected.toUpperCase(),
   );
 
   let finalList = [...agencyList];
@@ -1194,7 +1196,7 @@ function populateAgencyDropdown(selected = "") {
           <option value="${a}">
             ${a}
           </option>
-        `
+        `,
       )
       .join("")}
   `;
@@ -1231,22 +1233,29 @@ function updateBranchOptions() {
     const currentValue = select.value;
 
     select.innerHTML =
-      `
-            <option value="">Select branch</option>
-        ` +
+      `<option value="">Select branch</option>` +
       uniqueBranches
-        .filter(
-          (branch) =>
-            !selectedValues.includes(branch) || branch === currentValue,
-        )
-        .map(
-          (branch) => `
-                <option value="${branch}"
-                    ${branch === currentValue ? "selected" : ""}>
-                    ${branch}
-                </option>
-            `,
-        )
+        .filter((branch) => {
+          // allow current selection to stay visible
+          if (branch === currentValue) return true;
+
+          // hide already-selected branches
+          return !selectedValues.includes(branch);
+        })
+        .map((branch) => {
+          const isSelected = branch === currentValue;
+
+          const displayName =
+            branchBrandPairs.find(
+              (p) => p.branch_code === branch && p.brand_name === currentBrand,
+            )?.branch_name ?? branch;
+
+          return `
+      <option value="${branch}" ${isSelected ? "selected" : ""}>
+        ${displayName}
+      </option>
+    `;
+        })
         .join("");
   });
 }
@@ -1306,7 +1315,7 @@ function isComboAvailable(branch, brand) {
 // INIT LISTENERS
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
-  await loadAgencies(); 
+  await loadAgencies();
   await loadBranchBrandPairs(); // 🔥 ADD THIS
 
   if (reasonSelect) {
