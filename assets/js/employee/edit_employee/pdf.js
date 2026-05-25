@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const payload = {
+      employee_id: document.getElementById("editPromodizerId").value,
+
       recipient_name: recipientName,
       recipient_position: recipientPosition,
       end_date: document.getElementById("recipientEndDate").value,

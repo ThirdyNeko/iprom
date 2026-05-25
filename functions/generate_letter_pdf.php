@@ -41,7 +41,24 @@ $brand = $data['brand'] ?? '';
 $employmentStatus = $data['employment_status'] ?? '';
 $subStatus = $data['sub_status'] ?? '';
 $status = $data['status'] ?? '';
+$employeeId = $data['employee_id'] ?? '';
+
 $remarks = $data['remarks'] ?? '';
+
+if (!empty($employeeId)) {
+    $stmt = $pdo->prepare("
+        SELECT first_remark
+        FROM IPROM.dbo.employee_info
+        WHERE id = :id
+    ");
+
+    $stmt->execute(['id' => $employeeId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!empty($row['first_remark'])) {
+        $remarks = $row['first_remark'];
+    }
+}
 $effectivityDate = $data['effectivity_date'] ?? '';
 
 if (empty($endDate) && !empty($effectivityDate)) {
