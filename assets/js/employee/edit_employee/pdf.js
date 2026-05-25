@@ -36,6 +36,16 @@ document.addEventListener("DOMContentLoaded", () => {
       suffix: document.getElementById("editSuffix").value,
 
       branch: document.getElementById("editBranch").value,
+      roving_branches: Array.from(
+        document.querySelectorAll(
+          "#editRovingContainer select, #editRovingContainer input",
+        ),
+      ).map((el) => el.value),
+      multi_brands: Array.from(
+        document.querySelectorAll(
+          "#editMultiBrandContainer select, #editMultiBrandContainer input",
+        ),
+      ).map((el) => el.value),
       brand: document.getElementById("editBrand").value,
       employment_status: document.getElementById("editEmploymentStatus").value,
       sub_status: document.getElementById("editSubStatus").value,

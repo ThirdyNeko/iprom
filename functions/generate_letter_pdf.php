@@ -37,7 +37,37 @@ if (!empty($branchCode)) {
 
     $branch = $row['branch'] ?? $branchCode; // fallback to code if not found
 }
+
+$rovingBranches = $data['roving_branches'] ?? [];
+
+$rovingBranchNames = [];
+
+if (!empty($rovingBranches) && is_array($rovingBranches)) {
+
+    $stmt = $pdo->prepare("
+        SELECT branch
+        FROM IPROM.dbo.branches
+        WHERE branch_code = :code
+    ");
+
+    foreach ($rovingBranches as $code) {
+        $stmt->execute(['code' => $code]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $rovingBranchNames[] = $row['branch'] ?? $code;
+    }
+}
+$branchDisplay = $branch;
+
+if (!empty($rovingBranchNames)) {
+    $branchDisplay .= ", " . implode(", ", $rovingBranchNames);
+}
+$multiBrands = $data['multi_brands'] ?? [];
 $brand = $data['brand'] ?? '';
+$brandDisplay = $brand;
+if (!empty($multiBrands)) {
+    $brandDisplay .=", " . implode(", ", $multiBrands);
+}
 $employmentStatus = $data['employment_status'] ?? '';
 $subStatus = $data['sub_status'] ?? '';
 $status = $data['status'] ?? '';
@@ -105,10 +135,10 @@ $pdf->SetFont('Arial', '', 11);
 
 // Rows
 $pdf->Cell(55, 7, 'Branch', 1, 0);
-$pdf->Cell(0, 7, $branch, 1, 1);
+$pdf->Cell(0, 7, $branchDisplay, 1, 1);
 
 $pdf->Cell(55, 7, 'Brand', 1, 0);
-$pdf->Cell(0, 7, $brand, 1, 1);
+$pdf->Cell(0, 7, $brandDisplay, 1, 1);
 
 $pdf->Cell(55, 7, 'Employment Status', 1, 0);
 $pdf->Cell(0, 7, $employmentStatus, 1, 1);
