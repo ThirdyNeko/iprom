@@ -47,6 +47,10 @@ if ($status) {
         $assigned = (int)$a['assigned_count'];
         $shortage = $required - $assigned;
 
+        if ($status === 'inactive') {
+            return $required == 0;
+        }
+
         if ($status === 'zero') {
             return $assigned === 0 && $required > 0;
         }
