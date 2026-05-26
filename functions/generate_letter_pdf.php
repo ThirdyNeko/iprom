@@ -125,7 +125,7 @@ $pdf->SetFont('Arial', '', 11);
 $pdf->Write(6, '       Please be informed that ');
 
 // bold + underline employee name
-$pdf->SetFont('Arial', 'BU', 11);
+$pdf->SetFont('Arial', 'U', 11);
 $pdf->Write(6, $employeeName);
 
 // back to normal
@@ -173,11 +173,11 @@ $pdf->MultiCell(0, 7, $remarks);
 
 $pdf->Ln(5);
 
-$pdf->SetFont('Arial', '', 9);
+$pdf->SetFont('Arial', '', 11);
 
 $oldX = $pdf->GetX();
 // move cursor right (indent)
-$pdf->SetX(30);
+$pdf->SetX(10);
 
 $pdf->MultiCell(
     0,
@@ -189,7 +189,7 @@ $pdf->Ln(15);
 
 $pdf->SetX(10);
 
-$lineWidth = 60;
+$lineWidth = 50;
 
 // Username (centered within underline width)
 $pdf->SetX(10);
