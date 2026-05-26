@@ -26,6 +26,7 @@ if ($search !== '') {
             agencies LIKE :search OR
             contact_person LIKE :search OR
             contact_number LIKE :search OR
+            email LIKE :search OR
             CAST(status AS VARCHAR(10)) LIKE :search
     ";
     $hasSearch = true;
@@ -62,6 +63,7 @@ $sql = "
             agencies,
             contact_person,
             contact_number,
+            email,
             status,
             ROW_NUMBER() OVER (ORDER BY agencies ASC, id ASC) AS rn
         FROM agencies

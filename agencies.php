@@ -124,6 +124,7 @@ $pdo = qa_db();
                                 <th>Agency</th>
                                 <th>Contact Person</th>
                                 <th>Contact #</th>
+                                <th>Email</th>
                                 <th>Status</th>
                                 <th width="18%">Actions</th>
                             </tr>
@@ -187,6 +188,15 @@ $pdo = qa_db();
                         <label class="form-label">Contact Number</label>
                         <input type="text"
                             id="contactNumber"
+                            class="form-control"
+                            required>
+                    </div>
+
+                    <!-- Contact Number -->
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="text"
+                            id="email"
                             class="form-control"
                             required>
                     </div>
