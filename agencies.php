@@ -93,6 +93,12 @@ $pdo = qa_db();
   text-transform: uppercase;
 }
 
+#agencyTable td:last-child,
+#agencyTable th:last-child {
+    white-space: nowrap;
+    width: 60px !important;
+}
+
 </style>
 
 <div class="content">

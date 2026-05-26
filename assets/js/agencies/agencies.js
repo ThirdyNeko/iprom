@@ -51,13 +51,16 @@ $(document).ready(function () {
       },
 
       // ACTIONS
+      // ACTIONS
       {
         data: null,
+        width: "70px",
+        className: "text-center px-1",
         orderable: false,
         render: function (data) {
           return `
-            <div class="action-btns">
-              <button class="btn btn-warning btn-sm editAgencyBtn"
+            <div class="action-btns d-flex justify-content-center">
+              <button class="btn btn-warning btn-sm px-2 py-1 editAgencyBtn"
                 data-id="${data.id}"
                 data-name="${data.agencies}"
                 data-person="${data.contact_person}"
