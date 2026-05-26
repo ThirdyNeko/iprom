@@ -15,12 +15,24 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dateHired) {
       const hiredDate = new Date(dateHired);
 
-      hiredDate.setMonth(hiredDate.getMonth() + 6);
+      // default = +3 months
+      const defaultDate = new Date(hiredDate);
+      defaultDate.setMonth(defaultDate.getMonth() + 3);
 
-      // format YYYY-MM-DD
-      const formatted = hiredDate.toISOString().split("T")[0];
+      // max = +6 months
+      const maxDate = new Date(hiredDate);
+      maxDate.setMonth(maxDate.getMonth() + 6);
 
-      document.getElementById("recipientEndDate").value = formatted;
+      const formatDate = (d) => d.toISOString().split("T")[0];
+
+      const endInput = document.getElementById("recipientEndDate");
+
+      // set default value
+      endInput.value = formatDate(defaultDate);
+
+      // enforce limits
+      endInput.min = formatDate(hiredDate); // optional (or today if needed)
+      endInput.max = formatDate(maxDate);
     }
 
     printPdfModal.show();
@@ -95,7 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
         a.href = url;
 
         // 🔥 THIS is what fixes filename
-        a.download = "LOA_" + document.getElementById("editLastName").value + ".pdf";
+        a.download =
+          "LOA_" + document.getElementById("editLastName").value + ".pdf";
 
         document.body.appendChild(a);
         a.click();
