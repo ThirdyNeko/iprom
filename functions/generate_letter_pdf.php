@@ -96,18 +96,12 @@ if (empty($endDate) && !empty($effectivityDate)) {
     $endDate = date('Y-m-d', strtotime($effectivityDate . ' +6 months'));
 }
 
-$pdf = new FPDF();
+$pdf = new FPDF('P', 'mm', 'Letter');
 $pdf->AddPage();
 
-$pdf->Image('../assets/icons/LOGO ONLY RED.png', 10, 10, 23 , 17 ); // x, y, width, height
+$pdf->Image('../assets/icons/LETTER HEAD GENERIC.jpg', 0, 0, 216, 279);
 
-$pdf->SetFont('Arial', '', 14);
-$pdf->Cell(0, 8, 'IMPERIAL APPLIANCE PLAZA', 0, 1, 'C');
-
-$pdf->SetFont('Arial', '', 14);
-$pdf->Cell(0, 8, 'H. Montinola Cor Muelle Loney St., Brgy. Pres. Roxas, Iloilo City', 0, 1, 'C');
-
-$pdf->Ln(10);
+$pdf->Ln(30);
 
 $pdf->SetFont('Arial', '', 14);
 $pdf->Cell(0, 8, 'LETTER OF ADVICE', 0, 1, 'C');
