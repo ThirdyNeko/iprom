@@ -68,6 +68,7 @@ $brandDisplay = $brand;
 if (!empty($multiBrands)) {
     $brandDisplay .=", " . implode(", ", $multiBrands);
 }
+$agency = $data['agency'] ?? '';
 $employmentStatus = $data['employment_status'] ?? '';
 $subStatus = $data['sub_status'] ?? '';
 $status = $data['status'] ?? '';
@@ -124,9 +125,18 @@ $pdf->Cell(120, 6, $branch, 0, 1);
 $pdf->Ln(10);
 
 $pdf->SetX(10);
-$pdf->MultiCell(0, 6,
-    "       Please be informed that {$employeeName} has complied with all the requirements. Please advise him/her to report for work."
-);
+
+// normal text
+$pdf->SetFont('Arial', '', 11);
+$pdf->Write(6, '       Please be informed that ');
+
+// bold + underline employee name
+$pdf->SetFont('Arial', 'BU', 11);
+$pdf->Write(6, $employeeName);
+
+// back to normal
+$pdf->SetFont('Arial', '', 11);
+$pdf->Write(6, ' has complied with all the requirements. Please advise him/her to report for work.');
 
 $pdf->Ln(8);
 
@@ -141,6 +151,9 @@ $pdf->Cell(0, 7, $branchDisplay, 1, 1);
 
 $pdf->Cell(55, 7, 'Brand', 1, 0);
 $pdf->Cell(0, 7, $brandDisplay, 1, 1);
+
+$pdf->Cell(55, 7, 'Agency', 1, 0);
+$pdf->Cell(0, 7, $agency, 1, 1);
 
 $pdf->Cell(55, 7, 'Employment Status', 1, 0);
 $pdf->Cell(0, 7, $employmentStatus, 1, 1);

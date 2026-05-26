@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ),
       ).map((el) => el.value),
       brand: document.getElementById("editBrand").value,
+      agency: document.getElementById("editAgency").value,
       employment_status: document.getElementById("editEmploymentStatus").value,
       sub_status: document.getElementById("editSubStatus").value,
       status: document.getElementById("editStatus").value,
