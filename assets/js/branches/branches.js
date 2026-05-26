@@ -122,67 +122,103 @@ $(document).on("change", ".branch-status-switch", function () {
 
   toggle.prop("disabled", true);
 
+  // =========================
+  // PRE-CHECK ASSIGNMENT FIRST
+  // =========================
   $.ajax({
-    url: "functions/update_branch_status.php",
+    url: "functions/check_branch_assignment.php",
     type: "POST",
     dataType: "json",
-    data: {
-      branch_code: code,
-      status: status,
-    },
+    data: { branch_code: code },
 
-    success: function (res) {
-      if (res.success) {
-        // =========================
-        // LIVE TABLE UPDATE
-        // =========================
-        const row = table.row(toggle.closest("tr"));
-
-        if (row) {
-          const rowData = row.data();
-
-          row
-            .data({
-              ...rowData,
-              status: status === 1 ? "active" : "inactive",
-            })
-            .invalidate();
-        }
-
-        // =========================
-        // SWEETALERT SUCCESS
-        // =========================
-        Swal.fire({
-          icon: "success",
-          title: "Updated",
-          text: `Status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
-          timer: 1200,
-          showConfirmButton: false,
-        });
-      } else {
-        // rollback if failed
+    success: function (check) {
+      if (check.blocked) {
         toggle.prop("checked", !toggle.is(":checked"));
 
+        const brands = (check.brands || []).join(", ");
+
         Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: res.message || "Something went wrong.",
+          icon: "warning",
+          title: "Cannot Update Status",
+          text: brands
+            ? `This branch is still assigned to: ${brands}`
+            : "This branch has active assignments.",
         });
+
+        toggle.prop("disabled", false);
+        return;
       }
+
+      // =========================
+      // PROCEED WITH ORIGINAL UPDATE
+      // =========================
+      $.ajax({
+        url: "functions/update_branch_status.php",
+        type: "POST",
+        dataType: "json",
+        data: {
+          branch_code: code,
+          status: status,
+        },
+
+        success: function (res) {
+          if (res.success) {
+            const row = table.row(toggle.closest("tr"));
+
+            if (row) {
+              const rowData = row.data();
+
+              row
+                .data({
+                  ...rowData,
+                  status: status === 1 ? "active" : "inactive",
+                })
+                .invalidate();
+            }
+
+            Swal.fire({
+              icon: "success",
+              title: "Updated",
+              text: `Status changed to ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
+              timer: 1200,
+              showConfirmButton: false,
+            });
+          } else {
+            toggle.prop("checked", !toggle.is(":checked"));
+
+            Swal.fire({
+              icon: "error",
+              title: "Update Failed",
+              text: res.message || "Something went wrong.",
+            });
+          }
+        },
+
+        error: function () {
+          toggle.prop("checked", !toggle.is(":checked"));
+
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: "Failed to update status.",
+          });
+        },
+
+        complete: function () {
+          toggle.prop("disabled", false);
+        },
+      });
     },
 
     error: function () {
-      // rollback if server error
       toggle.prop("checked", !toggle.is(":checked"));
 
       Swal.fire({
         icon: "error",
         title: "Server Error",
-        text: "Failed to update status.",
+        text: "Failed to validate branch assignments.",
       });
-    },
 
-    complete: function () {
       toggle.prop("disabled", false);
     },
   });

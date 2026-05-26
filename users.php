@@ -19,9 +19,6 @@ $pdo = qa_db();
 /* =========================
    FETCH USERS
 ========================= */
-/* =========================
-   FETCH USERS
-========================= */
 $users = $pdo
     ->query("EXEC get_users @role = NULL")
     ->fetchAll(PDO::FETCH_ASSOC);

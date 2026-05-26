@@ -223,61 +223,101 @@ $(document).on("change", ".agency-status-switch", function () {
   const id = toggle.data("id");
   const status = toggle.is(":checked") ? 1 : 0;
 
+  const rowData = window.table.row(toggle.closest("tr")).data();
+  const agency = rowData?.agencies;
+
   toggle.prop("disabled", true);
 
   $.ajax({
-    url: "functions/update_agency_status.php",
+    url: "functions/check_agency_employees.php",
     type: "POST",
     dataType: "json",
-    data: {
-      id: id,
-      status: status,
-    },
+    data: { agency: agency },
 
-    success: function (res) {
-      if (res.success) {
-        const row = window.table.row(toggle.closest("tr"));
+    success: function (check) {
+      if (check.blocked) {
+        toggle.prop("checked", !toggle.is(":checked"));
 
-        if (row) {
-          const rowData = row.data();
+        const names = check.employees;
 
-          row
-            .data({
-              ...rowData,
-              status: status.toString(),
-            })
-            .invalidate();
+        let text = "This agency still has active employees.";
+
+        if (Array.isArray(names) && names.length > 0) {
+          text = names.join(", ");
+        } else if (typeof names === "string") {
+          text = names;
         }
 
         Swal.fire({
-          icon: "success",
-          title: "Updated",
-          text: `Agency is now ${status === 1 ? "ACTIVE" : "INACTIVE"}`,
-          timer: 1200,
-          showConfirmButton: false,
+          icon: "warning",
+          title: "Cannot Update Agency Status",
+          text: text,
         });
-      } else {
-        toggle.prop("checked", !toggle.is(":checked"));
 
-        Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: res.message,
-        });
+        toggle.prop("disabled", false);
+        return;
       }
+
+      $.ajax({
+        url: "functions/update_agency_status.php",
+        type: "POST",
+        dataType: "json",
+        data: {
+          id: id,
+          status: status,
+        },
+
+        success: function (res) {
+          if (res.success) {
+            const row = window.table.row(toggle.closest("tr"));
+
+            if (row) {
+              const data = row.data();
+
+              row
+                .data({
+                  ...data,
+                  status: status.toString(),
+                })
+                .invalidate();
+            }
+
+            Swal.fire({
+              icon: "success",
+              title: "Updated",
+              text: `Agency is now ${status === 1 ? 1 : 0}`,
+              timer: 1200,
+              showConfirmButton: false,
+            });
+          } else {
+            toggle.prop("checked", !toggle.is(":checked"));
+            Swal.fire({
+              icon: "error",
+              title: "Update Failed",
+              text: res.message,
+            });
+          }
+        },
+
+        error: function () {
+          toggle.prop("checked", !toggle.is(":checked"));
+          Swal.fire({ icon: "error", title: "Server Error" });
+        },
+
+        complete: function () {
+          toggle.prop("disabled", false);
+        },
+      });
     },
 
     error: function () {
       toggle.prop("checked", !toggle.is(":checked"));
-
       Swal.fire({
         icon: "error",
         title: "Server Error",
-        text: "Failed to update status.",
+        text: "Failed to validate agency employees.",
       });
-    },
 
-    complete: function () {
       toggle.prop("disabled", false);
     },
   });
