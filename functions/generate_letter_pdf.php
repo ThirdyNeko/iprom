@@ -106,6 +106,8 @@ $pdf->Cell(0, 8, 'IMPERIAL APPLIANCE PLAZA', 0, 1, 'C');
 $pdf->SetFont('Arial', '', 14);
 $pdf->Cell(0, 8, 'H. Montinola Cor Muelle Loney St., Brgy. Pres. Roxas, Iloilo City', 0, 1, 'C');
 
+$pdf->Ln(10);
+
 $pdf->SetFont('Arial', '', 14);
 $pdf->Cell(0, 8, 'LETTER OF ADVICE', 0, 1, 'C');
 
@@ -180,7 +182,7 @@ $pdf->Ln(15);
 
 $pdf->SetX(10);
 
-$lineWidth = 80;
+$lineWidth = 60;
 
 // Username (centered within underline width)
 $pdf->SetX(10);
@@ -189,13 +191,8 @@ $pdf->Cell($lineWidth, 6, $_SESSION['username'], 0, 1, 'C');
 // underline directly under same width
 $pdf->SetX(10);
 $pdf->Cell($lineWidth, 0, '', 'B', 1);
-$pdf->Ln(15);
 // Position
 $pdf->SetX(10);
 $pdf->Cell($lineWidth, 6, $_SESSION['position'] ?? '', 0, 1, 'C');
-
-// underline
-$pdf->SetX(10);
-$pdf->Cell($lineWidth, 0, '', 'B', 1);
 
 $pdf->Output('I', 'letter_of_advice.pdf');
