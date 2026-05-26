@@ -149,10 +149,10 @@ $pdf->Cell(55, 7, 'Sub Status', 1, 0);
 $pdf->Cell(0, 7, $subStatus, 1, 1);
 
 $pdf->Cell(55, 7, 'Date of Effectivity', 1, 0);
-$pdf->Cell(0, 7, $effectivityDate, 1, 1);
+$pdf->Cell(0, 7, date('F d, Y', strtotime($effectivityDate)), 1, 1);
 
 $pdf->Cell(55, 7, 'To End', 1, 0);
-$pdf->Cell(0, 7, $endDate, 1, 1);
+$pdf->Cell(0, 7, date('F d, Y', strtotime($endDate)), 1, 1);
 
 $pdf->Ln(4);
 

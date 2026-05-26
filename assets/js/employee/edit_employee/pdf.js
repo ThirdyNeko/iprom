@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         a.href = url;
 
         // 🔥 THIS is what fixes filename
-        a.download = "letter_of_advice.pdf";
+        a.download = "LOA_" + document.getElementById("editLastName").value + ".pdf";
 
         document.body.appendChild(a);
         a.click();
