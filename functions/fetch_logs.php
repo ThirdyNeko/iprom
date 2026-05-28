@@ -173,7 +173,7 @@ foreach ($data as $row) {
         trim($row['remarks'] ?? '') !== '' ? $row['remarks'] : '-',
         $fullName,
         !empty($row['update_date'])
-            ? date('Y-m-d', strtotime($row['update_date']))
+            ? date('m/d/y', strtotime($row['update_date']))
             : '-'
     ];
 }

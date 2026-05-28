@@ -404,7 +404,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <td><?= htmlspecialchars($p['employment_status'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars($p['sub_status'] ?? '-') ?></td>
 
-                                    <td><?= $p['assignment_date'] ? date('Y-m-d', strtotime($p['assignment_date'])) : '-' ?></td>
+                                    <td><?= $p['assignment_date'] ? date('m/d/y', strtotime($p['assignment_date'])) : '-' ?></td>
                                     <td><?= htmlspecialchars($p['last_assigned_by'] ?? '-') ?></td>                                    
                                 </tr>
                             <?php endforeach; ?>
