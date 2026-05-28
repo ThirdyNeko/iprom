@@ -173,7 +173,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
             <!-- ACTION BUTTONS -->
             <div class="col-md-6 text-md-end mt-2 mt-md-0">
 
-                <div class="btn-group" role="group">
+                <div class="d-flex justify-content-md-end gap-2 flex-wrap">
 
                     <button id="exportExcel" class="btn btn-success">
                         <i class="bi bi-file-earmark-excel"></i> Export
