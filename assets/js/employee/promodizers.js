@@ -231,3 +231,60 @@ $(document).ready(function () {
     return val.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 });
+
+document.getElementById("exportExcel").addEventListener("click", function () {
+  // Get DataTable instance
+  const table = $("#promodizerTable").DataTable();
+
+  // Get only filtered rows
+  const data = table.rows({ search: "applied" }).nodes();
+
+  // Create array
+  let exportData = [];
+
+  // Headers
+  let headers = [];
+  $("#promodizerTable thead th").each(function () {
+    headers.push($(this).text().trim());
+  });
+
+  exportData.push(headers);
+
+  // Rows
+  $(data).each(function () {
+    let row = [];
+
+    $(this)
+      .find("td")
+      .each(function () {
+        row.push($(this).text().trim());
+      });
+
+    exportData.push(row);
+  });
+
+  // Create worksheet
+  const ws = XLSX.utils.aoa_to_sheet(exportData);
+
+  // AUTO COLUMN WIDTH CALCULATION
+  const colWidths = exportData[0].map((_, colIndex) => {
+    let maxLength = 10;
+
+    exportData.forEach((row) => {
+      const cell = row[colIndex] ? row[colIndex].toString() : "";
+      maxLength = Math.max(maxLength, cell.length);
+    });
+
+    return { wch: maxLength + 2 }; // padding
+  });
+
+  ws["!cols"] = colWidths;
+
+  // Create workbook
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Promodizers");
+
+  // Download
+  XLSX.writeFile(wb, "Promodizer_Overview.xlsx");
+});

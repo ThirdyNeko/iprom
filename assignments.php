@@ -95,13 +95,30 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
     </style>
 
     <div class="container-fluid">
-        <div class="row mb-3">
-            <div class="col d-flex justify-content-between align-items-center">
+        <div class="row mb-3 align-items-center">
+
+            <!-- TITLE -->
+            <div class="col-md-6">
                 <h4 class="fw-bold mb-0">Assignment Overview</h4>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal">
-                    <i class="bi bi-plus-circle"></i> Create Plantilla
-                </button>
             </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="col-md-6 text-md-end mt-2 mt-md-0">
+
+                <div class="btn-group" role="group">
+
+                    <button id="exportExcel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> Export
+                    </button>
+
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal">
+                        <i class="bi bi-plus-circle"></i> Create Plantilla
+                    </button>
+
+                </div>
+
+            </div>
+
         </div>
 
         <!-- Table -->
@@ -188,6 +205,7 @@ const branchMap = <?= json_encode($branchMap) ?>;
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/xlsx.full.min.js"></script>
 <script src="assets/js/assignment/assignments.js"></script>
 
 <?php include 'modals/assignment_modal.php'; ?>

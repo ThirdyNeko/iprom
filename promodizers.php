@@ -163,14 +163,30 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
     }
     </style>
     <div class="container-fluid">
-        <div class="row mb-3">
-            <div class="col d-flex justify-content-between align-items-center">
-                <h4 class="fw-bold mb-0">Promodiser Overview</h4>
+        <div class="row mb-3 align-items-center">
 
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
-                    <i class="bi bi-plus-circle"></i> Add Employee
-                </button>
+            <!-- TITLE -->
+            <div class="col-md-6">
+                <h4 class="fw-bold mb-0">Promodiser Overview</h4>
             </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="col-md-6 text-md-end mt-2 mt-md-0">
+
+                <div class="btn-group" role="group">
+
+                    <button id="exportExcel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> Export
+                    </button>
+
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                        <i class="bi bi-plus-circle"></i> Add Employee
+                    </button>
+
+                </div>
+
+            </div>
+
         </div>
 
         <!-- Table -->
@@ -422,6 +438,7 @@ document.querySelectorAll(".clear-btn").forEach(btn => {
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/xlsx.full.min.js"></script>
 <script src="assets/js/employee/promodizers.js"></script>
 <?php include 'modals/edit_promodizer_modal.php'; ?>
 <?php include 'modals/add_employee_modal.php'; ?>

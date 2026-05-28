@@ -172,3 +172,52 @@ $(document).ready(function () {
     $("#modalUpdatedBy").text(updatedBy || "-");
   });
 });
+
+document.getElementById("exportExcel").addEventListener("click", function () {
+  const table = $("#assignmentTable").DataTable();
+
+  const rows = table.rows({ search: "applied" }).nodes();
+
+  let exportData = [];
+
+  // headers
+  let headers = [];
+  $("#assignmentTable thead th").each(function () {
+    headers.push($(this).text().trim());
+  });
+
+  exportData.push(headers);
+
+  // rows
+  $(rows).each(function () {
+    let row = [];
+
+    $(this)
+      .find("td")
+      .each(function () {
+        row.push($(this).text().trim());
+      });
+
+    exportData.push(row);
+  });
+
+  // worksheet
+  const ws = XLSX.utils.aoa_to_sheet(exportData);
+
+  // auto column width
+  ws["!cols"] = exportData[0].map((_, i) => {
+    let max = 10;
+
+    exportData.forEach((r) => {
+      const val = r[i] ? r[i].toString() : "";
+      max = Math.max(max, val.length);
+    });
+
+    return { wch: max + 2 };
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Assignments");
+
+  XLSX.writeFile(wb, "Assignment_Overview.xlsx");
+});
