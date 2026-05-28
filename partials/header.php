@@ -179,7 +179,6 @@ body {
 
 <!-- Header -->
 <nav class="navbar navbar-light bg-light border-bottom header px-3">
-    <button class="btn btn-outline-secondary" onclick="toggleSidebar()">☰</button>
 </nav>
 
 <script>
