@@ -12,6 +12,7 @@ $id = $_POST['id'] ?? null;
 $agency = trim($_POST['agency'] ?? '');
 $person = trim($_POST['contact_person'] ?? '');
 $number = trim($_POST['contact_number'] ?? '');
+$tel = trim($_POST['tel_number'] ?? '');
 $email = trim($_POST['email'] ?? '');
 
 // =========================
@@ -34,6 +35,14 @@ if ($person === '') {
 }
 
 if ($number === '') {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Contact number is required.'
+    ]);
+    exit;
+}
+
+if ($tel === '') {
     echo json_encode([
         'success' => false,
         'message' => 'Contact number is required.'
@@ -79,7 +88,7 @@ if ($check->fetchColumn() > 0) {
 if (empty($id)) {
 
     $stmt = $pdo->prepare("
-        INSERT INTO agencies (agencies, contact_person, contact_number, email, status)
+        INSERT INTO agencies (agencies, contact_person, contact_number, tel_number, email, status)
         VALUES (?, ?, ?, 1)
     ");
 
@@ -87,6 +96,7 @@ if (empty($id)) {
         $agency,
         $person,
         $number,
+        $tel,
         $email
     ]);
 
@@ -101,6 +111,7 @@ if (empty($id)) {
             agencies = ?,
             contact_person = ?,
             contact_number = ?,
+            tel_number = ?,
             email = ?
         WHERE id = ?
     ");
@@ -109,6 +120,7 @@ if (empty($id)) {
         $agency,
         $person,
         $number,
+        $tel,
         $email,
         $id
     ]);

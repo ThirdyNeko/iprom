@@ -19,6 +19,7 @@ $(document).ready(function () {
       { data: "agencies" },
       { data: "contact_person" },
       { data: "contact_number" },
+      { data: "tel_number" },
       { data: "email" },
 
       // STATUS SWITCH
@@ -51,7 +52,6 @@ $(document).ready(function () {
       },
 
       // ACTIONS
-      // ACTIONS
       {
         data: null,
         width: "70px",
@@ -65,6 +65,7 @@ $(document).ready(function () {
                 data-name="${data.agencies}"
                 data-person="${data.contact_person}"
                 data-number="${data.contact_number}"
+                data-tel="${data.tel_number}"
                 data-email="${data.email}">
                 Edit
               </button>
@@ -84,6 +85,7 @@ $(document).ready(function () {
     $("#agencyName").val("").trigger("input");
     $("#contactPerson").val("").trigger("input");
     $("#contactNumber").val("");
+    $("#telNumber").val("");
     $("#email").val("");
 
     $(".modal-title").text("Add Agency");
@@ -99,6 +101,7 @@ $(document).ready(function () {
     $("#agencyName").val($(this).data("name"));
     $("#contactPerson").val($(this).data("person"));
     $("#contactNumber").val($(this).data("number"));
+    $("#telNumber").val($(this).data("tel"));
     $("#email").val($(this).data("email"));
 
     $(".modal-title").text("Edit Agency");
@@ -112,6 +115,7 @@ $(document).ready(function () {
     $("#agencyName").val("");
     $("#contactPerson").val("");
     $("#contactNumber").val("");
+    $("#telNumber").val("");
     $("#email").val("");
 
     $(".modal-title").text("Add Agency");
@@ -136,11 +140,18 @@ $(document).ready(function () {
     const contact_person =
       $("#contactPerson").val()?.trim().toUpperCase() || "";
     const contact_number = $("#contactNumber").val()?.trim() || "";
+    const tel_number = $("#telNumber").val()?.trim() || "";
     const email = $("#email").val()?.trim() || "";
 
     const isEdit = id && id !== "";
 
-    if (!agency || !contact_person || !contact_number || !email) {
+    if (
+      !agency ||
+      !contact_person ||
+      !contact_number ||
+      !tel_number ||
+      !email
+    ) {
       Swal.fire({
         icon: "warning",
         title: "Required",
@@ -160,7 +171,15 @@ $(document).ready(function () {
     }).then((result) => {
       if (!result.isConfirmed) return;
 
-      submitAgency(id, agency, contact_person, contact_number, email, isEdit);
+      submitAgency(
+        id,
+        agency,
+        contact_person,
+        contact_number,
+        tel_number,
+        email,
+        isEdit,
+      );
     });
   });
 
@@ -172,6 +191,7 @@ $(document).ready(function () {
     agency,
     contact_person,
     contact_number,
+    tel_number,
     email,
     isEdit,
   ) {
@@ -184,6 +204,7 @@ $(document).ready(function () {
         agency,
         contact_person,
         contact_number,
+        tel_number,
         email,
       },
 
