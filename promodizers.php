@@ -388,10 +388,30 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                             <?php foreach($promodizers as $p): ?>
                                 <tr class="clickable-row"
                                     data-id="<?= $p['id'] ?>"
+                                    data-first-name="<?= htmlspecialchars($p['first_name']) ?>"
+                                    data-middle-name="<?= htmlspecialchars($p['middle_name'] ?? '') ?>"
+                                    data-last-name="<?= htmlspecialchars($p['last_name']) ?>"
+                                    data-suffix="<?= htmlspecialchars($p['suffix'] ?? '') ?>"
+
                                     data-branch="<?= htmlspecialchars($p['branch']) ?>"
                                     data-brand="<?= htmlspecialchars($p['brand']) ?>"
-                                    data-company="<?= htmlspecialchars($p['corpo'] ?? '') ?>"
-                                    data-agency="<?= htmlspecialchars($p['agency'] ?? '') ?>">
+                                    data-employment-status="<?= htmlspecialchars($p['employment_status'] ?? '') ?>"
+                                    data-sub-status="<?= htmlspecialchars($p['sub_status'] ?? '') ?>"
+
+                                    data-agency="<?= htmlspecialchars($p['agency'] ?? '') ?>"
+                                    data-corpo="<?= htmlspecialchars($p['corpo'] ?? '') ?>"
+                                    data-gender="<?= htmlspecialchars($p['gender'] ?? '') ?>"
+
+                                    data-assignment-date="<?= htmlspecialchars($p['assignment_date'] ?? '') ?>"
+                                    data-last-assigned-by="<?= htmlspecialchars($p['last_assigned_by'] ?? '') ?>"
+                                    data-date-hired="<?= htmlspecialchars($p['date_hired'] ?? '') ?>"
+                                    data-date-last-updated="<?= htmlspecialchars($p['date_last_updated'] ?? '') ?>"
+
+                                    data-status="<?= htmlspecialchars($p['status'] ?? '') ?>"
+                                    data-last-updated-by="<?= htmlspecialchars($p['last_updated_by'] ?? '') ?>"
+
+                                    data-birthdate="<?= htmlspecialchars($p['birthdate'] ?? '') ?>"
+                                >
                                     
                                     <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></td>
                                     <td data-branch-code="<?= htmlspecialchars($p['branch']) ?>">

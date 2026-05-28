@@ -232,59 +232,118 @@ $(document).ready(function () {
   }
 });
 
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr; // fallback if already formatted
+
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${month}/${day}/${year}`;
+}
+
+$(document).on("click", ".clickable-row", function () {
+  // BASIC INFO
+  $("#editFirstName").val($(this).data("first-name"));
+  $("#editMiddleName").val($(this).data("middle-name"));
+  $("#editLastName").val($(this).data("last-name"));
+  $("#editSuffix").val($(this).data("suffix"));
+
+  // DROPDOWNS
+  $("#editBranch").val($(this).data("branch"));
+  $("#editBrand").val($(this).data("brand"));
+  $("#editAgency").val($(this).data("agency"));
+
+  $("#editEmploymentStatus").val($(this).data("employment-status"));
+  $("#editSubStatus").val($(this).data("sub-status"));
+
+  // TEXT FIELDS
+  $("#editCorpo").val($(this).data("corpo"));
+  $("#editGender").val($(this).data("gender"));
+  $("#editStatus").val($(this).data("status"));
+
+  // DATES
+  $("#editAssignmentDate").val($(this).data("assignment-date"));
+  $("#editDateHired").val($(this).data("date-hired"));
+  $("#editDateLastUpdated").val($(this).data("date-last-updated"));
+  $("#editBirthdate").val($(this).data("birthdate"));
+
+  // USERS
+  $("#editLastAssignedBy").val($(this).data("last-assigned-by"));
+  $("#editLastUpdatedBy").val($(this).data("last-updated-by"));
+
+  // OPEN MODAL
+  $("#editPromodizerModal").modal("show");
+});
+
 document.getElementById("exportExcel").addEventListener("click", function () {
-  // Get DataTable instance
-  const table = $("#promodizerTable").DataTable();
+  const params = new URLSearchParams(window.location.search);
 
-  // Get only filtered rows
-  const data = table.rows({ search: "applied" }).nodes();
+  fetch("functions/get_promodizers_export.php?" + params.toString())
+    .then((res) => res.json())
+    .then((data) => {
+      let exportData = [
+        [
+          "Name",
+          "First Name",
+          "Middle Name",
+          "Last Name",
+          "Suffix",
+          "Branch",
+          "Brand",
+          "Status",
+          "Employment Status",
+          "Sub-Status",
+          "Agency",
+          "Company",
+          "Gender",
+          "Birthdate",
+          "Date Hired",
+          "Assignment Date",
+          "Last Assigned By",
+        ],
+      ];
 
-  // Create array
-  let exportData = [];
-
-  // Headers
-  let headers = [];
-  $("#promodizerTable thead th").each(function () {
-    headers.push($(this).text().trim());
-  });
-
-  exportData.push(headers);
-
-  // Rows
-  $(data).each(function () {
-    let row = [];
-
-    $(this)
-      .find("td")
-      .each(function () {
-        row.push($(this).text().trim());
+      data.forEach((p) => {
+        exportData.push([
+          p.name,
+          p.first_name,
+          p.middle_name,
+          p.last_name,
+          p.suffix,
+          p.branch,
+          p.brand,
+          p.status,
+          p.employment_status,
+          p.sub_status,
+          p.agency,
+          p.corpo,
+          p.gender,
+          formatDate(p.birthday),
+          formatDate(p.date_hired),
+          formatDate(p.assignment_date),
+          p.last_assigned_by,
+        ]);
       });
 
-    exportData.push(row);
-  });
+      const ws = XLSX.utils.aoa_to_sheet(exportData);
 
-  // Create worksheet
-  const ws = XLSX.utils.aoa_to_sheet(exportData);
+      const colWidths = exportData[0].map((_, i) => {
+        let max = 10;
+        exportData.forEach((r) => {
+          max = Math.max(max, (r[i] || "").toString().length);
+        });
+        return { wch: max + 2 };
+      });
 
-  // AUTO COLUMN WIDTH CALCULATION
-  const colWidths = exportData[0].map((_, colIndex) => {
-    let maxLength = 10;
+      ws["!cols"] = colWidths;
 
-    exportData.forEach((row) => {
-      const cell = row[colIndex] ? row[colIndex].toString() : "";
-      maxLength = Math.max(maxLength, cell.length);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Promodizers");
+
+      XLSX.writeFile(wb, "Promodizer_Overview.xlsx");
     });
-
-    return { wch: maxLength + 2 }; // padding
-  });
-
-  ws["!cols"] = colWidths;
-
-  // Create workbook
-  const wb = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(wb, ws, "Promodizers");
-
-  // Download
-  XLSX.writeFile(wb, "Promodizer_Overview.xlsx");
 });
