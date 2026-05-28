@@ -777,7 +777,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       }
       if (el("editCorpo")) {
         const input = el("editCorpo");
-        input.value = cleanValue(employee.corpo);
+        input.value = cleanValue(employee.corpo).toUpperCase();
         autoResizeInput(input);
       }
       if (el("editBrand")) {
