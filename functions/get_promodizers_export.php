@@ -4,9 +4,6 @@ header('Content-Type: application/json');
 
 $pdo = qa_db();
 
-/* =========================
-   BUILD BASE QUERY
-========================= */
 $sql = "
 SELECT 
     p.id,
@@ -25,15 +22,35 @@ SELECT
     p.birthday,
     p.date_hired,
     p.assignment_date,
-    p.last_assigned_by
+    p.last_assigned_by,
+    b.area,
+    b.region
 FROM employee_info p
+LEFT JOIN IPROM.dbo.branches b
+    ON p.branch = b.branch_code
 WHERE 1=1
 ";
 
-/* =========================
-   FILTERS (SAFE BINDING)
-========================= */
 $params = [];
+
+/* =========================
+   FILTERS
+========================= */
+
+if (!empty($_GET['region'])) {
+    $sql .= " AND b.region = :region";
+    $params[':region'] = $_GET['region'];
+}
+
+if (!empty($_GET['area'])) {
+    $sql .= " AND b.area = :area";
+    $params[':area'] = $_GET['area'];
+}
+
+if (!empty($_GET['corpo'])) {
+    $sql .= " AND p.corpo = :corpo";
+    $params[':corpo'] = $_GET['corpo'];
+}
 
 if (!empty($_GET['branch'])) {
     $sql .= " AND p.branch = :branch";
@@ -70,14 +87,24 @@ if (!empty($_GET['corpo'])) {
     $params[':corpo'] = $_GET['corpo'];
 }
 
+/* =========================
+   SEARCH (IMPROVED)
+========================= */
 if (!empty($_GET['search'])) {
     $sql .= " AND (
         p.first_name LIKE :search OR
-        p.last_name LIKE :search
+        p.last_name LIKE :search OR
+        p.branch LIKE :search OR
+        p.brand LIKE :search OR
+        p.agency LIKE :search OR
+        p.corpo LIKE :search
     )";
     $params[':search'] = "%" . $_GET['search'] . "%";
 }
 
+/* =========================
+   DATE FILTERS
+========================= */
 if (!empty($_GET['from_date'])) {
     $sql .= " AND p.assignment_date >= :from_date";
     $params[':from_date'] = $_GET['from_date'];
@@ -86,6 +113,14 @@ if (!empty($_GET['from_date'])) {
 if (!empty($_GET['to_date'])) {
     $sql .= " AND p.assignment_date <= :to_date";
     $params[':to_date'] = $_GET['to_date'];
+}
+
+/* =========================
+   ASSIGNED BY (MISSING FIX)
+========================= */
+if (!empty($_GET['assigned_by'])) {
+    $sql .= " AND p.last_assigned_by = :assigned_by";
+    $params[':assigned_by'] = $_GET['assigned_by'];
 }
 
 $sql .= " ORDER BY p.last_name ASC";
@@ -100,7 +135,7 @@ $stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 /* =========================
-   FORMAT OUTPUT
+   OUTPUT
 ========================= */
 $result = [];
 

@@ -280,9 +280,23 @@ $(document).on("click", ".clickable-row", function () {
 });
 
 document.getElementById("exportExcel").addEventListener("click", function () {
-  const params = new URLSearchParams(window.location.search);
+  const filters = {
+    branch: $("#filterBranch").val(),
+    brand: $("#filterBrand").val(),
+    status: $("#filterStatus").val(),
+    employment_status: $("#filterEmploymentStatus").val(),
+    sub_status: $("#filterSubStatus").val(),
+    agency: $("#filterAgency").val(),
+    corpo: $("#filterCompany").val(),
+    assigned_by: $("#filterAssignedBy").val(),
+    region: $("#filterRegion").val(),
+    area: $("#filterArea").val(),
+    search: $("#filterName").val(),
+    from_date: $("#filterFrom").val(),
+    to_date: $("#filterTo").val(),
+  };
 
-  fetch("functions/get_promodizers_export.php?" + params.toString())
+  fetch("functions/get_promodizers_export.php?" + new URLSearchParams(filters))
     .then((res) => res.json())
     .then((data) => {
       let exportData = [
