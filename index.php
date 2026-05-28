@@ -49,7 +49,7 @@ $cards = [
     ['label'=>'Total Assignments','value'=>$totalAssignments,'color'=>'primary','icon'=>'📋','link'=>'assignments.php'],
     ['label'=>'COMPLETE','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
     ['label'=>'PARTIAL','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'orange','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
-    ['label'=>'INACTIVE','value'=>$zeroAssigned,'percent'=>$zeroAssignedPct,'color'=>'danger','icon'=>'0️⃣','link'=>'assignments.php?status=zero'], // placed last
+    ['label'=>'VACANT','value'=>$zeroAssigned,'percent'=>$zeroAssignedPct,'color'=>'danger','icon'=>'0️⃣','link'=>'assignments.php?status=zero'], // placed last
 ];
 ?>
 
