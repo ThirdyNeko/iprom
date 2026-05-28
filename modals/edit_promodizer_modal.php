@@ -85,6 +85,10 @@ th{
     color: #b0b0b0;
 }
 
+.date-input:disabled {
+    color: #212529;
+}
+
 /* editable fields */
 #printPdfModal .form-control:not([readonly]):not([disabled]) {
     background-color: #fffbdf !important;
