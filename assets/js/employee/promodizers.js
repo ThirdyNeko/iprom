@@ -301,11 +301,13 @@ document.getElementById("exportExcel").addEventListener("click", function () {
     .then((data) => {
       let exportData = [
         [
-          "Name",
           "First Name",
           "Middle Name",
           "Last Name",
           "Suffix",
+          "Gender",
+          "Birthdate",
+          "Date Hired",
           "Branch",
           "Brand",
           "Status",
@@ -313,9 +315,6 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           "Sub-Status",
           "Agency",
           "Company",
-          "Gender",
-          "Birthdate",
-          "Date Hired",
           "Assignment Date",
           "Last Assigned By",
         ],
@@ -323,11 +322,13 @@ document.getElementById("exportExcel").addEventListener("click", function () {
 
       data.forEach((p) => {
         exportData.push([
-          p.name,
           p.first_name,
           p.middle_name,
           p.last_name,
           p.suffix,
+          p.gender,
+          formatDate(p.birthday),
+          formatDate(p.date_hired),
           p.branch,
           p.brand,
           p.status,
@@ -335,9 +336,6 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           p.sub_status,
           p.agency,
           p.corpo,
-          p.gender,
-          formatDate(p.birthday),
-          formatDate(p.date_hired),
           formatDate(p.assignment_date),
           p.last_assigned_by,
         ]);
