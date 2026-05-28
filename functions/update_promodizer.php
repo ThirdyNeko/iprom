@@ -88,7 +88,10 @@ if ($reason_for_update === 'ADD BRANCH/BRAND' && empty($raw_start_date)) {
 $skipSlotValidation = in_array($reason_for_update, [
     'REMOVE BRANCH/BRAND',
     'ADD BRANCH/BRAND',
-    'CHANGE AGENCY'
+    'CHANGE AGENCY',
+    'RESIGNED',
+    'PULL-OUT / END OF CONTRACT',
+    'BLACKLISTED / AWOL / TERMINATED'
 ]);
 
 $remarks = trim($_POST['remarks'] ?? '');

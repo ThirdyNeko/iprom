@@ -327,7 +327,9 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <select id="filterCompany" class="form-select filter-control">
                                         <option value="">All</option>
                                         <?php foreach($corpos as $c): ?>
-                                            <option value="<?= $c ?>"><?= $c ?></option>
+                                            <option value="<?= htmlspecialchars($c) ?>">
+                                                <?= strtoupper(htmlspecialchars($c)) ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
