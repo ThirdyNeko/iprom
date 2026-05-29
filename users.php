@@ -214,8 +214,10 @@ $users = $pdo
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Branch</label>
-                        <input type="text" id="v_branch" class="form-control" readonly>
+                        <label class="form-label">Branches</label>
+                        <div id="v_branch" class="form-control branch-checkbox-group" 
+                            style="height: 80px; overflow-y: auto; padding: 4px; background-color: #e9ecef;">
+                        </div>
                     </div>
 
                     <div class="col-md-6">
@@ -289,7 +291,19 @@ $(document).on('click', '.view-user', function () {
             $('#v_first_name').val(data.first_name);
             $('#v_last_name').val(data.last_name);
             $('#v_position').val(data.position);
-            $('#v_branch').val(data.branch);
+            const branches = data.branch ? data.branch.split(',') : [];
+            const branchNames = data.branch_names ?? {};
+
+            const branchHtml = branches.map(code =>
+                `<div class="form-check" style="margin: 2px 4px;">
+                    <input class="form-check-input" type="checkbox" disabled checked>
+                    <label class="form-check-label">
+                        ${branchNames[code.trim()] ?? code.trim()}
+                    </label>
+                </div>`
+            ).join('');
+
+            $('#v_branch').html(branchHtml || '<span class="text-muted" style="padding: 4px;">None</span>');
             $('#v_role').val(roleLabels[data.role] ?? data.role);
             function formatMDY(dateStr) {
                 const date = new Date(dateStr);
