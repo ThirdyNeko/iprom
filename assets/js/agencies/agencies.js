@@ -92,7 +92,7 @@ $(document).ready(function () {
       <input type="text"
              name="contact_numbers[]"
              class="form-control mobile-input"
-             placeholder="Mobile Number">
+             placeholder="09XXXXXXXXX">
     </div>
   `);
 
@@ -102,7 +102,7 @@ $(document).ready(function () {
       <input type="text"
              name="tel_numbers[]"
              class="form-control telephone-input"
-             placeholder="Telephone Number">
+             placeholder="XXX XXXX">
     </div>
   `);
 
@@ -134,7 +134,7 @@ $(document).ready(function () {
                name="contact_numbers[]"
                class="form-control mobile-input"
                value="${num.trim()}"
-               placeholder="Mobile Number">
+               placeholder="09XXXXXXXXX">
 
         ${
           index > 0
@@ -164,7 +164,7 @@ $(document).ready(function () {
                name="tel_numbers[]"
                class="form-control telephone-input"
                value="${num.trim()}"
-               placeholder="Telephone Number">
+               placeholder="XXX XXXX">
 
         ${
           index > 0
@@ -197,7 +197,7 @@ $(document).ready(function () {
       <input type="text"
              name="contact_numbers[]"
              class="form-control mobile-input"
-             placeholder="Mobile Number">
+             placeholder="09XXXXXXXXX">
     </div>
   `);
 
@@ -206,7 +206,7 @@ $(document).ready(function () {
       <input type="text"
              name="tel_numbers[]"
              class="form-control telephone-input"
-             placeholder="Telephone Number">
+             placeholder="XXX XXXX">
     </div>
   `);
 

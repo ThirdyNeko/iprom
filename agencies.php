@@ -200,7 +200,9 @@ $pdo = qa_db();
                                 <input type="text"
                                     name="contact_numbers[]"
                                     class="form-control mobile-input"
-                                    placeholder="Mobile Number">
+                                    placeholder="09XXXXXXXXX"
+                                    pattern="\d+"
+                                    maxlength="11">
                             </div>
 
                         </div>
@@ -222,7 +224,9 @@ $pdo = qa_db();
                                 <input type="text"
                                     name="tel_numbers[]"
                                     class="form-control telephone-input"
-                                    placeholder="Telephone Number">
+                                    placeholder="XXX XXXX"
+                                    pattern="\d+"
+                                    maxlength="8">
                             </div>
 
                         </div>
@@ -271,6 +275,31 @@ $pdo = qa_db();
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script>
+document.addEventListener("input", function (e) {
+    if (e.target.classList.contains("mobile-input") ||
+        e.target.classList.contains("telephone-input")) {
+
+        e.target.value = e.target.value.replace(/\D/g, '');
+    }
+});
+
+document.addEventListener("input", function (e) {
+    if (e.target.classList.contains("telephone-input")) {
+
+        // remove non-digits
+        let value = e.target.value.replace(/\D/g, '');
+
+        // limit to 7 digits
+        value = value.substring(0, 7);
+
+        // insert space after 3 digits
+        if (value.length > 3) {
+            value = value.substring(0, 3) + ' ' + value.substring(3);
+        }
+
+        e.target.value = value;
+    }
+});
 $(document).ready(function () {
 
     // =========================
@@ -292,9 +321,11 @@ $(document).ready(function () {
         $("#mobileContainer").append(`
             <div class="input-group mb-2">
                 <input type="text"
-                       name="contact_numbers[]"
-                       class="form-control mobile-input"
-                       placeholder="Mobile Number">
+                        name="contact_numbers[]"
+                        class="form-control mobile-input"
+                        placeholder="09XXXXXXXXX"
+                        pattern="\d+"
+                        maxlength="11">
 
                 <button type="button"
                         class="btn btn-outline-danger remove-mobile">
@@ -328,9 +359,11 @@ $(document).ready(function () {
         $("#telephoneContainer").append(`
             <div class="input-group mb-2">
                 <input type="text"
-                       name="tel_numbers[]"
-                       class="form-control telephone-input"
-                       placeholder="Telephone Number">
+                        name="tel_numbers[]"
+                        class="form-control telephone-input"
+                        placeholder="XXX XXXX"
+                        pattern="\d+"
+                        maxlength="8">
 
                 <button type="button"
                         class="btn btn-outline-danger remove-telephone">
