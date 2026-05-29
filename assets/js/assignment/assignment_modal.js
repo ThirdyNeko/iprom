@@ -75,7 +75,7 @@ async function openAssignmentModal(branch, brand) {
     $("#modalBrand").text(data.brand);
     $("#modalRequired").val(data.required);
 
-    currentAssigned = data.assigned;
+    currentAssigned = data.employees?.length || 0;
 
     $("#modalStatus").html(getStatusBadge(data.required, data.assigned));
 
@@ -162,6 +162,7 @@ document
       return Swal.fire("Invalid Input", "Required must be valid.", "error");
     }
 
+    const currentAssigned = $("#modalAssignedList .list-group-item").length;
     if (required < currentAssigned) {
       return Swal.fire(
         "Invalid Update",
