@@ -185,12 +185,15 @@ $pdf->MultiCell(
     "Likewise, you are directed to conduct orientation on the following:\n\n                1. Brief history of the Company\n                2. Company Mission and Vision\n                3. General Rules and Regulations"
 );
 
-$pdf->Ln(15);
+$pdf->Ln(10);
 
 $pdf->SetX(10);
 
 $lineWidth = 50;
 
+$pdf->SetFont('Arial', '', 11);
+$pdf->Write(6, 'Issued By:');
+$pdf->Ln(15);
 // Username (centered within underline width)
 $pdf->SetX(10);
 $pdf->Cell($lineWidth, 6, $_SESSION['username'], 0, 1, 'C');
