@@ -224,9 +224,9 @@ $pdo = qa_db();
                                 <input type="text"
                                     name="tel_numbers[]"
                                     class="form-control telephone-input"
-                                    placeholder="XXX XXXX"
-                                    pattern="\d+"
-                                    maxlength="8">
+                                    placeholder="(XXX) XXX XXXX"
+                                    pattern="\(\d{3}\) \d{3} \d{4}"
+                                    maxlength="14">
                             </div>
 
                         </div>
@@ -284,15 +284,18 @@ document.addEventListener("input", function (e) {
 document.addEventListener("input", function (e) {
     if (e.target.classList.contains("telephone-input")) {
 
-        // remove non-digits
         let value = e.target.value.replace(/\D/g, '');
 
-        // limit to 7 digits
-        value = value.substring(0, 7);
+        // limit to 10 digits (3 area + 3 + 4)
+        value = value.substring(0, 10);
 
-        // insert space after 3 digits
-        if (value.length > 3) {
-            value = value.substring(0, 3) + ' ' + value.substring(3);
+        // format: (XXX) XXX XXXX
+        if (value.length > 6) {
+            value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + ' ' + value.substring(6);
+        } else if (value.length > 3) {
+            value = '(' + value.substring(0, 3) + ') ' + value.substring(3);
+        } else if (value.length > 0) {
+            value = '(' + value;
         }
 
         e.target.value = value;
@@ -359,9 +362,9 @@ $(document).ready(function () {
                 <input type="text"
                         name="tel_numbers[]"
                         class="form-control telephone-input"
-                        placeholder="XXX XXXX"
-                        pattern="\d+"
-                        maxlength="8">
+                        placeholder="(XXX) XXX XXXX"
+                        pattern="\(\d{3}\) \d{3} \d{4}"
+                        maxlength="14">
 
                 <button type="button"
                         class="btn btn-outline-danger remove-telephone">

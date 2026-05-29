@@ -101,10 +101,10 @@ $(document).ready(function () {
     $("#telephoneContainer").html(`
     <div class="input-group mb-2">
       <input type="text"
-             name="tel_numbers[]"
-             class="form-control telephone-input"
-             placeholder="XXX XXXX"
-             maxlength="8">
+              name="tel_numbers[]"
+              class="form-control telephone-input"
+              placeholder="(XXX) XXX XXXX"
+              maxlength="14">
     </div>
   `);
 
@@ -164,11 +164,11 @@ $(document).ready(function () {
       $("#telephoneContainer").append(`
       <div class="input-group mb-2">
         <input type="text"
-               name="tel_numbers[]"
-               class="form-control telephone-input"
-               value="${num.trim()}"
-               placeholder="XXX XXXX"
-               maxlength="8">
+                name="tel_numbers[]"
+                class="form-control telephone-input"
+                value="${num.trim()}"
+                placeholder="(XXX) XXX XXXX"
+                maxlength="14">
 
         ${
           index > 0
@@ -209,10 +209,10 @@ $(document).ready(function () {
     $("#telephoneContainer").html(`
     <div class="input-group mb-2">
       <input type="text"
-             name="tel_numbers[]"
-             class="form-control telephone-input"
-             placeholder="XXX XXXX"
-             maxlength="8">
+              name="tel_numbers[]"
+              class="form-control telephone-input"
+              placeholder="(XXX) XXX XXXX"
+              maxlength="14">
     </div>
   `);
 
