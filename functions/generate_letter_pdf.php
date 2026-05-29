@@ -108,9 +108,10 @@ $pdf->Cell(0, 8, 'LETTER OF ADVICE', 0, 1, 'C');
 
 $pdf->Ln(10);
 
-$pdf->SetFont('Arial', '', 11);
+$pdf->SetFont('Arial', 'B', 11);
 
 $pdf->Cell(150, 6, $recipientName, 0, 0);
+$pdf->SetFont('Arial', '', 11);
 $pdf->Cell(0, 6, date('F d, Y'), 0, 1);
 
 $pdf->Cell(120, 6, $recipientPosition, 0, 1);
@@ -125,7 +126,7 @@ $pdf->SetFont('Arial', '', 11);
 $pdf->Write(6, '       Please be informed that ');
 
 // bold + underline employee name
-$pdf->SetFont('Arial', 'U', 11);
+$pdf->SetFont('Arial', 'BU', 11);
 $pdf->Write(6, $employeeName);
 
 // back to normal
@@ -196,6 +197,7 @@ $pdf->Write(6, 'Issued By:');
 $pdf->Ln(15);
 // Username (centered within underline width)
 $pdf->SetX(10);
+$pdf->SetFont('Arial', 'B', 11);
 $pdf->Cell($lineWidth, 6, $_SESSION['username'], 0, 1, 'C');
 
 // underline directly under same width
@@ -203,6 +205,7 @@ $pdf->SetX(10);
 $pdf->Cell($lineWidth, 0, '', 'B', 1);
 // Position
 $pdf->SetX(10);
+$pdf->SetFont('Arial', '', 11);
 $pdf->Cell($lineWidth, 6, $_SESSION['position'] ?? '', 0, 1, 'C');
 
 $pdf->Output('I', 'letter_of_advice.pdf');

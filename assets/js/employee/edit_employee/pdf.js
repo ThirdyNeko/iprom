@@ -115,6 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
         a.remove();
 
         window.URL.revokeObjectURL(url);
+
+        // ✅ Redirect after download is triggered
+        window.location.href = "promodizers.php";
       })
       .catch((error) => {
         console.error(error);
