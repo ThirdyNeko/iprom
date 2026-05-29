@@ -104,8 +104,12 @@ try {
                                         ADMIN
                                     </option>
 
-                                    <option value="hr">
-                                        HUMAN RESOURCES
+                                    <option value="supervisor">
+                                        SUPERVISOR
+                                    </option>
+
+                                    <option value="staff">
+                                        STAFF
                                     </option>
 
                                     <option value="inhouse_manager">

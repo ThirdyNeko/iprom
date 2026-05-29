@@ -38,7 +38,7 @@
         </li>
 
         <!-- ✅ ADMIN ONLY: Users -->
-        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['position'] === 'SUPERVISOR')): ?>
+        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center gap-2 <?= in_array($current_page, ['branches.php', 'agencies.php']) ? '' : 'collapsed' ?>"
             data-bs-toggle="collapse"
@@ -74,7 +74,7 @@
                 </ul>
             </div>
         </li>
-        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
         <li>
             <a href="merge.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'merge.php' ? 'active' : '' ?>">
                 <i class="bi bi-arrow-left-right"></i>

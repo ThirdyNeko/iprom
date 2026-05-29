@@ -21,6 +21,9 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $branchMap[$row['branch_code']] = $row['branch'];
 }
 
+$isAllowed =
+    (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
+    (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin');
 
 // Fetch branches & brands for filter dropdowns
 $branches = $pdo->query("
@@ -111,8 +114,8 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         <i class="bi bi-file-earmark-excel"></i> Export
                     </button>
 
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal">
-                        <i class="bi bi-plus-circle"></i> Create Plantilla
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal" <?= !$isAllowed ? 'disabled' : '' ?>>
+                        <i class="bi bi-plus-circle" ></i> Create Plantilla
                     </button>
 
                 </div>

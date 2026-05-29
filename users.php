@@ -6,7 +6,7 @@ include 'config/db.php';
 include 'auth/require_login.php';
 
 // 🔒 ADMIN ONLY
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'super_admin') {
     header("Location: index.php");
     exit;
 }
@@ -152,7 +152,9 @@ $users = $pdo
                                     <?php
                                     $roleLabels = [
                                         'admin' => 'ADMIN',
-                                        'hr'    => 'HUMAN RESOURCES',
+                                        'super_admin'    => 'SUPER ADMIN',
+                                        'staff'    => 'STAFF',
+                                        'supervisor'    => 'SUPERVISOR',
                                     ];
                                     ?>
                                     <td>

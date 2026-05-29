@@ -1,7 +1,7 @@
 <?php
 $isAllowed =
     (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') ||
-    (isset($_SESSION['position']) && $_SESSION['position'] === 'SUPERVISOR');
+    (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin');
 ?>
 
 <style>
