@@ -190,24 +190,51 @@ $pdo = qa_db();
                             required>
                     </div>
 
-                    <!-- Contact Number -->
+                    <!-- MOBILE NUMBERS -->
                     <div class="mb-3">
-                        <label class="form-label">Mobile Number</label>
-                        <input type="text"
-                            id="contactNumber"
-                            class="form-control"
-                            required>
+                        <label class="form-label d-block">Mobile Numbers</label>
+
+                        <div id="mobileContainer">
+
+                            <div class="input-group mb-2">
+                                <input type="text"
+                                    name="contact_numbers[]"
+                                    class="form-control mobile-input"
+                                    placeholder="Mobile Number">
+                            </div>
+
+                        </div>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary"
+                                id="addMobileBtn">
+                            <i class="bi bi-plus-lg"></i> Add Mobile
+                        </button>
                     </div>
 
+                    <!-- TELEPHONE NUMBERS -->
                     <div class="mb-3">
-                        <label class="form-label">Telephone Number</label>
-                        <input type="text"
-                            id="telNumber"
-                            class="form-control"
-                            required>
+                        <label class="form-label d-block">Telephone Numbers</label>
+
+                        <div id="telephoneContainer">
+
+                            <div class="input-group mb-2">
+                                <input type="text"
+                                    name="tel_numbers[]"
+                                    class="form-control telephone-input"
+                                    placeholder="Telephone Number">
+                            </div>
+
+                        </div>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary"
+                                id="addTelephoneBtn">
+                            <i class="bi bi-plus-lg"></i> Add Telephone
+                        </button>
                     </div>
 
-                    <!-- Contact Number -->
+                    <!-- Email -->
                     <div class="mb-3">
                         <label class="form-label">Email</label>
                         <input type="text"
@@ -243,7 +270,83 @@ $pdo = qa_db();
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
+<script>
+$(document).ready(function () {
 
+    // =========================
+    // ADD MOBILE
+    // =========================
+    $("#addMobileBtn").click(function () {
+
+        let count = $("#mobileContainer .input-group").length;
+
+        if (count >= 3) {
+            Swal.fire({
+                icon: "warning",
+                title: "Limit Reached",
+                text: "Maximum of 3 mobile numbers only."
+            });
+            return;
+        }
+
+        $("#mobileContainer").append(`
+            <div class="input-group mb-2">
+                <input type="text"
+                       name="contact_numbers[]"
+                       class="form-control mobile-input"
+                       placeholder="Mobile Number">
+
+                <button type="button"
+                        class="btn btn-outline-danger remove-mobile">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        `);
+    });
+
+    // REMOVE MOBILE
+    $(document).on("click", ".remove-mobile", function () {
+        $(this).closest(".input-group").remove();
+    });
+
+    // =========================
+    // ADD TELEPHONE
+    // =========================
+    $("#addTelephoneBtn").click(function () {
+
+        let count = $("#telephoneContainer .input-group").length;
+
+        if (count >= 3) {
+            Swal.fire({
+                icon: "warning",
+                title: "Limit Reached",
+                text: "Maximum of 3 telephone numbers only."
+            });
+            return;
+        }
+
+        $("#telephoneContainer").append(`
+            <div class="input-group mb-2">
+                <input type="text"
+                       name="tel_numbers[]"
+                       class="form-control telephone-input"
+                       placeholder="Telephone Number">
+
+                <button type="button"
+                        class="btn btn-outline-danger remove-telephone">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        `);
+    });
+
+    // REMOVE TELEPHONE
+    $(document).on("click", ".remove-telephone", function () {
+        $(this).closest(".input-group").remove();
+    });
+
+});
+</script>
 <script src="assets/js/agencies/agencies.js"></script>
 
 <?php include 'modals/change_password_modal.php'; ?>

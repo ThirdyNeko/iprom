@@ -84,9 +84,27 @@ $(document).ready(function () {
 
     $("#agencyName").val("").trigger("input");
     $("#contactPerson").val("").trigger("input");
-    $("#contactNumber").val("");
-    $("#telNumber").val("");
     $("#email").val("");
+
+    // RESET MOBILES
+    $("#mobileContainer").html(`
+    <div class="input-group mb-2">
+      <input type="text"
+             name="contact_numbers[]"
+             class="form-control mobile-input"
+             placeholder="Mobile Number">
+    </div>
+  `);
+
+    // RESET TELEPHONES
+    $("#telephoneContainer").html(`
+    <div class="input-group mb-2">
+      <input type="text"
+             name="tel_numbers[]"
+             class="form-control telephone-input"
+             placeholder="Telephone Number">
+    </div>
+  `);
 
     $(".modal-title").text("Add Agency");
 
@@ -100,9 +118,67 @@ $(document).ready(function () {
     $("#agencyId").val($(this).data("id"));
     $("#agencyName").val($(this).data("name"));
     $("#contactPerson").val($(this).data("person"));
-    $("#contactNumber").val($(this).data("number"));
-    $("#telNumber").val($(this).data("tel"));
     $("#email").val($(this).data("email"));
+
+    // =========================
+    // MOBILE NUMBERS
+    // =========================
+    let mobileNumbers = ($(this).data("number") || "").split("|");
+
+    $("#mobileContainer").html("");
+
+    mobileNumbers.forEach((num, index) => {
+      $("#mobileContainer").append(`
+      <div class="input-group mb-2">
+        <input type="text"
+               name="contact_numbers[]"
+               class="form-control mobile-input"
+               value="${num.trim()}"
+               placeholder="Mobile Number">
+
+        ${
+          index > 0
+            ? `
+          <button type="button"
+                  class="btn btn-outline-danger remove-mobile">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        `
+            : ""
+        }
+      </div>
+    `);
+    });
+
+    // =========================
+    // TELEPHONE NUMBERS
+    // =========================
+    let telNumbers = ($(this).data("tel") || "").split("|");
+
+    $("#telephoneContainer").html("");
+
+    telNumbers.forEach((num, index) => {
+      $("#telephoneContainer").append(`
+      <div class="input-group mb-2">
+        <input type="text"
+               name="tel_numbers[]"
+               class="form-control telephone-input"
+               value="${num.trim()}"
+               placeholder="Telephone Number">
+
+        ${
+          index > 0
+            ? `
+          <button type="button"
+                  class="btn btn-outline-danger remove-telephone">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        `
+            : ""
+        }
+      </div>
+    `);
+    });
 
     $(".modal-title").text("Edit Agency");
 
@@ -114,9 +190,25 @@ $(document).ready(function () {
 
     $("#agencyName").val("");
     $("#contactPerson").val("");
-    $("#contactNumber").val("");
-    $("#telNumber").val("");
     $("#email").val("");
+
+    $("#mobileContainer").html(`
+    <div class="input-group mb-2">
+      <input type="text"
+             name="contact_numbers[]"
+             class="form-control mobile-input"
+             placeholder="Mobile Number">
+    </div>
+  `);
+
+    $("#telephoneContainer").html(`
+    <div class="input-group mb-2">
+      <input type="text"
+             name="tel_numbers[]"
+             class="form-control telephone-input"
+             placeholder="Telephone Number">
+    </div>
+  `);
 
     $(".modal-title").text("Add Agency");
   });
@@ -139,8 +231,19 @@ $(document).ready(function () {
     const agency = $("#agencyName").val()?.trim().toUpperCase() || "";
     const contact_person =
       $("#contactPerson").val()?.trim().toUpperCase() || "";
-    const contact_number = $("#contactNumber").val()?.trim() || "";
-    const tel_number = $("#telNumber").val()?.trim() || "";
+    const contact_numbers = $("input[name='contact_numbers[]']")
+      .map(function () {
+        return $(this).val().trim();
+      })
+      .get()
+      .filter((v) => v !== "");
+
+    const tel_numbers = $("input[name='tel_numbers[]']")
+      .map(function () {
+        return $(this).val().trim();
+      })
+      .get()
+      .filter((v) => v !== "");
     const email = $("#email").val()?.trim() || "";
 
     const isEdit = id && id !== "";
@@ -148,8 +251,8 @@ $(document).ready(function () {
     if (
       !agency ||
       !contact_person ||
-      !contact_number ||
-      !tel_number ||
+      contact_numbers.length === 0 ||
+      tel_numbers.length === 0 ||
       !email
     ) {
       Swal.fire({
@@ -175,8 +278,8 @@ $(document).ready(function () {
         id,
         agency,
         contact_person,
-        contact_number,
-        tel_number,
+        contact_numbers,
+        tel_numbers,
         email,
         isEdit,
       );
@@ -190,8 +293,8 @@ $(document).ready(function () {
     id,
     agency,
     contact_person,
-    contact_number,
-    tel_number,
+    contact_numbers,
+    tel_numbers,
     email,
     isEdit,
   ) {
@@ -203,8 +306,8 @@ $(document).ready(function () {
         id,
         agency,
         contact_person,
-        contact_number,
-        tel_number,
+        contact_numbers,
+        tel_numbers,
         email,
       },
 

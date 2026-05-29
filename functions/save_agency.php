@@ -9,11 +9,22 @@ $pdo = qa_db();
 // INPUTS
 // =========================
 $id = $_POST['id'] ?? null;
+
 $agency = trim($_POST['agency'] ?? '');
 $person = trim($_POST['contact_person'] ?? '');
-$number = trim($_POST['contact_number'] ?? '');
-$tel = trim($_POST['tel_number'] ?? '');
 $email = trim($_POST['email'] ?? '');
+
+// ARRAYS
+$numbers = $_POST['contact_numbers'] ?? [];
+$tels = $_POST['tel_numbers'] ?? [];
+
+// CLEAN ARRAYS
+$numbers = array_values(array_filter(array_map('trim', $numbers)));
+$tels = array_values(array_filter(array_map('trim', $tels)));
+
+// CONVERT TO STRING
+$number = implode(' | ', $numbers);
+$tel = implode(' | ', $tels);
 
 // =========================
 // VALIDATION
@@ -34,18 +45,18 @@ if ($person === '') {
     exit;
 }
 
-if ($number === '') {
+if (count($numbers) === 0) {
     echo json_encode([
         'success' => false,
-        'message' => 'Contact number is required.'
+        'message' => 'At least one mobile number is required.'
     ]);
     exit;
 }
 
-if ($tel === '') {
+if (count($tels) === 0) {
     echo json_encode([
         'success' => false,
-        'message' => 'Contact number is required.'
+        'message' => 'At least one telephone number is required.'
     ]);
     exit;
 }
@@ -88,8 +99,15 @@ if ($check->fetchColumn() > 0) {
 if (empty($id)) {
 
     $stmt = $pdo->prepare("
-        INSERT INTO agencies (agencies, contact_person, contact_number, tel_number, email, status)
-        VALUES (?, ?, ?, 1)
+        INSERT INTO agencies (
+            agencies,
+            contact_person,
+            contact_number,
+            tel_number,
+            email,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, 1)
     ");
 
     $stmt->execute([
