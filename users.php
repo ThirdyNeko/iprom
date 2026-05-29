@@ -147,6 +147,7 @@ $users = $pdo
                                 <th>Role</th>
                                 <th>Position</th>
                                 <th>Status</th>
+                                <th>Actions</th>
 
                             </tr>
                         </thead>
@@ -167,6 +168,12 @@ $users = $pdo
                                     </td>
                                     <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
                                     <td><?= htmlspecialchars(strtoupper($u['status'])) ?></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success view-user"
+                                            data-username="<?= htmlspecialchars($u['username']) ?>">
+                                            View
+                                        </button>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -176,6 +183,60 @@ $users = $pdo
             </div>
         </div>
 
+    </div>
+</div>
+
+<div class="modal fade" id="userViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <label class="form-label">First Name</label>
+                        <input type="text" id="v_first_name" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" id="v_last_name" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Position</label>
+                        <input type="text" id="v_position" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Branch</label>
+                        <input type="text" id="v_branch" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Role</label>
+                        <input type="text" id="v_role" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Created At</label>
+                        <input type="text" id="v_created_at" class="form-control" readonly>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Updated At</label>
+                        <input type="text" id="v_updated_at" class="form-control" readonly>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 
@@ -205,6 +266,36 @@ $(document).ready(function() {
     });
     $('#filterUsername').on('keyup', function() {
         table.column(0).search(this.value).draw();
+    });
+});
+
+$(document).on('click', '.view-user', function () {
+    let username = $(this).data('username');
+
+    $.ajax({
+        url: 'functions/get_user.php',
+        type: 'POST',
+        data: { username: username },
+        dataType: 'json',
+        success: function (data) {
+
+            const roleLabels = {
+                admin: "ADMIN",
+                super_admin: "SUPER ADMIN",
+                staff: "STAFF",
+                supervisor: "SUPERVISOR"
+            };
+
+            $('#v_first_name').val(data.first_name);
+            $('#v_last_name').val(data.last_name);
+            $('#v_position').val(data.position);
+            $('#v_branch').val(data.branch);
+            $('#v_role').val(roleLabels[data.role] ?? data.role);
+            $('#v_created_at').val(data.created_at);
+            $('#v_updated_at').val(data.updated_at);
+
+            $('#userViewModal').modal('show');
+        }
     });
 });
 </script>

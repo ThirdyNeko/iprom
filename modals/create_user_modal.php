@@ -99,26 +99,31 @@ try {
                                         Select Role
 
                                     </option>
-
+                                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
                                     <option value="admin">
                                         ADMIN
                                     </option>
 
-                                    <option value="supervisor">
-                                        SUPERVISOR
-                                    </option>
-
-                                    <option value="staff">
-                                        STAFF
-                                    </option>
-
-                                    <option value="inhouse_manager">
+                                    <!-- <option value="inhouse_manager">
                                         INHOUSE MANAGER
                                     </option>
 
                                     <option value="branch_manager">
                                         BRANCH MANAGER
+                                    </option> -->
+                                    <?php endif; ?>
+
+                                    <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
+                                    <option value="supervisor">
+                                        SUPERVISOR
                                     </option>
+                                    <?php endif; ?>
+
+                                    <option value="staff">
+                                        STAFF
+                                    </option>
+
+                                    
 
                                 </select>
 
@@ -128,8 +133,7 @@ try {
                             <div class="mb-3">
 
                                 <label class="form-label">
-                                    Branch
-                                    <small class="text-muted">(Optional)</small>
+                                    Branches
                                 </label>
 
                                 <select name="branch"
@@ -156,7 +160,7 @@ try {
                             </div>
 
                             <!-- BRAND -->
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
 
                                 <label class="form-label">
                                     Brand
@@ -184,7 +188,7 @@ try {
 
                                 </select>
 
-                            </div>
+                            </div> -->
 
                             <div class="mb-3">
                                 <label class = "form-label">

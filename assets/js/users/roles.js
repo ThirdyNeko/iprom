@@ -8,12 +8,12 @@ function updateFieldsByRole() {
 
   // reset first
   branchSelect.disabled = true;
-  brandSelect.disabled = true;
+  // brandSelect.disabled = true;
   departmentInput.disabled = true;
 
-  if (role === "hr") {
+  if (role === "staff") {
     // HR: branch + department only
-    departmentInput.disabled = false;
+    branchSelect.disabled = false;
   } else if (role === "inhouse_manager") {
     // inhouse manager: branch + brand only
     departmentInput.disabled = false;
