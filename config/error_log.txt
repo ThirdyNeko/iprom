@@ -1063,3 +1063,6 @@
 [2026-05-29 13:47:29] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 173
 [2026-05-29 13:47:29] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 173
 [2026-05-29 13:47:29] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 173
+[2026-05-29 14:04:09] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-29 14:04:14] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-05-29 14:04:24] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311

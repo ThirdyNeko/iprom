@@ -4,7 +4,9 @@ include '../config/db.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'super_admin' &&
+     $_SESSION['role'] !== 'admin' &&
+     $_SESSION['role'] !== 'supervisor')) {
     echo json_encode([
         'status' => 'error',
         'message' => 'Unauthorized'

@@ -12,7 +12,7 @@ try {
     $stmt->execute();
 
     // FIRST RESULT SET = BRANCHES
-    $branches = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // MOVE TO SECOND RESULT SET
     $stmt->nextRowset();
@@ -145,12 +145,10 @@ try {
                                         NONE
                                     </option>
 
-                                    <?php foreach ($branches as $branch): ?>
+                                    <?php foreach ($branches as $b): ?>
 
-                                        <option value="<?= htmlspecialchars($branch) ?>">
-
-                                            <?= htmlspecialchars($branch) ?>
-
+                                        <option value="<?= htmlspecialchars($b['branch_code']) ?>">
+                                            <?= htmlspecialchars($b['branch']) ?>
                                         </option>
 
                                     <?php endforeach; ?>

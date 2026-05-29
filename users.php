@@ -291,8 +291,18 @@ $(document).on('click', '.view-user', function () {
             $('#v_position').val(data.position);
             $('#v_branch').val(data.branch);
             $('#v_role').val(roleLabels[data.role] ?? data.role);
-            $('#v_created_at').val(data.created_at);
-            $('#v_updated_at').val(data.updated_at);
+            function formatMDY(dateStr) {
+                const date = new Date(dateStr);
+
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+
+                return `${month}/${day}/${year}`;
+            }
+
+            $('#v_created_at').val(formatMDY(data.created_at));
+            $('#v_updated_at').val(formatMDY(data.updated_at));
 
             $('#userViewModal').modal('show');
         }
