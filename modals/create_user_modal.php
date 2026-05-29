@@ -136,24 +136,28 @@ try {
                                     Branches
                                 </label>
 
-                                <select name="branch"
-                                        id="branchSelect"
-                                        class="form-select"
-                                        disabled>
-
-                                    <option value="">
-                                        NONE
-                                    </option>
+                                <div id="branchSelect" 
+                                    class="form-control branch-checkbox-group" 
+                                    style="height: 120px; overflow-y: auto; padding: 4px;">
 
                                     <?php foreach ($branches as $b): ?>
-
-                                        <option value="<?= htmlspecialchars($b['branch_code']) ?>">
-                                            <?= htmlspecialchars($b['branch']) ?>
-                                        </option>
-
+                                        <div class="form-check" style="margin: 2px 4px;">
+                                            <input 
+                                                class="form-check-input" 
+                                                type="checkbox" 
+                                                name="branches[]" 
+                                                id="branch_<?= htmlspecialchars($b['branch_code']) ?>"
+                                                value="<?= htmlspecialchars($b['branch_code']) ?>"
+                                                disabled>
+                                            <label 
+                                                class="form-check-label" 
+                                                for="branch_<?= htmlspecialchars($b['branch_code']) ?>">
+                                                <?= htmlspecialchars($b['branch']) ?>
+                                            </label>
+                                        </div>
                                     <?php endforeach; ?>
 
-                                </select>
+                                </div>
 
                             </div>
 

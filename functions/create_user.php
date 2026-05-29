@@ -21,7 +21,8 @@ try {
     $username   = strtoupper(trim($_POST['username'] ?? ''));
     $role       = $_POST['role'] ?? null;
 
-    $branch     = !empty($_POST['branch']) ? $_POST['branch'] : null;
+    $branches = $_POST['branches'] ?? [];
+    $branch   = !empty($branches) ? implode(',', $branches) : null;
     $brand      = !empty($_POST['brand']) ? $_POST['brand'] : null;
 
     $first_name = strtoupper(trim($_POST['first_name'] ?? ''));

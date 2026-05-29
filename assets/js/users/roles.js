@@ -3,24 +3,36 @@ const branchSelect = document.getElementById("branchSelect");
 const brandSelect = document.getElementById("brandSelect");
 const departmentInput = document.getElementById("departmentInput");
 
+// Helper functions for the checkbox group
+function disableBranchSelect() {
+  branchSelect
+    .querySelectorAll('input[type="checkbox"]')
+    .forEach((cb) => (cb.disabled = true));
+}
+
+function enableBranchSelect() {
+  branchSelect
+    .querySelectorAll('input[type="checkbox"]')
+    .forEach((cb) => (cb.disabled = false));
+}
+
 function updateFieldsByRole() {
   const role = roleSelect.value;
 
   // reset first
-  branchSelect.disabled = true;
-  // brandSelect.disabled = true;
+  disableBranchSelect();
   departmentInput.disabled = true;
 
   if (role === "staff") {
     // HR: branch + department only
-    branchSelect.disabled = false;
+    enableBranchSelect();
   } else if (role === "inhouse_manager") {
     // inhouse manager: branch + brand only
     departmentInput.disabled = false;
     brandSelect.disabled = false;
   } else if (role === "branch_manager") {
     // branch manager: branch + department only
-    branchSelect.disabled = false;
+    enableBranchSelect();
   }
 }
 
