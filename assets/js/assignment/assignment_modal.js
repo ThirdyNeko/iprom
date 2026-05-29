@@ -141,9 +141,10 @@ function renderAssignedList(employees, required, assigned) {
 // =========================
 // SAVE REQUIRED
 // =========================
-document
-  .getElementById("saveRequiredBtn")
-  .addEventListener("click", async () => {
+const saveRequiredBtn = document.getElementById("saveRequiredBtn");
+
+if (saveRequiredBtn) {
+  saveRequiredBtn.addEventListener("click", async () => {
     const modal = $("#assignmentModal");
     const branch = modal.data("branch");
     const brand = modal.data("brand");
@@ -225,6 +226,7 @@ document
       Swal.fire("Error", "Server error occurred.", "error");
     }
   });
+}
 
 // =========================
 // EDIT BUTTON
