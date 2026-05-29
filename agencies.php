@@ -276,9 +276,7 @@ $pdo = qa_db();
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script>
 document.addEventListener("input", function (e) {
-    if (e.target.classList.contains("mobile-input") ||
-        e.target.classList.contains("telephone-input")) {
-
+    if (e.target.classList.contains("mobile-input")) {
         e.target.value = e.target.value.replace(/\D/g, '');
     }
 });
