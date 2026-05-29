@@ -113,11 +113,11 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                     <button id="exportExcel" class="btn btn-success">
                         <i class="bi bi-file-earmark-excel"></i> Export
                     </button>
-
+                    <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPlantillaModal" <?= !$isAllowed ? 'disabled' : '' ?>>
                         <i class="bi bi-plus-circle" ></i> Create Plantilla
                     </button>
-
+                    <?php endif; ?>
                 </div>
 
             </div>

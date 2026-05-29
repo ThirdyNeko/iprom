@@ -102,11 +102,11 @@ $isAllowed =
                     </div>
                 </div>
             </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="saveRequiredBtn" <?= !$isAllowed ? 'disabled' : '' ?>>Save</button>
+            <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
+            <div class="modal-footer">                
+                <button type="button" class="btn btn-primary" id="saveRequiredBtn" <?= !$isAllowed ? 'disabled' : '' ?>>Save</button>                
             </div>
-
+            <?php endif; ?>
         </div>
     </div>
 </div>
