@@ -210,7 +210,7 @@ $isTransferOrSubStatus = in_array($reason_for_update, ['TRANSFER BRANCH', 'CHANG
 if ($isReliever) {
 
     // MUST have both dates
-    if (!$start_date || !$end_date) {
+    if ((!$start_date || !$end_date) && !$skipSlotValidation) {
         echo json_encode([
             'status' => 'danger',
             'message' => 'Start and End date are required for Reliever/Seasonal'
