@@ -6,7 +6,12 @@ include 'config/db.php';
 include 'auth/require_login.php';
 
 // 🔒 ADMIN ONLY
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'super_admin') {
+if (
+    !isset($_SESSION['role']) ||
+    ($_SESSION['role'] !== 'super_admin' &&
+     $_SESSION['role'] !== 'admin' &&
+     $_SESSION['role'] !== 'supervisor')
+) {
     header("Location: index.php");
     exit;
 }

@@ -38,7 +38,7 @@
         </li>
 
         <!-- ✅ ADMIN ONLY: Users -->
-        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
+        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin') || ($_SESSION['role'] === 'supervisor')): ?>
         <li class="nav-item">
             <a class="nav-link d-flex align-items-center gap-2 <?= in_array($current_page, ['branches.php', 'agencies.php']) ? '' : 'collapsed' ?>"
             data-bs-toggle="collapse"
@@ -81,13 +81,13 @@
                 <span>Merge Employees</span>
             </a>
         </li>
+        <?php endif; ?>
         <li>
             <a href="users.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'users.php' ? 'active' : '' ?>">
                 <i class="bi bi-person-gear"></i>
                 <span>Users</span>
             </a>
-        </li>
-        <?php endif; ?>
+        </li>        
         <?php endif; ?>
 
         <!-- Change Password Sidebar Link (Modal Trigger) -->
