@@ -708,7 +708,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
     resetEditModal();
 
     const id = row.dataset.id;
-    const modal = new bootstrap.Modal(modalEl);
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
     try {
       const res = await fetch(`functions/get_employee.php?id=${id}`);

@@ -56,15 +56,6 @@ $(document).ready(function () {
 
       if (!row.length) return;
 
-      row.addClass("table-warning");
-
-      $("html, body").animate(
-        {
-          scrollTop: row.offset().top - 150,
-        },
-        300,
-      );
-
       row.trigger("click");
 
       table.off("draw.dt");
@@ -72,7 +63,6 @@ $(document).ready(function () {
 
     table.draw(false);
   }
-
   // =========================
   // ADD FLOW (OPEN MODAL)
   // =========================
