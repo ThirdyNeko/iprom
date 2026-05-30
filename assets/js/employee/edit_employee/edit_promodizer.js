@@ -125,54 +125,53 @@ function toggleReasonDates() {
   if (!reasonSelect) return;
 
   const reason = (reasonSelect.value || "").trim().toUpperCase();
-
   const value = (employmentStatusSelect.value || "").trim().toUpperCase();
 
   const shouldShow = value === "RELIEVER" || value === "SEASONAL";
 
+  const isTerminationReason =
+    reason === "RESIGNED" ||
+    reason === "PULL-OUT / END OF CONTRACT" ||
+    reason === "BLACKLISTED / AWOL / TERMINATED" ||
+    reason === "REMOVE BRANCH/BRAND";
+
   const shouldShowReason =
-    reason === "TRANSFER BRANCH" ||
-    reason === "CHANGE SUB STATUS" ||
-    reason === "REASSIGN" ||
-    reason === "ADD BRANCH/BRAND" ||
-    reason === "CHANGE EMPLOYMENT STATUS";
+    !isTerminationReason &&
+    (reason === "TRANSFER BRANCH" ||
+      reason === "CHANGE SUB STATUS" ||
+      reason === "REASSIGN" ||
+      reason === "ADD BRANCH/BRAND" ||
+      reason === "CHANGE EMPLOYMENT STATUS");
 
   // =========================
   // START DATE LOGIC
   // =========================
-  // clear existing value once reason is selected
   if (shouldShowReason && startDateInput.value) {
     startDateInput.value = "";
   }
+
   const showStart = shouldShowReason || shouldShow;
 
   if (startDateRow) startDateRow.style.display = showStart ? "" : "none";
 
   if (startDateInput) {
-    startDateInput.disabled = !showStart;
-    startDateInput.required = showStart;
-    if (!showStart) {
-      startDateInput.disabled = true;
-      startDateInput.required = false;
-    }
+    const disableStart = !showStart || isTerminationReason;
+    startDateInput.disabled = disableStart;
+    startDateInput.required = !disableStart;
   }
 
   // =========================
   // END DATE LOGIC
   // =========================
-  const showEnd = shouldShow; // ONLY reliever/seasonal
+  const showEnd = shouldShow;
 
   if (endDateRow) endDateRow.style.display = showEnd ? "" : "none";
 
   if (endDateInput) {
-    endDateInput.disabled = !showEnd;
-    endDateInput.required = showEnd;
-
-    if (!showEnd) {
-      endDateInput.disabled = true;
-      endDateInput.required = false;
-      endDateInput.value = "";
-    }
+    const disableEnd = !showEnd || isTerminationReason;
+    endDateInput.disabled = disableEnd;
+    endDateInput.required = !disableEnd;
+    if (!showEnd) endDateInput.value = ""; // only clear when hidden, not when just disabled
   }
 }
 
