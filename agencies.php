@@ -250,6 +250,10 @@ $pdo = qa_db();
                 </div>
 
                 <div class="modal-footer">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Save Agency
+                    </button>
 
                     <button type="button"
                             class="btn btn-secondary"
@@ -257,11 +261,7 @@ $pdo = qa_db();
                         Cancel
                     </button>
 
-                    <button type="submit"
-                            class="btn btn-primary">
-                        Save Agency
-                    </button>
-
+                    
                 </div>
 
             </form>
