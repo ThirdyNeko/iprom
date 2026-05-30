@@ -199,9 +199,9 @@ $branch_brand_pairs = $pdo->query("
                                 <label class="form-label">Sub-Status</label>
                                 <select name="sub_status" id="subStatus" class="form-select" required>
                                     <option value="" disabled selected>Select Sub Status</option>
-                                    <option value="MULTI BRAND">MULTI BRAND</option>
-                                    <option value="MULTI BRANCH">MULTI BRANCH</option>
                                     <option value="STATIONARY">STATIONARY</option>
+                                    <option value="MULTI BRAND">MULTI BRAND</option>
+                                    <option value="MULTI BRANCH">MULTI BRANCH</option>                                    
                                     <option value="HYBRID">HYBRID</option>
                                 </select>
                             </div>

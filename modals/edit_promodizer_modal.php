@@ -184,9 +184,9 @@ th{
                             <th>Sub-Status</th>
                             <td>
                                 <select id="editSubStatus" class="form-select">
-                                    <option value="MULTI BRANCH">MULTI BRANCH</option>
-                                    <option value="MULTI BRAND">MULTI BRAND</option>
                                     <option value="STATIONARY">STATIONARY</option>
+                                    <option value="MULTI BRANCH">MULTI BRANCH</option>
+                                    <option value="MULTI BRAND">MULTI BRAND</option>                                    
                                     <option value="HYBRID">HYBRID</option>
                                 </select>
                             </td>                            

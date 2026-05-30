@@ -200,7 +200,7 @@ table td {
                             <option value="AUTO UPDATED">AUTO UPDATED</option>
                             <option value="AUTO ACTIVATED">AUTO ACTIVATED</option>
                             <option value="AUTO DEACTIVATED">AUTO DEACTIVATED</option>
-                            <option value="ADDED EMPLOYEE">ADDED EMPLOYEE</option>
+                            <option value="ASSIGNED">ASSIGNED/REASSIGNED</option>
                         </select>
                     </div>
 
