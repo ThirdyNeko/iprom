@@ -391,7 +391,7 @@ $(document).on("change", ".agency-status-switch", function () {
           icon: "warning",
           title: "Cannot Update Agency Status",
           text: employees
-            ? `This agency still has active employees: ${employees}`
+            ? `Active employees: ${employees}`
             : "This agency still has active employees.",
         });
 

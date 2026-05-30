@@ -141,7 +141,7 @@ $(document).on("change", ".branch-status-switch", function () {
           icon: "warning",
           title: "Cannot Update Status",
           text: brands
-            ? `This branch is still assigned to: ${brands}`
+            ? `Assigned to: ${brands}`
             : "This branch has active assignments.",
         });
 
