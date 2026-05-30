@@ -343,6 +343,29 @@ th{
 <script src="assets/js/employee/edit_employee/edit_promodizer.js"></script>
 <script> 
 document.addEventListener("DOMContentLoaded", function () {
+    const editModal = document.getElementById("editPromodizerModal");
+
+    editModal.addEventListener("show.bs.modal", function () {
+        checkPrintBtnState();
+    });
+
+    // Also watch for status changes (in case it's updated dynamically)
+    const editStatus = document.getElementById("editStatus");
+    const observer = new MutationObserver(checkPrintBtnState);
+    observer.observe(editStatus, { attributes: true, childList: true, subtree: true });
+
+    editStatus.addEventListener("change", checkPrintBtnState);
+    editStatus.addEventListener("input", checkPrintBtnState);
+
+    function checkPrintBtnState() {
+        const status = document.getElementById("editStatus").value.trim().toUpperCase();
+        const printBtn = document.getElementById("openPrintModalBtn");
+
+        printBtn.disabled = status === "INACTIVE";
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
     const reasonSelect = document.getElementById("editReasonUpdate");
     const employmentStatusSelect = document.getElementById("editEmploymentStatus");
 
