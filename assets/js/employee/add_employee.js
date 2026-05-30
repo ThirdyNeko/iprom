@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const genderInput = form.querySelector('select[name="gender"]');
   const birthdayInput = form.querySelector('input[name="birthday"]');
   const noMiddleName = document.getElementById("noMiddleName");
-  const middleNameInput = document.getElementById("middleName");    
+  const middleNameInput = document.getElementById("middleName");
 
   const mainBranchSelect = form.querySelector('select[name="branch"]');
   const mainBrandSelect = form.querySelector('select[name="brand"]');
@@ -21,12 +21,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   const multiBrandContainer = document.getElementById("multiBrandContainer");
 
   noMiddleName.addEventListener("change", function () {
-      if (this.checked) {
-          middleNameInput.value = "";
-          middleNameInput.disabled = true;
-      } else {
-          middleNameInput.disabled = false;
-      }
+    if (this.checked) {
+      middleNameInput.value = "";
+      middleNameInput.disabled = true;
+    } else {
+      middleNameInput.disabled = false;
+    }
   });
 
   // =========================
@@ -398,11 +398,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Agency validation
     if (!agency) {
-      return Swal.fire(
-        "Missing Agency",
-        "Please select agency.",
-        "warning",
-      );
+      return Swal.fire("Missing Agency", "Please select agency.", "warning");
     }
 
     // Optional: prevent future birthday
@@ -528,13 +524,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     const firstName =
       form.querySelector('input[name="first_name"]')?.value || "";
 
-    const middleName =
-      noMiddleName.checked
-        ? ""
-        : (form.querySelector('input[name="middle_name"]')?.value || "").trim();
+    const middleName = noMiddleName.checked
+      ? ""
+      : (form.querySelector('input[name="middle_name"]')?.value || "").trim();
 
-    const lastName =
-      form.querySelector('input[name="last_name"]')?.value || "";
+    const lastName = form.querySelector('input[name="last_name"]')?.value || "";
 
     const birthdayValue = birthdayInput.value;
 
@@ -543,17 +537,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       return Swal.fire(
         "Missing Data",
         "First name, last name, and birthday are required.",
-        "warning"
+        "warning",
       );
     }
 
     // optional: only enforce middle name when NOT disabled
     if (!noMiddleName.checked && !middleName) {
-      return Swal.fire(
-        "Missing Data",
-        "Middle name is required.",
-        "warning"
-      );
+      return Swal.fire("Missing Data", "Middle name is required.", "warning");
     }
 
     try {
@@ -595,7 +585,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (blockedReasons.includes(reason)) {
           return Swal.fire(
             "Cannot Add Employee",
-            `This employee is ${reason}. Editing is not allowed.`,
+            `This employee is ${reason}. Adding is not allowed.`,
             "error",
           );
         }
