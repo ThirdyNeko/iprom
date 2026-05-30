@@ -83,11 +83,6 @@ if (!empty($_GET['agency'])) {
     $params[':agency'] = $_GET['agency'];
 }
 
-if (!empty($_GET['corpo'])) {
-    $sql .= " AND p.corpo = :corpo";
-    $params[':corpo'] = $_GET['corpo'];
-}
-
 /* =========================
    SEARCH (IMPROVED)
 ========================= */
