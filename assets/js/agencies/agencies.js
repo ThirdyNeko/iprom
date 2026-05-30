@@ -385,20 +385,14 @@ $(document).on("change", ".agency-status-switch", function () {
       if (check.blocked) {
         toggle.prop("checked", !toggle.is(":checked"));
 
-        const names = check.employees;
-
-        let text = "This agency still has active employees.";
-
-        if (Array.isArray(names) && names.length > 0) {
-          text = names.join(", ");
-        } else if (typeof names === "string") {
-          text = names;
-        }
+        const employees = (check.employees || []).join(", ");
 
         Swal.fire({
           icon: "warning",
           title: "Cannot Update Agency Status",
-          text: text,
+          text: employees
+            ? `This agency still has active employees: ${employees}`
+            : "This agency still has active employees.",
         });
 
         toggle.prop("disabled", false);
