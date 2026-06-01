@@ -121,6 +121,7 @@ $branches = $pdo->query("
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/xlsx.full.min.js"></script>
 <script src="assets/js/reports/reports.js"></script>
 
 <?php
