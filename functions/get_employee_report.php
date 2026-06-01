@@ -34,7 +34,8 @@ $stmt = $pdo->prepare("
         ON ei.branch = b.branch_code
     WHERE ei.branch = :branch
       AND (ei.hidden = 0 OR ei.hidden IS NULL)
-    ORDER BY ei.last_name, ei.first_name
+      AND (ei.status = 'Active' OR ei.status = 'Probationary')
+    ORDER BY ei.brand
 ");
 
 $stmt->execute([':branch' => $branch]);

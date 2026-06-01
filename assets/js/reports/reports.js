@@ -83,7 +83,7 @@ function exportEmployeeReport(branchCode, branchLabel) {
       }
 
       // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [`${branchLabel}: ${dateStr}`, "", "", "", ""];
+      const headerLabel = [`${branchLabel}: as of ${dateStr}`, "", "", "", ""];
 
       // ── Row 2: Column headers ─────────────────────────────────────────
       const colHeaders = [
@@ -144,7 +144,7 @@ function exportEmployeeReport(branchCode, branchLabel) {
       // ── Write file ────────────────────────────────────────────────────
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Employee Report");
-      XLSX.writeFile(wb, `${branchLabel}_${fileSuffix}.xlsx`);
+      XLSX.writeFile(wb, `${branchCode}_PROMO_INV_${fileSuffix}.xlsx`);
     })
     .catch(() => {
       Swal.fire({
@@ -189,5 +189,8 @@ function formatDateDisplay(d) {
 }
 
 function formatDateFile(d) {
-  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${mm}-${dd}-${yyyy}`;
 }
