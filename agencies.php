@@ -201,7 +201,6 @@ $pdo = qa_db();
                                     name="contact_numbers[]"
                                     class="form-control mobile-input"
                                     placeholder="09XXXXXXXXX"
-                                    pattern="\d+"
                                     maxlength="11">
                             </div>
 
@@ -225,7 +224,6 @@ $pdo = qa_db();
                                     name="tel_numbers[]"
                                     class="form-control telephone-input"
                                     placeholder="(XXX) XXX XXXX"
-                                    pattern="\(\d{3}\) \d{3} \d{4}"
                                     maxlength="14">
                             </div>
 
@@ -325,7 +323,6 @@ $(document).ready(function () {
                         name="contact_numbers[]"
                         class="form-control mobile-input"
                         placeholder="09XXXXXXXXX"
-                        pattern="\d+"
                         maxlength="11">
 
                 <button type="button"
@@ -363,7 +360,6 @@ $(document).ready(function () {
                         name="tel_numbers[]"
                         class="form-control telephone-input"
                         placeholder="(XXX) XXX XXXX"
-                        pattern="\(\d{3}\) \d{3} \d{4}"
                         maxlength="14">
 
                 <button type="button"
@@ -379,6 +375,38 @@ $(document).ready(function () {
         $(this).closest(".input-group").remove();
     });
 
+    $("#agencyForm").on("submit", function (e) {
+        let valid = true;
+
+        $(".mobile-input").each(function () {
+            let val = $(this).val().trim();
+            if (val && !/^\d{11}$/.test(val)) {
+                valid = false;
+                $(this).addClass("is-invalid");
+            } else {
+                $(this).removeClass("is-invalid");
+            }
+        });
+
+        $(".telephone-input").each(function () {
+            let val = $(this).val().trim();
+            if (val && !/^\(\d{3}\) \d{3} \d{4}$/.test(val)) {
+                valid = false;
+                $(this).addClass("is-invalid");
+            } else {
+                $(this).removeClass("is-invalid");
+            }
+        });
+
+        if (!valid) {
+            e.preventDefault();
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Format",
+                text: "Please check your mobile/telephone number formats."
+            });
+        }
+    });
 });
 </script>
 <script src="assets/js/agencies/agencies.js"></script>
