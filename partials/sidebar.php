@@ -82,6 +82,14 @@
             </a>
         </li>
         <?php endif; ?>
+
+        <li>
+            <a href="reports.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'reports.php' ? 'active' : '' ?>">
+                <i class="bi bi-clipboard-data"></i>
+                <span>Generate Reports</span>
+            </a>
+        </li> 
+
         <li>
             <a href="users.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'users.php' ? 'active' : '' ?>">
                 <i class="bi bi-person-gear"></i>
