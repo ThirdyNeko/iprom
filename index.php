@@ -48,7 +48,7 @@ $cards = [
 
     ['label'=>'Total Assignments','value'=>$totalAssignments,'color'=>'primary','icon'=>'📋','link'=>'assignments.php'],
     ['label'=>'COMPLETE','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
-    ['label'=>'PARTIAL','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'orange','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
+    ['label'=>'INCOMPLETE','value'=>$lackingAssignments,'percent'=>$lackingPct,'color'=>'orange','icon'=>'⚠️','link'=>'assignments.php?status=lacking'],
     ['label'=>'VACANT','value'=>$zeroAssigned,'percent'=>$zeroAssignedPct,'color'=>'danger','icon'=>'0️⃣','link'=>'assignments.php?status=zero'], // placed last
 ];
 ?>
@@ -219,7 +219,7 @@ new Chart(document.getElementById('promodizerChart'), {
 new Chart(document.getElementById('assignmentChart'), {
     type:'doughnut',
     data:{
-        labels:['COMPLETE','PARTIAL','INACTIVE'],
+        labels:['COMPLETE','INCOMPLETE','INACTIVE'],
         datasets:[{
             data:[<?= $completeAssignments ?>, <?= $lackingAssignments ?>, <?= $zeroAssigned ?>],
             backgroundColor:['#198754','#ffd700','#dc3545']

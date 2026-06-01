@@ -15,7 +15,7 @@ function getStatusBadge(required, assigned) {
   }
 
   if (shortage > 0) {
-    return `<span class="badge bg-orange">PARTIAL: ${shortage}</span>`;
+    return `<span class="badge bg-orange">INCOMPLETE: ${shortage}</span>`;
   }
 
   return `<span class="badge bg-success">COMPLETE</span>`;

@@ -114,7 +114,7 @@ foreach ($paged as $a) {
     } elseif ($assigned === 0) {
         $statusLabel = "<span class='badge bg-danger'>VACANT</span>";
     } elseif ($shortage > 0) {
-        $statusLabel = "<span class='badge bg-orange'>PARTIAL: $shortage</span>";
+        $statusLabel = "<span class='badge bg-orange'>INCOMPLETE: $shortage</span>";
     } else {
         $statusLabel = "<span class='badge bg-success'>COMPLETE</span>";
     }
