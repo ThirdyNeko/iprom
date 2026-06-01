@@ -35,6 +35,7 @@ $stmt = $pdo->prepare("
 
 $stmt->execute([$branch, $brand, $from, $to]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$rows = array_values(array_filter($rows, fn($r) => (int)$r['required_count'] > 0));
 
 // TOTAL
 $recordsTotal = count($rows);
