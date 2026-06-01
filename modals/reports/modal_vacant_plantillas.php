@@ -24,7 +24,8 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="generateReport('vacant_plantillas')">
+                <button type="button" class="btn btn-primary" id="btnGenerateVacantPlantillas"
+                onclick="generateReport('vacant_plantillas')">
                     Generate Report
                 </button>
             </div>

@@ -28,13 +28,13 @@ function generateReport(type) {
       Swal.fire({
         icon: "warning",
         title: "No brand selected",
-        text: "Please select a brand first.",
+        text: "Please select a brand to generate the Vacant & Incomplete Plantillas Report.",
         confirmButtonColor: "#2d68c4",
       });
       return;
     }
     bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
-    // TODO: loadReportTable('vacant_plantillas', brand);
+    exportVacantPlantillas(brand);
   } else if (type === "employee_report") {
     const branchCode = document.getElementById("selectBranch").value;
     const branchLabel =
@@ -160,6 +160,112 @@ function exportEmployeeReport(branchCode, branchLabel) {
     });
 }
 
+function exportVacantPlantillas(brand) {
+  const btn = document.getElementById("btnGenerateVacantPlantillas");
+  btn.disabled = true;
+  btn.innerHTML =
+    '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
+
+  const today = new Date();
+  const dateStr = formatDateDisplay(today); // e.g. "June 01, 2026"
+  const fileSuffix = formatDateFile(today); // e.g. "2026-06-01"
+
+  fetch(
+    "functions/get_vacant_plantilla.php?" +
+      new URLSearchParams({ brand: brand }),
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.length) {
+        Swal.fire({
+          icon: "info",
+          title: "No records found",
+          text: "No vacant plantillas found for the selected brand.",
+          confirmButtonColor: "#2d68c4",
+        });
+        return;
+      }
+
+      // ── Row 1: Header label (merged visually via empty cols) ──────────
+      const headerLabel = [`${brand}: as of ${dateStr}`, "", "", "", "", ""];
+
+      // ── Row 2: Column headers ─────────────────────────────────────────
+      const colHeaders = [
+        "Branch",
+        "Plantilla Count",
+        "Assigned Count",
+        "Vacant Count",
+        "Vacant Since",
+        "Months Vacant",
+      ];
+
+      // ── Data rows ─────────────────────────────────────────────────────
+      const dataRows = data.map((p) => [
+        p.branch_name ?? "",
+        p.required_count ?? "",
+        p.assigned_count ?? "",
+        vacantCount(p.required_count, p.assigned_count),
+        formatDate(p.timestamp) ?? "",
+        monthDaysSince(p.timestamp) ?? "",
+      ]);
+
+      const exportData = [headerLabel, colHeaders, ...dataRows];
+
+      // ── Build worksheet ───────────────────────────────────────────────
+      const ws = XLSX.utils.aoa_to_sheet(exportData);
+
+      // Merge A1:E1 for the header label
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+
+      // Style A1 — bold, centered (SheetJS CE supports basic styles via cell object)
+      if (ws["A1"]) {
+        ws["A1"].s = {
+          font: { bold: true, sz: 12 },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+      }
+
+      // Style header row (row 2 = index 1)
+      colHeaders.forEach((_, ci) => {
+        const cellRef = XLSX.utils.encode_cell({ r: 1, c: ci });
+        if (ws[cellRef]) {
+          ws[cellRef].s = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "2D68C4" } },
+            alignment: { horizontal: "center" },
+          };
+        }
+      });
+
+      // Auto column widths (based on all rows including header label)
+      ws["!cols"] = colHeaders.map((_, ci) => {
+        let max = 10;
+        exportData.forEach((row) => {
+          const val = row[ci] ? row[ci].toString() : "";
+          max = Math.max(max, val.length);
+        });
+        return { wch: max + 2 };
+      });
+
+      // ── Write file ────────────────────────────────────────────────────
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Vacant Plantillas Report");
+      XLSX.writeFile(wb, `${brand}_VACANT_PLANTILLAS_${fileSuffix}.xlsx`);
+    })
+    .catch(() => {
+      Swal.fire({
+        icon: "error",
+        title: "Export failed",
+        text: "Something went wrong while fetching the data.",
+        confirmButtonColor: "#2d68c4",
+      });
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.innerHTML = "Generate Report";
+    });
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function buildFullName(first, middle, last, suffix) {
@@ -167,6 +273,31 @@ function buildFullName(first, middle, last, suffix) {
     .map((p) => (p ?? "").trim())
     .filter(Boolean)
     .join(" ");
+}
+
+function vacantCount(required, assigned) {
+  return required - assigned;
+}
+
+function monthDaysSince(timestamp) {
+  if (!timestamp) return "";
+  const then = new Date(timestamp);
+  const now = new Date();
+
+  let months =
+    (now.getFullYear() - then.getFullYear()) * 12 +
+    (now.getMonth() - then.getMonth());
+  let days = now.getDate() - then.getDate();
+
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    days += prevMonth.getDate();
+  }
+
+  if (months === 0) return `${days}d`;
+  if (days === 0) return `${months}mo`;
+  return `${months}mo ${days}d`;
 }
 
 function formatDate(value) {
