@@ -7,6 +7,19 @@ include 'partials/header.php';
 include 'partials/sidebar.php';
 
 $pdo = qa_db();
+
+$brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
+              ->fetchAll(PDO::FETCH_COLUMN);
+
+$branches = $pdo->query("
+    SELECT DISTINCT 
+        a.branch_name AS branch_code,
+        b.branch AS branch
+    FROM assignment a
+    LEFT JOIN IPROM.dbo.branches b
+        ON a.branch_name = b.branch_code
+    ORDER BY b.branch
+")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
@@ -21,10 +34,6 @@ $pdo = qa_db();
         border-color: #2d68c4;
         background-color: #f0f5ff;
         transform: translateY(-2px);
-    }
-    .report-type-card.active {
-        border-color: #2d68c4;
-        background-color: #e6f0ff;
     }
     .report-type-card .report-icon {
         font-size: 2rem;
@@ -49,6 +58,8 @@ $pdo = qa_db();
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="report-type-card card shadow-sm h-100 p-3"
                      data-type="complete_plantillas"
+                     data-bs-toggle="modal"
+                     data-bs-target="#modalCompletePlantillas"
                      onclick="selectReportType(this)">
                     <div class="card-body d-flex align-items-start gap-3">
                         <div class="report-icon">📋</div>
@@ -65,6 +76,8 @@ $pdo = qa_db();
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="report-type-card card shadow-sm h-100 p-3"
                      data-type="vacant_plantillas"
+                     data-bs-toggle="modal"
+                     data-bs-target="#modalVacantPlantillas"
                      onclick="selectReportType(this)">
                     <div class="card-body d-flex align-items-start gap-3">
                         <div class="report-icon">📭</div>
@@ -81,6 +94,8 @@ $pdo = qa_db();
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="report-type-card card shadow-sm h-100 p-3"
                      data-type="employee_report"
+                     data-bs-toggle="modal"
+                     data-bs-target="#modalEmployeeReport"
                      onclick="selectReportType(this)">
                     <div class="card-body d-flex align-items-start gap-3">
                         <div class="report-icon">👤</div>
@@ -96,7 +111,6 @@ $pdo = qa_db();
 
         </div>
 
-        <!-- Filters and table will be injected here -->
         <div id="reportFiltersArea"></div>
         <div id="reportTableArea"></div>
 
@@ -107,21 +121,11 @@ $pdo = qa_db();
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/reports/reports.js"></script>
 
-<script>
-let activeReportType = null;
-
-function selectReportType(card) {
-    document.querySelectorAll('.report-type-card').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
-    activeReportType = card.dataset.type;
-
-    document.getElementById('reportFiltersArea').innerHTML = '';
-    document.getElementById('reportTableArea').innerHTML = '';
-
-    // next step: load filters based on activeReportType
-    console.log('Selected:', activeReportType);
-}
-</script>
-
-<?php include 'modals/change_password_modal.php'; ?>
+<?php
+include 'modals/reports/modal_complete_plantillas.php';
+include 'modals/reports/modal_vacant_plantillas.php';
+include 'modals/reports/modal_employee_report.php';
+include 'modals/change_password_modal.php';
+?>
