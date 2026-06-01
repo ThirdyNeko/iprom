@@ -78,6 +78,22 @@ $pdo = qa_db();
                 </div>
             </div>
 
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="report-type-card card shadow-sm h-100 p-3"
+                     data-type="employee_report"
+                     onclick="selectReportType(this)">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <div class="report-icon">👤</div>
+                        <div>
+                            <h6 class="card-title fw-bold mb-1">Employee Report</h6>
+                            <p class="card-text text-muted small mb-0">
+                                Generate a report on employee information.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Filters and table will be injected here -->
