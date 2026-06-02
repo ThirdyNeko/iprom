@@ -196,61 +196,6 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
     </div>
 </div>
 
-<div class="modal fade" id="userViewModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title">User Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="row g-3">
-
-                    <div class="col-md-6">
-                        <label class="form-label">First Name</label>
-                        <input type="text" id="v_first_name" class="form-control" readonly>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" id="v_last_name" class="form-control" readonly>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Position</label>
-                        <input type="text" id="v_position" class="form-control" readonly>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Branches</label>
-                        <div id="v_branch" class="form-control branch-checkbox-group" 
-                            style="height: 80px; overflow-y: auto; padding: 4px; background-color: #e9ecef;">
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Role</label>
-                        <input type="text" id="v_role" class="form-control" readonly>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Created At</label>
-                        <input type="text" id="v_created_at" class="form-control" readonly>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Updated At</label>
-                        <input type="text" id="v_updated_at" class="form-control" readonly>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
 
 <!-- JS (same as promodizers) -->
 <script src="assets/js/jquery-4.0.0.min.js"></script>
@@ -280,61 +225,10 @@ $(document).ready(function() {
         table.column(0).search(this.value).draw();
     });
 });
-
-$(document).on('click', '.view-user', function () {
-    let username = $(this).data('username');
-
-    $.ajax({
-        url: 'functions/get_user.php',
-        type: 'POST',
-        data: { username: username },
-        dataType: 'json',
-        success: function (data) {
-
-            const roleLabels = {
-                admin: "ADMIN",
-                super_admin: "SUPER ADMIN",
-                staff: "STAFF",
-                supervisor: "SUPERVISOR"
-            };
-
-            $('#v_first_name').val(data.first_name);
-            $('#v_last_name').val(data.last_name);
-            $('#v_position').val(data.position);
-            const branches = data.branch ? data.branch.split(',') : [];
-            const branchNames = data.branch_names ?? {};
-
-            const branchHtml = branches.map(code =>
-                `<div class="form-check" style="margin: 2px 4px;">
-                    <input class="form-check-input" type="checkbox" disabled checked>
-                    <label class="form-check-label">
-                        ${branchNames[code.trim()] ?? code.trim()}
-                    </label>
-                </div>`
-            ).join('');
-
-            $('#v_branch').html(branchHtml || '<span class="text-muted" style="padding: 4px;">None</span>');
-            $('#v_role').val(roleLabels[data.role] ?? data.role);
-            function formatMDY(dateStr) {
-                const date = new Date(dateStr);
-
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const year = date.getFullYear();
-
-                return `${month}/${day}/${year}`;
-            }
-
-            $('#v_created_at').val(formatMDY(data.created_at));
-            $('#v_updated_at').val(formatMDY(data.updated_at));
-
-            $('#userViewModal').modal('show');
-        }
-    });
-});
 </script>
 
 <?php include 'modals/create_user_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
+<?php include 'modals/users/user_modal.php'; ?>
 </body>
 </html>
