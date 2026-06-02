@@ -27,7 +27,7 @@ try {
 
     $first_name = strtoupper(trim($_POST['first_name'] ?? ''));
     $last_name  = strtoupper(trim($_POST['last_name'] ?? ''));
-    $position   = strtoupper(trim($_POST['position'] ?? ''));
+    $position   = trim($_POST['position'] ?? '');
     $department = strtoupper(trim($_POST['department'] ?? ''));
     $status = "ACTIVE";
 

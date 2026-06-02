@@ -247,8 +247,7 @@ try {
                                 </label>
                                 <input type="text"
                                     name="position"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
+                                    class="form-control"
                                     required>
                             </div>   
 
