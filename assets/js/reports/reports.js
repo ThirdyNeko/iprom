@@ -202,7 +202,7 @@ function exportVacantPlantillas(brand) {
 
       // ── Data rows ─────────────────────────────────────────────────────
       const dataRows = data.map((p) => [
-        p.branch_name ?? "",
+        p.branch ?? "",
         p.required_count ?? "",
         p.assigned_count ?? "",
         vacantCount(p.required_count, p.assigned_count),
@@ -307,7 +307,7 @@ function exportCompletePlantillas(brand) {
 
       // ── Data rows ─────────────────────────────────────────────────────
       const dataRows = data.map((p) => [
-        p.branch_name ?? "",
+        p.branch ?? "",
         p.required_count ?? "",
         p.assigned_count ?? "",
         formatDate(p.timestamp) ?? "",

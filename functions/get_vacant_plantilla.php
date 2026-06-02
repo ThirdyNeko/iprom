@@ -13,15 +13,17 @@ if (!$brand) {
 
 $stmt = $pdo->prepare("
     SELECT
-        a.branch_name,
+        b.branch,
         a.required_count,
         a.assigned_count,
         a.timestamp
     FROM [IPROM].[dbo].[assignment] a
+    LEFT JOIN [IPROM].[dbo].[branches] b
+        ON a.branch_name = b.branch_code
     WHERE a.brand_name = :brand
       AND required_count != assigned_count
       AND required_count > 0
-    ORDER BY a.branch_name
+    ORDER BY b.branch
 ");
 
 $stmt->execute([':brand' => $brand]);
