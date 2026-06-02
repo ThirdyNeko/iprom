@@ -72,6 +72,25 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+function sortBranches() {
+  const container = $("#branchSelect");
+
+  const items = container.find(".branch-item").toArray();
+
+  items.sort((a, b) => {
+    const aChecked = $(a).find("input[type='checkbox']").prop("checked")
+      ? 1
+      : 0;
+    const bChecked = $(b).find("input[type='checkbox']").prop("checked")
+      ? 1
+      : 0;
+
+    return bChecked - aChecked;
+  });
+
+  container.append(items);
+}
+
 $("#branchSearch").on("keyup", function () {
   const value = $(this).val().toUpperCase();
 
@@ -80,4 +99,8 @@ $("#branchSearch").on("keyup", function () {
 
     $(this).toggle(text.includes(value));
   });
+});
+
+$(document).on("change", "#branchSelect input[type='checkbox']", function () {
+  sortBranches();
 });
