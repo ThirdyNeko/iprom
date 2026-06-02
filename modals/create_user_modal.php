@@ -55,11 +55,24 @@ try {
         opacity: 1;
         cursor: not-allowed;
     }
+    .branch-checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start; /* prevents vertical spacing issues */
+    }
+
+    .branch-item {
+        width: 50%;
+        display: flex;
+        align-items: center; /* FIXED */
+        gap: 6px;
+        box-sizing: border-box;
+    }
 </style>
 
 <div class="modal fade" id="createUserModal" tabindex="-1">
 
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
 
         <div class="modal-content">
 
@@ -136,21 +149,33 @@ try {
                                     Branches
                                 </label>
 
-                                <div id="branchSelect" 
-                                    class="form-control branch-checkbox-group" 
-                                    style="height: 120px; overflow-y: auto; padding: 4px;">
+                                <!-- Search -->
+                                <input type="text"
+                                    id="branchSearch"
+                                    class="form-control mb-2"
+                                    placeholder="Search branches..."
+                                    style="text-transform: uppercase;;"
+                                    disabled>
+
+                                <!-- Branch List -->
+                                <div id="branchSelect"
+                                     class="form-control branch-checkbox-group"
+                                     style="height: 250px; overflow-y: auto; padding: 4px; display: flex; flex-wrap: wrap;">
 
                                     <?php foreach ($branches as $b): ?>
-                                        <div class="form-check" style="margin: 2px 4px;">
-                                            <input 
-                                                class="form-check-input" 
-                                                type="checkbox" 
-                                                name="branches[]" 
+                                        <div class="form-check branch-item"
+                                            style="width: 50%; margin: 2px 0;">
+
+                                            <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                name="branches[]"
                                                 id="branch_<?= htmlspecialchars($b['branch_code']) ?>"
                                                 value="<?= htmlspecialchars($b['branch_code']) ?>"
                                                 disabled>
-                                            <label 
-                                                class="form-check-label" 
+
+                                            <label
+                                                class="form-check-label"
                                                 for="branch_<?= htmlspecialchars($b['branch_code']) ?>">
                                                 <?= htmlspecialchars($b['branch']) ?>
                                             </label>
@@ -192,7 +217,7 @@ try {
 
                             </div> -->
 
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
                                 <label class = "form-label">
                                     Department
                                 </label>
@@ -202,7 +227,7 @@ try {
                                     class="form-control text-uppercase"
                                     style="text-transform: uppercase;"
                                     disabled>
-                            </div>
+                            </div> -->
 
                         </div>
                         <div class="col-md-6">

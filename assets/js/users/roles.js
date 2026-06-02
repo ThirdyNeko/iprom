@@ -5,12 +5,17 @@ const departmentInput = document.getElementById("departmentInput");
 
 // Helper functions for the checkbox group
 function disableBranchSelect() {
+  document.getElementById("branchSearch").disabled = true;
   branchSelect
     .querySelectorAll('input[type="checkbox"]')
     .forEach((cb) => (cb.disabled = true));
 }
 
 function enableBranchSelect() {
+  // Enable search input
+  document.getElementById("branchSearch").disabled = false;
+
+  // Enable checkboxes
   branchSelect
     .querySelectorAll('input[type="checkbox"]')
     .forEach((cb) => (cb.disabled = false));

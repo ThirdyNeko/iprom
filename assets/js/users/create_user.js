@@ -71,3 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+$("#branchSearch").on("keyup", function () {
+  const value = $(this).val().toUpperCase();
+
+  $("#branchSelect .branch-item").each(function () {
+    const text = $(this).text().toUpperCase();
+
+    $(this).toggle(text.includes(value));
+  });
+});
