@@ -40,20 +40,25 @@ $(document).on("click", ".view-user", function () {
       // All branches: { code: name }
       const allBranches = data.branch_names ?? {};
 
+      const isStaff = data.role === "staff";
+
       const branchHtml = Object.entries(allBranches)
         .map(([code, name]) => {
           const checked = assigned.includes(code) ? "checked" : "";
+          const disabled = !isStaff ? "disabled" : "";
+
           return `
-                        <div class="form-check" style="margin: 2px 4px;">
-                            <input class="form-check-input branch-checkbox"
-                                   type="checkbox"
-                                   value="${code}"
-                                   id="branch_${code}"
-                                   ${checked}>
-                            <label class="form-check-label" for="branch_${code}">
-                                ${name}
-                            </label>
-                        </div>`;
+      <div class="form-check" style="margin: 2px 4px;">
+          <input class="form-check-input branch-checkbox"
+                 type="checkbox"
+                 value="${code}"
+                 id="branch_${code}"
+                 ${checked}
+                 ${disabled}>
+          <label class="form-check-label" for="branch_${code}">
+              ${name}
+          </label>
+      </div>`;
         })
         .join("");
 
