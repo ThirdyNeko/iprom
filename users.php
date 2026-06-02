@@ -27,6 +27,16 @@ $pdo = qa_db();
 $users = $pdo
     ->query("EXEC get_users @role = NULL")
     ->fetchAll(PDO::FETCH_ASSOC);
+
+// Filter visible users based on logged-in role
+$visibleRoles = match($_SESSION['role']) {
+    'super_admin' => ['super_admin', 'admin', 'supervisor', 'staff'],
+    'admin'       => ['admin', 'supervisor', 'staff'],
+    'supervisor'  => ['staff'],
+    default       => []
+};
+
+$users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
 ?>
 
 <style>
