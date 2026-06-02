@@ -1,18 +1,19 @@
 const roleSelect = document.querySelector('select[name="role"]');
-const btnSelectBranches = document.getElementById("btnSelectBranches");
+const branchSelect = document.getElementById("branchSelect");
 const brandSelect = document.getElementById("brandSelect");
 const departmentInput = document.getElementById("departmentInput");
 
+// Helper functions for the checkbox group
 function disableBranchSelect() {
-  if (btnSelectBranches) {
-    btnSelectBranches.disabled = true;
-  }
+  branchSelect
+    .querySelectorAll('input[type="checkbox"]')
+    .forEach((cb) => (cb.disabled = true));
 }
 
 function enableBranchSelect() {
-  if (btnSelectBranches) {
-    btnSelectBranches.disabled = false;
-  }
+  branchSelect
+    .querySelectorAll('input[type="checkbox"]')
+    .forEach((cb) => (cb.disabled = false));
 }
 
 function updateFieldsByRole() {
@@ -23,17 +24,19 @@ function updateFieldsByRole() {
   departmentInput.disabled = true;
 
   if (role === "staff") {
+    // HR: branch + department only
     enableBranchSelect();
   } else if (role === "inhouse_manager") {
+    // inhouse manager: branch + brand only
     departmentInput.disabled = false;
-    if (brandSelect) brandSelect.disabled = false;
+    brandSelect.disabled = false;
   } else if (role === "branch_manager") {
-    enableBranchSelect();
-  } else if (role === "supervisor") {
+    // branch manager: branch + department only
     enableBranchSelect();
   }
 }
 
 roleSelect.addEventListener("change", updateFieldsByRole);
 
+// run on page load in case of pre-filled value
 updateFieldsByRole();
