@@ -84,12 +84,15 @@ function exportEmployeeReport(branchCode, branchLabel) {
       }
 
       // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [`${branchLabel}: as of ${dateStr}`, "", "", "", ""];
+      const headerLabel = [`${branchLabel} as of ${dateStr}`, "", "", "", ""];
 
       // ── Row 2: Column headers ─────────────────────────────────────────
       const colHeaders = [
         "Brand",
-        "Full Name",
+        "First Name",
+        "Last Name",
+        "Middle Name",
+        "Suffix",
         "Employment Status",
         "Sub-Status",
         "Date Hired",
@@ -98,7 +101,10 @@ function exportEmployeeReport(branchCode, branchLabel) {
       // ── Data rows ─────────────────────────────────────────────────────
       const dataRows = data.map((p) => [
         p.brand ?? "",
-        buildFullName(p.first_name, p.middle_name, p.last_name, p.suffix),
+        p.first_name ?? "",
+        p.last_name ?? "",
+        p.middle_name ?? "",
+        p.suffix ?? "",
         p.employment_status ?? "",
         p.sub_status ?? "",
         formatDate(p.date_hired),
@@ -188,16 +194,16 @@ function exportVacantPlantillas(brand) {
       }
 
       // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [`${brand}: as of ${dateStr}`, "", "", "", "", ""];
+      const headerLabel = [`${brand} as of ${dateStr}`, "", "", "", "", ""];
 
       // ── Row 2: Column headers ─────────────────────────────────────────
       const colHeaders = [
         "Branch",
         "Plantilla Count",
-        "Assigned Count",
-        "Vacant Count",
+        "Assigned",
+        "Vacancy",
         "Vacant Since",
-        "Months Vacant",
+        "Vacant Period",
       ];
 
       // ── Data rows ─────────────────────────────────────────────────────
@@ -294,24 +300,24 @@ function exportCompletePlantillas(brand) {
       }
 
       // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [`${brand}: as of ${dateStr}`, "", "", "", "", ""];
+      const headerLabel = [`${brand} as of ${dateStr}`, "", "", "", "", ""];
 
       // ── Row 2: Column headers ─────────────────────────────────────────
       const colHeaders = [
         "Branch",
         "Plantilla Count",
-        "Assigned Count",
+        // "Assigned Count",
         "Complete Since",
-        "Months Complete",
+        // "Months Complete",
       ];
 
       // ── Data rows ─────────────────────────────────────────────────────
       const dataRows = data.map((p) => [
         p.branch ?? "",
         p.required_count ?? "",
-        p.assigned_count ?? "",
+        // p.assigned_count ?? "",
         formatDate(p.timestamp) ?? "",
-        monthDaysSince(p.timestamp) ?? "",
+        // monthDaysSince(p.timestamp) ?? "",
       ]);
 
       const exportData = [headerLabel, colHeaders, ...dataRows];
