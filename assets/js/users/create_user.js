@@ -77,6 +77,14 @@ function sortBranches() {
 
   const items = container.find(".branch-item").toArray();
 
+  // STEP 1: capture current positions
+  const positions = new Map();
+
+  items.forEach((el) => {
+    positions.set(el, el.getBoundingClientRect().top);
+  });
+
+  // STEP 2: sort logic (same as before)
   items.sort((a, b) => {
     const aChecked = $(a).find("input[type='checkbox']").prop("checked")
       ? 1
@@ -85,10 +93,42 @@ function sortBranches() {
       ? 1
       : 0;
 
-    return bChecked - aChecked;
+    if (aChecked !== bChecked) {
+      return bChecked - aChecked;
+    }
+
+    return $(a).data("index") - $(b).data("index");
   });
 
-  container.append(items);
+  // STEP 3: re-append (DOM update)
+  items.forEach((el) => container[0].appendChild(el));
+
+  // STEP 4: animate movement
+  items.forEach((el) => {
+    const oldTop = positions.get(el);
+    const newTop = el.getBoundingClientRect().top;
+
+    const diff = oldTop - newTop;
+
+    if (diff) {
+      el.style.transition = "none";
+      el.style.transform = `translateY(${diff}px)`;
+
+      requestAnimationFrame(() => {
+        el.style.transition = "transform 250ms ease";
+        el.style.transform = "translateY(0)";
+      });
+    }
+  });
+}
+
+$(document).ready(function () {
+  updateBranchCounter();
+});
+
+function updateBranchCounter() {
+  const count = $("#branchSelect input[type='checkbox']:checked").length;
+  $("#branchCounter").text(`Selected: ${count}`);
 }
 
 $("#branchSearch").on("keyup", function () {
@@ -101,6 +141,13 @@ $("#branchSearch").on("keyup", function () {
   });
 });
 
+$(document).ready(function () {
+  $("#branchSelect .branch-item").each(function (index) {
+    $(this).attr("data-index", index);
+  });
+});
+
 $(document).on("change", "#branchSelect input[type='checkbox']", function () {
   sortBranches();
+  updateBranchCounter();
 });

@@ -67,6 +67,7 @@ try {
         align-items: center; /* FIXED */
         gap: 6px;
         box-sizing: border-box;
+        will-change: transform, opacity;
     }
 </style>
 
@@ -145,9 +146,13 @@ try {
                             <!-- BRANCH -->
                             <div class="mb-3">
 
-                                <label class="form-label">
+                                <label class="form-label mb-0">
                                     Branches
                                 </label>
+
+                                <small id="branchCounter" class="text-muted">
+                                    Selected: 0
+                                </small>
 
                                 <!-- Search -->
                                 <input type="text"
