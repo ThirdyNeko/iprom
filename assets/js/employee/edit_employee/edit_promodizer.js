@@ -422,7 +422,6 @@ function populateEditBranch(
   const uniqueBranches = [...new Set(validBranches.map((p) => p.branch_code))];
 
   branchSelect.innerHTML = `
-    <option value="">Select branch</option>
     ${uniqueBranches
       .map((code) => {
         const pair = branchBrandPairs.find(

@@ -1,7 +1,12 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 require_once '../config/db.php';
 $pdo = qa_db();
+
+$sessionBranches = !empty($_SESSION['branch'])
+    ? array_map('trim', explode(',', $_SESSION['branch']))
+    : [];
 
 $sql = "
     SELECT
@@ -26,5 +31,13 @@ $sql = "
 
 $stmt = $pdo->query($sql);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ✅ Filter to session branches if restricted
+if (!empty($sessionBranches)) {
+    $rows = array_values(array_filter(
+        $rows,
+        fn($r) => in_array(trim($r['branch_code']), $sessionBranches)
+    ));
+}
 
 echo json_encode($rows);
