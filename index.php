@@ -12,8 +12,15 @@ $pdo = qa_db();
 /* ==============================
    DASHBOARD COUNTS
 ============================== */
+// Before (no filtering):
 $stmt = $pdo->prepare("EXEC get_dashboard_counts");
 $stmt->execute();
+
+// After (with branch filtering):
+$sessionBranches = !empty($_SESSION['branch']) ? $_SESSION['branch'] : null;
+$stmt = $pdo->prepare("EXEC get_dashboard_counts @branches = ?");
+$stmt->execute([$sessionBranches]);
+
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 /* ==============================
