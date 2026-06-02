@@ -1,6 +1,8 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 include '../config/db.php';
+include '../auth/require_login.php';
 $pdo = qa_db();
 
 // DataTables params
@@ -24,6 +26,17 @@ $brand  = clean($brand);
 $from   = clean($from);
 $to     = clean($to);
 
+// ✅ Session branch enforcement
+$sessionBranches = !empty($_SESSION['branch'])
+    ? array_map('trim', explode(',', $_SESSION['branch']))
+    : [];
+
+if (!empty($sessionBranches)) {
+    if ($branch && !in_array($branch, $sessionBranches)) {
+        $branch = null;
+    }
+}
+
 // CALL STORED PROCEDURE
 $stmt = $pdo->prepare("
     EXEC get_assignments 
@@ -36,6 +49,11 @@ $stmt = $pdo->prepare("
 $stmt->execute([$branch, $brand, $from, $to]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $rows = array_values(array_filter($rows, fn($r) => (int)$r['required_count'] > 0));
+
+// ✅ Filter to session branches
+if (!empty($sessionBranches)) {
+    $rows = array_values(array_filter($rows, fn($r) => in_array(trim($r['branch_name']), $sessionBranches)));
+}
 
 // TOTAL
 $recordsTotal = count($rows);
