@@ -8,6 +8,11 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
+// ✅ Define once, use everywhere
+$sessionBranches = !empty($_SESSION['branch'])
+    ? array_map('trim', explode(',', $_SESSION['branch']))
+    : [];
+
 $branchMap = [];
 
 $stmt = $pdo->query("
@@ -73,6 +78,18 @@ $branches = $pdo->query("
 
 $stmt->execute();
 $promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// ✅ Restrict to session branches
+$sessionBranches = !empty($_SESSION['branch'])
+    ? array_map('trim', explode(',', $_SESSION['branch']))
+    : [];
+
+if (!empty($sessionBranches)) {
+    $promodizers = array_values(array_filter(
+        $promodizers,
+        fn($p) => in_array(trim($p['branch']), $sessionBranches)
+    ));
+}
 // Fetch branches & brands for filter dropdowns
 
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
@@ -240,7 +257,14 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <label class="form-label">Branch</label>
                                     <select id="filterBranch" class="form-select filter-control">
                                         <option value="">All</option>
-                                        <?php foreach($branches as $b): ?>
+                                        <?php 
+                                        $sessionBranches = !empty($_SESSION['branch']) 
+                                            ? array_map('trim', explode(',', $_SESSION['branch'])) 
+                                            : [];
+
+                                        foreach($branches as $b): 
+                                            if (!empty($sessionBranches) && !in_array($b['branch_code'], $sessionBranches)) continue;
+                                        ?>
                                             <option value="<?= htmlspecialchars($b['branch_code']) ?>">
                                                 <?= htmlspecialchars($b['branch']) ?>
                                             </option>

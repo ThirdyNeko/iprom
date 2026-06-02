@@ -133,7 +133,15 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                         <label class="form-label">Branch</label>
                         <select id="filterBranch" class="form-select filter-control">
                             <option value="">All</option>
-                            <?php foreach($branches as $b): ?>
+                            <?php 
+                            $sessionBranches = !empty($_SESSION['branch']) 
+                                ? array_map('trim', explode(',', $_SESSION['branch'])) 
+                                : [];
+
+                            foreach($branches as $b): 
+                                // If user has branch restrictions, only show their branches
+                                if (!empty($sessionBranches) && !in_array($b['branch_code'], $sessionBranches)) continue;
+                            ?>
                                 <option value="<?= htmlspecialchars($b['branch_code']) ?>">
                                     <?= htmlspecialchars($b['branch']) ?>
                                 </option>
