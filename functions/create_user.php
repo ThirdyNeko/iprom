@@ -78,7 +78,8 @@ try {
             last_name,
             position,
             department,
-            status
+            status,
+            first_login
         )
         VALUES (
             :username,
@@ -90,7 +91,8 @@ try {
             :last_name,
             :position,
             :department,
-            :status
+            :status,
+            1
         )
     ");
 
