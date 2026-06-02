@@ -25,21 +25,8 @@ $stmt = $pdo->prepare("
 $stmt->execute([$username]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Fetch branch names using the stored codes
-$branchCodes = !empty($user['branch']) ? explode(',', $user['branch']) : [];
-
-$branchNames = [];
-if (!empty($branchCodes)) {
-    $placeholders = implode(',', array_fill(0, count($branchCodes), '?'));
-    $branchStmt = $pdo->prepare("
-        SELECT branch_code, branch 
-        FROM branches 
-        WHERE branch_code IN ($placeholders)
-    ");
-    $branchStmt->execute($branchCodes);
-    $branchNames = $branchStmt->fetchAll(PDO::FETCH_KEY_PAIR);
-}
-
-$user['branch_names'] = $branchNames;
+// All branches (for the full checkbox list)
+$allBranchesStmt = $pdo->query("SELECT branch_code, branch FROM branches ORDER BY branch");
+$user['branch_names'] = $allBranchesStmt->fetchAll(PDO::FETCH_KEY_PAIR); // [code => name]
 
 echo json_encode($user);

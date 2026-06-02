@@ -8,6 +8,8 @@
             </div>
 
             <div class="modal-body">
+                <input type="hidden" id="v_username">
+
                 <div class="row g-3">
 
                     <div class="col-md-6">
@@ -26,13 +28,6 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Branches</label>
-                        <div id="v_branch" class="form-control branch-checkbox-group" 
-                            style="height: 80px; overflow-y: auto; padding: 4px; background-color: #e9ecef;">
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
                         <label class="form-label">Role</label>
                         <input type="text" id="v_role" class="form-control" readonly>
                     </div>
@@ -47,7 +42,23 @@
                         <input type="text" id="v_updated_at" class="form-control" readonly>
                     </div>
 
+                    <!-- Branches: full width, editable checkboxes -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Branches</label>
+                        <div id="v_branch"
+                             style="max-height: 180px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px;">
+                            <!-- populated by JS -->
+                        </div>
+                    </div>
+
                 </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="saveBranchBtn" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save Branches
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
 
         </div>
