@@ -338,6 +338,9 @@ th{
 </div>
 
 <!-- SweetAlert2 -->
+ <script>
+    window.userRole = "<?= $_SESSION['role'] ?? '' ?>";
+</script>
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/employee/edit_employee/history.js"></script>
 <script src="assets/js/employee/edit_employee/edit_promodizer.js"></script>
@@ -361,7 +364,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const status = document.getElementById("editStatus").value.trim().toUpperCase();
         const printBtn = document.getElementById("openPrintModalBtn");
 
-        printBtn.disabled = status === "INACTIVE";
+        const isAdmin = ["admin", "super_admin"].includes(window.userRole);
+        const canPrintLOA = window.canPrintLOA == 1;
+
+        const allowed = isAdmin || canPrintLOA;
+
+        printBtn.disabled = !allowed || status === "INACTIVE";
     }
 });
 

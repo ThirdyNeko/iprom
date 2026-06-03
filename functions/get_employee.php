@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once '../config/db.php';
 $pdo = qa_db();
 
@@ -19,6 +20,10 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([':id' => $id]);
 $employee = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+
+$canPrintLOA = $isAdmin && !empty($employee['print_loa']) && $employee['print_loa'] == 1;
 
 if (!$employee) {
     echo json_encode([]);
@@ -75,4 +80,5 @@ $employee['employee_id'] = $employee['employee_id'] ?? null; // ✅ ADD THIS
 // =========================
 // RETURN JSON
 // =========================
+$employee['can_print_loa'] = $canPrintLOA;
 echo json_encode($employee);

@@ -751,6 +751,10 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         birthday: p.birthday,
       };
 
+      // ✅ ADD THIS
+      window.currentEmployee = employee;
+      window.canPrintLOA = p.can_print_loa ?? 0;
+
       // =========================
       // SAFE FIELD ASSIGNMENTS
       // =========================
