@@ -72,7 +72,7 @@ $agency = $data['agency'] ?? '';
 $employmentStatus = $data['employment_status'] ?? '';
 $subStatus = $data['sub_status'] ?? '';
 $status = $data['status'] ?? '';
-$employeeId = $data['employee_id'] ?? '';
+$employeeId = $data['id'] ?? '';
 
 $remarks = $data['remarks'] ?? '';
 

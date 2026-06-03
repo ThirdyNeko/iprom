@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const payload = {
         employee_id: employeeId,
+        id: document.getElementById("editPromodizerId").value,
 
         recipient_name: recipientName,
         recipient_position: recipientPosition,
