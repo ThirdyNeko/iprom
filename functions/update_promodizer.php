@@ -666,6 +666,13 @@ try {
         && $startTimestamp <= $today
     ) {
 
+        if ($startTimestamp <= $today) {
+            $status = 'ACTIVE';
+        } else {
+            $status = 'INACTIVE';
+            $hidden = true;
+        }
+
         // =========================
         // INSERT TEMPLATE (reuse both loops)
         // =========================
