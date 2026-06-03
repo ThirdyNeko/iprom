@@ -8,6 +8,53 @@ function cleanValue(value) {
   return trimmed.toLowerCase() === "null" || trimmed === "" ? "" : trimmed;
 }
 
+function checkPrintBtnState() {
+  const status =
+    document.getElementById("editStatus")?.value?.trim()?.toUpperCase() || "";
+
+  const printBtn = document.getElementById("openPrintModalBtn");
+
+  if (!printBtn) return;
+
+  const rawCanPrintLOA = window.canPrintLOA;
+
+  const isAdmin = ["admin", "super_admin"].includes(window.userRole || "");
+  const canPrintLOA = Number(rawCanPrintLOA || 0) === 1;
+
+  // 🔍 DEBUG OUTPUT
+  console.log("canPrintLOA raw value:", rawCanPrintLOA);
+  console.log("canPrintLOA normalized:", canPrintLOA);
+  console.log("userRole:", window.userRole);
+
+  const allowed = isAdmin || canPrintLOA;
+
+  printBtn.disabled = !allowed || status === "INACTIVE";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const editModal = document.getElementById("editPromodizerModal");
+
+  editModal.addEventListener("show.bs.modal", function () {
+    const editStatus = document.getElementById("editStatus");
+
+    checkPrintBtnState();
+
+    if (!editStatus._bound) {
+      editStatus.addEventListener("change", checkPrintBtnState);
+      editStatus.addEventListener("input", checkPrintBtnState);
+
+      const observer = new MutationObserver(checkPrintBtnState);
+      observer.observe(editStatus, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+
+      editStatus._bound = true; // prevent duplicate bindings
+    }
+  });
+});
+
 function autoResizeInput(input) {
   if (!input) return;
 
@@ -751,9 +798,16 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         birthday: p.birthday,
       };
 
-      // ✅ ADD THIS
+      // =========================
+      // GLOBALS (IMPORTANT FIX)
+      // =========================
       window.currentEmployee = employee;
-      window.canPrintLOA = p.can_print_loa ?? 0;
+
+      // normalize LOA permission properly
+      window.canPrintLOA = Number(p.print_loa ?? 0);
+
+      // optional: if backend ever sends role
+      window.userRole = p.user_role || window.userRole;
 
       // =========================
       // SAFE FIELD ASSIGNMENTS
@@ -767,47 +821,45 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         el("editFirstName").value = cleanValue(employee.first_name);
       if (el("editLastName"))
         el("editLastName").value = cleanValue(employee.last_name);
-      if (el("editMiddleName")) {
+      if (el("editMiddleName"))
         el("editMiddleName").value = cleanValue(employee.middle_name);
-      }
-      if (el("editSuffix")) {
+      if (el("editSuffix"))
         el("editSuffix").value = cleanValue(employee.suffix);
-      }
+
       if (el("editBranch")) {
-        const value = cleanValue(employee.branch);
         populateEditBranch([employee.branch], employee.brand, employee.branch);
       }
+
       if (el("editCorpo")) {
         const input = el("editCorpo");
         input.value = cleanValue(employee.corpo).toUpperCase();
         autoResizeInput(input);
       }
+
       if (el("editBrand")) {
-        const value = cleanValue(employee.brand);
         populateEditBrand([employee.brand], employee.branch, employee.brand);
       }
-      if (editAgency) {
+
+      if (el("editAgency")) {
         populateAgencyDropdown(employee.agency);
         autoResizeSelectText(editAgency);
       }
 
-      // ✅ FIXED DATE HANDLING (NO "-")
-      if (el("editDateHired")) {
+      // dates
+      if (el("editDateHired"))
         el("editDateHired").value = employee.date_hired || "";
-      }
-
-      if (el("editGender")) {
+      if (el("editGender"))
         el("editGender").value = cleanValue(employee.gender) || "";
-      }
-
-      if (el("editBirthday")) {
+      if (el("editBirthday"))
         el("editBirthday").value = employee.birthday || "";
+
+      if (el("editStatus")) {
+        el("editStatus").value = cleanValue(employee.status) || "-";
       }
 
-      if (el("editStatus"))
-        el("editStatus").value = cleanValue(employee.status) || "-";
-      if (el("editLastAssignedBy"))
+      if (el("editLastAssignedBy")) {
         el("editLastAssignedBy").value = cleanValue(employee.last_assigned_by);
+      }
 
       if (el("editAssignmentDate")) {
         const d = employee.assignment_date;
@@ -817,20 +869,21 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
           const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
           const dd = String(dateObj.getDate()).padStart(2, "0");
           const yyyy = dateObj.getFullYear();
-
           el("editAssignmentDate").value = `${mm}/${dd}/${yyyy}`;
-        } else {
-          el("editAssignmentDate").value = "";
         }
       }
-      if (el("editStartDate") && employee.start_date) {
-        el("editStartDate").value = employee.start_date; // already YYYY-MM-DD
-      }
-      if (el("editEndDate"))
-        el("editEndDate").value = cleanValue(employee.end_date);
+
+      if (el("editStartDate"))
+        el("editStartDate").value = employee.start_date || "";
+      if (el("editEndDate")) el("editEndDate").value = employee.end_date || "";
 
       // =========================
-      // SELECT FIELDS SAFE
+      // LOA BUTTON CHECK (IMPORTANT)
+      // =========================
+      checkPrintBtnState();
+
+      // =========================
+      // SELECT FIELDS
       // =========================
       const employmentSelect = el("editEmploymentStatus");
       if (employmentSelect) {
@@ -842,14 +895,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
           : "";
       }
 
-      // =========================
-      // GET SUB STATUS ONCE
-      // =========================
       const subStatus = cleanValue(employee.sub_status).toUpperCase();
-
-      // =========================
-      // SET SELECT VALUE
-      // =========================
       const subStatusSelect = el("editSubStatus");
 
       if (subStatusSelect) {
@@ -857,15 +903,10 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
           (opt) => opt.value === subStatus,
         );
         subStatusSelect.value = valid ? subStatus : "";
-        toggleSubStatusOptions();
       }
 
-      // =========================
-      // RESET + SYNC UI
-      // =========================
       syncMultiUI(subStatus);
 
-      // ✅ populate main dropdowns FIRST (IMPORTANT)
       populateEditBranch(
         [employee.branch],
         employee.brand,
@@ -880,73 +921,32 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         subStatus,
       );
 
-      // normalize arrays safely (FIXED)
       const branches = safeArray(employee.roving_branches || p.roving_branches);
       const brands = safeArray(employee.multi_brands || p.multi_brands);
 
-      // render AFTER UI sync
       requestAnimationFrame(() => {
         if (subStatus === "MULTI BRANCH" || subStatus === "HYBRID") {
           populateEditRoving(branches, employee.brand, employee.branch);
-          updateBranchOptions();
         }
 
         if (subStatus === "MULTI BRAND" || subStatus === "HYBRID") {
           populateEditBrands(brands, employee.branch, employee.brand);
-          updateBrandOptions();
         }
       });
 
-      if (reasonSelect) {
-        reasonSelect.selectedIndex = 0; // 🔥 ALWAYS show "-- Select Reason --"
-      }
+      // reset reason
+      if (reasonSelect) reasonSelect.selectedIndex = 0;
 
-      // =========================
-      // EDITABLE FIELDS SAFE
-      // =========================
-      if (el("editDateSeparated"))
-        el("editDateSeparated").value = cleanValue(employee.date_separated);
-      if (el("editDateReturn"))
-        el("editDateReturn").value = cleanValue(employee.date_of_return);
+      // remarks
       if (el("editRemarks")) el("editRemarks").value = "";
 
-      // =========================
-      // READ ONLY
-      // =========================
-      if (el("editLastUpdatedBy"))
-        el("editLastUpdatedBy").value = cleanValue(employee.last_updated_by);
-      if (el("editDateLastUpdated")) {
-        el("editDateLastUpdated").value = employee.updated_at
-          ? employee.updated_at.split(" ")[0]
-          : "";
-      }
-
-      // =========================
-      // DISABLE LOGIC
-      // =========================
-      const editable = [
-        "editReasonUpdate",
-        "editDateSeparated",
-        "editDateReturn",
-        "editRemarks",
-        "editAgency",
-      ];
-
-      modalEl.querySelectorAll("input, select, textarea").forEach((el) => {
-        el.disabled = !editable.includes(el.id);
-      });
-
-      modal.show();
+      // history
       loadHistory(employee.employee_id);
 
-      // sync toggles
-      toggleDateSeparated();
-      toggleDateReturned();
-      toggleReasonDates();
-      toggleEmploymentDates();
-      toggleTransferEditable(); // 👈 ADD HERE
-      toggleStatusesEditable();
-      toggleAddButtons();
+      modal.show();
+
+      // re-check after modal opens
+      checkPrintBtnState();
     } catch (err) {
       console.error(err);
       Swal.fire({
