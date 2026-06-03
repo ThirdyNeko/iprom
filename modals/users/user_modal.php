@@ -42,13 +42,24 @@
                         <input type="text" id="v_updated_at" class="form-control" readonly>
                     </div>
 
-                    <!-- Branches: full width, editable checkboxes -->
+                    <!-- Branches -->
                     <div class="col-12">
-                        <label class="form-label fw-semibold">Branches</label>
+
+                        <label class="form-label fw-semibold mb-0">Branches</label>
+                        <small id="branchCounter" class="text-muted ms-1">Selected: 0</small>
+
+                        <input type="text"
+                               id="branchSearch"
+                               class="form-control my-1"
+                               placeholder="Search branches..."
+                               style="text-transform: uppercase;"
+                               disabled>
+
                         <div id="v_branch"
-                             style="max-height: 180px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px;">
+                             style="max-height: 250px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px;">
                             <!-- populated by JS -->
                         </div>
+
                     </div>
 
                 </div>
