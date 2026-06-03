@@ -662,8 +662,6 @@ try {
             $reason_for_update === 'ADD BRANCH/BRAND' ||
             ($reason_for_update === 'CHANGE SUB STATUS' && $sub_status !== 'STATIONARY')
         )
-        && $startTimestamp !== false
-        && $startTimestamp <= $today
     ) {
 
         if ($startTimestamp <= $today) {
