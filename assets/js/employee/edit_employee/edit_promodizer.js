@@ -29,6 +29,53 @@ function autoResizeSelectText(select) {
   }
 }
 
+function checkPrintBtnState() {
+  const status =
+    document.getElementById("editStatus")?.value?.trim()?.toUpperCase() || "";
+
+  const printBtn = document.getElementById("openPrintModalBtn");
+
+  if (!printBtn) return;
+
+  const rawCanPrintLOA = window.canPrintLOA;
+
+  const isAdmin = ["admin", "super_admin"].includes(window.userRole || "");
+  const canPrintLOA = Number(rawCanPrintLOA || 0) === 1;
+
+  // 🔍 DEBUG OUTPUT
+  console.log("canPrintLOA raw value:", rawCanPrintLOA);
+  console.log("canPrintLOA normalized:", canPrintLOA);
+  console.log("userRole:", window.userRole);
+
+  const allowed = isAdmin || canPrintLOA;
+
+  printBtn.disabled = !allowed || status === "INACTIVE";
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  const editModal = document.getElementById("editPromodizerModal");
+
+  editModal.addEventListener("show.bs.modal", function () {
+    const editStatus = document.getElementById("editStatus");
+
+    checkPrintBtnState();
+
+    if (!editStatus._bound) {
+      editStatus.addEventListener("change", checkPrintBtnState);
+      editStatus.addEventListener("input", checkPrintBtnState);
+
+      const observer = new MutationObserver(checkPrintBtnState);
+      observer.observe(editStatus, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+
+      editStatus._bound = true; // prevent duplicate bindings
+    }
+  });
+});
+
 // =========================
 // ELEMENT SAFETY CHECKS
 // =========================
@@ -753,7 +800,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
 
       // ✅ ADD THIS
       window.currentEmployee = employee;
-      window.canPrintLOA = p.can_print_loa ?? 0;
+      window.canPrintLOA = p.print_loa ?? 0;
 
       // =========================
       // SAFE FIELD ASSIGNMENTS
