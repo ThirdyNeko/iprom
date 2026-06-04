@@ -27,9 +27,12 @@
                         <input type="text" id="v_position" class="form-control" readonly>
                     </div>
 
+                    <!-- ↓ wrapper lets JS swap input ↔ select cleanly -->
                     <div class="col-md-6">
                         <label class="form-label">Role</label>
-                        <input type="text" id="v_role" class="form-control" readonly>
+                        <div id="v_role_wrapper">
+                            <input type="text" id="v_role" class="form-control" readonly>
+                        </div>
                     </div>
 
                     <div class="col-md-6">
@@ -66,14 +69,22 @@
             </div>
 
             <div class="modal-footer">
+                <!-- ↓ admin / super_admin only -->
+                <button type="button" id="resetPasswordBtn" class="btn btn-warning" style="display:none;">
+                    <i class="bi bi-key"></i> Reset Password
+                </button>
+                <button type="button" id="saveProfileBtn" class="btn btn-success" style="display:none;">
+                    <i class="bi bi-person-check"></i> Save Profile
+                </button>
                 <button type="button" id="saveBranchBtn" class="btn btn-primary">
                     <i class="bi bi-save"></i> Save Branches
                 </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
 
         </div>
     </div>
 </div>
-
+<script>
+  const SESSION_ROLE = "<?= $_SESSION['role'] ?? '' ?>";
+</script>
 <script src="assets/js/users/users_modal.js"></script>

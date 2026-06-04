@@ -37,27 +37,34 @@ function sortBranches() {
 }
 
 /* ───────────────────────────────────────────
-   COUNTER (FIXED)
+   COUNTER
 ─────────────────────────────────────────── */
 function updateBranchCounter() {
   const $modal = $("#userViewModal");
-
   const count = $modal.find("#v_branch .branch-checkbox:checked").length;
 
   console.log("Counter updating:", count);
-
   $modal.find("#branchCounter").text(`Selected: ${count}`);
 }
 
 /* ───────────────────────────────────────────
-   SEARCH (FIXED)
+   SESSION ROLE CHECK
+─────────────────────────────────────────── */
+function isPrivileged() {
+  const role = (typeof SESSION_ROLE !== "undefined" ? SESSION_ROLE : "")
+    .trim()
+    .toLowerCase();
+  return role === "admin" || role === "super_admin";
+}
+
+/* ───────────────────────────────────────────
+   SEARCH
 ─────────────────────────────────────────── */
 $(document).on("input", "#branchSearch", function () {
   const search = $(this).val().trim().toUpperCase();
 
   $("#userViewModal #v_branch .branch-item").each(function () {
     const text = $(this).find("label").text().trim().toUpperCase();
-
     $(this).toggle(search === "" || text.includes(search));
   });
 });
@@ -94,44 +101,62 @@ $(document).on("click", ".view-user", function () {
     data: { username },
     dataType: "json",
     success: function (data) {
-      const role = (data.role || "").trim().toLowerCase();
-      const isStaff = role === "staff";
+      const role     = (data.role || "").trim().toLowerCase();
+      const isStaff  = role === "staff";
+      const canEdit  = isPrivileged();
 
-      const assigned = data.branch
-        ? data.branch.split(",").map((c) => c.trim())
-        : [];
-
+      const assigned           = data.branch ? data.branch.split(",").map((c) => c.trim()) : [];
       const normalizedAssigned = assigned.map((v) => v.trim());
-      const allBranches = data.branch_names ?? {};
+      const allBranches        = data.branch_names ?? {};
 
-      /* ───── populate fields ───── */
+      const roleLabels = {
+        admin:       "ADMIN",
+        super_admin: "SUPER ADMIN",
+        staff:       "STAFF",
+        supervisor:  "SUPERVISOR",
+      };
+
+      /* ───── populate basic fields ───── */
       $("#v_username").val(username);
       $("#v_first_name").val(data.first_name);
       $("#v_last_name").val(data.last_name);
-      $("#v_position").val(data.position);
-      const roleLabels = {
-        admin: "ADMIN",
-        super_admin: "SUPER ADMIN",
-        staff: "STAFF",
-        supervisor: "SUPERVISOR",
-      };
-
-      $("#v_role").val(roleLabels[data.role] ?? data.role);
       $("#v_created_at").val(formatMDY(data.created_at));
       $("#v_updated_at").val(formatMDY(data.updated_at));
 
-      /* ───── search toggle ───── */
-      const $modal = $("#userViewModal");
+      /* ───── position: editable for admin / super_admin ───── */
+      $("#v_position")
+        .val(data.position)
+        .prop("readonly", !canEdit);
 
+      /* ───── role: select (editable) vs input (read-only) ───── */
+      if (canEdit) {
+        $("#v_role_wrapper").html(
+          `<select id="v_role" class="form-control">
+             <option value="staff">STAFF</option>
+             <option value="supervisor">SUPERVISOR</option>
+             <option value="admin">ADMIN</option>
+           </select>`
+        );
+        $("#v_role").val(data.role);
+      } else {
+        $("#v_role_wrapper").html(
+          `<input type="text" id="v_role" class="form-control" readonly>`
+        );
+        $("#v_role").val(roleLabels[data.role] ?? data.role);
+      }
+
+      /* ───── Save Profile button visibility ───── */
+      $("#saveProfileBtn").toggle(canEdit);
+      $("#resetPasswordBtn").toggle(canEdit);  // ← add this line
+
+      /* ───── search + branch toggles ───── */
+      const $modal = $("#userViewModal");
       $modal.find("#branchSearch").prop("disabled", !isStaff).val("");
 
       /* ───── build branches ───── */
       const branchHtml = Object.entries(allBranches)
         .map(([code, name], index) => {
-          const checked = normalizedAssigned.includes(String(code).trim())
-            ? "checked"
-            : "";
-
+          const checked  = normalizedAssigned.includes(String(code).trim()) ? "checked" : "";
           const disabled = !isStaff ? "disabled" : "";
 
           return `
@@ -161,7 +186,7 @@ $(document).on("click", ".view-user", function () {
         updateBranchCounter();
       }, 0);
 
-      $("#userViewModal").modal("show");
+      $modal.modal("show");
     },
   });
 });
@@ -207,8 +232,100 @@ $(document).on("click", "#saveBranchBtn", function () {
 });
 
 /* ───────────────────────────────────────────
+   SAVE PROFILE (position + role)
+─────────────────────────────────────────── */
+$(document).on("click", "#saveProfileBtn", function () {
+  if (!isPrivileged()) return;
+
+  const username = $("#v_username").val();
+  const position = $("#v_position").val().trim();
+  const role     = $("#v_role").val();
+
+  if (!position) {
+    Swal.fire("Validation", "Position cannot be empty.", "warning");
+    return;
+  }
+
+  Swal.fire({
+    icon: "question",
+    title: "Update Profile?",
+    text: `Save position and role changes for "${username}"?`,
+    showCancelButton: true,
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+
+    $.ajax({
+      url: "functions/update_user_profile.php",
+      type: "POST",
+      data: { username, position, role },
+      dataType: "json",
+      success: function (res) {
+        if (res.success) {
+          Swal.fire("Saved!", "Profile updated.", "success").then(() =>
+            location.reload(),
+          );
+        } else {
+          Swal.fire("Error", res.message, "error");
+        }
+      },
+      error: function () {
+        Swal.fire("Error", "Request failed.", "error");
+      },
+    });
+  });
+});
+
+/* ───────────────────────────────────────────
+   RESET PASSWORD
+─────────────────────────────────────────── */
+$(document).on("click", "#resetPasswordBtn", function () {
+  if (!isPrivileged()) return;
+
+  const username    = $("#v_username").val();
+  const newPassword = "Password123";
+
+  Swal.fire({
+    icon: "warning",
+    title: "Reset Password?",
+    html: `This will reset the password for <strong>${username}</strong> to:<br><br>
+           <code style="font-size:1.1rem;">${newPassword}</code>`,
+    showCancelButton: true,
+    confirmButtonText: "Yes, Reset",
+    confirmButtonColor: "#f0ad4e",
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+
+    $.ajax({
+      url: "functions/reset_user_password.php",
+      type: "POST",
+      data: { username, password: newPassword },
+      dataType: "json",
+      success: function (res) {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Password Reset!",
+            html: `Password for <strong>${username}</strong> has been reset to:<br><br>
+                   <code style="font-size:1.1rem;">${newPassword}</code>`,
+          });
+        } else {
+          Swal.fire("Error", res.message, "error");
+        }
+      },
+      error: function () {
+        Swal.fire("Error", "Request failed.", "error");
+      },
+    });
+  });
+});
+
+/* ───────────────────────────────────────────
    INIT
 ─────────────────────────────────────────── */
 $(document).ready(function () {
   updateBranchCounter();
+
+  if (!isPrivileged()) {
+    $("#saveProfileBtn").hide();
+  }
 });
