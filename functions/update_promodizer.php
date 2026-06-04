@@ -284,10 +284,6 @@ if ($isInactiveReason) {
     $start = strtotime($start_date);
     $end   = strtotime($end_date);
 
-    $status = ($start > $today || $end < $today)
-        ? 'INACTIVE'
-        : 'ACTIVE';
-
     $hidden = ($start > $today); // future start = hidden
 
 } else if (
@@ -297,9 +293,6 @@ if ($isInactiveReason) {
 
     $start = strtotime($start_date);
 
-    $status = ($start > $today)
-        ? 'INACTIVE'
-        : 'ACTIVE';
 
     $hidden = ($start > $today); // future start = hidden
 }
@@ -665,9 +658,10 @@ try {
     ) {
 
         if ($startTimestamp <= $today) {
-            $status = 'ACTIVE';
+            $insertStatus = 'ACTIVE';
+            $hidden = false;
         } else {
-            $status = 'INACTIVE';
+            $insertStatus = 'INACTIVE';
             $hidden = true;
         }
 
@@ -787,7 +781,7 @@ try {
                     ':brand'      => $currentBrand,
                     ':assignment_date' => date('Y-m-d'),
                     ':last_assigned_by' => $last_assigned_by,
-                    ':status' => $status,
+                    ':status' => $insertStatus,
                     ':date_of_return' => $date_of_return,
                     ':date_separated' => $date_separated,
                     ':employment_status' => $employment_status,
@@ -864,7 +858,7 @@ try {
                     ':brand'      => $brand,
                     ':assignment_date' => date('Y-m-d'),
                     ':last_assigned_by' => $last_assigned_by,
-                    ':status' => $status,
+                    ':status' => $insertStatus,
                     ':date_of_return' => $date_of_return,
                     ':date_separated' => $date_separated,
                     ':employment_status' => $employment_status,
@@ -951,7 +945,7 @@ try {
                         ':brand'      => $brandItem,
                         ':assignment_date' => date('Y-m-d'),
                         ':last_assigned_by' => $last_assigned_by,
-                        ':status' => $status,
+                        ':status' => $insertStatus,
                         ':date_of_return' => $date_of_return,
                         ':date_separated' => $date_separated,
                         ':employment_status' => $employment_status,
