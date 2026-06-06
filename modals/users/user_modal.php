@@ -36,12 +36,12 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Created At</label>
+                        <label class="form-label">Date Created</label>
                         <input type="text" id="v_created_at" class="form-control" readonly>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Updated At</label>
+                        <label class="form-label">Date Updated</label>
                         <input type="text" id="v_updated_at" class="form-control" readonly>
                     </div>
 
@@ -71,13 +71,13 @@
             <div class="modal-footer">
                 <!-- ↓ admin / super_admin only -->
                 <button type="button" id="resetPasswordBtn" class="btn btn-warning" style="display:none;">
-                    <i class="bi bi-key"></i> Reset Password
+                    Reset Password
                 </button>
                 <button type="button" id="saveProfileBtn" class="btn btn-success" style="display:none;">
-                    <i class="bi bi-person-check"></i> Save Profile
+                    Save Profile
                 </button>
                 <button type="button" id="saveBranchBtn" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Save Branches
+                    Save Branches
                 </button>
             </div>
 

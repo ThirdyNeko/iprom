@@ -49,11 +49,18 @@ function updateBranchCounter() {
 
 /* ───────────────────────────────────────────
    SESSION ROLE CHECK
+   - isPrivileged()         → true if admin OR super_admin
+   - isPrivileged("super_admin") → true only if super_admin
 ─────────────────────────────────────────── */
-function isPrivileged() {
+function isPrivileged(requiredRole) {
   const role = (typeof SESSION_ROLE !== "undefined" ? SESSION_ROLE : "")
     .trim()
     .toLowerCase();
+
+  if (requiredRole) {
+    return role === requiredRole.trim().toLowerCase();
+  }
+
   return role === "admin" || role === "super_admin";
 }
 
@@ -101,9 +108,10 @@ $(document).on("click", ".view-user", function () {
     data: { username },
     dataType: "json",
     success: function (data) {
-      const role     = (data.role || "").trim().toLowerCase();
-      const isStaff  = role === "staff";
-      const canEdit  = isPrivileged();
+      const role         = (data.role || "").trim().toLowerCase();
+      const isStaff      = role === "staff";
+      const canEdit      = isPrivileged();
+      const isSuperAdmin = isPrivileged("super_admin");
 
       const assigned           = data.branch ? data.branch.split(",").map((c) => c.trim()) : [];
       const normalizedAssigned = assigned.map((v) => v.trim());
@@ -128,26 +136,53 @@ $(document).on("click", ".view-user", function () {
         .val(data.position)
         .prop("readonly", !canEdit);
 
-      /* ───── role: select (editable) vs input (read-only) ───── */
+      /* ───── role: build select or read-only input ───────────
+         Super admin → full select (staff / supervisor / admin)
+         Admin       → limited select (staff / supervisor only)
+                       but if the viewed user IS an admin, show read-only
+         Others      → always read-only
+      ──────────────────────────────────────────────────────── */
       if (canEdit) {
-        $("#v_role_wrapper").html(
-          `<select id="v_role" class="form-control">
-             <option value="staff">STAFF</option>
-             <option value="supervisor">SUPERVISOR</option>
-             <option value="admin">ADMIN</option>
-           </select>`
-        );
-        $("#v_role").val(data.role);
+        if (isSuperAdmin) {
+          /* Super admin can assign any role including admin */
+          $("#v_role_wrapper").html(
+            `<select id="v_role" class="form-control">
+               <option value="staff">STAFF</option>
+               <option value="supervisor">SUPERVISOR</option>
+               <option value="admin">ADMIN</option>
+             </select>`
+          );
+          $("#v_role").val(data.role);
+        } else {
+          /* Plain admin: cannot assign or change the admin role */
+          if (data.role === "admin") {
+            /* Viewing an admin account — role is read-only */
+            $("#v_role_wrapper").html(
+              `<input type="text" id="v_role" class="form-control" readonly>`
+            );
+            $("#v_role").val(roleLabels["admin"]);
+          } else {
+            /* Editing a non-admin user — only staff / supervisor allowed */
+            $("#v_role_wrapper").html(
+              `<select id="v_role" class="form-control">
+                 <option value="staff">STAFF</option>
+                 <option value="supervisor">SUPERVISOR</option>
+               </select>`
+            );
+            $("#v_role").val(data.role);
+          }
+        }
       } else {
+        /* Non-privileged viewer — always read-only */
         $("#v_role_wrapper").html(
           `<input type="text" id="v_role" class="form-control" readonly>`
         );
         $("#v_role").val(roleLabels[data.role] ?? data.role);
       }
 
-      /* ───── Save Profile button visibility ───── */
+      /* ───── Save Profile / Reset Password button visibility ───── */
       $("#saveProfileBtn").toggle(canEdit);
-      $("#resetPasswordBtn").toggle(canEdit);  // ← add this line
+      $("#resetPasswordBtn").toggle(canEdit);
 
       /* ───── search + branch toggles ───── */
       const $modal = $("#userViewModal");
@@ -177,7 +212,7 @@ $(document).on("click", ".view-user", function () {
         .join("");
 
       $("#v_branch").html(
-        branchHtml || '<span class="text-muted">No branches available</span>',
+        branchHtml || '<span class="text-muted">No branches available</span>'
       );
 
       /* ───── ensure UI updates after render ───── */
@@ -218,7 +253,7 @@ $(document).on("click", "#saveBranchBtn", function () {
       success: function (res) {
         if (res.success) {
           Swal.fire("Saved!", "Branches updated.", "success").then(() =>
-            location.reload(),
+            location.reload()
           );
         } else {
           Swal.fire("Error", res.message, "error");
@@ -262,7 +297,7 @@ $(document).on("click", "#saveProfileBtn", function () {
       success: function (res) {
         if (res.success) {
           Swal.fire("Saved!", "Profile updated.", "success").then(() =>
-            location.reload(),
+            location.reload()
           );
         } else {
           Swal.fire("Error", res.message, "error");

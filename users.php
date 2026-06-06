@@ -30,8 +30,8 @@ $users = $pdo
 
 // Filter visible users based on logged-in role
 $visibleRoles = match($_SESSION['role']) {
-    'super_admin' => ['super_admin', 'admin', 'supervisor', 'staff'],
-    'admin'       => ['admin', 'supervisor', 'staff'],
+    'super_admin' => ['admin', 'supervisor', 'staff'],
+    'admin'       => ['supervisor', 'staff'],
     'supervisor'  => ['staff'],
     default       => []
 };
