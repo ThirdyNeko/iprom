@@ -1,4 +1,6 @@
 $(document).ready(function () {
+  let originalAgencyValues = null;
+
   // =========================
   // DATATABLE
   // =========================
@@ -88,27 +90,33 @@ $(document).ready(function () {
 
     // RESET MOBILES
     $("#mobileContainer").html(`
-    <div class="input-group mb-2">
-      <input type="text"
-             name="contact_numbers[]"
-             class="form-control mobile-input"
-             placeholder="09XXXXXXXXX"
-             maxlength="11">
-    </div>
-  `);
+      <div class="input-group mb-2">
+        <input type="text"
+               name="contact_numbers[]"
+               class="form-control mobile-input"
+               placeholder="09XXXXXXXXX"
+               maxlength="11">
+      </div>
+    `);
 
     // RESET TELEPHONES
     $("#telephoneContainer").html(`
-    <div class="input-group mb-2">
-      <input type="text"
-              name="tel_numbers[]"
-              class="form-control telephone-input"
-              placeholder="(XXX) XXX XXXX"
-              maxlength="14">
-    </div>
-  `);
+      <div class="input-group mb-2">
+        <input type="text"
+               name="tel_numbers[]"
+               class="form-control telephone-input"
+               placeholder="(XXX) XXX XXXX"
+               maxlength="14">
+      </div>
+    `);
 
     $(".modal-title").text("Add Agency");
+
+    $("#saveAgencyBtn")
+      .text("Add Agency")
+      .removeClass("btn-warning")
+      .addClass("btn-primary")
+      .prop("disabled", false);
 
     $("#agencyModal").modal("show");
   });
@@ -131,26 +139,26 @@ $(document).ready(function () {
 
     mobileNumbers.forEach((num, index) => {
       $("#mobileContainer").append(`
-      <div class="input-group mb-2">
-        <input type="text"
-               name="contact_numbers[]"
-               class="form-control mobile-input"
-               value="${num.trim()}"
-               placeholder="09XXXXXXXXX"
-               maxlength="11">
+        <div class="input-group mb-2">
+          <input type="text"
+                 name="contact_numbers[]"
+                 class="form-control mobile-input"
+                 value="${num.trim()}"
+                 placeholder="09XXXXXXXXX"
+                 maxlength="11">
 
-        ${
-          index > 0
-            ? `
-          <button type="button"
-                  class="btn btn-outline-danger remove-mobile">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        `
-            : ""
-        }
-      </div>
-    `);
+          ${
+            index > 0
+              ? `
+            <button type="button"
+                    class="btn btn-outline-danger remove-mobile">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          `
+              : ""
+          }
+        </div>
+      `);
     });
 
     // =========================
@@ -162,33 +170,51 @@ $(document).ready(function () {
 
     telNumbers.forEach((num, index) => {
       $("#telephoneContainer").append(`
-      <div class="input-group mb-2">
-        <input type="text"
-                name="tel_numbers[]"
-                class="form-control telephone-input"
-                value="${num.trim()}"
-                placeholder="(XXX) XXX XXXX"
-                maxlength="14">
+        <div class="input-group mb-2">
+          <input type="text"
+                 name="tel_numbers[]"
+                 class="form-control telephone-input"
+                 value="${num.trim()}"
+                 placeholder="(XXX) XXX XXXX"
+                 maxlength="14">
 
-        ${
-          index > 0
-            ? `
-          <button type="button"
-                  class="btn btn-outline-danger remove-telephone">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        `
-            : ""
-        }
-      </div>
-    `);
+          ${
+            index > 0
+              ? `
+            <button type="button"
+                    class="btn btn-outline-danger remove-telephone">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          `
+              : ""
+          }
+        </div>
+      `);
     });
 
-    $(".modal-title").text("Edit Agency");
+    $(".modal-title").text("Update Agency");
+
+    $("#saveAgencyBtn")
+      .text("Update Agency")
+      .removeClass("btn-primary")
+      .addClass("btn-warning")
+      .prop("disabled", true);
+
+    // Store originals for change detection
+    originalAgencyValues = {
+      name:    $(this).data("name")   || "",
+      person:  $(this).data("person") || "",
+      email:   $(this).data("email")  || "",
+      mobiles: ($(this).data("number") || "").split("|").map(s => s.trim()).filter(Boolean),
+      tels:    ($(this).data("tel")    || "").split("|").map(s => s.trim()).filter(Boolean),
+    };
 
     $("#agencyModal").modal("show");
   });
 
+  // =========================
+  // RESET ON MODAL CLOSE
+  // =========================
   $("#agencyModal").on("hidden.bs.modal", function () {
     $("#agencyId").val("");
 
@@ -197,26 +223,34 @@ $(document).ready(function () {
     $("#email").val("");
 
     $("#mobileContainer").html(`
-    <div class="input-group mb-2">
-      <input type="text"
-             name="contact_numbers[]"
-             class="form-control mobile-input"
-             placeholder="09XXXXXXXXX"
-             maxlength="11">
-    </div>
-  `);
+      <div class="input-group mb-2">
+        <input type="text"
+               name="contact_numbers[]"
+               class="form-control mobile-input"
+               placeholder="09XXXXXXXXX"
+               maxlength="11">
+      </div>
+    `);
 
     $("#telephoneContainer").html(`
-    <div class="input-group mb-2">
-      <input type="text"
-              name="tel_numbers[]"
-              class="form-control telephone-input"
-              placeholder="(XXX) XXX XXXX"
-              maxlength="14">
-    </div>
-  `);
+      <div class="input-group mb-2">
+        <input type="text"
+               name="tel_numbers[]"
+               class="form-control telephone-input"
+               placeholder="(XXX) XXX XXXX"
+               maxlength="14">
+      </div>
+    `);
 
     $(".modal-title").text("Add Agency");
+
+    $("#saveAgencyBtn")
+      .text("Add Agency")
+      .removeClass("btn-warning")
+      .addClass("btn-primary")
+      .prop("disabled", false);
+
+    originalAgencyValues = null;
   });
 
   // =========================
@@ -224,6 +258,56 @@ $(document).ready(function () {
   // =========================
   $(document).on("input", "#agencyName, #contactPerson", function () {
     this.value = this.value.toUpperCase();
+  });
+
+  // =========================
+  // CHANGE DETECTION (EDIT MODE)
+  // =========================
+  function getAgencyFormValues() {
+    return {
+      name:    $("#agencyName").val().trim().toUpperCase(),
+      person:  $("#contactPerson").val().trim().toUpperCase(),
+      email:   $("#email").val().trim(),
+      mobiles: $("input[name='contact_numbers[]']").map(function () { return $(this).val().trim(); }).get().filter(Boolean),
+      tels:    $("input[name='tel_numbers[]']").map(function () { return $(this).val().trim(); }).get().filter(Boolean),
+    };
+  }
+
+  function checkAgencyChanges() {
+    if (!originalAgencyValues) return;
+
+    const current = getAgencyFormValues();
+
+    const changed =
+      current.name             !== originalAgencyValues.name   ||
+      current.person           !== originalAgencyValues.person ||
+      current.email            !== originalAgencyValues.email  ||
+      current.mobiles.join("|") !== originalAgencyValues.mobiles.join("|") ||
+      current.tels.join("|")    !== originalAgencyValues.tels.join("|");
+
+    $("#saveAgencyBtn").prop("disabled", !changed);
+  }
+
+  // Bind to text fields
+  $(document).on("input", "#agencyName, #contactPerson, #email", function () {
+    checkAgencyChanges();
+  });
+
+  // Bind to dynamic mobile/telephone inputs
+  $(document).on("input", "input[name='contact_numbers[]'], input[name='tel_numbers[]']", function () {
+    checkAgencyChanges();
+  });
+
+  // Re-check after removing a mobile row
+  $(document).on("click", ".remove-mobile", function () {
+    $(this).closest(".input-group").remove();
+    checkAgencyChanges();
+  });
+
+  // Re-check after removing a telephone row
+  $(document).on("click", ".remove-telephone", function () {
+    $(this).closest(".input-group").remove();
+    checkAgencyChanges();
   });
 
   // =========================
@@ -426,7 +510,7 @@ $(document).on("change", ".agency-status-switch", function () {
             Swal.fire({
               icon: "success",
               title: "Updated",
-              text: `Agency is now ${status === 1 ? 1 : 0}`,
+              text: `Agency is now ${status === 1 ? "Active" : "Inactive"}`,
               timer: 1200,
               showConfirmButton: false,
             });

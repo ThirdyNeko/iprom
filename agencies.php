@@ -133,7 +133,7 @@ $pdo = qa_db();
                                 <th>Telephone #</th>
                                 <th>Email</th>
                                 <th>Status</th>
-                                <th width="18%">Actions</th>
+                                <th width="18%">Action</th>
                             </tr>
                         </thead>
 
@@ -248,8 +248,7 @@ $pdo = qa_db();
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit"
-                            class="btn btn-primary">
+                    <button type="submit" id="saveAgencyBtn" class="btn btn-primary">
                         Save Agency
                     </button>
 
