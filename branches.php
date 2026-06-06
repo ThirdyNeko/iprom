@@ -56,7 +56,7 @@ $pdo = qa_db();
     <div class="container-fluid">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">Branches</h4>
+            <h4 class="fw-bold mb-0">Branch List</h4>
 
             <button id="syncBranchesBtn" class="btn btn-success">
                 ⟳ Sync Branches

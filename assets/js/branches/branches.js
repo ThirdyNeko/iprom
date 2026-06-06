@@ -139,10 +139,11 @@ $(document).on("change", ".branch-status-switch", function () {
 
         Swal.fire({
           icon: "warning",
-          title: "Cannot Update Status",
+          title: "Unable to update status for this branch.",
           text: brands
-            ? `Assigned to: ${brands}`
+            ? `A promodiser is currently assigned and must be removed or reassigned before proceeding.`
             : "This branch has active assignments.",
+            // Assigned to: ${brands}
         });
 
         toggle.prop("disabled", false);
