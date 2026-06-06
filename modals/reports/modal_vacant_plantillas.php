@@ -11,7 +11,6 @@
 
             <div class="modal-body">
                 <p class="text-muted small mb-3">Select a brand to generate the report for.</p>
-                <label for="selectBrandVacant" class="form-label fw-semibold">Brand</label>
                 <select id="selectBrandVacant" class="form-select">
                     <option value="" disabled selected>— Select a brand —</option>
                     <?php foreach ($brands as $brand): ?>
