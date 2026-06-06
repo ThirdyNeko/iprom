@@ -192,7 +192,7 @@ $pdo = qa_db();
 
                     <!-- MOBILE NUMBERS -->
                     <div class="mb-3">
-                        <label class="form-label d-block">Mobile Numbers</label>
+                        <label class="form-label d-block">Mobile Number</label>
 
                         <div id="mobileContainer">
 
@@ -215,7 +215,7 @@ $pdo = qa_db();
 
                     <!-- TELEPHONE NUMBERS -->
                     <div class="mb-3">
-                        <label class="form-label d-block">Telephone Numbers</label>
+                        <label class="form-label d-block">Telephone Number</label>
 
                         <div id="telephoneContainer">
 
