@@ -39,6 +39,10 @@ $(document).ready(function () {
           d.to_date = $("#filterTo").val();
         },
       },
+      language: {
+        emptyTable: "No data available.",
+        zeroRecords: "No assignments match the selected filters.",
+      },
 
       pageLength: 50,
       lengthMenu: [10, 25, 50, 100],

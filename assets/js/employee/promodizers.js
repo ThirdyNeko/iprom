@@ -6,6 +6,11 @@ $(document).ready(function () {
     autoWidth: false, // 👈 IMPORTANT
     ordering: false,
 
+    language: {
+      emptyTable: "No data available.",
+      zeroRecords: "No promodisers match the selected filters.",
+    },
+
     columnDefs: [
       { targets: 0, width: "20%" }, // Name (bigger)
       { targets: 6, width: "12%" }, // Assignment Date (smaller)
