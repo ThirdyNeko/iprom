@@ -82,8 +82,34 @@ $(document).on("input", "#branchSearch", function () {
 $(document).on("change", "#v_branch input[type='checkbox']", function () {
   sortBranches();
   updateBranchCounter();
+
+  const orig = $("#userViewModal").data("originalBranches");
+  if (!orig) return;
+
+  const current = new Set(
+    $("#v_branch .branch-checkbox:checked")
+      .map((_, el) => el.value.trim())
+      .get(),
+  );
+  const changed =
+    current.size !== orig.size || [...current].some((v) => !orig.has(v));
+
+  $("#saveBranchBtn").prop("disabled", !changed);
 });
 
+$(document).on("input change", "#v_position, #v_role", function () {
+  const $modal = $("#userViewModal");
+  const origPos = $modal.data("originalPosition");
+  const origRole = $modal.data("originalRole");
+
+  if (origPos === undefined) return;
+
+  const changed =
+    $("#v_position").val().trim() !== origPos ||
+    $("#v_role").val() !== origRole;
+
+  $("#saveProfileBtn").prop("disabled", !changed);
+});
 /* ───────────────────────────────────────────
    UTILITIES
 ─────────────────────────────────────────── */
@@ -108,20 +134,22 @@ $(document).on("click", ".view-user", function () {
     data: { username },
     dataType: "json",
     success: function (data) {
-      const role         = (data.role || "").trim().toLowerCase();
-      const isStaff      = role === "staff";
-      const canEdit      = isPrivileged();
+      const role = (data.role || "").trim().toLowerCase();
+      const isStaff = role === "staff";
+      const canEdit = isPrivileged();
       const isSuperAdmin = isPrivileged("super_admin");
 
-      const assigned           = data.branch ? data.branch.split(",").map((c) => c.trim()) : [];
+      const assigned = data.branch
+        ? data.branch.split(",").map((c) => c.trim())
+        : [];
       const normalizedAssigned = assigned.map((v) => v.trim());
-      const allBranches        = data.branch_names ?? {};
+      const allBranches = data.branch_names ?? {};
 
       const roleLabels = {
-        admin:       "ADMIN",
+        admin: "ADMIN",
         super_admin: "SUPER ADMIN",
-        staff:       "STAFF",
-        supervisor:  "SUPERVISOR",
+        staff: "STAFF",
+        supervisor: "SUPERVISOR",
       };
 
       /* ───── populate basic fields ───── */
@@ -132,9 +160,7 @@ $(document).on("click", ".view-user", function () {
       $("#v_updated_at").val(formatMDY(data.updated_at));
 
       /* ───── position: editable for admin / super_admin ───── */
-      $("#v_position")
-        .val(data.position)
-        .prop("readonly", !canEdit);
+      $("#v_position").val(data.position).prop("readonly", !canEdit);
 
       /* ───── role: build select or read-only input ───────────
          Super admin → full select (staff / supervisor / admin)
@@ -150,7 +176,7 @@ $(document).on("click", ".view-user", function () {
                <option value="staff">STAFF</option>
                <option value="supervisor">SUPERVISOR</option>
                <option value="admin">ADMIN</option>
-             </select>`
+             </select>`,
           );
           $("#v_role").val(data.role);
         } else {
@@ -158,7 +184,7 @@ $(document).on("click", ".view-user", function () {
           if (data.role === "admin") {
             /* Viewing an admin account — role is read-only */
             $("#v_role_wrapper").html(
-              `<input type="text" id="v_role" class="form-control" readonly>`
+              `<input type="text" id="v_role" class="form-control" readonly>`,
             );
             $("#v_role").val(roleLabels["admin"]);
           } else {
@@ -167,7 +193,7 @@ $(document).on("click", ".view-user", function () {
               `<select id="v_role" class="form-control">
                  <option value="staff">STAFF</option>
                  <option value="supervisor">SUPERVISOR</option>
-               </select>`
+               </select>`,
             );
             $("#v_role").val(data.role);
           }
@@ -175,7 +201,7 @@ $(document).on("click", ".view-user", function () {
       } else {
         /* Non-privileged viewer — always read-only */
         $("#v_role_wrapper").html(
-          `<input type="text" id="v_role" class="form-control" readonly>`
+          `<input type="text" id="v_role" class="form-control" readonly>`,
         );
         $("#v_role").val(roleLabels[data.role] ?? data.role);
       }
@@ -183,6 +209,7 @@ $(document).on("click", ".view-user", function () {
       /* ───── Save Profile / Reset Password button visibility ───── */
       $("#saveProfileBtn").toggle(canEdit);
       $("#resetPasswordBtn").toggle(canEdit);
+      $("#saveBranchBtn").toggle(isStaff);
 
       /* ───── search + branch toggles ───── */
       const $modal = $("#userViewModal");
@@ -191,7 +218,9 @@ $(document).on("click", ".view-user", function () {
       /* ───── build branches ───── */
       const branchHtml = Object.entries(allBranches)
         .map(([code, name], index) => {
-          const checked  = normalizedAssigned.includes(String(code).trim()) ? "checked" : "";
+          const checked = normalizedAssigned.includes(String(code).trim())
+            ? "checked"
+            : "";
           const disabled = !isStaff ? "disabled" : "";
 
           return `
@@ -212,7 +241,7 @@ $(document).on("click", ".view-user", function () {
         .join("");
 
       $("#v_branch").html(
-        branchHtml || '<span class="text-muted">No branches available</span>'
+        branchHtml || '<span class="text-muted">No branches available</span>',
       );
 
       /* ───── ensure UI updates after render ───── */
@@ -220,6 +249,14 @@ $(document).on("click", ".view-user", function () {
         sortBranches();
         updateBranchCounter();
       }, 0);
+
+      /* ───── store originals for change detection ───── */
+      $modal.data("originalBranches", new Set(normalizedAssigned));
+      $modal.data("originalPosition", (data.position || "").trim());
+      $modal.data("originalRole", data.role);
+
+      $("#saveBranchBtn").prop("disabled", true);
+      $("#saveProfileBtn").prop("disabled", true);
 
       $modal.modal("show");
     },
@@ -253,7 +290,7 @@ $(document).on("click", "#saveBranchBtn", function () {
       success: function (res) {
         if (res.success) {
           Swal.fire("Saved!", "Branches updated.", "success").then(() =>
-            location.reload()
+            location.reload(),
           );
         } else {
           Swal.fire("Error", res.message, "error");
@@ -274,7 +311,7 @@ $(document).on("click", "#saveProfileBtn", function () {
 
   const username = $("#v_username").val();
   const position = $("#v_position").val().trim();
-  const role     = $("#v_role").val();
+  const role = $("#v_role").val();
 
   if (!position) {
     Swal.fire("Validation", "Position cannot be empty.", "warning");
@@ -297,7 +334,7 @@ $(document).on("click", "#saveProfileBtn", function () {
       success: function (res) {
         if (res.success) {
           Swal.fire("Saved!", "Profile updated.", "success").then(() =>
-            location.reload()
+            location.reload(),
           );
         } else {
           Swal.fire("Error", res.message, "error");
@@ -316,7 +353,7 @@ $(document).on("click", "#saveProfileBtn", function () {
 $(document).on("click", "#resetPasswordBtn", function () {
   if (!isPrivileged()) return;
 
-  const username    = $("#v_username").val();
+  const username = $("#v_username").val();
   const newPassword = "Password123";
 
   Swal.fire({
