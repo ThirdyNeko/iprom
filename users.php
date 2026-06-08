@@ -211,7 +211,11 @@ $(document).ready(function() {
     var table = $('#usersTable').DataTable({
         pageLength: 10,
         responsive: true,
-        dom: 'lrtip'
+        dom: 'lrtip',
+        language: {
+            emptyTable: "No data available",
+            zeroRecords: "No Users match the selected filters",
+        },
     });
 
     // Filters
