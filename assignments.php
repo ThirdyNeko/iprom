@@ -212,6 +212,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
 <script>
 const branchMap = <?= json_encode($branchMap) ?>;
 const sessionBranches = <?= json_encode($sessionBranches) ?>;
+const isStaff         = <?= json_encode(isset($_SESSION['role']) && $_SESSION['role'] === 'staff') ?>;
 </script>
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>

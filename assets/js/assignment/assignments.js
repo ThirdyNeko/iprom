@@ -28,11 +28,7 @@ $(document).ready(function () {
         url: "functions/fetch_assignments.php",
         type: "POST",
         data: function (d) {
-          // If no branches assigned, abort by sending an impossible filter
-          if (
-            typeof sessionBranches !== "undefined" &&
-            sessionBranches.length === 0
-          ) {
+          if (isStaff && sessionBranches.length === 0) {
             d.branch = "__NO_ACCESS__";
             return;
           }

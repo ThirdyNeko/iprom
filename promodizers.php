@@ -84,12 +84,17 @@ $sessionBranches = !empty($_SESSION['branch'])
     ? array_map('trim', explode(',', $_SESSION['branch']))
     : [];
 
-$promodizers = empty($sessionBranches)
+$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
+
+if ($isStaff) {
+    $promodizers = empty($sessionBranches)
         ? []
         : array_values(array_filter(
             $promodizers,
             fn($p) => in_array(trim($p['branch']), $sessionBranches)
         ));
+}
+// else: non-staff sees everything — no filtering
 // Fetch branches & brands for filter dropdowns
 
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")

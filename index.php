@@ -17,9 +17,9 @@ $stmt = $pdo->prepare("EXEC get_dashboard_counts");
 $stmt->execute();
 
 // After (with branch filtering):
+$isStaff         = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
 $sessionBranches = !empty($_SESSION['branch']) ? $_SESSION['branch'] : null;
-if ($sessionBranches === null) {
-    // No assigned branches → zero out everything
+if ($isStaff && $sessionBranches === null) {
     $result = [
         'total_promodizers' => 0, 'active_promodizers' => 0, 'inactive_promodizers' => 0,
         'total_assignments' => 0, 'complete_assignments' => 0,
@@ -27,7 +27,7 @@ if ($sessionBranches === null) {
     ];
 } else {
     $stmt = $pdo->prepare("EXEC get_dashboard_counts @branches = ?");
-    $stmt->execute([$sessionBranches]);
+    $stmt->execute([$isStaff ? $sessionBranches : null]); // null = all branches
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -218,29 +218,74 @@ $cards = [
 
 <script>
 // PROMODIZER CHART
+const noDataPlugin = {
+    id: 'noDataPlugin',
+    afterDraw(chart) {
+        const data = chart.data.datasets[0].data;
+
+        if (data.every(value => value === 0)) {
+            const { ctx, chartArea } = chart;
+
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = '#6c757d';
+
+            ctx.fillText(
+                'No Data Available',
+                (chartArea.left + chartArea.right) / 2,
+                (chartArea.top + chartArea.bottom) / 2
+            );
+
+            ctx.restore();
+        }
+    }
+};
+
+Chart.register(noDataPlugin);
+// PROMODIZER CHART
 new Chart(document.getElementById('promodizerChart'), {
-    type:'doughnut',
-    data:{
-        labels:['ACTIVE','INACTIVE'],
-        datasets:[{
-            data:[<?= $assigned ?>, <?= $unassigned ?>],
-            backgroundColor:['#198754','#dc3545']
+    type: 'doughnut',
+    data: {
+        labels: ['ACTIVE', 'INACTIVE'],
+        datasets: [{
+            data: [<?= $assigned ?>, <?= $unassigned ?>],
+            backgroundColor: ['#198754', '#dc3545']
         }]
     },
-    options:{plugins:{legend:{position:'bottom'}}, responsive: true, maintainAspectRatio: false}
+    options: {
+        plugins: {
+            legend: {
+                position: 'bottom',
+                display: ![<?= $assigned ?>, <?= $unassigned ?>].every(v => v === 0)
+            }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+    }
 });
 
 // ASSIGNMENT CHART
 new Chart(document.getElementById('assignmentChart'), {
-    type:'doughnut',
-    data:{
-        labels:['COMPLETE','INCOMPLETE','INACTIVE'],
-        datasets:[{
-            data:[<?= $completeAssignments ?>, <?= $lackingAssignments ?>, <?= $zeroAssigned ?>],
-            backgroundColor:['#198754','#ffd700','#dc3545']
+    type: 'doughnut',
+    data: {
+        labels: ['COMPLETE', 'INCOMPLETE', 'VACANT'],
+        datasets: [{
+            data: [<?= $completeAssignments ?>, <?= $lackingAssignments ?>, <?= $zeroAssigned ?>],
+            backgroundColor: ['#198754', '#ffd700', '#dc3545']
         }]
     },
-    options:{plugins:{legend:{position:'bottom'}}, responsive: true, maintainAspectRatio: false}
+    options: {
+        plugins: {
+            legend: {
+                position: 'bottom',
+                display: ![<?= $assigned ?>, <?= $unassigned ?>].every(v => v === 0)
+            }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+    }
 });
 </script>
 
