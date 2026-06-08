@@ -7,8 +7,8 @@ $(document).ready(function () {
     ordering: false,
 
     language: {
-      emptyTable: "No data available.",
-      zeroRecords: "No promodisers match the selected filters.",
+      emptyTable: "No data available",
+      zeroRecords: "No promodisers match the selected filters",
     },
 
     columnDefs: [

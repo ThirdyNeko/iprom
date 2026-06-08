@@ -40,8 +40,8 @@ $(document).ready(function () {
         },
       },
       language: {
-        emptyTable: "No data available.",
-        zeroRecords: "No assignments match the selected filters.",
+        emptyTable: "No data available",
+        zeroRecords: "No assignments match the selected filters",
       },
 
       pageLength: 50,
