@@ -209,7 +209,6 @@ $(document).on("click", ".view-user", function () {
       /* ───── Save Profile / Reset Password button visibility ───── */
       $("#saveProfileBtn").toggle(canEdit);
       $("#resetPasswordBtn").toggle(canEdit);
-      $("#saveBranchBtn").toggle(isStaff);
 
       /* ───── search + branch toggles ───── */
       const $modal = $("#userViewModal");
