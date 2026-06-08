@@ -181,6 +181,10 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
                                     <td>
                                         <button class="btn btn-sm btn-success view-user"
                                             data-username="<?= htmlspecialchars($u['username']) ?>">
+                                            Edit
+                                        </button>
+                                        <button class="btn btn-sm btn-primary view-user view-user-readonly"
+                                            data-username="<?= htmlspecialchars($u['username']) ?>">
                                             View
                                         </button>
                                     </td>

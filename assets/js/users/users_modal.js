@@ -157,6 +157,7 @@ function formatMDY(dateStr) {
 ─────────────────────────────────────────── */
 $(document).on("click", ".view-user", function () {
   const username = $(this).data("username");
+  const isReadonly = $(this).hasClass("view-user-readonly");
 
   $.ajax({
     url: "functions/get_user.php",
@@ -166,8 +167,8 @@ $(document).on("click", ".view-user", function () {
     success: function (data) {
       const role = (data.role || "").trim().toLowerCase();
       const isStaff = role === "staff";
-      const canEdit = isPrivileged();
-      const isSuperAdmin = isPrivileged("super_admin");
+      const canEdit = isReadonly ? false : isPrivileged(); // ← locked when readonly
+      const isSuperAdmin = isReadonly ? false : isPrivileged("super_admin");
 
       const assigned = data.branch
         ? data.branch.split(",").map((c) => c.trim())
@@ -220,18 +221,23 @@ $(document).on("click", ".view-user", function () {
           }
         }
       } else {
+        // readonly OR no privilege → always plain text input
         $("#v_role_wrapper").html(
           `<input type="text" id="v_role" class="form-control" readonly>`,
         );
         $("#v_role").val(roleLabels[data.role] ?? data.role);
       }
 
-      /* ───── Reset Password visibility ───── */
+      /* ───── Reset Password + Save visibility ───── */
       $("#resetPasswordBtn").toggle(canEdit);
+      $("#saveChangesBtn").toggle(!isReadonly); // ← hide entirely when readonly
 
       /* ───── search + branch toggles ───── */
       const $modal = $("#userViewModal");
-      $modal.find("#branchSearch").prop("disabled", !isStaff).val("");
+      $modal
+        .find("#branchSearch")
+        .prop("disabled", !isStaff || isReadonly)
+        .val("");
 
       /* ───── build branches ───── */
       const branchHtml = Object.entries(allBranches)
@@ -239,7 +245,7 @@ $(document).on("click", ".view-user", function () {
           const checked = normalizedAssigned.includes(String(code).trim())
             ? "checked"
             : "";
-          const disabled = !isStaff ? "disabled" : "";
+          const disabled = !isStaff || isReadonly ? "disabled" : ""; // ← always disabled when readonly
 
           return `
             <div class="form-check branch-item"
