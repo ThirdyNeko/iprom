@@ -69,7 +69,7 @@ $(document).ready(function () {
                 data-number="${data.contact_number}"
                 data-tel="${data.tel_number}"
                 data-email="${data.email}">
-                Edit
+                Update
               </button>
             </div>
           `;

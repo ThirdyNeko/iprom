@@ -324,7 +324,7 @@ $(document).on("click", "#saveChangesBtn", function () {
   Swal.fire({
     icon: "question",
     title: "Save Changes?",
-    text: `Save changes for "${username}"?`,
+    // text: `Save changes for "${username}"?`,
     showCancelButton: true,
   }).then((result) => {
     if (!result.isConfirmed) return;

@@ -10,7 +10,7 @@
             </div>
 
             <div class="modal-body">
-                <p class="text-muted small mb-3">Select a brand to generate the report for.</p>
+                <p class="text-muted small mb-3">Select a brand to generate the report.</p>
                 <select id="selectBrandComplete" class="form-select">
                     <option value="" disabled selected>— Select a brand —</option>
                     <?php foreach ($brands as $brand): ?>

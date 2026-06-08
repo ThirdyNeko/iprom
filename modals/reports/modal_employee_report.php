@@ -10,7 +10,7 @@
             </div>
 
             <div class="modal-body">
-                <p class="text-muted small mb-3">Select a branch to generate the report for.</p>
+                <p class="text-muted small mb-3">Select a branch to generate the report.</p>
                 <select id="selectBranch" class="form-select">
                     <option value="" disabled selected>— Select a branch —</option>
                     <?php foreach ($branches as $b): ?>

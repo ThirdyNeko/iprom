@@ -77,7 +77,7 @@ function exportEmployeeReport(branchCode, branchLabel) {
         Swal.fire({
           icon: "info",
           title: "No records found",
-          html: "No employees <b>were</b> found for the selected branch.",
+          html: "No employees were found for the selected branch.",
           confirmButtonColor: "#2d68c4",
         });
         return;
@@ -187,7 +187,7 @@ function exportVacantPlantillas(brand) {
         Swal.fire({
           icon: "info",
           title: "No records found",
-          html: "No vacant plantillas <b>were</b> found for the selected brand.",
+          html: "No vacant plantillas were found for the selected brand.",
           confirmButtonColor: "#2d68c4",
         });
         return;
@@ -293,7 +293,7 @@ function exportCompletePlantillas(brand) {
         Swal.fire({
           icon: "info",
           title: "No records found",
-          html: "No complete plantillas <b>were</b> found for the selected brand.",
+          html: "No complete plantillas were found for the selected brand.",
           confirmButtonColor: "#2d68c4",
         });
         return;
