@@ -56,7 +56,7 @@ $(document).ready(function () {
       // ACTIONS
       {
         data: null,
-        width: "70px",
+        width: "90px",
         className: "text-center px-1",
         orderable: false,
         render: function (data) {
