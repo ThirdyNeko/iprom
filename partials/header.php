@@ -1,3 +1,31 @@
+<?php
+session_start();
+include '../config/db.php';
+include '../auth/require_login.php';
+
+// Refresh session values from DB on every page load
+if (isset($_SESSION['user_id'])) {
+    $pdo = qa_db();
+    $stmt = $pdo->prepare("
+        SELECT role, branch, brand, position, department, status, first_login
+        FROM users
+        WHERE id = ?
+    ");
+    $stmt->execute([$_SESSION['user_id']]);
+    $fresh = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($fresh) {
+        $_SESSION['role']        = $fresh['role'];
+        $_SESSION['branch']      = $fresh['branch']      ?? null;
+        $_SESSION['brand']       = $fresh['brand']       ?? null;
+        $_SESSION['position']    = $fresh['position']    ?? null;
+        $_SESSION['department']  = $fresh['department']  ?? null;
+        $_SESSION['status']      = $fresh['status']      ?? null;
+        $_SESSION['first_login'] = $fresh['first_login'] ?? null;
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

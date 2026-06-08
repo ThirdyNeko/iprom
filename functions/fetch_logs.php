@@ -1,4 +1,5 @@
 <?php
+session_start();
 include '../config/db.php';
 
 $pdo = qa_db();
@@ -14,12 +15,12 @@ $search = trim($_POST['search']['value'] ?? '');
 // -------------------------
 // CUSTOM FILTERS
 // -------------------------
-$user       = trim($_POST['user'] ?? '');
-$reason     = trim($_POST['reason'] ?? '');
-$remarks    = trim($_POST['remarks'] ?? '');
-$remarksEmpty = (int)($_POST['remarks_empty'] ?? 0); // ✅ FIX ADDED
-$from_date  = $_POST['from_date'] ?? null;
-$to_date    = $_POST['to_date'] ?? null;
+$user         = trim($_POST['user'] ?? '');
+$reason       = trim($_POST['reason'] ?? '');
+$remarks      = trim($_POST['remarks'] ?? '');
+$remarksEmpty = (int)($_POST['remarks_empty'] ?? 0);
+$from_date    = $_POST['from_date'] ?? null;
+$to_date      = $_POST['to_date'] ?? null;
 
 // -------------------------
 // BASE QUERY
@@ -35,6 +36,36 @@ LEFT JOIN employee_info i
 // -------------------------
 $conditions = [];
 $params = [];
+
+// STAFF BRANCH FILTER
+$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
+
+if ($isStaff) {
+    // Re-index and strip blank values
+    $sessionBranches = array_values(array_filter(
+        explode(',', $_SESSION['branch'] ?? ''),
+        fn($v) => trim($v) !== ''
+    ));
+
+    if (!empty($sessionBranches)) {
+        $branchPlaceholders = [];
+        foreach ($sessionBranches as $idx => $branchVal) {
+            $key = ":branch_{$idx}";
+            $branchPlaceholders[] = $key;
+            $params[$key] = $branchVal;
+        }
+
+        $inList = implode(', ', $branchPlaceholders);
+        $conditions[] = "h.employee_id IN (
+            SELECT employee_id FROM employee_info
+            WHERE branch IN ($inList)
+        )";
+    } else {
+        $conditions[] = "1 = 0";
+    }
+
+    $conditions[] = "h.update_date >= DATEADD(MONTH, -1, GETDATE())";
+}
 
 // GLOBAL SEARCH
 if ($search !== '') {
@@ -60,16 +91,10 @@ if ($reason !== '') {
     $params[':reason'] = "%$reason%";
 }
 
-// =========================
-// REMARKS FILTER (FIXED)
-// =========================
+// REMARKS FILTER
 if ($remarksEmpty) {
-
-    // ONLY EMPTY / NULL REMARKS
     $conditions[] = "(h.remarks IS NULL OR LTRIM(RTRIM(h.remarks)) = '')";
-
 } elseif ($remarks !== '') {
-
     $conditions[] = "h.remarks LIKE :remarks";
     $params[':remarks'] = "%$remarks%";
 }
@@ -97,18 +122,12 @@ $recordsTotal = (int)$totalStmt->fetchColumn();
 // -------------------------
 // FILTERED COUNT
 // -------------------------
-$countSql = "
-SELECT COUNT(*)
-$baseQuery
-$where
-";
+$countSql = "SELECT COUNT(*) $baseQuery $where";
 
 $countStmt = $pdo->prepare($countSql);
-
 foreach ($params as $key => $val) {
     $countStmt->bindValue($key, $val);
 }
-
 $countStmt->execute();
 $recordsFiltered = (int)$countStmt->fetchColumn();
 
@@ -141,15 +160,11 @@ WHERE t.rn BETWEEN :startRow AND :endRow
 ";
 
 $stmt = $pdo->prepare($sql);
-
-// bind filters
 foreach ($params as $key => $val) {
     $stmt->bindValue($key, $val);
 }
-
-// bind pagination
 $stmt->bindValue(':startRow', $startRow, PDO::PARAM_INT);
-$stmt->bindValue(':endRow', $endRow, PDO::PARAM_INT);
+$stmt->bindValue(':endRow',   $endRow,   PDO::PARAM_INT);
 
 $stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -160,12 +175,8 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $rows = [];
 
 foreach ($data as $row) {
-
     $fullName = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
-
-    if ($fullName === '') {
-        $fullName = '-';
-    }
+    if ($fullName === '') $fullName = '-';
 
     $rows[] = [
         $row['updated_by'] ?: 'SYSTEM',
@@ -182,8 +193,8 @@ foreach ($data as $row) {
 // RESPONSE
 // -------------------------
 echo json_encode([
-    "draw" => $draw,
-    "recordsTotal" => $recordsTotal,
+    "draw"            => $draw,
+    "recordsTotal"    => $recordsTotal,
     "recordsFiltered" => $recordsFiltered,
-    "data" => $rows
+    "data"            => $rows
 ]);
