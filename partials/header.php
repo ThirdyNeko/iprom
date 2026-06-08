@@ -1,7 +1,9 @@
 <?php
-session_start();
-include '../config/db.php';
-include '../auth/require_login.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+include_once __DIR__ . '/../config/db.php';
+include_once __DIR__ . '/../auth/require_login.php';
 
 // Refresh session values from DB on every page load
 if (isset($_SESSION['user_id'])) {
