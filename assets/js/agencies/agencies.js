@@ -195,18 +195,24 @@ $(document).ready(function () {
     $(".modal-title").text("Update Agency");
 
     $("#saveAgencyBtn")
-      .text("Update Agency")
+      .text("Save Changes")
       .removeClass("btn-primary")
       .addClass("btn-warning")
       .prop("disabled", true);
 
     // Store originals for change detection
     originalAgencyValues = {
-      name:    $(this).data("name")   || "",
-      person:  $(this).data("person") || "",
-      email:   $(this).data("email")  || "",
-      mobiles: ($(this).data("number") || "").split("|").map(s => s.trim()).filter(Boolean),
-      tels:    ($(this).data("tel")    || "").split("|").map(s => s.trim()).filter(Boolean),
+      name: $(this).data("name") || "",
+      person: $(this).data("person") || "",
+      email: $(this).data("email") || "",
+      mobiles: ($(this).data("number") || "")
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      tels: ($(this).data("tel") || "")
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean),
     };
 
     $("#agencyModal").modal("show");
@@ -245,7 +251,7 @@ $(document).ready(function () {
     $(".modal-title").text("Add Agency");
 
     $("#saveAgencyBtn")
-      .text("Add Agency")
+      .text("Save Agency")
       .removeClass("btn-warning")
       .addClass("btn-primary")
       .prop("disabled", false);
@@ -265,11 +271,21 @@ $(document).ready(function () {
   // =========================
   function getAgencyFormValues() {
     return {
-      name:    $("#agencyName").val().trim().toUpperCase(),
-      person:  $("#contactPerson").val().trim().toUpperCase(),
-      email:   $("#email").val().trim(),
-      mobiles: $("input[name='contact_numbers[]']").map(function () { return $(this).val().trim(); }).get().filter(Boolean),
-      tels:    $("input[name='tel_numbers[]']").map(function () { return $(this).val().trim(); }).get().filter(Boolean),
+      name: $("#agencyName").val().trim().toUpperCase(),
+      person: $("#contactPerson").val().trim().toUpperCase(),
+      email: $("#email").val().trim(),
+      mobiles: $("input[name='contact_numbers[]']")
+        .map(function () {
+          return $(this).val().trim();
+        })
+        .get()
+        .filter(Boolean),
+      tels: $("input[name='tel_numbers[]']")
+        .map(function () {
+          return $(this).val().trim();
+        })
+        .get()
+        .filter(Boolean),
     };
   }
 
@@ -279,11 +295,11 @@ $(document).ready(function () {
     const current = getAgencyFormValues();
 
     const changed =
-      current.name             !== originalAgencyValues.name   ||
-      current.person           !== originalAgencyValues.person ||
-      current.email            !== originalAgencyValues.email  ||
+      current.name !== originalAgencyValues.name ||
+      current.person !== originalAgencyValues.person ||
+      current.email !== originalAgencyValues.email ||
       current.mobiles.join("|") !== originalAgencyValues.mobiles.join("|") ||
-      current.tels.join("|")    !== originalAgencyValues.tels.join("|");
+      current.tels.join("|") !== originalAgencyValues.tels.join("|");
 
     $("#saveAgencyBtn").prop("disabled", !changed);
   }
@@ -294,9 +310,13 @@ $(document).ready(function () {
   });
 
   // Bind to dynamic mobile/telephone inputs
-  $(document).on("input", "input[name='contact_numbers[]'], input[name='tel_numbers[]']", function () {
-    checkAgencyChanges();
-  });
+  $(document).on(
+    "input",
+    "input[name='contact_numbers[]'], input[name='tel_numbers[]']",
+    function () {
+      checkAgencyChanges();
+    },
+  );
 
   // Re-check after removing a mobile row
   $(document).on("click", ".remove-mobile", function () {
