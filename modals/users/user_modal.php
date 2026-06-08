@@ -72,6 +72,10 @@
                 <button type="button" id="resetPasswordBtn" class="btn btn-warning" style="display:none;">
                     Reset Password
                 </button>
+                <!-- NEW -->
+                <button type="button" id="toggleStatusBtn" class="btn" style="display:none;">
+                    <!-- text/class set by JS -->
+                </button>
                 <button type="button" id="saveChangesBtn" class="btn btn-success" disabled>
                     Save Changes
                 </button>

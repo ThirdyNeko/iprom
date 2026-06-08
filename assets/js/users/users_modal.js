@@ -116,6 +116,56 @@ $(document).on("change", "#v_role", function () {
 });
 
 /* ───────────────────────────────────────────
+   TOGGLE USER STATUS  (Enable / Disable)
+─────────────────────────────────────────── */
+$(document).on("click", "#toggleStatusBtn", function () {
+  if (!isPrivileged()) return;
+
+  const username = $("#v_username").val();
+  const isEnable = $(this).text().trim() === "Enable";
+  const newStatus = isEnable ? "ACTIVE" : "INACTIVE";
+  const action = isEnable ? "enable" : "disable";
+
+  Swal.fire({
+    icon: isEnable ? "question" : "warning",
+    title: `${isEnable ? "Enable" : "Disable"} User?`,
+    html: `This will set <strong>${username}</strong> to <strong>${newStatus}</strong>.`,
+    showCancelButton: true,
+    confirmButtonText: `Yes`,
+    confirmButtonColor: isEnable ? "#198754" : "#dc3545",
+  }).then((result) => {
+    if (!result.isConfirmed) return;
+
+    $.ajax({
+      url: "functions/update_user_status.php",
+      type: "POST",
+      data: { username, status: newStatus },
+      dataType: "json",
+      success: function (res) {
+        if (res.success) {
+          Swal.fire({
+            icon: "success",
+            title: `User ${newStatus === "ACTIVE" ? "Enabled" : "Disabled"}`,
+            text: `${username} is now ${newStatus}.`,
+            timer: 1500,
+            showConfirmButton: false,
+          }).then(() => location.reload());
+        } else {
+          Swal.fire(
+            "Error",
+            res.message || "Failed to update status.",
+            "error",
+          );
+        }
+      },
+      error: function () {
+        Swal.fire("Error", "Request failed.", "error");
+      },
+    });
+  });
+});
+
+/* ───────────────────────────────────────────
    SEARCH
 ─────────────────────────────────────────── */
 $(document).on("input", "#branchSearch", function () {
@@ -231,6 +281,28 @@ $(document).on("click", ".view-user", function () {
       /* ───── Reset Password + Save visibility ───── */
       $("#resetPasswordBtn").toggle(canEdit);
       $("#saveChangesBtn").toggle(!isReadonly); // ← hide entirely when readonly
+
+      /* ───── status toggle button ───── */
+      const status = (data.status || "").toUpperCase(); // "ACTIVE" or "INACTIVE"
+      const $toggleBtn = $("#toggleStatusBtn");
+
+      if (canEdit) {
+        if (status === "INACTIVE") {
+          $toggleBtn
+            .text("Enable")
+            .removeClass("btn-danger")
+            .addClass("btn-success")
+            .show();
+        } else {
+          $toggleBtn
+            .text("Disable")
+            .removeClass("btn-success")
+            .addClass("btn-danger")
+            .show();
+        }
+      } else {
+        $toggleBtn.hide();
+      }
 
       /* ───── search + branch toggles ───── */
       const $modal = $("#userViewModal");
