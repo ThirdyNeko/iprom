@@ -229,8 +229,8 @@ const noDataPlugin = {
             ctx.save();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.font = 'bold 18px Arial';
-            ctx.fillStyle = '#6c757d';
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#9fa2a5';
 
             ctx.fillText(
                 'No Data Available',
