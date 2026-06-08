@@ -360,7 +360,7 @@ $(document).on("click", "#saveChangesBtn", function () {
         if (failed) {
           Swal.fire("Error", failed.message || "An error occurred.", "error");
         } else {
-          Swal.fire("Saved!", "Changes updated.", "success").then(() =>
+          Swal.fire("Successfully saved!", "", "success").then(() =>
             location.reload(),
           );
         }
