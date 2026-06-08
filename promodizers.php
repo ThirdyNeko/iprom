@@ -84,12 +84,12 @@ $sessionBranches = !empty($_SESSION['branch'])
     ? array_map('trim', explode(',', $_SESSION['branch']))
     : [];
 
-if (!empty($sessionBranches)) {
-    $promodizers = array_values(array_filter(
-        $promodizers,
-        fn($p) => in_array(trim($p['branch']), $sessionBranches)
-    ));
-}
+$promodizers = empty($sessionBranches)
+        ? []
+        : array_values(array_filter(
+            $promodizers,
+            fn($p) => in_array(trim($p['branch']), $sessionBranches)
+        ));
 // Fetch branches & brands for filter dropdowns
 
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
@@ -122,8 +122,14 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
         text-align: center;
         vertical-align: middle;
     }
+    /* Change this */
     #promodizerTable td:first-child {
         text-align: left !important;
+    }
+
+    /* To this */
+    #promodizerTable tbody tr td[colspan] {
+        text-align: center !important;
     }
 
     #promodizerTable th,

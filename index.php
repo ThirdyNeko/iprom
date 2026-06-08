@@ -18,10 +18,18 @@ $stmt->execute();
 
 // After (with branch filtering):
 $sessionBranches = !empty($_SESSION['branch']) ? $_SESSION['branch'] : null;
-$stmt = $pdo->prepare("EXEC get_dashboard_counts @branches = ?");
-$stmt->execute([$sessionBranches]);
-
-$result = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($sessionBranches === null) {
+    // No assigned branches → zero out everything
+    $result = [
+        'total_promodizers' => 0, 'active_promodizers' => 0, 'inactive_promodizers' => 0,
+        'total_assignments' => 0, 'complete_assignments' => 0,
+        'lacking_assignments' => 0, 'zero_assigned' => 0,
+    ];
+} else {
+    $stmt = $pdo->prepare("EXEC get_dashboard_counts @branches = ?");
+    $stmt->execute([$sessionBranches]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 /* ==============================
    DATA PREPARATION

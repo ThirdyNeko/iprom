@@ -4,9 +4,7 @@ $(document).ready(function () {
   // 1. LOAD BRANCH LOOKUP FIRST
   $.getJSON("functions/get_branches.php", function (res) {
     branchMap = res;
-
-    // 2. ONLY AFTER DATA IS READY → INIT TABLE
-    initTable();
+    initTable(); // always init — __NO_ACCESS__ handles empty branch case
   });
   function applyFiltersFromURL() {
     const params = new URLSearchParams(window.location.search);
@@ -30,6 +28,14 @@ $(document).ready(function () {
         url: "functions/fetch_assignments.php",
         type: "POST",
         data: function (d) {
+          // If no branches assigned, abort by sending an impossible filter
+          if (
+            typeof sessionBranches !== "undefined" &&
+            sessionBranches.length === 0
+          ) {
+            d.branch = "__NO_ACCESS__";
+            return;
+          }
           d.branch = $("#filterBranch").val();
           d.brand = $("#filterBrand").val();
           d.status = $("#filterStatus").val();
