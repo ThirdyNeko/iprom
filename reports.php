@@ -48,10 +48,10 @@ $branches = $pdo->query("
     <div class="container-fluid">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">Reports</h4>
+            <h4 class="fw-bold mb-0">Reports Dashboard</h4>
         </div>
 
-        <p class="text-muted small mb-3">Select a report type to continue.</p>
+        <p class="text-muted small mb-3">Select a report below to generate and view data.</p>
 
         <div class="row g-3 mb-4" id="reportTypeGrid">
 

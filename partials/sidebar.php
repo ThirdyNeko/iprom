@@ -86,7 +86,7 @@
         <li>
             <a href="reports.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'reports.php' ? 'active' : '' ?>">
                 <i class="bi bi-clipboard-data"></i>
-                <span>Generate Reports</span>
+                <span>Reports</span>
             </a>
         </li> 
 
