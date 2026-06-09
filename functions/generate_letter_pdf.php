@@ -123,15 +123,7 @@ $pdf->SetX(10);
 
 // normal text
 $pdf->SetFont('Arial', '', 11);
-$pdf->Write(6, '       Please be informed that ');
-
-// bold + underline employee name
-$pdf->SetFont('Arial', 'BU', 11);
-$pdf->Write(6, $employeeName);
-
-// back to normal
-$pdf->SetFont('Arial', '', 11);
-$pdf->Write(6, ' has complied with all the requirements. Please advise him/her to report for work.');
+$pdf->Write(6, '       Please be informed that the employee named below has complied with all the requirements. Please advise him/her to report to work.');
 
 $pdf->Ln(8);
 
@@ -141,6 +133,9 @@ $pdf->Cell(0, 7, 'EMPLOYEE DETAILS', 0, 1);
 $pdf->SetFont('Arial', '', 11);
 
 // Rows
+$pdf->Cell(55, 7, 'Employee Name', 1, 0);
+$pdf->Cell(0, 7, $employeeName, 1, 1);
+
 $pdf->Cell(55, 7, 'Branch', 1, 0);
 $pdf->Cell(0, 7, $branchDisplay, 1, 1);
 
@@ -193,7 +188,7 @@ $pdf->SetX(10);
 $lineWidth = 50;
 
 $pdf->SetFont('Arial', '', 11);
-$pdf->Write(6, 'Issued By:');
+$pdf->Write(6, 'Issued by:');
 $pdf->Ln(15);
 // Username (centered within underline width)
 $pdf->SetX(10);

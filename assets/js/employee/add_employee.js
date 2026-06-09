@@ -676,7 +676,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       const data = await res.json();
 
       if (data.status === "success") {
-        Swal.fire("Employee Added!", data.message, "success").then(() => {
+        Swal.fire("Employee Added!", "", "success").then(() => {
           form.reset();
           dateRangeFields.classList.add("d-none");
           rovingField.classList.add("d-none");
