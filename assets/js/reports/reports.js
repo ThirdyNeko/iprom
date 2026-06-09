@@ -199,9 +199,9 @@ function exportVacantPlantillas(brand) {
       // ── Row 2: Column headers ─────────────────────────────────────────
       const colHeaders = [
         "Branch",
-        "Plantilla Count",
-        "Assigned",
-        "Vacancy",
+        "Plantilla",
+        "Deployed",
+        "Vacant",
         "Vacant Since",
         "Vacant Period",
       ];
