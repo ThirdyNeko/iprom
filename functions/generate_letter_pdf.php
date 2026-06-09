@@ -112,7 +112,7 @@ $pdf->SetFont('Arial', 'B', 11);
 
 $pdf->Cell(150, 6, $recipientName, 0, 0);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Cell(0, 6, date('F d, Y'), 0, 1);
+$pdf->Cell(0, 6, date('F d, Y'), 0, 1, 'R');
 
 $pdf->Cell(120, 6, $recipientPosition, 0, 1);
 $pdf->Cell(120, 6, $branch, 0, 1);
@@ -152,10 +152,10 @@ $pdf->Cell(55, 7, 'Sub Status', 1, 0);
 $pdf->Cell(0, 7, $subStatus, 1, 1);
 
 $pdf->Cell(55, 7, 'Date of Effectivity', 1, 0);
-$pdf->Cell(0, 7, date('F d, Y', strtotime($effectivityDate)), 1, 1);
+$pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($effectivityDate))), 1, 1);
 
 $pdf->Cell(55, 7, 'To End', 1, 0);
-$pdf->Cell(0, 7, date('F d, Y', strtotime($endDate)), 1, 1);
+$pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($endDate))), 1, 1);
 
 $pdf->Ln(4);
 
@@ -193,14 +193,10 @@ $pdf->Ln(15);
 // Username (centered within underline width)
 $pdf->SetX(10);
 $pdf->SetFont('Arial', 'B', 11);
-$pdf->Cell($lineWidth, 6, $_SESSION['username'], 0, 1, 'C');
-
-// underline directly under same width
-$pdf->SetX(10);
-$pdf->Cell($lineWidth, 0, '', 'B', 1);
+$pdf->Cell($lineWidth, 6, $_SESSION['username'], 0, 1, 'L');
 // Position
 $pdf->SetX(10);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Cell($lineWidth, 6, $_SESSION['position'] ?? '', 0, 1, 'C');
+$pdf->Cell($lineWidth, 6, $_SESSION['position'] ?? '', 0, 1, 'L');
 
 $pdf->Output('I', 'letter_of_advice.pdf');

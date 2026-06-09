@@ -870,8 +870,8 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
           el("editAssignmentDate").value = "";
         }
       }
-      if (el("editStartDate") && employee.start_date) {
-        el("editStartDate").value = employee.start_date; // already YYYY-MM-DD
+      if (el("editStartDate")) {
+        el("editStartDate").value = employee.start_date || "";
       }
       if (el("editEndDate"))
         el("editEndDate").value = cleanValue(employee.end_date);

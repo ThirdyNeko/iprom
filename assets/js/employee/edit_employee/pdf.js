@@ -8,7 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // OPEN MODAL
   // =========================
   openPrintModalBtn.addEventListener("click", () => {
-    const dateHired = document.getElementById("editDateHired").value;
+    const dateHired =
+      document.getElementById("editStartDate").value ||
+      document.getElementById("editDateHired").value;
 
     document.getElementById("loaDateHired").value = dateHired;
 
@@ -104,7 +106,9 @@ document.addEventListener("DOMContentLoaded", () => {
         sub_status: document.getElementById("editSubStatus").value,
         status: document.getElementById("editStatus").value,
         remarks: document.getElementById("editRemarks").value,
-        effectivity_date: document.getElementById("editDateHired").value,
+        effectivity_date:
+          document.getElementById("editStartDate").value ||
+          document.getElementById("editDateHired").value,
       };
 
       try {
