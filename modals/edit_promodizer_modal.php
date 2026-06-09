@@ -310,7 +310,7 @@ th{
 
                 <!-- DATE HIRED DISPLAY -->
                 <div class="mb-3">
-                    <label class="form-label">Date Hired</label>
+                    <label class="form-label" for="loaDateHired">Date Hired</label>
                     <input type="date" id="loaDateHired" class="form-control" readonly>
                 </div>
 

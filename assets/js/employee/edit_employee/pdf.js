@@ -8,6 +8,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // OPEN MODAL
   // =========================
   openPrintModalBtn.addEventListener("click", () => {
+    const startDate = document.getElementById("editStartDate").value;
+    const effectivityDate =
+      startDate || document.getElementById("editDateHired").value;
+
+    document.getElementById("loaDateHired").value = effectivityDate;
+    document.querySelector("label[for='loaDateHired']").textContent = startDate
+      ? "Effectivity Date"
+      : "Date Hired";
     const dateHired =
       document.getElementById("editStartDate").value ||
       document.getElementById("editDateHired").value;
