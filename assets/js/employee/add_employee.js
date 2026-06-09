@@ -628,16 +628,16 @@ document.addEventListener("DOMContentLoaded", async function () {
       return Swal.fire("Error", "Failed to validate employee.", "error");
     }
 
-    // Confirmation
-    const confirm = await Swal.fire({
-      icon: "warning",
-      title: "Are you sure?",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Save",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#d33",
-    });
-    if (!confirm.isConfirmed) return;
+    // // Confirmation
+    // const confirm = await Swal.fire({
+    //   icon: "warning",
+    //   title: "Are you sure?",
+    //   showCancelButton: true,
+    //   confirmButtonText: "Yes, Save",
+    //   cancelButtonText: "Cancel",
+    //   confirmButtonColor: "#d33",
+    // });
+    // if (!confirm.isConfirmed) return;
 
     try {
       btn.disabled = true;
