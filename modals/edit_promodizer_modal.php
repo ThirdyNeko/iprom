@@ -108,6 +108,11 @@ th{
 #printPdfModal #recipientPosition {
     text-transform: uppercase;
 }
+
+#editReasonUpdate option:disabled {
+    color: #adb5bd;
+}
+
 </style>
 <div class="modal fade" id="editPromodizerModal" tabindex="-1">
     <div class="modal-dialog modal-xl">

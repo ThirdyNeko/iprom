@@ -168,6 +168,23 @@ function toggleEmploymentDates() {
   }
 }
 
+function toggleBranchReasonOptions() {
+  const subStatus = (
+    document.getElementById("editSubStatus")?.value || ""
+  ).toUpperCase();
+  const isStationary = subStatus === "STATIONARY";
+
+  const addOpt = reasonSelect?.querySelector(
+    'option[value="ADD BRANCH/BRAND"]',
+  );
+  const removeOpt = reasonSelect?.querySelector(
+    'option[value="REMOVE BRANCH/BRAND"]',
+  );
+
+  if (addOpt) addOpt.disabled = isStationary;
+  if (removeOpt) removeOpt.disabled = isStationary;
+}
+
 function toggleReasonDates() {
   if (!reasonSelect) return;
 
@@ -994,6 +1011,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       toggleTransferEditable(); // 👈 ADD HERE
       toggleStatusesEditable();
       toggleAddButtons();
+      toggleBranchReasonOptions();
     } catch (err) {
       console.error(err);
       Swal.fire({
@@ -1446,6 +1464,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       toggleSubStatusOptions();
       syncMultiUI(value);
+      toggleBranchReasonOptions();
 
       // ONLY initialize if container is empty
       if (
