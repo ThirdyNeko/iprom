@@ -768,6 +768,7 @@ function resetEditModal() {
 // =========================
 document.querySelectorAll(".clickable-row").forEach((row) => {
   row.addEventListener("click", async () => {
+    await initPromise;
     resetEditModal();
 
     const id = row.dataset.id;
@@ -840,6 +841,9 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       if (el("editBranch")) {
         const value = cleanValue(employee.branch);
         populateEditBranch([employee.branch], employee.brand, employee.branch);
+        console.log("branchBrandPairs", branchBrandPairs.length);
+        console.log("employee.branch", employee.branch);
+        console.log("employee.brand", employee.brand);
       }
       if (el("editCorpo")) {
         const input = el("editCorpo");
@@ -1229,6 +1233,8 @@ async function loadBranchBrandPairs() {
 
 let agencyList = [];
 
+const initPromise = Promise.all([loadAgencies(), loadBranchBrandPairs()]);
+
 async function loadAgencies() {
   try {
     const res = await fetch("functions/get_agencies.php");
@@ -1382,8 +1388,7 @@ function isComboAvailable(branch, brand) {
 // INIT LISTENERS
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
-  await loadAgencies();
-  await loadBranchBrandPairs(); // 🔥 ADD THIS
+  await initPromise;
 
   if (reasonSelect) {
     reasonSelect.addEventListener("change", toggleDateSeparated);
