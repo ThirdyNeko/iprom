@@ -55,6 +55,25 @@ $branches = $pdo->query("
 
         <div class="row g-3 mb-4" id="reportTypeGrid">
 
+            <!-- add after the employee_report card -->
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="report-type-card card shadow-sm h-100 p-3"
+                    data-type="branch_plantillas"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalBranchPlantillas"
+                    onclick="selectReportType(this)">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <div class="report-icon">🏪</div>
+                        <div>
+                            <h6 class="card-title fw-bold mb-1">Branch Plantilla Records</h6>
+                            <p class="card-text text-muted small mb-0">
+                                Generate a report on the complete, vacant, and incomplete plantilla records for the selected branch.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="report-type-card card shadow-sm h-100 p-3"
                      data-type="vacant_plantillas"
@@ -109,5 +128,6 @@ $branches = $pdo->query("
 <?php
 include 'modals/reports/modal_vacant_plantillas.php';
 include 'modals/reports/modal_employee_report.php';
+include 'modals/reports/modal_branch_plantillas.php';
 include 'modals/change_password_modal.php';
 ?>
