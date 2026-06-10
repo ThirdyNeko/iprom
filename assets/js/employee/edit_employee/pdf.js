@@ -34,8 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const formatDate = (d) => d.toISOString().split("T")[0];
 
       const endInput = document.getElementById("recipientEndDate");
+      const existingEndDate = document.getElementById("editEndDate")?.value;
 
-      endInput.value = formatDate(defaultDate);
+      endInput.value = existingEndDate || formatDate(defaultDate);
       endInput.min = formatDate(hiredDate);
       endInput.max = formatDate(maxDate);
     }
