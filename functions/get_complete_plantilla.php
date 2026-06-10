@@ -11,6 +11,9 @@ if (!$brand) {
     exit;
 }
 
+$isAll = $brand === 'ALL';
+$brandFilter = $isAll ? '' : 'AND a.brand_name = :brand';
+
 $stmt = $pdo->prepare("
     SELECT
         b.branch,
@@ -21,13 +24,14 @@ $stmt = $pdo->prepare("
     FROM [IPROM].[dbo].[assignment] a
     LEFT JOIN [IPROM].[dbo].[branches] b
         ON a.branch_name = b.branch_code
-    WHERE a.brand_name = :brand
-      AND required_count = assigned_count
+    WHERE required_count = assigned_count
       AND required_count > 0
-    ORDER BY b.branch
+      $brandFilter
+    ORDER BY a.brand_name, b.branch
 ");
 
-$stmt->execute([':brand' => $brand]);
+if (!$isAll) $stmt->bindParam(':brand', $brand);
+$stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 echo json_encode($rows);

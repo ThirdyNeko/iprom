@@ -11,6 +11,7 @@ function selectReportType(card) {
 function generateReport(type) {
   if (type === "vacant_plantillas") {
     const brand = document.getElementById("selectBrandVacant").value;
+    const status = document.getElementById("selectStatusVacant").value;
     if (!brand) {
       Swal.fire({
         icon: "warning",
@@ -21,7 +22,7 @@ function generateReport(type) {
       return;
     }
     bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
-    exportVacantPlantillas(brand);
+    exportVacantPlantillas(brand, status);
   } else if (type === "employee_report") {
     const branchCode = document.getElementById("selectBranch").value;
     const branchLabel =
@@ -166,7 +167,7 @@ function exportEmployeeReport(branchCode, branchLabel) {
     });
 }
 
-function exportVacantPlantillas(brand) {
+function exportVacantPlantillas(brand, status = "all") {
   const btn = document.getElementById("btnGenerateVacantPlantillas");
   btn.disabled = true;
   btn.innerHTML =
@@ -205,7 +206,11 @@ function exportVacantPlantillas(brand) {
         "", // vacant period
       ]);
 
-      const combined = [...vacantRows, ...completeRows];
+      const combined = [
+        ...(status === "complete" ? [] : vacantRows),
+        ...(status === "vacant" ? [] : completeRows),
+      ].sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+      //                 ^ brand (col 0)              ^ branch (col 1)
 
       if (!combined.length) {
         Swal.fire({
