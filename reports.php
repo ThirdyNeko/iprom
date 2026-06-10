@@ -101,7 +101,7 @@ $branches = $pdo->query("
                     <div class="card-body d-flex align-items-start gap-3">
                         <div class="report-icon">👤</div>
                         <div>
-                            <h6 class="card-title fw-bold mb-1">Employee List</h6>
+                            <h6 class="card-title fw-bold mb-1">Promodiser List</h6>
                             <p class="card-text text-muted small mb-0">
                                 Generate a report on the employee roster for the selected branch.
                             </p>

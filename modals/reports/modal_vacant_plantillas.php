@@ -4,7 +4,7 @@
 
             <div class="modal-header" style="background-color:#2d68c4;">
                 <h5 class="modal-title text-white fw-bold" id="modalVacantPlantillasLabel">
-                    📭 Vacant & Incomplete Plantillas Report
+                    📭 Brand Plantilla Records
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

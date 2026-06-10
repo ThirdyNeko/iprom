@@ -90,7 +90,7 @@ function exportEmployeeReport(branchCode, branchLabel) {
       // ── Row 1: Header label (merged visually via empty cols) ──────────
       const headerLabel = [
         [`${branchLabel}`, "", "", "", ""],
-        [`as of ${dateStr}`, "", "", "", ""],
+        [`As of ${dateStr}`, "", "", "", ""],
       ];
 
       // ── Row 2: Column headers ─────────────────────────────────────────
@@ -168,7 +168,7 @@ function exportEmployeeReport(branchCode, branchLabel) {
       // ── Write file ────────────────────────────────────────────────────
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Employee Report");
-      XLSX.writeFile(wb, `${branchCode}_PROMO_INV_${fileSuffix}.xlsx`);
+      XLSX.writeFile(wb, `${branchCode}_PROMO_LIST_${fileSuffix}.xlsx`);
     })
     .catch(() => {
       Swal.fire({
@@ -211,6 +211,8 @@ function exportVacantPlantillas(brand, status = "all") {
         vacantCount(p.required_count, p.assigned_count),
         formatDate(p.timestamp) ?? "",
         monthDaysSince(p.timestamp) ?? "",
+        "",
+        "",
       ]);
 
       const completeRows = completeData.map((p) => [
@@ -221,6 +223,8 @@ function exportVacantPlantillas(brand, status = "all") {
         0, // vacant
         "", // vacant since
         "", // vacant period
+        formatDate(p.timestamp) ?? "",
+        monthDaysSince(p.timestamp) ?? "",
       ]);
 
       const combined = [
@@ -240,8 +244,8 @@ function exportVacantPlantillas(brand, status = "all") {
       }
 
       const headerLabel = [
-        [`${brand}`, "", "", "", "", "", ""],
-        [`as of ${dateStr}`, "", "", "", "", "", ""],
+        [`${brand}`, "", "", "", "", "", "", "", ""],
+        [`As of ${dateStr}`, "", "", "", "", "", "", "", ""],
       ];
 
       const colHeaders = [
@@ -252,6 +256,8 @@ function exportVacantPlantillas(brand, status = "all") {
         "Vacant",
         "Vacant Since",
         "Vacant Period",
+        "Complete Since",
+        "Complete Period",
       ];
 
       const exportData = [...headerLabel, colHeaders, ...combined];
@@ -259,8 +265,8 @@ function exportVacantPlantillas(brand, status = "all") {
       const ws = XLSX.utils.aoa_to_sheet(exportData);
 
       ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } },
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
       ];
 
       if (ws["A1"]) {
@@ -349,6 +355,8 @@ function exportBranchPlantillas(branch, status = "all") {
         vacantCount(p.required_count, p.assigned_count),
         formatDate(p.timestamp) ?? "",
         monthDaysSince(p.timestamp) ?? "",
+        "",
+        "",
       ]);
 
       const completeRows = completeData.map((p) => [
@@ -359,6 +367,8 @@ function exportBranchPlantillas(branch, status = "all") {
         0,
         "",
         "",
+        formatDate(p.timestamp) ?? "",
+        monthDaysSince(p.timestamp) ?? "",
       ]);
 
       const combined = [
@@ -377,8 +387,8 @@ function exportBranchPlantillas(branch, status = "all") {
       }
 
       const headerLabel = [
-        [`${branchLabel}`, "", "", "", "", "", ""],
-        [`as of ${dateStr}`, "", "", "", "", "", ""],
+        [`${branchLabel}`, "", "", "", "", "", "", "", ""],
+        [`As of ${dateStr}`, "", "", "", "", "", "", "", ""],
       ];
 
       const colHeaders = [
@@ -389,6 +399,8 @@ function exportBranchPlantillas(branch, status = "all") {
         "Vacant",
         "Vacant Since",
         "Vacant Period",
+        "Complete Since",
+        "Complete Period",
       ];
 
       const exportData = [...headerLabel, colHeaders, ...combined];
@@ -396,8 +408,8 @@ function exportBranchPlantillas(branch, status = "all") {
       const ws = XLSX.utils.aoa_to_sheet(exportData);
 
       ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } },
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
       ];
 
       if (ws["A1"]) {
