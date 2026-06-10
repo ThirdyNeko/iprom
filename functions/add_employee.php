@@ -44,7 +44,7 @@ $corpo = $stmt->fetchColumn();
 
 // ✅ Only generate NEW ID if NOT reassigning
 if ($reassign !== '1') {
-    $employee_id = 'EMP-' . date('YmdHis') . '-' . rand(100, 999);
+    $employee_id = 'EMP-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 }
 // =========================
 // ROVING BRANCHES
@@ -58,7 +58,7 @@ $roving_branches = array_unique(array_filter($roving_branches, fn($b) => $b !== 
 $roving_group_id = null;
 
 if ($sub_status === 'MULTI BRANCH' || $sub_status === 'HYBRID') { // ✅ FIXED
-    $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100, 999);
+    $roving_group_id = 'ROV-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 }
 
 // =========================
@@ -115,7 +115,7 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
 }
 
 if ($sub_status === 'MULTI BRAND' || $sub_status === 'HYBRID') {
-    $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100, 999);
+    $multi_brand_group_id = 'MBR-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 }
 
 if ($date_hired && $date_hired > date('Y-m-d')) {

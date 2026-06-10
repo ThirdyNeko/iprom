@@ -467,22 +467,23 @@ if (
     if ($isHybrid) {
 
         if (empty($roving_group_id)) {
-            $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100,999);
+            $roving_group_id = 'ROV-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
+
         }
 
         if (empty($multi_brand_group_id)) {
-            $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100,999);
+            $multi_brand_group_id = 'MBR-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
         }
     }
 
     // MULTI BRANCH only
     if ($isMultiBranch && empty($roving_group_id)) {
-        $roving_group_id = 'ROV-' . date('YmdHis') . '-' . rand(100,999);
+        $roving_group_id = 'ROV-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
     }
 
     // MULTI BRAND only
     if ($isMultiBrand && empty($multi_brand_group_id)) {
-        $multi_brand_group_id = 'MBR-' . date('YmdHis') . '-' . rand(100,999);
+        $multi_brand_group_id = 'MBR-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
     }
 }
 
