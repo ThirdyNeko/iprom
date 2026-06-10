@@ -10,14 +10,24 @@
             </div>
 
             <div class="modal-body">
-                <p class="text-muted small mb-3">Select a brand to generate the report.</p>
-                <select id="selectBrandVacant" class="form-select">
+                <p class="text-muted small mb-3">Select a brand and status to generate the report.</p>
+
+                <label class="form-label fw-semibold small">Brand</label>
+                <select id="selectBrandVacant" class="form-select mb-3">
                     <option value="" disabled selected>— Select a brand —</option>
+                    <option value="ALL">All Brands</option>
                     <?php foreach ($brands as $brand): ?>
                         <option value="<?= htmlspecialchars($brand) ?>">
                             <?= htmlspecialchars($brand) ?>
                         </option>
                     <?php endforeach; ?>
+                </select>
+
+                <label class="form-label fw-semibold small">Status</label>
+                <select id="selectStatusVacant" class="form-select">
+                    <option value="all">All</option>
+                    <option value="complete">Complete</option>
+                    <option value="vacant">Vacant & Incomplete</option>
                 </select>
             </div>
 

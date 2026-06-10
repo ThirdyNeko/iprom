@@ -9,21 +9,7 @@ function selectReportType(card) {
 }
 
 function generateReport(type) {
-  if (type === "complete_plantillas") {
-    const brand = document.getElementById("selectBrandComplete").value;
-    if (!brand) {
-      Swal.fire({
-        icon: "warning",
-        title: "No brand selected",
-        text: "Please select a brand first.",
-        confirmButtonColor: "#2d68c4",
-      });
-      return;
-    }
-    bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
-    exportCompletePlantillas(brand);
-    // TODO: loadReportTable('complete_plantillas', brand);
-  } else if (type === "vacant_plantillas") {
+  if (type === "vacant_plantillas") {
     const brand = document.getElementById("selectBrandVacant").value;
     if (!brand) {
       Swal.fire({
@@ -84,7 +70,10 @@ function exportEmployeeReport(branchCode, branchLabel) {
       }
 
       // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [`${branchLabel} as of ${dateStr}`, "", "", "", ""];
+      const headerLabel = [
+        [`${branchLabel}`, "", "", "", ""],
+        [`as of ${dateStr}`, "", "", "", ""],
+      ];
 
       // ── Row 2: Column headers ─────────────────────────────────────────
       const colHeaders = [
@@ -110,13 +99,16 @@ function exportEmployeeReport(branchCode, branchLabel) {
         formatDate(p.date_hired),
       ]);
 
-      const exportData = [headerLabel, colHeaders, ...dataRows];
+      const exportData = [...headerLabel, colHeaders, ...dataRows];
 
       // ── Build worksheet ───────────────────────────────────────────────
       const ws = XLSX.utils.aoa_to_sheet(exportData);
 
       // Merge A1:E1 for the header label
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }];
+      ws["!merges"] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }, // ← add this
+      ];
 
       // Style A1 — bold, centered (SheetJS CE supports basic styles via cell object)
       if (ws["A1"]) {
@@ -126,9 +118,16 @@ function exportEmployeeReport(branchCode, branchLabel) {
         };
       }
 
+      if (ws["A2"]) {
+        ws["A2"].s = {
+          font: { sz: 10, italic: true },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+      }
+
       // Style header row (row 2 = index 1)
       colHeaders.forEach((_, ci) => {
-        const cellRef = XLSX.utils.encode_cell({ r: 1, c: ci });
+        const cellRef = XLSX.utils.encode_cell({ r: 2, c: ci });
         if (ws[cellRef]) {
           ws[cellRef].s = {
             font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -174,40 +173,20 @@ function exportVacantPlantillas(brand) {
     '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
 
   const today = new Date();
-  const dateStr = formatDateDisplay(today); // e.g. "June 01, 2026"
-  const fileSuffix = formatDateFile(today); // e.g. "2026-06-01"
+  const dateStr = formatDateDisplay(today);
+  const fileSuffix = formatDateFile(today);
 
-  fetch(
-    "functions/get_vacant_plantilla.php?" +
-      new URLSearchParams({ brand: brand }),
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      if (!data.length) {
-        Swal.fire({
-          icon: "info",
-          title: "No records found",
-          html: "No vacant plantillas were found for the selected brand.",
-          confirmButtonColor: "#2d68c4",
-        });
-        return;
-      }
-
-      // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [`${brand} as of ${dateStr}`, "", "", "", "", ""];
-
-      // ── Row 2: Column headers ─────────────────────────────────────────
-      const colHeaders = [
-        "Branch",
-        "Plantilla",
-        "Deployed",
-        "Vacant",
-        "Vacant Since",
-        "Vacant Period",
-      ];
-
-      // ── Data rows ─────────────────────────────────────────────────────
-      const dataRows = data.map((p) => [
+  Promise.all([
+    fetch(
+      "functions/get_vacant_plantilla.php?" + new URLSearchParams({ brand }),
+    ).then((r) => r.json()),
+    fetch(
+      "functions/get_complete_plantilla.php?" + new URLSearchParams({ brand }),
+    ).then((r) => r.json()),
+  ])
+    .then(([vacantData, completeData]) => {
+      const vacantRows = vacantData.map((p) => [
+        p.brand ?? "",
         p.branch ?? "",
         p.required_count ?? "",
         p.assigned_count ?? "",
@@ -216,119 +195,52 @@ function exportVacantPlantillas(brand) {
         monthDaysSince(p.timestamp) ?? "",
       ]);
 
-      const exportData = [headerLabel, colHeaders, ...dataRows];
+      const completeRows = completeData.map((p) => [
+        p.brand ?? "",
+        p.branch ?? "",
+        p.required_count ?? "",
+        p.assigned_count ?? "",
+        0, // vacant
+        "", // vacant since
+        "", // vacant period
+      ]);
 
-      // ── Build worksheet ───────────────────────────────────────────────
-      const ws = XLSX.utils.aoa_to_sheet(exportData);
+      const combined = [...vacantRows, ...completeRows];
 
-      // Merge A1:E1 for the header label
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
-
-      // Style A1 — bold, centered (SheetJS CE supports basic styles via cell object)
-      if (ws["A1"]) {
-        ws["A1"].s = {
-          font: { bold: true, sz: 12 },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
-      }
-
-      // Style header row (row 2 = index 1)
-      colHeaders.forEach((_, ci) => {
-        const cellRef = XLSX.utils.encode_cell({ r: 1, c: ci });
-        if (ws[cellRef]) {
-          ws[cellRef].s = {
-            font: { bold: true, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "2D68C4" } },
-            alignment: { horizontal: "center" },
-          };
-        }
-      });
-
-      // Auto column widths (based on all rows including header label)
-      ws["!cols"] = colHeaders.map((_, ci) => {
-        let max = 10;
-        exportData.forEach((row) => {
-          const val = row[ci] ? row[ci].toString() : "";
-          max = Math.max(max, val.length);
-        });
-        return { wch: max + 2 };
-      });
-
-      // ── Write file ────────────────────────────────────────────────────
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Vacant Plantillas Report");
-      XLSX.writeFile(wb, `${brand}_VACANT_PLANTILLAS_${fileSuffix}.xlsx`);
-    })
-    .catch(() => {
-      Swal.fire({
-        icon: "error",
-        title: "Export failed",
-        text: "Something went wrong while fetching the data.",
-        confirmButtonColor: "#2d68c4",
-      });
-    })
-    .finally(() => {
-      btn.disabled = false;
-      btn.innerHTML = "Generate Report";
-    });
-}
-
-function exportCompletePlantillas(brand) {
-  const btn = document.getElementById("btnGenerateCompletePlantillas");
-  btn.disabled = true;
-  btn.innerHTML =
-    '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
-
-  const today = new Date();
-  const dateStr = formatDateDisplay(today); // e.g. "June 01, 2026"
-  const fileSuffix = formatDateFile(today); // e.g. "2026-06-01"
-
-  fetch(
-    "functions/get_complete_plantilla.php?" +
-      new URLSearchParams({ brand: brand }),
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      if (!data.length) {
+      if (!combined.length) {
         Swal.fire({
           icon: "info",
           title: "No records found",
-          html: "No complete plantillas were found for the selected brand.",
+          html: "No plantilla records were found for the selected brand.",
           confirmButtonColor: "#2d68c4",
         });
         return;
       }
 
-      // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [`${brand} as of ${dateStr}`, "", "", "", "", ""];
-
-      // ── Row 2: Column headers ─────────────────────────────────────────
-      const colHeaders = [
-        "Branch",
-        "Plantilla Count",
-        // "Assigned Count",
-        "Complete Since",
-        // "Months Complete",
+      const headerLabel = [
+        [`${brand}`, "", "", "", "", "", ""],
+        [`as of ${dateStr}`, "", "", "", "", "", ""],
       ];
 
-      // ── Data rows ─────────────────────────────────────────────────────
-      const dataRows = data.map((p) => [
-        p.branch ?? "",
-        p.required_count ?? "",
-        // p.assigned_count ?? "",
-        formatDate(p.timestamp) ?? "",
-        // monthDaysSince(p.timestamp) ?? "",
-      ]);
+      const colHeaders = [
+        "Brand",
+        "Branch",
+        "Plantilla",
+        "Deployed",
+        "Vacant",
+        "Vacant Since",
+        "Vacant Period",
+      ];
 
-      const exportData = [headerLabel, colHeaders, ...dataRows];
+      const exportData = [...headerLabel, colHeaders, ...combined];
 
-      // ── Build worksheet ───────────────────────────────────────────────
       const ws = XLSX.utils.aoa_to_sheet(exportData);
 
-      // Merge A1:E1 for the header label
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+      ws["!merges"] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } },
+      ];
 
-      // Style A1 — bold, centered (SheetJS CE supports basic styles via cell object)
       if (ws["A1"]) {
         ws["A1"].s = {
           font: { bold: true, sz: 12 },
@@ -336,9 +248,15 @@ function exportCompletePlantillas(brand) {
         };
       }
 
-      // Style header row (row 2 = index 1)
+      if (ws["A2"]) {
+        ws["A2"].s = {
+          font: { sz: 10, italic: true },
+          alignment: { horizontal: "center", vertical: "center" },
+        };
+      }
+
       colHeaders.forEach((_, ci) => {
-        const cellRef = XLSX.utils.encode_cell({ r: 1, c: ci });
+        const cellRef = XLSX.utils.encode_cell({ r: 2, c: ci });
         if (ws[cellRef]) {
           ws[cellRef].s = {
             font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -348,7 +266,6 @@ function exportCompletePlantillas(brand) {
         }
       });
 
-      // Auto column widths (based on all rows including header label)
       ws["!cols"] = colHeaders.map((_, ci) => {
         let max = 10;
         exportData.forEach((row) => {
@@ -358,10 +275,9 @@ function exportCompletePlantillas(brand) {
         return { wch: max + 2 };
       });
 
-      // ── Write file ────────────────────────────────────────────────────
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Complete Plantillas Report");
-      XLSX.writeFile(wb, `${brand}_COMPLETE_PLANTILLAS_${fileSuffix}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, "Vacant Plantillas Report");
+      XLSX.writeFile(wb, `${brand}_VACANT_PLANTILLAS_${fileSuffix}.xlsx`);
     })
     .catch(() => {
       Swal.fire({

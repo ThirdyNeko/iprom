@@ -16,7 +16,8 @@ $stmt = $pdo->prepare("
         b.branch,
         a.required_count,
         a.assigned_count,
-        a.timestamp
+        a.timestamp,
+        a.brand_name AS brand
     FROM [IPROM].[dbo].[assignment] a
     LEFT JOIN [IPROM].[dbo].[branches] b
         ON a.branch_name = b.branch_code

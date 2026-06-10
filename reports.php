@@ -57,24 +57,6 @@ $branches = $pdo->query("
 
             <div class="col-12 col-sm-6 col-lg-4">
                 <div class="report-type-card card shadow-sm h-100 p-3"
-                     data-type="complete_plantillas"
-                     data-bs-toggle="modal"
-                     data-bs-target="#modalCompletePlantillas"
-                     onclick="selectReportType(this)">
-                    <div class="card-body d-flex align-items-start gap-3">
-                        <div class="report-icon">📋</div>
-                        <div>
-                            <h6 class="card-title fw-bold mb-1">Complete Plantillas</h6>
-                            <p class="card-text text-muted small mb-0">
-                                Generate a report on all currently complete plantilla records.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="report-type-card card shadow-sm h-100 p-3"
                      data-type="vacant_plantillas"
                      data-bs-toggle="modal"
                      data-bs-target="#modalVacantPlantillas"
@@ -82,9 +64,9 @@ $branches = $pdo->query("
                     <div class="card-body d-flex align-items-start gap-3">
                         <div class="report-icon">📭</div>
                         <div>
-                            <h6 class="card-title fw-bold mb-1">Vacant & Incomplete Plantillas</h6>
+                            <h6 class="card-title fw-bold mb-1">Brand Plantilla Records</h6>
                             <p class="card-text text-muted small mb-0">
-                                Generate a report on vacant and incomplete plantilla records.
+                                Generate a report on the complete, vacant, and incomplete plantilla records in the selected brand.
                             </p>
                         </div>
                     </div>
@@ -100,9 +82,9 @@ $branches = $pdo->query("
                     <div class="card-body d-flex align-items-start gap-3">
                         <div class="report-icon">👤</div>
                         <div>
-                            <h6 class="card-title fw-bold mb-1">Employee Report</h6>
+                            <h6 class="card-title fw-bold mb-1">Employee List</h6>
                             <p class="card-text text-muted small mb-0">
-                                Generate a report on employee information.
+                                Generate a report on the employee roster for the selected branch.
                             </p>
                         </div>
                     </div>
@@ -125,7 +107,6 @@ $branches = $pdo->query("
 <script src="assets/js/reports/reports.js"></script>
 
 <?php
-include 'modals/reports/modal_complete_plantillas.php';
 include 'modals/reports/modal_vacant_plantillas.php';
 include 'modals/reports/modal_employee_report.php';
 include 'modals/change_password_modal.php';
