@@ -43,7 +43,6 @@ $params = [];
 $isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
 
 if ($isStaff) {
-    // Re-index and strip blank values
     $sessionBranches = array_values(array_filter(
         explode(',', $_SESSION['branch'] ?? ''),
         fn($v) => trim($v) !== ''
@@ -81,10 +80,14 @@ if ($search !== '') {
     $params[':search'] = "%$search%";
 }
 
-// USER FILTER
+// USER FILTER ✅ Fixed: was using $sql .= instead of $conditions[]
 if ($user !== '') {
-    $conditions[] = "h.updated_by LIKE :user";
-    $params[':user'] = "%$user%";
+    if (strtolower($user) === 'system') {
+        $conditions[] = "h.updated_by IS NULL";
+    } else {
+        $conditions[] = "h.updated_by LIKE :user";
+        $params[':user'] = "%$user%";
+    }
 }
 
 // REASON FILTER
@@ -127,14 +130,11 @@ $recordsTotal = (int)$totalStmt->fetchColumn();
 $countSql = "SELECT COUNT(*) $baseQuery $where";
 
 $countStmt = $pdo->prepare($countSql);
-foreach ($params as $key => $val) {
-    $countStmt->bindValue($key, $val);
-}
-$countStmt->execute();
+$countStmt->execute($params); // ✅ cleaner than foreach bindValue
 $recordsFiltered = (int)$countStmt->fetchColumn();
 
 // -------------------------
-// PAGINATION (ROW_NUMBER)
+// PAGINATION
 // -------------------------
 $startRow = $start + 1;
 $endRow   = $start + $length;
@@ -162,13 +162,11 @@ WHERE t.rn BETWEEN :startRow AND :endRow
 ";
 
 $stmt = $pdo->prepare($sql);
-foreach ($params as $key => $val) {
-    $stmt->bindValue($key, $val);
-}
-$stmt->bindValue(':startRow', $startRow, PDO::PARAM_INT);
-$stmt->bindValue(':endRow',   $endRow,   PDO::PARAM_INT);
+$stmt->execute(array_merge($params, [
+    ':startRow' => $startRow,
+    ':endRow'   => $endRow,
+]));
 
-$stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // -------------------------

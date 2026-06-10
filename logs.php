@@ -166,6 +166,13 @@ table td {
             <div class="col">
                 <h4 class="fw-bold mb-0">Employee Logs</h4>
             </div>
+            <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                <div class="d-flex justify-content-md-end gap-2 flex-wrap">
+                    <button id="exportExcel" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> Export
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="card shadow-sm">
@@ -271,6 +278,7 @@ table td {
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/xlsx.full.min.js"></script>
 <script src="assets/js/log/logs.js"></script>
 
 <script>
