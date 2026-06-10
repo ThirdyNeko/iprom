@@ -179,51 +179,66 @@ $(document).ready(function () {
   });
 });
 
-document.getElementById("exportExcel").addEventListener("click", function () {
-  const table = $("#assignmentTable").DataTable();
+document
+  .getElementById("exportExcel")
+  .addEventListener("click", async function () {
+    const table = $("#assignmentTable").DataTable();
+    const rows = table.rows({ search: "applied" }).nodes();
 
-  const rows = table.rows({ search: "applied" }).nodes();
-
-  let exportData = [];
-
-  // headers
-  let headers = [];
-  $("#assignmentTable thead th").each(function () {
-    headers.push($(this).text().trim());
-  });
-
-  exportData.push(headers);
-
-  // rows
-  $(rows).each(function () {
-    let row = [];
-
-    $(this)
-      .find("td")
-      .each(function () {
-        row.push($(this).text().trim());
+    // warn if large export
+    if ($(rows).length > 1000) {
+      const proceed = await Swal.fire({
+        title: "Large Export",
+        text: `You're about to export ${$(rows).length} rows. This may take a moment. Continue?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, export",
+        cancelButtonText: "Cancel",
       });
 
-    exportData.push(row);
-  });
+      if (!proceed.isConfirmed) return;
+    }
 
-  // worksheet
-  const ws = XLSX.utils.aoa_to_sheet(exportData);
+    let exportData = [];
 
-  // auto column width
-  ws["!cols"] = exportData[0].map((_, i) => {
-    let max = 10;
-
-    exportData.forEach((r) => {
-      const val = r[i] ? r[i].toString() : "";
-      max = Math.max(max, val.length);
+    // headers
+    let headers = [];
+    $("#assignmentTable thead th").each(function () {
+      headers.push($(this).text().trim());
     });
 
-    return { wch: max + 2 };
+    exportData.push(headers);
+
+    // rows
+    $(rows).each(function () {
+      let row = [];
+
+      $(this)
+        .find("td")
+        .each(function () {
+          row.push($(this).text().trim());
+        });
+
+      exportData.push(row);
+    });
+
+    // worksheet
+    const ws = XLSX.utils.aoa_to_sheet(exportData);
+
+    // auto column width
+    ws["!cols"] = exportData[0].map((_, i) => {
+      let max = 10;
+
+      exportData.forEach((r) => {
+        const val = r[i] ? r[i].toString() : "";
+        max = Math.max(max, val.length);
+      });
+
+      return { wch: max + 2 };
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Assignments");
+
+    XLSX.writeFile(wb, "Assignment_Overview.xlsx");
   });
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Assignments");
-
-  XLSX.writeFile(wb, "Assignment_Overview.xlsx");
-});

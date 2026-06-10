@@ -293,7 +293,21 @@ document.getElementById("exportExcel").addEventListener("click", function () {
 
   fetch("functions/get_promodizers_export.php?" + new URLSearchParams(filters))
     .then((res) => res.json())
-    .then((data) => {
+    .then(async (data) => {
+      // warn if large export
+      if (data.length > 1000) {
+        const proceed = await Swal.fire({
+          title: "Large Export",
+          text: `You're about to export ${data.length} rows. This may take a moment. Continue?`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes, export",
+          cancelButtonText: "Cancel",
+        });
+
+        if (!proceed.isConfirmed) return;
+      }
+
       let exportData = [
         [
           "First Name",
