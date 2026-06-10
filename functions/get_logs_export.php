@@ -37,8 +37,8 @@ if ($user !== '') {
 }
 
 if (!empty($_GET['reason'])) {
-    $sql .= " AND h.reason_for_update = :reason";
-    $params[':reason'] = $_GET['reason'];
+    $sql .= " AND h.reason_for_update LIKE :reason";
+    $params[':reason'] = "%{$_GET['reason']}%";
 }
 
 if (isset($_GET['remarks_empty']) && $_GET['remarks_empty'] == '1') {
