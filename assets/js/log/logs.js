@@ -93,15 +93,7 @@ document.getElementById("exportExcel").addEventListener("click", function () {
       }
 
       let exportData = [
-        [
-          "Updated By",
-          "Reason",
-          "Remarks",
-          "Employee",
-          "Employee ID",
-          "Original Employee ID",
-          "Date",
-        ],
+        ["Updated By", "Reason", "Remarks", "Employee", "Date"],
       ];
 
       data.forEach((row) => {
@@ -110,8 +102,6 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           row.reason_for_update,
           row.remarks,
           row.employee_name,
-          row.employee_id,
-          row.original_employee_id,
           row.update_date,
         ]);
       });
