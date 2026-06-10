@@ -96,6 +96,11 @@ if (empty($endDate) && !empty($effectivityDate)) {
     $endDate = date('Y-m-d', strtotime($effectivityDate . ' +6 months'));
 }
 
+// Add this near the top with your other helpers
+function fpdf_str(string $s): string {
+    return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $s);
+}
+
 $pdf = new FPDF('P', 'mm', 'Letter');
 $pdf->AddPage();
 
@@ -134,7 +139,7 @@ $pdf->SetFont('Arial', '', 11);
 
 // Rows
 $pdf->Cell(55, 7, 'Employee Name', 1, 0);
-$pdf->Cell(0, 7, $employeeName, 1, 1);
+$pdf->Cell(0, 7, fpdf_str($employeeName), 1, 1);
 
 $pdf->Cell(55, 7, 'Branch', 1, 0);
 $pdf->Cell(0, 7, $branchDisplay, 1, 1);
