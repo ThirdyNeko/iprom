@@ -12,6 +12,7 @@ $sql = "
     SELECT
         a.branch_name AS branch_code,
         b.branch AS branch_name,
+        b.corpo,
         a.brand_name,
         a.required_count,
         COUNT(e.id) AS assigned_count
@@ -25,6 +26,7 @@ $sql = "
     GROUP BY
         a.branch_name,
         b.branch,
+        b.corpo,
         a.brand_name,
         a.required_count
 ";

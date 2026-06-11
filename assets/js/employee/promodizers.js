@@ -143,8 +143,9 @@ $(document).ready(function () {
     var agency = ($("#filterAgency").val() || "").toLowerCase().trim();
 
     var row = table.row(dataIndex).node();
+    var branchCode = $(row).data("branch");
 
-    var rowCompany = ($(row).data("company") || "").toLowerCase().trim();
+    var rowCompany = (branchMap[branchCode]?.corpo || "").toLowerCase().trim(); // ← derived from branch
     var rowAgency = ($(row).data("agency") || "").toLowerCase().trim();
 
     if (company && rowCompany !== company) return false;
@@ -275,6 +276,12 @@ $(document).on("click", ".clickable-row", function () {
 });
 
 document.getElementById("exportExcel").addEventListener("click", function () {
+
+  // reverse lookup: branch name → branchMap entry
+  const branchByName = Object.fromEntries(
+    Object.values(branchMap).map(b => [b.branch, b])
+  );
+
   const filters = {
     branch: $("#filterBranch").val(),
     brand: $("#filterBrand").val(),
@@ -282,7 +289,7 @@ document.getElementById("exportExcel").addEventListener("click", function () {
     employment_status: $("#filterEmploymentStatus").val(),
     sub_status: $("#filterSubStatus").val(),
     agency: $("#filterAgency").val(),
-    corpo: $("#filterCompany").val(),
+    // corpo removed — filtered client-side via branchMap
     assigned_by: $("#filterAssignedBy").val(),
     region: $("#filterRegion").val(),
     area: $("#filterArea").val(),
@@ -294,6 +301,16 @@ document.getElementById("exportExcel").addEventListener("click", function () {
   fetch("functions/get_promodizers_export.php?" + new URLSearchParams(filters))
     .then((res) => res.json())
     .then(async (data) => {
+
+      // ← filter corpo client-side using branchMap
+      const corpoFilter = ($("#filterCompany").val() || "").toLowerCase().trim();
+      if (corpoFilter) {
+        data = data.filter(p => {
+          const rowCorpo = (branchByName[p.branch]?.corpo || "").toLowerCase().trim();
+          return rowCorpo === corpoFilter;
+        });
+      }
+
       // warn if large export
       if (data.length > 1000) {
         const proceed = await Swal.fire({
@@ -344,7 +361,7 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           p.employment_status,
           p.sub_status,
           p.agency,
-          p.corpo,
+          (branchByName[p.branch]?.corpo || "").toUpperCase(), // ← Company column
           formatDate(p.assignment_date),
           p.last_assigned_by,
         ]);

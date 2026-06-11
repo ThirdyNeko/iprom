@@ -16,8 +16,8 @@ $sessionBranches = !empty($_SESSION['branch'])
 $branchMap = [];
 
 $stmt = $pdo->query("
-    SELECT branch_code, branch, area, region
-    FROM IPROM.dbo.branches
+    SELECT branch_code, branch, area, region, corpo
+    FROM IPROM.dbo.branches                          
     WHERE status = 1
 ");
 
@@ -25,7 +25,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $branchMap[$row['branch_code']] = [
         'branch' => $row['branch'],
         'area'   => $row['area'],
-        'region' => $row['region']
+        'region' => $row['region'],
+        'corpo'  => $row['corpo'],   // ← add this
     ];
 }
 

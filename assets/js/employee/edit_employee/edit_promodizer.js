@@ -1,6 +1,19 @@
 const modalEl = document.getElementById("editPromodizerModal");
 let branchBrandPairs = [];
 
+
+function getCorpoForBranch(branchCode) {
+  const pair = branchBrandPairs.find(p => p.branch_code === branchCode);
+  return pair?.corpo || "";
+}
+
+function setCorpoFromBranch(branchCode) {
+  const corpoInput = document.getElementById("editCorpo");
+  if (!corpoInput) return;
+  corpoInput.value = getCorpoForBranch(branchCode).toUpperCase();
+  autoResizeInput(corpoInput);
+}
+
 // Helper to clean null/nchar
 function cleanValue(value) {
   if (!value) return "";
@@ -846,9 +859,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
         console.log("employee.brand", employee.brand);
       }
       if (el("editCorpo")) {
-        const input = el("editCorpo");
-        input.value = cleanValue(employee.corpo).toUpperCase();
-        autoResizeInput(input);
+        setCorpoFromBranch(employee.branch);
       }
       if (el("editBrand")) {
         const value = cleanValue(employee.brand);
@@ -1526,7 +1537,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   // =========================
   editBranch?.addEventListener("change", () => {
     validateMainAssignment();
-    updateBrandOptions(); // branch affects brands
+    updateBrandOptions();
+    setCorpoFromBranch(editBranch.value); // ← add this
   });
 
   // =========================
