@@ -16,10 +16,6 @@ if (!file_exists($csvFile)) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/**
- * Convert M/D/YYYY (or M/D/YY) → YYYY-MM-DD.
- * Returns null if blank or unparseable.
- */
 function toSqlDate(string $raw): ?string {
     $raw = trim($raw);
     if ($raw === '') return null;
@@ -28,34 +24,18 @@ function toSqlDate(string $raw): ?string {
     return date('Y-m-d', $ts);
 }
 
-/**
- * Normalize a string: trim + collapse internal whitespace.
- */
 function clean(string $val): string {
     return trim(preg_replace('/\s+/', ' ', $val));
 }
 
-/**
- * Convert an entire CSV row from Windows-1252 (Excel default) to UTF-8.
- * Fixes Ñ, ñ, and other accented characters saved by Excel on Windows.
- */
 function toUtf8(array $row): array {
     return array_map(fn($v) => mb_convert_encoding($v, 'UTF-8', 'Windows-1252'), $row);
 }
 
-/**
- * Generate a collision-safe ID with a given prefix.
- * e.g. EMP-20250610-A3F92CD8 / ROV-20250610-A3F92CD8 / MBR-20250610-A3F92CD8
- */
 function generateId(string $prefix): string {
     return $prefix . '-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 }
 
-/**
- * Resolve a grouped ID (employee_id / roving_group_id / multi_brand_group_id).
- * Same person across multiple rows shares one ID.
- * Key: "LASTNAME|FIRSTNAME|BIRTHDAY"
- */
 function resolveGroupId(string $lastName, string $firstName, string $birthday, string $prefix, array &$map): string {
     $key = strtoupper(trim($lastName)) . '|' . strtoupper(trim($firstName)) . '|' . trim($birthday);
     if (!isset($map[$key])) {
@@ -64,24 +44,78 @@ function resolveGroupId(string $lastName, string $firstName, string $birthday, s
     return $map[$key];
 }
 
-// ── Build branch lookup: UPPER(branch_name) → branch_code ────────────────────
+/**
+ * Check if a branch+brand slot has capacity, accounting for rows
+ * already consumed during this import session (DB assigned_count
+ * won't update until after each insert, so we track in-memory).
+ *
+ * Returns true and increments the consumed counter if a slot is available.
+ * Returns false with a reason string if not.
+ */
+function claimAssignmentSlot(
+    string  $branchCode,
+    string  $brand,
+    array   &$assignmentMap,
+    array   &$consumed
+): array {
+    $key = strtoupper($branchCode) . '|' . strtoupper($brand);
+
+    // 1st spec: assignment must exist
+    if (!isset($assignmentMap[$key])) {
+        return [false, "No assignment setup found for {$branchCode} - {$brand}."];
+    }
+
+    $available = $assignmentMap[$key]['available'];
+    $alreadyConsumed = $consumed[$key] ?? 0;
+
+    // 2nd spec: remaining capacity must be > 0
+    if (($available - $alreadyConsumed) <= 0) {
+        return [false, "Slot is full for {$branchCode} - {$brand} (required: {$assignmentMap[$key]['required']}, assigned: {$assignmentMap[$key]['assigned']}, imported this session: {$alreadyConsumed})."];
+    }
+
+    // Claim the slot
+    $consumed[$key] = $alreadyConsumed + 1;
+
+    return [true, null];
+}
+
+// ── Connect ───────────────────────────────────────────────────────────────────
 
 $pdo = qa_db();
-
-// Force UTF-8 parameter encoding over ODBC.
-// Without this, ODBC Driver 17 chokes on Ñ/ñ and other non-ASCII characters
-// with "No mapping for the Unicode character exists in the target multi-byte code page."
 $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+
+// ── Build branch lookup: UPPER(branch_name) → branch_code ────────────────────
 
 $branchMap = [];
 try {
     $rows = $pdo->query("SELECT [branch], [branch_code] FROM [IPROM].[dbo].[branches]")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as $r) {
-        $key = strtoupper(trim($r['branch']));
-        $branchMap[$key] = $r['branch_code'];
+        $branchMap[strtoupper(trim($r['branch']))] = $r['branch_code'];
     }
 } catch (PDOException $e) {
     die("Failed to load branch lookup: " . $e->getMessage());
+}
+
+// ── Build assignment lookup: UPPER(branch_name)|UPPER(brand_name) → slot info ─
+// NOTE: assignment.branch_name stores branch_code values (same as save_employee.php)
+
+$assignmentMap = [];
+try {
+    $rows = $pdo->query("
+        SELECT [branch_name], [brand_name], [required_count], [assigned_count]
+        FROM [IPROM].[dbo].[assignment]
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($rows as $r) {
+        $key = strtoupper(trim($r['branch_name'])) . '|' . strtoupper(trim($r['brand_name']));
+        $assignmentMap[$key] = [
+            'required'  => (int) $r['required_count'],
+            'assigned'  => (int) $r['assigned_count'],
+            'available' => (int) $r['required_count'] - (int) $r['assigned_count'],
+        ];
+    }
+} catch (PDOException $e) {
+    die("Failed to load assignment lookup: " . $e->getMessage());
 }
 
 // ── Read CSV ──────────────────────────────────────────────────────────────────
@@ -89,72 +123,36 @@ try {
 $handle = fopen($csvFile, 'r');
 if (!$handle) die("Cannot open CSV.");
 
-// Skip header row
-fgetcsv($handle);
+fgetcsv($handle); // skip header
 
 $errors        = [];
+$slotErrors    = []; // rows rejected due to assignment rules
 $count         = 0;
 $skipped       = 0;
 $branchMissing = [];
+$consumed      = []; // in-memory slot counter for this import session
 
-// Per-person ID maps (keyed by LASTNAME|FIRSTNAME|BIRTHDAY)
-$employeeIdMap      = [];
-$rovingGroupIdMap   = []; // for MULTI BRANCH + HYBRID
-$multiBrandGroupIdMap = []; // for MULTI BRAND + HYBRID
+$employeeIdMap        = [];
+$rovingGroupIdMap     = [];
+$multiBrandGroupIdMap = [];
 
 $sql = "
     INSERT INTO [IPROM].[dbo].[employee_info] (
-        [first_name],
-        [last_name],
-        [middle_name],
-        [suffix],
-        [gender],
-        [birthday],
-        [branch],
-        [brand],
-        [employment_status],
-        [sub_status],
-        [agency],
-        [date_hired],
-        [start_date],
-        [end_date],
-        [remarks],
-        [employee_id],
-        [roving_group_id],
-        [multi_brand_group_id],
-        [status],
-        [hidden],
-        [created_at],
-        [updated_at],
-        [assignment_date],
-        [last_assigned_by],
-        [last_updated_by]
+        [first_name], [last_name], [middle_name], [suffix],
+        [gender], [birthday], [branch], [brand],
+        [employment_status], [sub_status], [agency],
+        [date_hired], [start_date], [end_date], [remarks],
+        [employee_id], [roving_group_id], [multi_brand_group_id],
+        [status], [hidden], [created_at], [updated_at],
+        [assignment_date], [last_assigned_by], [last_updated_by]
     ) VALUES (
-        :first_name,
-        :last_name,
-        :middle_name,
-        :suffix,
-        :gender,
-        :birthday,
-        :branch,
-        :brand,
-        :employment_status,
-        :sub_status,
-        :agency,
-        :date_hired,
-        :start_date,
-        :end_date,
-        :remarks,
-        :employee_id,
-        :roving_group_id,
-        :multi_brand_group_id,
-        'ACTIVE',
-        0,
-        GETDATE(),
-        GETDATE(),
-        GETDATE(),
-        'SYSTEM',
-        'SYSTEM'
+        :first_name, :last_name, :middle_name, :suffix,
+        :gender, :birthday, :branch, :brand,
+        :employment_status, :sub_status, :agency,
+        :date_hired, :start_date, :end_date, :remarks,
+        :employee_id, :roving_group_id, :multi_brand_group_id,
+        'ACTIVE', 0, GETDATE(), GETDATE(),
+        GETDATE(), 'SYSTEM', 'SYSTEM'
     )
 ";
 
@@ -162,61 +160,59 @@ $stmt = $pdo->prepare($sql);
 
 while (($row = fgetcsv($handle)) !== false) {
 
-    // Convert from Windows-1252 (Excel CSV) → UTF-8 so Ñ/ñ and accents survive
     $row = toUtf8($row);
 
-    // Skip fully empty rows
     if (count(array_filter($row, fn($v) => trim($v) !== '')) === 0) {
         $skipped++;
         continue;
     }
 
-    // Pad to 15 columns in case of short rows
     while (count($row) < 15) $row[] = '';
 
     [
-        $branch,
-        $lastName,
-        $firstName,
-        $mi,
-        $suffix,
-        $gender,
-        $birthday,
-        $dateHired,
-        $branchDeployed,  // role/position title → stored in remarks
-        $brand,
-        $employmentStatus,
-        $subStatus,
-        $agency,
-        $from,
-        $to
+        $branch, $lastName, $firstName, $mi, $suffix,
+        $gender, $birthday, $dateHired, $branchDeployed,
+        $brand, $employmentStatus, $subStatus, $agency, $from, $to
     ] = $row;
 
     $subStatusNorm = strtoupper(clean($subStatus));
+    $brandNorm     = strtoupper(clean($brand));
 
-    // ── Resolve branch name → branch_code ────────────────────────────────────
+    // ── Resolve branch → branch_code ─────────────────────────────────────────
     $branchKey  = strtoupper(clean($branch));
     $branchCode = $branchMap[$branchKey] ?? null;
 
     if ($branchCode === null && $branchKey !== '') {
         $branchMissing[$branchKey] = true;
+        $slotErrors[] = [
+            'row'    => implode(', ', $row),
+            'reason' => "Branch '{$branchKey}' not found in branches table — cannot validate assignment slot.",
+        ];
+        continue; // can't validate or insert without a branch code
     }
 
-    // ── Resolve employee_id (shared across all rows for the same person) ──────
+    // ── Assignment slot validation ────────────────────────────────────────────
+    [$valid, $reason] = claimAssignmentSlot($branchCode, $brandNorm, $assignmentMap, $consumed);
+
+    if (!$valid) {
+        $slotErrors[] = ['row' => implode(', ', $row), 'reason' => $reason];
+        continue;
+    }
+
+    // ── Resolve group IDs ─────────────────────────────────────────────────────
     $employeeId = resolveGroupId($lastName, $firstName, $birthday, 'EMP', $employeeIdMap);
 
-    // ── Resolve roving_group_id (MULTI BRANCH or HYBRID only) ────────────────
     $rovingGroupId = null;
     if (in_array($subStatusNorm, ['MULTI BRANCH', 'HYBRID'])) {
         $rovingGroupId = resolveGroupId($lastName, $firstName, $birthday, 'ROV', $rovingGroupIdMap);
     }
 
-    // ── Resolve multi_brand_group_id (MULTI BRAND or HYBRID only) ────────────
     $multiBrandGroupId = null;
     if (in_array($subStatusNorm, ['MULTI BRAND', 'HYBRID'])) {
         $multiBrandGroupId = resolveGroupId($lastName, $firstName, $birthday, 'MBR', $multiBrandGroupIdMap);
     }
 
+    // ── Insert ────────────────────────────────────────────────────────────────
     $params = [
         ':first_name'           => clean($firstName)          ?: null,
         ':last_name'            => clean($lastName)           ?: null,
@@ -225,9 +221,9 @@ while (($row = fgetcsv($handle)) !== false) {
         ':gender'               => strtoupper(clean($gender)) ?: null,
         ':birthday'             => toSqlDate($birthday),
         ':branch'               => $branchCode,
-        ':brand'                => strtoupper(clean($brand))            ?: null,
+        ':brand'                => $brandNorm                 ?: null,
         ':employment_status'    => strtoupper(clean($employmentStatus)) ?: null,
-        ':sub_status'           => $subStatusNorm                       ?: null,
+        ':sub_status'           => $subStatusNorm             ?: null,
         ':agency'               => clean($agency)             ?: null,
         ':date_hired'           => toSqlDate($dateHired),
         ':start_date'           => toSqlDate($from),
@@ -250,8 +246,6 @@ while (($row = fgetcsv($handle)) !== false) {
 }
 
 fclose($handle);
-
-// ── Output ────────────────────────────────────────────────────────────────────
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -265,16 +259,34 @@ fclose($handle);
     <ul>
         <li>✅ <strong><?= $count ?></strong> row(s) inserted successfully.</li>
         <li>⏭️ <strong><?= $skipped ?></strong> blank row(s) skipped.</li>
-        <li>❌ <strong><?= count($errors) ?></strong> insert error(s).</li>
-        <li>⚠️ <strong><?= count($branchMissing) ?></strong> unmatched branch name(s) — stored as <code>NULL</code>.</li>
+        <li>🚫 <strong><?= count($slotErrors) ?></strong> row(s) rejected by assignment rules.</li>
+        <li>❌ <strong><?= count($errors) ?></strong> database error(s).</li>
+        <li>⚠️ <strong><?= count($branchMissing) ?></strong> unmatched branch name(s).</li>
         <li>🪪 <strong><?= count($employeeIdMap) ?></strong> unique employee ID(s) generated.</li>
-        <li>🔀 <strong><?= count($rovingGroupIdMap) ?></strong> roving group ID(s) generated (MULTI BRANCH / HYBRID).</li>
-        <li>🏷️ <strong><?= count($multiBrandGroupIdMap) ?></strong> multi-brand group ID(s) generated (MULTI BRAND / HYBRID).</li>
+        <li>🔀 <strong><?= count($rovingGroupIdMap) ?></strong> roving group ID(s) generated.</li>
+        <li>🏷️ <strong><?= count($multiBrandGroupIdMap) ?></strong> multi-brand group ID(s) generated.</li>
     </ul>
+
+    <?php if ($slotErrors): ?>
+    <h5 class="text-warning">🚫 Rejected by Assignment Rules</h5>
+    <table class="table table-sm table-bordered table-warning">
+        <thead>
+            <tr><th>Row Data</th><th>Reason</th></tr>
+        </thead>
+        <tbody>
+            <?php foreach ($slotErrors as $e): ?>
+            <tr>
+                <td><small><?= htmlspecialchars($e['row']) ?></small></td>
+                <td><small><?= htmlspecialchars($e['reason']) ?></small></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
 
     <?php if ($branchMissing): ?>
     <div class="alert alert-warning">
-        <strong>Branch names in CSV not found in <code>branches</code> table:</strong>
+        <strong>Branch names not found in <code>branches</code> table:</strong>
         <ul class="mb-0 mt-1">
             <?php foreach (array_keys($branchMissing) as $b): ?>
                 <li><code><?= htmlspecialchars($b) ?></code></li>
@@ -288,7 +300,7 @@ fclose($handle);
     <?php endif; ?>
 
     <?php if ($errors): ?>
-    <h5 class="text-danger">Insert Errors</h5>
+    <h5 class="text-danger">❌ Database Errors</h5>
     <table class="table table-sm table-bordered table-striped">
         <thead>
             <tr><th>Row Data</th><th>Error</th></tr>
