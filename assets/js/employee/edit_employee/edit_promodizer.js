@@ -867,7 +867,7 @@ document.querySelectorAll(".clickable-row").forEach((row) => {
       }
       if (editAgency) {
         populateAgencyDropdown(employee.agency);
-        autoResizeSelectText(editAgency);
+        // autoResizeSelectText(editAgency);
       }
 
       // ✅ FIXED DATE HANDLING (NO "-")

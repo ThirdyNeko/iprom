@@ -199,9 +199,9 @@ th{
 
                         <tr>
                             <th>Agency</th>
-                            <td><select id="editAgency" class="form-select"></select></td>
-                            <th>Company</th>
-                            <td><input type="text" id="editCorpo" class="form-control" readonly></td>
+                            <td colspan="3"><select id="editAgency" class="form-select"></select></td>
+                            <!-- <th>Company</th>
+                            <td><input type="text" id="editCorpo" class="form-control" readonly></td> -->
                         </tr>
                         <tr>
                             <th>Gender</th>
