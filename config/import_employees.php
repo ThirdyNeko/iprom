@@ -118,6 +118,40 @@ try {
     die("Failed to load assignment lookup: " . $e->getMessage());
 }
 
+// ── Build agency lookup: UPPER(agencies) → true ──────────────────────────────
+
+$agencySet = [];
+try {
+    $rows = $pdo->query("SELECT [agencies] FROM [IPROM].[dbo].[agencies]")->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $r) {
+        $agencySet[mb_strtoupper(trim($r['agencies']), 'UTF-8')] = true;
+    }
+} catch (PDOException $e) {
+    die("Failed to load agency lookup: " . $e->getMessage());
+}
+
+// ── Build existing records set: to skip exact duplicates ─────────────────────
+// Key: LASTNAME|FIRSTNAME|BIRTHDAY|BRANCH|BRAND
+
+$existingSet = [];
+try {
+    $rows = $pdo->query("
+        SELECT [last_name], [first_name], [birthday], [branch], [brand]
+        FROM [IPROM].[dbo].[employee_info]
+    ")->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($rows as $r) {
+        $key = mb_strtoupper(trim($r['last_name']),  'UTF-8') . '|' .
+               mb_strtoupper(trim($r['first_name']), 'UTF-8') . '|' .
+               substr(trim($r['birthday'] ?? ''), 0, 10)      . '|' .
+               strtoupper(trim($r['branch'] ?? ''))            . '|' .
+               mb_strtoupper(trim($r['brand'] ?? ''), 'UTF-8');
+        $existingSet[$key] = true;
+    }
+} catch (PDOException $e) {
+    die("Failed to load existing records: " . $e->getMessage());
+}
+
 // ── Read CSV ──────────────────────────────────────────────────────────────────
 
 $handle = fopen($csvFile, 'r');
@@ -127,6 +161,7 @@ fgetcsv($handle); // skip header
 
 $errors        = [];
 $slotErrors    = []; // rows rejected due to assignment rules
+$duplicates    = []; // rows skipped as exact duplicates
 $count         = 0;
 $skipped       = 0;
 $branchMissing = [];
@@ -175,8 +210,8 @@ while (($row = fgetcsv($handle)) !== false) {
         $brand, $employmentStatus, $subStatus, $agency, $from, $to
     ] = $row;
 
-    $subStatusNorm = strtoupper(clean($subStatus));
-    $brandNorm     = strtoupper(clean($brand));
+    $subStatusNorm = mb_strtoupper(clean($subStatus), 'UTF-8');
+    $brandNorm     = mb_strtoupper(clean($brand), 'UTF-8');
 
     // ── Resolve branch → branch_code ─────────────────────────────────────────
     $branchKey  = strtoupper(clean($branch));
@@ -189,6 +224,30 @@ while (($row = fgetcsv($handle)) !== false) {
             'reason' => "Branch '{$branchKey}' not found in branches table — cannot validate assignment slot.",
         ];
         continue; // can't validate or insert without a branch code
+    }
+
+    // ── Duplicate check ───────────────────────────────────────────────────────
+    // Use $branchCode (not raw branch name) and toSqlDate() so the key matches
+    // what is actually stored in employee_info (branch_code + YYYY-MM-DD).
+    $dupKey = mb_strtoupper(clean($lastName),  'UTF-8') . '|' .
+              mb_strtoupper(clean($firstName), 'UTF-8') . '|' .
+              (toSqlDate($birthday) ?? '')               . '|' .
+              strtoupper($branchCode ?? '')               . '|' .
+              mb_strtoupper(clean($brand), 'UTF-8');
+
+    if (isset($existingSet[$dupKey])) {
+        $duplicates[] = implode(', ', $row);
+        continue;
+    }
+
+    // ── Agency validation ─────────────────────────────────────────────────────
+    $agencyNorm = mb_strtoupper(clean($agency), 'UTF-8');
+    if ($agencyNorm !== '' && !isset($agencySet[strtoupper($agencyNorm)])) {
+        $slotErrors[] = [
+            'row'    => implode(', ', $row),
+            'reason' => "Agency '{$agencyNorm}' not found in agencies table.",
+        ];
+        continue;
     }
 
     // ── Assignment slot validation ────────────────────────────────────────────
@@ -218,13 +277,13 @@ while (($row = fgetcsv($handle)) !== false) {
         ':last_name'            => clean($lastName)           ?: null,
         ':middle_name'          => clean($mi)                 ?: null,
         ':suffix'               => clean($suffix)             ?: null,
-        ':gender'               => strtoupper(clean($gender)) ?: null,
+        ':gender'               => mb_strtoupper(clean($gender), 'UTF-8') ?: null,
         ':birthday'             => toSqlDate($birthday),
         ':branch'               => $branchCode,
         ':brand'                => $brandNorm                 ?: null,
-        ':employment_status'    => strtoupper(clean($employmentStatus)) ?: null,
+        ':employment_status'    => mb_strtoupper(clean($employmentStatus), 'UTF-8') ?: null,
         ':sub_status'           => $subStatusNorm             ?: null,
-        ':agency'               => clean($agency)             ?: null,
+        ':agency'               => $agencyNorm                 ?: null,
         ':date_hired'           => toSqlDate($dateHired),
         ':start_date'           => toSqlDate($from),
         ':end_date'             => toSqlDate($to),
@@ -259,6 +318,7 @@ fclose($handle);
     <ul>
         <li>✅ <strong><?= $count ?></strong> row(s) inserted successfully.</li>
         <li>⏭️ <strong><?= $skipped ?></strong> blank row(s) skipped.</li>
+        <li>🔁 <strong><?= count($duplicates) ?></strong> row(s) skipped as exact duplicates.</li>
         <li>🚫 <strong><?= count($slotErrors) ?></strong> row(s) rejected by assignment rules.</li>
         <li>❌ <strong><?= count($errors) ?></strong> database error(s).</li>
         <li>⚠️ <strong><?= count($branchMissing) ?></strong> unmatched branch name(s).</li>
@@ -266,6 +326,22 @@ fclose($handle);
         <li>🔀 <strong><?= count($rovingGroupIdMap) ?></strong> roving group ID(s) generated.</li>
         <li>🏷️ <strong><?= count($multiBrandGroupIdMap) ?></strong> multi-brand group ID(s) generated.</li>
     </ul>
+
+    <?php if ($duplicates): ?>
+    <h5 class="text-secondary">🔁 Skipped — Exact Duplicates Already in Database</h5>
+    <table class="table table-sm table-bordered table-secondary">
+        <thead>
+            <tr><th>Row Data</th></tr>
+        </thead>
+        <tbody>
+            <?php foreach ($duplicates as $d): ?>
+            <tr>
+                <td><small><?= htmlspecialchars($d) ?></small></td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
 
     <?php if ($slotErrors): ?>
     <h5 class="text-warning">🚫 Rejected by Assignment Rules</h5>
