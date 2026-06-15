@@ -38,7 +38,6 @@ function upperClean(string $val): string {
 // ── Connect ───────────────────────────────────────────────────────────────────
 
 $pdo = qa_db();
-$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
 // Existing agencies: UPPER(agencies) → true  (for duplicate detection)
 $existingSet = [];
