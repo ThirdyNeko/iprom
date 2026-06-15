@@ -145,7 +145,7 @@ foreach ($parsedRows as $row) {
 
     [
         $agencyRaw, $contactPerson, $contactNumber,
-        $email, $telNumber, $status
+        $telNumber, $email, $status
     ] = $row;
 
     $agencyNorm        = upperClean($agencyRaw);
