@@ -21,7 +21,10 @@ function clean(string $val): string {
 }
 
 function toUtf8(array $row): array {
-    return array_map(fn($v) => mb_convert_encoding($v, 'UTF-8', 'Windows-1252'), $row);
+    return array_map(function($v) {
+        if (mb_check_encoding($v, 'UTF-8')) return $v; // already valid UTF-8, leave it alone
+        return mb_convert_encoding($v, 'UTF-8', 'Windows-1252'); // only convert if it's not
+    }, $row);
 }
 
 /**
@@ -29,29 +32,7 @@ function toUtf8(array $row): array {
  * Handles: Ñ/ñ, É/é, Ó/ó, Á/á, Í/í, Ú/ú (Windows-1252 / latin-1 remnants).
  */
 function upperClean(string $val): string {
-    $val = clean($val);
-
-    // Fix residual Windows-1252 / latin-1 bytes that survived toUtf8()
-    $replacements = [
-        // Ñ / ñ
-        "\xC3\x91" => 'Ñ',   // UTF-8 Ñ (already correct, kept for safety)
-        "\xC3\xB1" => 'ñ',   // UTF-8 ñ
-        "\xD1"     => 'Ñ',   // latin-1 Ñ
-        "\xF1"     => 'ñ',   // latin-1 ñ
-        // É / é
-        "\xC3\x89" => 'É', "\xC3\xA9" => 'é', "\xC9" => 'É', "\xE9" => 'é',
-        // Á / á
-        "\xC3\x81" => 'Á', "\xC3\xA1" => 'á', "\xC1" => 'Á', "\xE1" => 'á',
-        // Ó / ó
-        "\xC3\x93" => 'Ó', "\xC3\xB3" => 'ó', "\xD3" => 'Ó', "\xF3" => 'ó',
-        // Í / í
-        "\xC3\x8D" => 'Í', "\xC3\xAD" => 'í', "\xCD" => 'Í', "\xED" => 'í',
-        // Ú / ú
-        "\xC3\x9A" => 'Ú', "\xC3\xBA" => 'ú', "\xDA" => 'Ú', "\xFA" => 'ú',
-    ];
-
-    $val = strtr($val, $replacements);
-    return mb_strtoupper($val, 'UTF-8');
+    return mb_strtoupper(clean($val), 'UTF-8');
 }
 
 // ── Connect ───────────────────────────────────────────────────────────────────
