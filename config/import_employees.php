@@ -106,6 +106,78 @@ try {
     }
 } catch (PDOException $e) { die("Existing records lookup failed: " . $e->getMessage()); }
 
+// ── CSV Export (run scan then output CSV, skip HTML) ─────────────────────────
+// Access via: import_employees.php?export=slots
+
+if (($_GET['export'] ?? '') === 'slots') {
+
+    // Run the scan inline
+    $scanHandle = fopen($csvFile, 'r');
+    fgetcsv($scanHandle); // skip header
+    $exportSlotNeeds = [];
+
+    while (($row = fgetcsv($scanHandle)) !== false) {
+        $row = toUtf8($row);
+        if (count(array_filter($row, fn($v) => trim($v) !== '')) === 0) continue;
+        while (count($row) < 15) $row[] = '';
+
+        [
+            $branch, $lastName, $firstName, $mi, $suffix,
+            $gender, $birthday, $dateHired, $branchDeployed,
+            $brand, $employmentStatus, $subStatus, $agency, $from, $to
+        ] = $row;
+
+        $branchKey  = strtoupper(clean($branch));
+        $branchCode = $branchMap[$branchKey] ?? null;
+        $brandNorm  = mb_strtoupper(clean($brand), 'UTF-8');
+
+        if ($branchCode === null || $brandNorm === '') continue;
+
+        $dupKey = mb_strtoupper(clean($lastName),  'UTF-8') . '|' .
+                  mb_strtoupper(clean($firstName), 'UTF-8') . '|' .
+                  (toSqlDate($birthday) ?? '')               . '|' .
+                  strtoupper($branchCode)                    . '|' .
+                  $brandNorm;
+
+        if (isset($existingSet[$dupKey])) continue; // skip duplicates
+
+        $slotKey = strtoupper($branchCode) . '|' . $brandNorm;
+        if (!isset($exportSlotNeeds[$slotKey])) {
+            $exportSlotNeeds[$slotKey] = ['branch' => $branchCode, 'brand' => $brandNorm, 'needed' => 0];
+        }
+        $exportSlotNeeds[$slotKey]['needed']++;
+    }
+    fclose($scanHandle);
+
+    // Only export slots that are missing or short
+    $exportRows = [];
+    foreach ($exportSlotNeeds as $key => $info) {
+        $available = $assignmentMap[$key]['available'] ?? 0;
+        $exists    = isset($assignmentMap[$key]);
+        $needed    = $info['needed'];
+
+        if (!$exists || $available < $needed) {
+            $required = $exists
+                ? $assignmentMap[$key]['assigned'] + $needed   // current assigned + what we still need
+                : $needed;                                      // no setup yet — required = needed
+
+            $exportRows[] = [$info['branch'], $info['brand'], $required];
+        }
+    }
+
+    // Output CSV
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="needed_assignments_' . date('Ymd') . '.csv"');
+
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['branch_name', 'brand_name', 'required_count']); // header
+    foreach ($exportRows as $r) {
+        fputcsv($out, $r);
+    }
+    fclose($out);
+    exit;
+}
+
 // ── PASS 1: Scan CSV — collect needs, parse rows ──────────────────────────────
 
 $handle = fopen($csvFile, 'r');
@@ -368,7 +440,12 @@ foreach ($parsedRows as $row) {
 </table>
 
 <?php /* ── Plantillas (assignment slots) ── */ ?>
-<h5 class="mt-4">Plantillas (Assignment Slots)</h5>
+<h5 class="mt-4 d-flex align-items-center gap-3">
+    Plantillas (Assignment Slots)
+    <?php if (!empty($slotsMissing) || !empty($slotsShort)): ?>
+    <a href="?export=slots" class="btn btn-sm btn-outline-secondary">⬇️ Download Missing as CSV</a>
+    <?php endif; ?>
+</h5>
 <table class="table table-sm table-bordered">
     <thead class="table-dark">
         <tr>
