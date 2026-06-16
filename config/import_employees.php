@@ -69,6 +69,12 @@ try {
     }
 } catch (PDOException $e) { die("Branch lookup failed: " . $e->getMessage()); }
 
+// Reverse branch lookup: branch_code → branch_name (for history formatting)
+$branchNameMap = [];
+foreach ($rows as $r) {
+    $branchNameMap[strtoupper(trim($r['branch_code']))] = $r['branch'];
+}
+
 // Agency lookup: UPPER(agencies) → true
 $agencySet = [];
 try {
@@ -304,6 +310,25 @@ $sql = "
 ";
 $stmt = $pdo->prepare($sql);
 
+$historyInserted = []; // tracks employee_ids that already have a history row this session
+
+$historySql = "
+    INSERT INTO [IPROM].[dbo].[employee_reason_history] (
+        [employee_id],
+        [reason_for_update],
+        [update_date],
+        [remarks],
+        [updated_by]
+    ) VALUES (
+        :employee_id,
+        :reason_for_update,
+        GETDATE(),
+        :remarks,
+        'SYSTEM'
+    )
+";
+$historyStmt = $pdo->prepare($historySql);
+
 foreach ($parsedRows as $row) {
 
         if (count(array_filter($row, fn($v) => trim($v) !== '')) === 0) {
@@ -390,6 +415,30 @@ foreach ($parsedRows as $row) {
         try {
             $stmt->execute($params);
             $count++;
+
+            // Insert history once per employee_id (mirrors IF NOT EXISTS in stored proc)
+            if (!isset($historyInserted[$employeeId])) {
+                $branchName    = $branchNameMap[strtoupper($branchCode)] ?? $branchCode;
+                $dateHiredFmt  = toSqlDate($dateHired)
+                    ? date('m/d/Y', strtotime(toSqlDate($dateHired)))
+                    : 'N/A';
+
+                $reasonForUpdate =
+                    'ASSIGNED | Date Hired: ' . $dateHiredFmt .
+                    ' | Employment Status: '  . mb_strtoupper(clean($employmentStatus), 'UTF-8') .
+                    ' | Sub-Status: '         . $subStatusNorm .
+                    ' | Branch: '             . $branchName .
+                    ' Brand: '                . $brandNorm;
+
+                $historyStmt->execute([
+                    ':employee_id'       => $employeeId,
+                    ':reason_for_update' => $reasonForUpdate,
+                    ':remarks'           => clean($branchDeployed) ?: null,
+                ]);
+
+                $historyInserted[$employeeId] = true;
+            }
+
         } catch (PDOException $e) {
             $errors[] = ['row' => implode(', ', $row), 'error' => $e->getMessage()];
         }
