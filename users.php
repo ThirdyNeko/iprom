@@ -153,7 +153,7 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
                                     <td><?= htmlspecialchars($u['username']) ?></td>
                                     <td><?= $roleLabels[$u['role']] ?? htmlspecialchars($u['role']) ?></td>
                                     <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
-                                    <td>
+                                    <td data-search="<?= $isActive ? 'active' : 'inactive' ?>">
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             <span class="badge <?= $isActive ? 'bg-success' : 'bg-secondary' ?>">
                                                 <?= $isActive ? 'Active' : 'Inactive' ?>
