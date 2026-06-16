@@ -1,5 +1,5 @@
 <style>
-  /* ── two-pane branch layout (shared with create user modal) ── */
+  /* ── two-pane branch layout ── */
   #v_branch {
     display: flex;
     height: 250px;
@@ -109,7 +109,6 @@
                                style="text-transform: uppercase;"
                                disabled>
 
-                        <!-- JS injects two-pane layout here -->
                         <div id="v_branch"></div>
 
                     </div>
@@ -120,8 +119,6 @@
             <div class="modal-footer">
                 <button type="button" id="resetPasswordBtn" class="btn btn-warning" style="display:none;">
                     Reset Password
-                </button>
-                <button type="button" id="toggleStatusBtn" class="btn" style="display:none;">
                 </button>
                 <button type="button" id="saveChangesBtn" class="btn btn-success" disabled>
                     Save Changes

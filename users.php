@@ -28,7 +28,6 @@ $users = $pdo
     ->query("EXEC get_users @role = NULL")
     ->fetchAll(PDO::FETCH_ASSOC);
 
-// Filter visible users based on logged-in role
 $visibleRoles = match($_SESSION['role']) {
     'super_admin' => ['admin', 'supervisor', 'staff'],
     'admin'       => ['supervisor', 'staff'],
@@ -49,38 +48,27 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
     #usersTable td {
         border-right: 1px solid #dee2e6;
     }
-
-    #usersTable th{
+    #usersTable th {
         background-color: #2d68c4;
-        color : white;
+        color: white;
     }
-    
     #usersTable th:first-child,
     #usersTable td:first-child {
-        border-left: 1px solid #dee2e6; /* remove extra line at start */
+        border-left: 1px solid #dee2e6;
     }
-    
     #usersTable.table-hover tbody tr:hover > td {
         background-color: #e6f0ff !important;
     }
-    
-    .card-body .row.g-2 .col {
-        min-width: 160px;
-    }
-
     .filter-control {
         height: 32px !important;
         font-size: 14px;
     }
-    
     .clear-input {
         position: relative;
     }
-
     .clear-input input {
-        padding-right: 28px; /* space for X */
+        padding-right: 28px;
     }
-
     .clear-btn {
         position: absolute;
         right: 6px;
@@ -94,7 +82,6 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
         cursor: pointer;
         padding: 0;
     }
-
     .clear-btn:hover {
         color: #333;
     }
@@ -103,23 +90,18 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
 <div class="content">
     <div class="container-fluid">
 
-        <!-- Header -->
         <div class="row mb-3">
             <div class="col d-flex justify-content-between align-items-center">
                 <h4 class="fw-bold mb-0">Users</h4>
-
-                <!-- ✅ Create User Button -->
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
                     <i class="bi bi-plus-circle"></i> Create User
                 </button>
             </div>
         </div>
 
-        <!-- Table -->
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="row g-2">
-
                     <div class="col-md-3">
                         <label class="form-label">Username</label>
                         <div class="clear-input">
@@ -127,7 +109,6 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
                             <button class="clear-btn">&times;</button>
                         </div>
                     </div>
-
                     <div class="col-md-3">
                         <label class="form-label">Status</label>
                         <select id="filterStatus" class="form-select filter-control">
@@ -136,7 +117,6 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
                             <option value="inactive">INACTIVE</option>
                         </select>
                     </div>
-    
                     <div class="col-md-3">
                         <label class="form-label">Position</label>
                         <div class="clear-input">
@@ -144,11 +124,9 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
                             <button class="clear-btn">&times;</button>
                         </div>
                     </div>
-
                 </div>
             </div>
             <div class="card-body">
-
                 <div class="table-responsive">
                     <table id="usersTable" class="table table-striped table-hover align-middle text-center">
                         <thead class="table-primary text-center">
@@ -158,33 +136,43 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
                                 <th>Position</th>
                                 <th>Status</th>
                                 <th>Actions</th>
-
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($users as $u): ?>
+                            <?php
+                            $roleLabels = [
+                                'admin'       => 'ADMIN',
+                                'super_admin' => 'SUPER ADMIN',
+                                'staff'       => 'STAFF',
+                                'supervisor'  => 'SUPERVISOR',
+                            ];
+                            foreach ($users as $u):
+                                $isActive = strtolower($u['status']) === 'active';
+                            ?>
                                 <tr>
                                     <td><?= htmlspecialchars($u['username']) ?></td>
-                                    <?php
-                                    $roleLabels = [
-                                        'admin' => 'ADMIN',
-                                        'super_admin'    => 'SUPER ADMIN',
-                                        'staff'    => 'STAFF',
-                                        'supervisor'    => 'SUPERVISOR',
-                                    ];
-                                    ?>
-                                    <td>
-                                        <?= isset($roleLabels[$u['role']]) ? $roleLabels[$u['role']] : htmlspecialchars($u['role']) ?>
-                                    </td>
+                                    <td><?= $roleLabels[$u['role']] ?? htmlspecialchars($u['role']) ?></td>
                                     <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
-                                    <td><?= htmlspecialchars(strtoupper($u['status'])) ?></td>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <span class="badge <?= $isActive ? 'bg-success' : 'bg-secondary' ?>">
+                                                <?= $isActive ? 'Active' : 'Inactive' ?>
+                                            </span>
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input user-status-switch"
+                                                       type="checkbox"
+                                                       data-username="<?= htmlspecialchars($u['username']) ?>"
+                                                       <?= $isActive ? 'checked' : '' ?>>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td>
                                         <button class="btn btn-sm btn-success view-user"
-                                            data-username="<?= htmlspecialchars($u['username']) ?>">
+                                                data-username="<?= htmlspecialchars($u['username']) ?>">
                                             Update
                                         </button>
                                         <button class="btn btn-sm btn-primary view-user view-user-readonly"
-                                            data-username="<?= htmlspecialchars($u['username']) ?>">
+                                                data-username="<?= htmlspecialchars($u['username']) ?>">
                                             View
                                         </button>
                                     </td>
@@ -193,21 +181,19 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
                         </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
 
     </div>
 </div>
 
-
-<!-- JS (same as promodizers) -->
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
 <script>
-$(document).ready(function() {
+$(document).ready(function () {
     var table = $('#usersTable').DataTable({
         pageLength: 10,
         responsive: true,
@@ -218,19 +204,81 @@ $(document).ready(function() {
         },
     });
 
-    // Filters
-    $('#filterStatus').on('change', function() {
+    $('#filterStatus').on('change', function () {
         var val = this.value;
         table.column(3).search(val ? '^' + val + '$' : '', true, false).draw();
     });
-    $('#filterPosition').on('keyup', function() {
+    $('#filterPosition').on('keyup', function () {
         table.column(2).search(this.value).draw();
     });
-    $('.clear-btn').on('click', function() {
+    $('#filterUsername').on('keyup', function () {
+        table.column(0).search(this.value).draw();
+    });
+    $('.clear-btn').on('click', function () {
         $(this).siblings('input').val('').trigger('keyup');
     });
-    $('#filterUsername').on('keyup', function() {
-        table.column(0).search(this.value).draw();
+});
+
+/* ───────────────────────────────────────────
+   USER STATUS SWITCH
+─────────────────────────────────────────── */
+$(document).on('change', '.user-status-switch', function () {
+    const toggle    = $(this);
+    const username  = toggle.data('username');
+    const newStatus = toggle.is(':checked') ? 'ACTIVE' : 'INACTIVE';
+    const isEnable  = newStatus === 'ACTIVE';
+
+    toggle.prop('disabled', true);
+
+    Swal.fire({
+        icon: isEnable ? 'question' : 'warning',
+        title: `${isEnable ? 'Enable' : 'Disable'} User?`,
+        html: `This will set <strong>${username}</strong> to <strong>${newStatus}</strong>.`,
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        confirmButtonColor: isEnable ? '#198754' : '#dc3545',
+    }).then((result) => {
+        if (!result.isConfirmed) {
+            // revert toggle
+            toggle.prop('checked', !toggle.is(':checked'));
+            toggle.prop('disabled', false);
+            return;
+        }
+
+        $.ajax({
+            url: 'functions/update_user_status.php',
+            type: 'POST',
+            data: { username, status: newStatus },
+            dataType: 'json',
+            success: function (res) {
+                if (res.success) {
+                    // update badge next to the switch
+                    const $badge = toggle.closest('td').find('.badge');
+                    $badge
+                        .text(isEnable ? 'Active' : 'Inactive')
+                        .removeClass('bg-success bg-secondary')
+                        .addClass(isEnable ? 'bg-success' : 'bg-secondary');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: `User ${newStatus === 'ACTIVE' ? 'Enabled' : 'Disabled'}`,
+                        text: `${username} is now ${newStatus}.`,
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+                } else {
+                    toggle.prop('checked', !toggle.is(':checked'));
+                    Swal.fire('Error', res.message || 'Failed to update status.', 'error');
+                }
+            },
+            error: function () {
+                toggle.prop('checked', !toggle.is(':checked'));
+                Swal.fire('Error', 'Request failed.', 'error');
+            },
+            complete: function () {
+                toggle.prop('disabled', false);
+            },
+        });
     });
 });
 </script>

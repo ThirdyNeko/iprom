@@ -47,7 +47,6 @@ function isPrivileged(requiredRole) {
 function refreshSaveBtn() {
   const $modal = $("#userViewModal");
 
-  /* — branch drift — */
   const origBranches = $modal.data("originalBranches");
   const current = new Set(
     $modal
@@ -60,7 +59,6 @@ function refreshSaveBtn() {
     (current.size !== origBranches.size ||
       [...current].some((v) => !origBranches.has(v)));
 
-  /* — profile drift — */
   const origPos = $modal.data("originalPosition");
   const origRole = $modal.data("originalRole");
   const profileChanged =
@@ -91,55 +89,6 @@ $(document).on("change", "#v_role", function () {
   }
 
   refreshSaveBtn();
-});
-
-/* ───────────────────────────────────────────
-   TOGGLE USER STATUS  (Enable / Disable)
-─────────────────────────────────────────── */
-$(document).on("click", "#toggleStatusBtn", function () {
-  if (!isPrivileged()) return;
-
-  const username = $("#v_username").val();
-  const isEnable = $(this).text().trim() === "Enable";
-  const newStatus = isEnable ? "ACTIVE" : "INACTIVE";
-
-  Swal.fire({
-    icon: isEnable ? "question" : "warning",
-    title: `${isEnable ? "Enable" : "Disable"} User?`,
-    html: `This will set <strong>${username}</strong> to <strong>${newStatus}</strong>.`,
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    confirmButtonColor: isEnable ? "#198754" : "#dc3545",
-  }).then((result) => {
-    if (!result.isConfirmed) return;
-
-    $.ajax({
-      url: "functions/update_user_status.php",
-      type: "POST",
-      data: { username, status: newStatus },
-      dataType: "json",
-      success: function (res) {
-        if (res.success) {
-          Swal.fire({
-            icon: "success",
-            title: `User ${newStatus === "ACTIVE" ? "Enabled" : "Disabled"}`,
-            text: `${username} is now ${newStatus}.`,
-            timer: 1500,
-            showConfirmButton: false,
-          }).then(() => location.reload());
-        } else {
-          Swal.fire(
-            "Error",
-            res.message || "Failed to update status.",
-            "error",
-          );
-        }
-      },
-      error: function () {
-        Swal.fire("Error", "Request failed.", "error");
-      },
-    });
-  });
 });
 
 /* ───────────────────────────────────────────
@@ -209,17 +158,15 @@ $(document).on("click", ".view-user", function () {
         supervisor: "SUPERVISOR",
       };
 
-      /* ───── populate basic fields ───── */
+      /* ── basic fields ── */
       $("#v_username").val(username);
       $("#v_first_name").val(data.first_name);
       $("#v_last_name").val(data.last_name);
       $("#v_created_at").val(formatMDY(data.created_at));
       $("#v_updated_at").val(formatMDY(data.updated_at));
-
-      /* ───── position ───── */
       $("#v_position").val(data.position).prop("readonly", !canEdit);
 
-      /* ───── role ───── */
+      /* ── role ── */
       if (canEdit) {
         if (isSuperAdmin) {
           $("#v_role_wrapper").html(
@@ -230,21 +177,19 @@ $(document).on("click", ".view-user", function () {
              </select>`,
           );
           $("#v_role").val(data.role);
+        } else if (data.role === "admin") {
+          $("#v_role_wrapper").html(
+            `<input type="text" id="v_role" class="form-control" readonly>`,
+          );
+          $("#v_role").val(roleLabels["admin"]);
         } else {
-          if (data.role === "admin") {
-            $("#v_role_wrapper").html(
-              `<input type="text" id="v_role" class="form-control" readonly>`,
-            );
-            $("#v_role").val(roleLabels["admin"]);
-          } else {
-            $("#v_role_wrapper").html(
-              `<select id="v_role" class="form-control">
-                 <option value="staff">STAFF</option>
-                 <option value="supervisor">SUPERVISOR</option>
-               </select>`,
-            );
-            $("#v_role").val(data.role);
-          }
+          $("#v_role_wrapper").html(
+            `<select id="v_role" class="form-control">
+               <option value="staff">STAFF</option>
+               <option value="supervisor">SUPERVISOR</option>
+             </select>`,
+          );
+          $("#v_role").val(data.role);
         }
       } else {
         $("#v_role_wrapper").html(
@@ -253,40 +198,18 @@ $(document).on("click", ".view-user", function () {
         $("#v_role").val(roleLabels[data.role] ?? data.role);
       }
 
-      /* ───── Reset Password + Save visibility ───── */
+      /* ── buttons ── */
       $("#resetPasswordBtn").toggle(canEdit);
       $("#saveChangesBtn").toggle(!isReadonly);
 
-      /* ───── status toggle button ───── */
-      const status = (data.status || "").toUpperCase();
-      const $toggleBtn = $("#toggleStatusBtn");
-
-      if (canEdit) {
-        if (status === "INACTIVE") {
-          $toggleBtn
-            .text("Enable")
-            .removeClass("btn-danger")
-            .addClass("btn-success")
-            .show();
-        } else {
-          $toggleBtn
-            .text("Disable")
-            .removeClass("btn-success")
-            .addClass("btn-danger")
-            .show();
-        }
-      } else {
-        $toggleBtn.hide();
-      }
-
-      /* ───── search bar ───── */
+      /* ── search bar ── */
       const $modal = $("#userViewModal");
       $modal
         .find("#branchSearch")
         .prop("disabled", !isStaff || isReadonly)
         .val("");
 
-      /* ───── build two-pane branch layout ───── */
+      /* ── build two-pane branch layout ── */
       const leftItems = [];
       const rightItems = [];
 
@@ -322,15 +245,12 @@ $(document).on("click", ".view-user", function () {
           : '<span class="text-muted">No branches available</span>',
       );
 
-      /* ───── store originals + reset save button ───── */
       $modal.data("originalBranches", new Set(normalizedAssigned));
       $modal.data("originalPosition", (data.position || "").trim());
       $modal.data("originalRole", data.role);
-
       $("#saveChangesBtn").prop("disabled", true);
 
       setTimeout(updateBranchCounter, 0);
-
       $modal.modal("show");
     },
   });
