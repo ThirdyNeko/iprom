@@ -13,7 +13,7 @@ function sortBranches() {
 
   allItems.forEach((el) => {
     const checked = el.querySelector(".branch-checkbox").checked;
-    (checked ? leftPane : rightPane).appendChild(el);
+    (checked ? rightPane : leftPane).appendChild(el);
   });
 }
 
@@ -228,20 +228,20 @@ $(document).on("click", ".view-user", function () {
             <label class="form-check-label" for="v_branch_${code}">${name}</label>
           </div>`;
 
-        (checked ? leftItems : rightItems).push(item);
+        (checked ? rightItems : leftItems).push(item);
       });
 
       $("#v_branch").html(
         Object.keys(allBranches).length
           ? `<div class="branch-col">
-               <div class="branch-col-header">Selected</div>
-               <div id="v_branch_left" class="branch-pane">${leftItems.join("")}</div>
-             </div>
-             <div class="branch-col-divider"></div>
-             <div class="branch-col">
-               <div class="branch-col-header">Branches</div>
-               <div id="v_branch_right" class="branch-pane">${rightItems.join("")}</div>
-             </div>`
+              <div class="branch-col-header">Branches</div>
+              <div id="v_branch_left" class="branch-pane">${leftItems.join("")}</div>
+            </div>
+            <div class="branch-col-divider"></div>
+            <div class="branch-col">
+              <div class="branch-col-header">Selected</div>
+              <div id="v_branch_right" class="branch-pane">${rightItems.join("")}</div>
+            </div>`
           : '<span class="text-muted">No branches available</span>',
       );
 

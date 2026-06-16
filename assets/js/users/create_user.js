@@ -14,20 +14,20 @@
 
   // build two-pane layout
   container.innerHTML = `
-    <div class="branch-col">
-      <div class="branch-col-header">Selected</div>
-      <div id="branchLeftPane" class="branch-pane"></div>
-    </div>
-    <div class="branch-col-divider"></div>
-    <div class="branch-col">
-      <div class="branch-col-header">Branches</div>
-      <div id="branchRightPane" class="branch-pane"></div>
-    </div>
-  `;
+  <div class="branch-col">
+    <div class="branch-col-header">Branches</div>
+    <div id="branchLeftPane" class="branch-pane"></div>
+  </div>
+  <div class="branch-col-divider"></div>
+  <div class="branch-col">
+    <div class="branch-col-header">Selected</div>
+    <div id="branchRightPane" class="branch-pane"></div>
+  </div>
+`;
 
   // all items start unchecked → right pane
-  const rightPane = document.getElementById("branchRightPane");
-  items.forEach((el) => rightPane.appendChild(el));
+  const leftPane = document.getElementById("branchLeftPane");
+  items.forEach((el) => leftPane.appendChild(el));
 })();
 
 /* ───────────────────────────────────────────
@@ -46,7 +46,7 @@ function sortCreateBranches() {
 
   allItems.forEach((el) => {
     const checked = el.querySelector("input[type='checkbox']").checked;
-    (checked ? leftPane : rightPane).appendChild(el);
+    (checked ? rightPane : leftPane).appendChild(el);
   });
 }
 
