@@ -294,7 +294,7 @@ $sql = "
         [first_name],[last_name],[middle_name],[suffix],
         [gender],[birthday],[branch],[brand],
         [employment_status],[sub_status],[agency],
-        [date_hired],[start_date],[end_date],[remarks],
+        [date_hired],[start_date],[end_date],[remarks], [first_remark],
         [employee_id],[roving_group_id],[multi_brand_group_id],
         [status],[hidden],[created_at],[updated_at],
         [assignment_date],[last_assigned_by],[last_updated_by]
@@ -302,7 +302,7 @@ $sql = "
         :first_name,:last_name,:middle_name,:suffix,
         :gender,:birthday,:branch,:brand,
         :employment_status,:sub_status,:agency,
-        :date_hired,:start_date,:end_date,:remarks,
+        :date_hired,:start_date,:end_date,:remarks, :first_remark,
         :employee_id,:roving_group_id,:multi_brand_group_id,
         'ACTIVE',0,GETDATE(),GETDATE(),
         GETDATE(),'SYSTEM','SYSTEM'

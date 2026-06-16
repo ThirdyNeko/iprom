@@ -324,6 +324,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                         <option value="STATIONARY">STATIONARY</option>
                                         <option value="MULTI BRANCH">MULTI BRANCH</option>
                                         <option value="MULTI BRAND">MULTI BRAND</option>
+                                        <option value="HYBRID">HYBRID</option>
                                     </select>
                                 </div>
 
