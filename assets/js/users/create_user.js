@@ -1,41 +1,58 @@
 // assets/js/users/create_user.js
 
 /* ───────────────────────────────────────────
-   INDEX INIT — runs synchronously before
-   roles.js calls sortCreateBranches()
+   DOM RESTRUCTURE — runs synchronously so
+   panes exist before roles.js fires
 ─────────────────────────────────────────── */
-document.querySelectorAll("#branchSelect .branch-item").forEach((el, i) => {
-  el.dataset.index = i;
-});
-
-/* ───────────────────────────────────────────
-   BRANCH HELPERS  (prefixed to avoid
-   collision with users_modal.js globals)
-─────────────────────────────────────────── */
-function sortCreateBranches() {
+(function setupBranchPanes() {
   const container = document.getElementById("branchSelect");
   if (!container) return;
 
+  // stamp indices before moving elements
   const items = [...container.querySelectorAll(".branch-item")];
-  if (!items.length) return;
+  items.forEach((el, i) => (el.dataset.index = i));
 
-  items.sort((a, b) => {
-    const aChecked = a.querySelector("input[type='checkbox']").checked ? 1 : 0;
-    const bChecked = b.querySelector("input[type='checkbox']").checked ? 1 : 0;
+  // build two-pane layout
+  container.innerHTML = `
+    <div class="branch-col">
+      <div class="branch-col-header">Selected</div>
+      <div id="branchLeftPane" class="branch-pane"></div>
+    </div>
+    <div class="branch-col-divider"></div>
+    <div class="branch-col">
+      <div class="branch-col-header">Branches</div>
+      <div id="branchRightPane" class="branch-pane"></div>
+    </div>
+  `;
 
-    if (aChecked !== bChecked) return bChecked - aChecked;
+  // all items start unchecked → right pane
+  const rightPane = document.getElementById("branchRightPane");
+  items.forEach((el) => rightPane.appendChild(el));
+})();
 
-    return (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0);
+/* ───────────────────────────────────────────
+   BRANCH HELPERS
+─────────────────────────────────────────── */
+function sortCreateBranches() {
+  const leftPane = document.getElementById("branchLeftPane");
+  const rightPane = document.getElementById("branchRightPane");
+  if (!leftPane || !rightPane) return;
+
+  // collect items from both panes
+  const allItems = [
+    ...leftPane.querySelectorAll(".branch-item"),
+    ...rightPane.querySelectorAll(".branch-item"),
+  ];
+
+  allItems.forEach((el) => {
+    const checked = el.querySelector("input[type='checkbox']").checked;
+    (checked ? leftPane : rightPane).appendChild(el);
   });
-
-  items.forEach((el) => container.appendChild(el));
-
-  container.scrollTop = 0;
 }
 
 function updateCreateBranchCounter() {
   const count = document.querySelectorAll(
-    "#branchSelect input[type='checkbox']:checked",
+    "#branchLeftPane input[type='checkbox']:checked, #branchRightPane input[type='checkbox']:checked",
   ).length;
 
   const counter = document.getElementById("branchCounter");
@@ -43,30 +60,36 @@ function updateCreateBranchCounter() {
 }
 
 /* ───────────────────────────────────────────
-   SEARCH
+   SEARCH — filters right pane (unselected)
 ─────────────────────────────────────────── */
 $(document).on("keyup", "#branchSearch", function () {
   const value = $(this).val().toUpperCase();
 
-  $("#branchSelect .branch-item").each(function () {
-    $(this).toggle($(this).text().toUpperCase().includes(value));
-  });
+  // search both panes
+  $("#branchLeftPane .branch-item, #branchRightPane .branch-item").each(
+    function () {
+      $(this).toggle($(this).text().toUpperCase().includes(value));
+    },
+  );
 });
 
 /* ───────────────────────────────────────────
    CHECKBOX CHANGE
 ─────────────────────────────────────────── */
-$(document).on("change", "#branchSelect input[type='checkbox']", function () {
-  sortCreateBranches();
-  updateCreateBranchCounter();
-});
+$(document).on(
+  "change",
+  "#branchLeftPane input[type='checkbox'], #branchRightPane input[type='checkbox']",
+  function () {
+    sortCreateBranches();
+    updateCreateBranchCounter();
+  },
+);
 
 /* ───────────────────────────────────────────
    FORM SUBMIT
 ─────────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("#createUserModal form");
-
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
@@ -102,7 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const modalEl = document.getElementById("createUserModal");
         const modal = bootstrap.Modal.getInstance(modalEl);
-
         if (modal) modal.hide();
 
         location.reload();
@@ -115,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (err) {
       console.error(err);
-
       Swal.fire({
         icon: "error",
         title: "Server Error",

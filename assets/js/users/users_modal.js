@@ -2,37 +2,18 @@
    BRANCH HELPERS
 ─────────────────────────────────────────── */
 function sortBranches() {
-  const container = $("#v_branch");
-  const items = container.find(".branch-item").toArray();
+  const leftPane = document.getElementById("v_branch_left");
+  const rightPane = document.getElementById("v_branch_right");
+  if (!leftPane || !rightPane) return;
 
-  if (!items.length) return;
+  const allItems = [
+    ...leftPane.querySelectorAll(".branch-item"),
+    ...rightPane.querySelectorAll(".branch-item"),
+  ];
 
-  const positions = new Map();
-  items.forEach((el) => positions.set(el, el.getBoundingClientRect().top));
-
-  items.sort((a, b) => {
-    const aChecked = $(a).find(".branch-checkbox").prop("checked") ? 1 : 0;
-    const bChecked = $(b).find(".branch-checkbox").prop("checked") ? 1 : 0;
-
-    if (aChecked !== bChecked) return bChecked - aChecked;
-
-    return ($(a).data("index") || 0) - ($(b).data("index") || 0);
-  });
-
-  items.forEach((el) => container[0].appendChild(el));
-
-  items.forEach((el) => {
-    const diff = positions.get(el) - el.getBoundingClientRect().top;
-
-    if (diff) {
-      el.style.transition = "none";
-      el.style.transform = `translateY(${diff}px)`;
-
-      requestAnimationFrame(() => {
-        el.style.transition = "transform 250ms ease";
-        el.style.transform = "translateY(0)";
-      });
-    }
+  allItems.forEach((el) => {
+    const checked = el.querySelector(".branch-checkbox").checked;
+    (checked ? leftPane : rightPane).appendChild(el);
   });
 }
 
@@ -41,9 +22,7 @@ function sortBranches() {
 ─────────────────────────────────────────── */
 function updateBranchCounter() {
   const $modal = $("#userViewModal");
-  const count = $modal.find("#v_branch .branch-checkbox:checked").length;
-
-  console.log("Counter updating:", count);
+  const count = $modal.find(".branch-checkbox:checked").length;
   $modal.find("#branchCounter").text(`Selected: ${count}`);
 }
 
@@ -64,8 +43,6 @@ function isPrivileged(requiredRole) {
 
 /* ───────────────────────────────────────────
    CHANGE DETECTION HELPER
-   Re-evaluates both branch + profile state
-   and flips #saveChangesBtn accordingly.
 ─────────────────────────────────────────── */
 function refreshSaveBtn() {
   const $modal = $("#userViewModal");
@@ -73,7 +50,8 @@ function refreshSaveBtn() {
   /* — branch drift — */
   const origBranches = $modal.data("originalBranches");
   const current = new Set(
-    $("#v_branch .branch-checkbox:checked")
+    $modal
+      .find(".branch-checkbox:checked")
       .map((_, el) => el.value.trim())
       .get(),
   );
@@ -99,15 +77,15 @@ function refreshSaveBtn() {
 $(document).on("change", "#v_role", function () {
   const becameStaff = $(this).val() === "staff";
 
-  /* search bar */
   $("#branchSearch").prop("disabled", !becameStaff).val("");
 
   if (becameStaff) {
-    /* re-enable all checkboxes */
-    $("#v_branch .branch-checkbox").prop("disabled", false);
+    $("#userViewModal .branch-checkbox").prop("disabled", false);
   } else {
-    /* clear + lock all checkboxes */
-    $("#v_branch .branch-checkbox").prop({ checked: false, disabled: true });
+    $("#userViewModal .branch-checkbox").prop({
+      checked: false,
+      disabled: true,
+    });
     sortBranches();
     updateBranchCounter();
   }
@@ -124,14 +102,13 @@ $(document).on("click", "#toggleStatusBtn", function () {
   const username = $("#v_username").val();
   const isEnable = $(this).text().trim() === "Enable";
   const newStatus = isEnable ? "ACTIVE" : "INACTIVE";
-  const action = isEnable ? "enable" : "disable";
 
   Swal.fire({
     icon: isEnable ? "question" : "warning",
     title: `${isEnable ? "Enable" : "Disable"} User?`,
     html: `This will set <strong>${username}</strong> to <strong>${newStatus}</strong>.`,
     showCancelButton: true,
-    confirmButtonText: `Yes`,
+    confirmButtonText: "Yes",
     confirmButtonColor: isEnable ? "#198754" : "#dc3545",
   }).then((result) => {
     if (!result.isConfirmed) return;
@@ -166,21 +143,21 @@ $(document).on("click", "#toggleStatusBtn", function () {
 });
 
 /* ───────────────────────────────────────────
-   SEARCH
+   SEARCH — filters both panes
 ─────────────────────────────────────────── */
 $(document).on("input", "#branchSearch", function () {
   const search = $(this).val().trim().toUpperCase();
 
-  $("#userViewModal #v_branch .branch-item").each(function () {
+  $("#userViewModal .branch-item").each(function () {
     const text = $(this).find("label").text().trim().toUpperCase();
     $(this).toggle(search === "" || text.includes(search));
   });
 });
 
 /* ───────────────────────────────────────────
-   CHECKBOX / FIELD CHANGES  →  shared button
+   CHECKBOX / FIELD CHANGES
 ─────────────────────────────────────────── */
-$(document).on("change", "#v_branch input[type='checkbox']", function () {
+$(document).on("change", "#userViewModal .branch-checkbox", function () {
   sortBranches();
   updateBranchCounter();
   refreshSaveBtn();
@@ -198,7 +175,6 @@ function formatMDY(dateStr) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   const year = date.getFullYear();
-
   return `${month}/${day}/${year}`;
 }
 
@@ -217,7 +193,7 @@ $(document).on("click", ".view-user", function () {
     success: function (data) {
       const role = (data.role || "").trim().toLowerCase();
       const isStaff = role === "staff";
-      const canEdit = isReadonly ? false : isPrivileged(); // ← locked when readonly
+      const canEdit = isReadonly ? false : isPrivileged();
       const isSuperAdmin = isReadonly ? false : isPrivileged("super_admin");
 
       const assigned = data.branch
@@ -271,7 +247,6 @@ $(document).on("click", ".view-user", function () {
           }
         }
       } else {
-        // readonly OR no privilege → always plain text input
         $("#v_role_wrapper").html(
           `<input type="text" id="v_role" class="form-control" readonly>`,
         );
@@ -280,10 +255,10 @@ $(document).on("click", ".view-user", function () {
 
       /* ───── Reset Password + Save visibility ───── */
       $("#resetPasswordBtn").toggle(canEdit);
-      $("#saveChangesBtn").toggle(!isReadonly); // ← hide entirely when readonly
+      $("#saveChangesBtn").toggle(!isReadonly);
 
       /* ───── status toggle button ───── */
-      const status = (data.status || "").toUpperCase(); // "ACTIVE" or "INACTIVE"
+      const status = (data.status || "").toUpperCase();
       const $toggleBtn = $("#toggleStatusBtn");
 
       if (canEdit) {
@@ -304,54 +279,57 @@ $(document).on("click", ".view-user", function () {
         $toggleBtn.hide();
       }
 
-      /* ───── search + branch toggles ───── */
+      /* ───── search bar ───── */
       const $modal = $("#userViewModal");
       $modal
         .find("#branchSearch")
         .prop("disabled", !isStaff || isReadonly)
         .val("");
 
-      /* ───── build branches ───── */
-      const branchHtml = Object.entries(allBranches)
-        .map(([code, name], index) => {
-          const checked = normalizedAssigned.includes(String(code).trim())
-            ? "checked"
-            : "";
-          const disabled = !isStaff || isReadonly ? "disabled" : ""; // ← always disabled when readonly
+      /* ───── build two-pane branch layout ───── */
+      const leftItems = [];
+      const rightItems = [];
 
-          return `
-            <div class="form-check branch-item"
-                 data-index="${index}"
-                 style="display:inline-block;width:25%;margin:2px 0;">
-              <input class="form-check-input branch-checkbox"
-                     type="checkbox"
-                     value="${code}"
-                     id="branch_${code}"
-                     ${checked}
-                     ${disabled}>
-              <label class="form-check-label" for="branch_${code}">
-                ${name}
-              </label>
-            </div>`;
-        })
-        .join("");
+      Object.entries(allBranches).forEach(([code, name], index) => {
+        const checked = normalizedAssigned.includes(String(code).trim());
+        const disabled = !isStaff || isReadonly;
+
+        const item = `
+          <div class="branch-item" data-index="${index}" style="margin:2px 0;">
+            <input class="form-check-input branch-checkbox"
+                   type="checkbox"
+                   value="${code}"
+                   id="v_branch_${code}"
+                   ${checked ? "checked" : ""}
+                   ${disabled ? "disabled" : ""}>
+            <label class="form-check-label" for="v_branch_${code}">${name}</label>
+          </div>`;
+
+        (checked ? leftItems : rightItems).push(item);
+      });
 
       $("#v_branch").html(
-        branchHtml || '<span class="text-muted">No branches available</span>',
+        Object.keys(allBranches).length
+          ? `<div class="branch-col">
+               <div class="branch-col-header">Selected</div>
+               <div id="v_branch_left" class="branch-pane">${leftItems.join("")}</div>
+             </div>
+             <div class="branch-col-divider"></div>
+             <div class="branch-col">
+               <div class="branch-col-header">Branches</div>
+               <div id="v_branch_right" class="branch-pane">${rightItems.join("")}</div>
+             </div>`
+          : '<span class="text-muted">No branches available</span>',
       );
 
-      /* ───── ensure UI updates after render ───── */
-      setTimeout(() => {
-        sortBranches();
-        updateBranchCounter();
-      }, 0);
-
-      /* ───── store originals + reset button ───── */
+      /* ───── store originals + reset save button ───── */
       $modal.data("originalBranches", new Set(normalizedAssigned));
       $modal.data("originalPosition", (data.position || "").trim());
       $modal.data("originalRole", data.role);
 
       $("#saveChangesBtn").prop("disabled", true);
+
+      setTimeout(updateBranchCounter, 0);
 
       $modal.modal("show");
     },
@@ -359,7 +337,7 @@ $(document).on("click", ".view-user", function () {
 });
 
 /* ───────────────────────────────────────────
-   SAVE CHANGES  (profile + branches unified)
+   SAVE CHANGES
 ─────────────────────────────────────────── */
 $(document).on("click", "#saveChangesBtn", function () {
   const $modal = $("#userViewModal");
@@ -367,10 +345,10 @@ $(document).on("click", "#saveChangesBtn", function () {
   const position = $("#v_position").val().trim();
   const role = $("#v_role").val();
 
-  /* — determine what drifted — */
   const origBranches = $modal.data("originalBranches");
   const current = new Set(
-    $("#v_branch .branch-checkbox:checked")
+    $modal
+      .find(".branch-checkbox:checked")
       .map((_, el) => el.value.trim())
       .get(),
   );
@@ -396,7 +374,6 @@ $(document).on("click", "#saveChangesBtn", function () {
   Swal.fire({
     icon: "question",
     title: "Save Changes?",
-    // text: `Save changes for "${username}"?`,
     showCancelButton: true,
   }).then((result) => {
     if (!result.isConfirmed) return;
@@ -428,7 +405,6 @@ $(document).on("click", "#saveChangesBtn", function () {
     Promise.all(requests)
       .then((results) => {
         const failed = results.find((r) => !r.success);
-
         if (failed) {
           Swal.fire("Error", failed.message || "An error occurred.", "error");
         } else {

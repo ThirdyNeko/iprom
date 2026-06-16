@@ -36,7 +36,7 @@ try {
     .modal .form-control,
     .modal .form-select {
         border-radius: 0.25rem;
-        background-color: #fffbdf; /* default to editable style */
+        background-color: #fffbdf;
     }
     .modal .form-control[readonly] {
         background-color: #e9ecef;
@@ -46,28 +46,64 @@ try {
         text-transform: uppercase;
     }
     .modal .form-select {
-        background-color: #fffbdf !important; /* editable */
+        background-color: #fffbdf !important;
         opacity: 1;
     }
     .modal .form-control[disabled],
     .modal .form-select[disabled] {
-        background-color: #e9ecef !important; /* readonly/disabled */
+        background-color: #e9ecef !important;
         opacity: 1;
         cursor: not-allowed;
     }
-    .branch-checkbox-group {
+
+    /* ── two-pane branch layout ── */
+    #branchSelect {
         display: flex;
-        flex-wrap: wrap;
-        align-content: flex-start; /* prevents vertical spacing issues */
+        height: 260px;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .branch-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .branch-col-header {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6c757d;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        flex-shrink: 0;
+    }
+
+    .branch-pane {
+        flex: 1;
+        overflow-y: auto;
+        padding: 4px;
+    }
+
+    .branch-col-divider {
+        width: 1px;
+        background: #dee2e6;
+        flex-shrink: 0;
     }
 
     .branch-item {
-        width: 50%;
+        width: 100%;
         display: flex;
-        align-items: center; /* FIXED */
+        align-items: center;
         gap: 6px;
+        padding: 1px 2px;
         box-sizing: border-box;
-        will-change: transform, opacity;
     }
 </style>
 
@@ -95,6 +131,7 @@ try {
 
                     <div class="row g-3">
                         <div class="col-md-6">
+
                             <!-- ROLE -->
                             <div class="mb-3">
 
@@ -106,38 +143,19 @@ try {
                                         class="form-select"
                                         required>
 
-                                    <option value=""
-                                            disabled
-                                            selected>
-
+                                    <option value="" disabled selected>
                                         Select Role
-
                                     </option>
+
                                     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
-                                    <option value="admin">
-                                        ADMIN
-                                    </option>
-
-                                    <!-- <option value="inhouse_manager">
-                                        INHOUSE MANAGER
-                                    </option>
-
-                                    <option value="branch_manager">
-                                        BRANCH MANAGER
-                                    </option> -->
+                                    <option value="admin">ADMIN</option>
                                     <?php endif; ?>
 
                                     <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
-                                    <option value="supervisor">
-                                        SUPERVISOR
-                                    </option>
+                                    <option value="supervisor">SUPERVISOR</option>
                                     <?php endif; ?>
 
-                                    <option value="staff">
-                                        STAFF
-                                    </option>
-
-                                    
+                                    <option value="staff">STAFF</option>
 
                                 </select>
 
@@ -156,20 +174,18 @@ try {
 
                                 <!-- Search -->
                                 <input type="text"
-                                    id="branchSearch"
-                                    class="form-control mb-2"
-                                    placeholder="Search branches..."
-                                    style="text-transform: uppercase;;"
-                                    disabled>
+                                       id="branchSearch"
+                                       class="form-control mb-2"
+                                       placeholder="Search branches..."
+                                       style="text-transform: uppercase;"
+                                       disabled>
 
-                                <!-- Branch List -->
-                                <div id="branchSelect"
-                                     class="form-control branch-checkbox-group"
-                                     style="height: 250px; overflow-y: auto; padding: 4px; display: flex; flex-wrap: wrap;">
+                                <!-- Branch List — JS will split this into left/right panes -->
+                                <div id="branchSelect">
 
                                     <?php foreach ($branches as $b): ?>
-                                        <div class="form-check branch-item"
-                                            style="width: 50%; margin: 2px 0;">
+                                        <div class="branch-item"
+                                             style="margin: 2px 0;">
 
                                             <input
                                                 class="form-check-input"
@@ -191,118 +207,65 @@ try {
 
                             </div>
 
-                            <!-- BRAND -->
-                            <!-- <div class="mb-3">
-
-                                <label class="form-label">
-                                    Brand
-                                    <small class="text-muted">(Optional)</small>
-                                </label>
-
-                                <select name="brand"
-                                        id="brandSelect"
-                                        class="form-select"
-                                        disabled>
-
-                                    <option value="">
-                                        NONE
-                                    </option>
-
-                                    <?php foreach ($brands as $brand): ?>
-
-                                        <option value="<?= htmlspecialchars($brand) ?>">
-
-                                            <?= htmlspecialchars($brand) ?>
-
-                                        </option>
-
-                                    <?php endforeach; ?>
-
-                                </select>
-
-                            </div> -->
-
-                            <!-- <div class="mb-3">
-                                <label class = "form-label">
-                                    Department
-                                </label>
-                                <input type="text"
-                                    id="departmentInput"
-                                    name="department"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
-                                    disabled>
-                            </div> -->
-
                         </div>
                         <div class="col-md-6">
 
                             <div class="mb-3">
-                                <label class = "form-label">
-                                    First Name
-                                </label>
+                                <label class="form-label">First Name</label>
                                 <input type="text"
-                                    id="first_name"
-                                    name="first_name"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
-                                    required>
+                                       id="first_name"
+                                       name="first_name"
+                                       class="form-control text-uppercase"
+                                       style="text-transform: uppercase;"
+                                       required>
                             </div>
 
                             <div class="mb-3">
-                                <label class = "form-label">
-                                    Last Name
-                                </label>
+                                <label class="form-label">Last Name</label>
                                 <input type="text"
-                                    id="last_name"
-                                    name="last_name"
-                                    class="form-control text-uppercase"
-                                    style="text-transform: uppercase;"
-                                    required>
-                            </div>                 
+                                       id="last_name"
+                                       name="last_name"
+                                       class="form-control text-uppercase"
+                                       style="text-transform: uppercase;"
+                                       required>
+                            </div>
 
                             <!-- USERNAME -->
                             <div class="mb-3">
                                 <label class="form-label">Username</label>
                                 <input type="text"
-                                    id="username"
-                                    name="username"
-                                    class="form-control text-uppercase"
-                                    readonly>
-                            </div>     
-                            
-                            <div class="mb-3">
-                                <label class = "form-label">
-                                    Position
-                                </label>
-                                <input type="text"
-                                    name="position"
-                                    class="form-control"
-                                    required>
-                            </div>   
+                                       id="username"
+                                       name="username"
+                                       class="form-control text-uppercase"
+                                       readonly>
+                            </div>
 
                             <div class="mb-3">
-                                <label class = "form-label">
-                                    Default Password
-                                </label>
+                                <label class="form-label">Position</label>
                                 <input type="text"
-                                    name="default_password"
-                                    class="form-control"
-                                    value="Password123"
-                                    readonly>
+                                       name="position"
+                                       class="form-control"
+                                       required>
                             </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Default Password</label>
+                                <input type="text"
+                                       name="default_password"
+                                       class="form-control"
+                                       value="Password123"
+                                       readonly>
+                            </div>
+
                         </div>
                     </div>
                 </div>
 
                 <div class="modal-footer">
 
-                    <button type="submit"
-                            class="btn btn-success">
-
+                    <button type="submit" class="btn btn-success">
                         <i class="bi bi-check-circle"></i>
                         Create
-
                     </button>
 
                 </div>
@@ -315,7 +278,7 @@ try {
 
 </div>
 
-<script src = "sweetalert/dist/sweetalert2.all.min.js"></script>
+<script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/users/create_user.js"></script>
 <script src="assets/js/users/roles.js"></script>

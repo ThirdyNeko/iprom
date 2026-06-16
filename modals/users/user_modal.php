@@ -1,3 +1,55 @@
+<style>
+  /* ── two-pane branch layout (shared with create user modal) ── */
+  #v_branch {
+    display: flex;
+    height: 250px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .branch-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .branch-col-header {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    flex-shrink: 0;
+  }
+
+  .branch-pane {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px;
+  }
+
+  .branch-col-divider {
+    width: 1px;
+    background: #dee2e6;
+    flex-shrink: 0;
+  }
+
+  .branch-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 2px;
+    box-sizing: border-box;
+  }
+</style>
+
 <div class="modal fade" id="userViewModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -27,7 +79,6 @@
                         <input type="text" id="v_position" class="form-control" readonly>
                     </div>
 
-                    <!-- ↓ wrapper lets JS swap input ↔ select cleanly -->
                     <div class="col-md-6">
                         <label class="form-label">Role</label>
                         <div id="v_role_wrapper">
@@ -58,10 +109,8 @@
                                style="text-transform: uppercase;"
                                disabled>
 
-                        <div id="v_branch"
-                             style="max-height: 250px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px;">
-                            <!-- populated by JS -->
-                        </div>
+                        <!-- JS injects two-pane layout here -->
+                        <div id="v_branch"></div>
 
                     </div>
 
@@ -72,9 +121,7 @@
                 <button type="button" id="resetPasswordBtn" class="btn btn-warning" style="display:none;">
                     Reset Password
                 </button>
-                <!-- NEW -->
                 <button type="button" id="toggleStatusBtn" class="btn" style="display:none;">
-                    <!-- text/class set by JS -->
                 </button>
                 <button type="button" id="saveChangesBtn" class="btn btn-success" disabled>
                     Save Changes
@@ -84,6 +131,7 @@
         </div>
     </div>
 </div>
+
 <script>
   const SESSION_ROLE = "<?= $_SESSION['role'] ?? '' ?>";
 </script>
