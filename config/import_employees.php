@@ -33,8 +33,8 @@ function generateId(string $prefix): string {
     return $prefix . '-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 }
 
-function resolveGroupId(string $lastName, string $firstName, string $birthday, string $prefix, array &$map): string {
-    $key = mb_strtoupper(trim($lastName), 'UTF-8') . '|' . mb_strtoupper(trim($firstName), 'UTF-8') . '|' . trim($birthday);
+function resolveGroupId(string $lastName, string $firstName, string $prefix, array &$map): string {
+    $key = mb_strtoupper(trim($lastName), 'UTF-8') . '|' . mb_strtoupper(trim($firstName), 'UTF-8');
     if (!isset($map[$key])) {
         $map[$key] = generateId($prefix);
     }
@@ -381,14 +381,14 @@ foreach ($parsedRows as $row) {
         }
 
         // Group IDs
-        $employeeId = resolveGroupId($lastName, $firstName, $birthday, 'EMP', $employeeIdMap);
+        $employeeId = resolveGroupId($lastName, $firstName, 'EMP', $employeeIdMap);
         $rovingGroupId = null;
         if (in_array($subStatusNorm, ['MULTI BRANCH', 'HYBRID'])) {
-            $rovingGroupId = resolveGroupId($lastName, $firstName, $birthday, 'ROV', $rovingGroupIdMap);
+            $rovingGroupId = resolveGroupId($lastName, $firstName, 'ROV', $rovingGroupIdMap);
         }
         $multiBrandGroupId = null;
         if (in_array($subStatusNorm, ['MULTI BRAND', 'HYBRID'])) {
-            $multiBrandGroupId = resolveGroupId($lastName, $firstName, $birthday, 'MBR', $multiBrandGroupIdMap);
+            $multiBrandGroupId = resolveGroupId($lastName, $firstName, 'MBR', $multiBrandGroupIdMap);
         }
 
         $params = [
