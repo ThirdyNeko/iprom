@@ -407,6 +407,7 @@ foreach ($parsedRows as $row) {
             ':start_date'           => toSqlDate($from),
             ':end_date'             => toSqlDate($to),
             ':remarks'              => clean($branchDeployed)                     ?: null,
+            ':first_remark'         => clean($branchDeployed)                     ?: null, // for easier querying
             ':employee_id'          => $employeeId,
             ':roving_group_id'      => $rovingGroupId,
             ':multi_brand_group_id' => $multiBrandGroupId,
