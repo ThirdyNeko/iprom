@@ -88,14 +88,22 @@ if (!empty($_GET['agency'])) {
 ========================= */
 if (!empty($_GET['search'])) {
     $sql .= " AND (
-        p.first_name LIKE :search OR
-        p.last_name LIKE :search OR
-        p.branch LIKE :search OR
-        p.brand LIKE :search OR
-        p.agency LIKE :search OR
-        p.corpo LIKE :search
+        p.first_name LIKE :search1 OR
+        p.last_name LIKE :search2 OR
+        p.branch LIKE :search3 OR
+        p.brand LIKE :search4 OR
+        p.agency LIKE :search5 OR
+        p.corpo LIKE :search6
     )";
-    $params[':search'] = "%" . $_GET['search'] . "%";
+
+    $search = "%" . $_GET['search'] . "%";
+
+    $params[':search1'] = $search;
+    $params[':search2'] = $search;
+    $params[':search3'] = $search;
+    $params[':search4'] = $search;
+    $params[':search5'] = $search;
+    $params[':search6'] = $search;
 }
 
 /* =========================
