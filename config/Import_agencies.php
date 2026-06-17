@@ -22,29 +22,34 @@ function clean(string $val): string {
 
 function toUtf8(array $row): array {
     return array_map(function($v) {
-        if (mb_check_encoding($v, 'UTF-8')) return $v; // already valid UTF-8, leave it alone
-        return mb_convert_encoding($v, 'UTF-8', 'Windows-1252'); // only convert if it's not
+        if (mb_check_encoding($v, 'UTF-8')) return $v;
+        return mb_convert_encoding($v, 'UTF-8', 'Windows-1252');
     }, $row);
 }
 
-/**
- * Uppercase a string and normalise common special-character mojibake.
- * Handles: Ñ/ñ, É/é, Ó/ó, Á/á, Í/í, Ú/ú (Windows-1252 / latin-1 remnants).
- */
 function upperClean(string $val): string {
     return mb_strtoupper(clean($val), 'UTF-8');
+}
+
+// Composite key for duplicate detection: "AGENCY NAME||CONTACT PERSON"
+function makeKey(string $agency, string $contactPerson): string {
+    return $agency . '||' . $contactPerson;
 }
 
 // ── Connect ───────────────────────────────────────────────────────────────────
 
 $pdo = qa_db();
 
-// Existing agencies: UPPER(agencies) → true  (for duplicate detection)
+// Existing records: combined key → true  (for duplicate detection)
 $existingSet = [];
 try {
-    $rows = $pdo->query("SELECT [agencies] FROM [IPROM].[dbo].[agencies]")->fetchAll(PDO::FETCH_ASSOC);
+    $rows = $pdo->query("SELECT [agencies], [contact_person] FROM [IPROM].[dbo].[agencies]")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as $r) {
-        $existingSet[mb_strtoupper(trim($r['agencies']), 'UTF-8')] = true;
+        $key = makeKey(
+            mb_strtoupper(trim($r['agencies']),        'UTF-8'),
+            mb_strtoupper(trim($r['contact_person'] ?? ''), 'UTF-8')
+        );
+        $existingSet[$key] = true;
     }
 } catch (PDOException $e) { die("Existing agency lookup failed: " . $e->getMessage()); }
 
@@ -54,8 +59,9 @@ $handle = fopen($csvFile, 'r');
 if (!$handle) die("Cannot open CSV.");
 fgetcsv($handle); // skip header row
 
-$parsedRows  = [];
-$csvAgencies = []; // UPPER(name) → count of CSV rows using it
+$parsedRows = [];
+// combined key → ['agency' => ..., 'contact_person' => ..., 'count' => N]
+$csvEntries = [];
 
 while (($row = fgetcsv($handle)) !== false) {
     $row = toUtf8($row);
@@ -67,10 +73,19 @@ while (($row = fgetcsv($handle)) !== false) {
         $email, $telNumber, $status
     ] = $row;
 
-    $agencyNorm = upperClean($agencyRaw);
+    $agencyNorm        = upperClean($agencyRaw);
+    $contactPersonNorm = upperClean($contactPerson);
 
     if ($agencyNorm !== '') {
-        $csvAgencies[$agencyNorm] = ($csvAgencies[$agencyNorm] ?? 0) + 1;
+        $key = makeKey($agencyNorm, $contactPersonNorm);
+        if (!isset($csvEntries[$key])) {
+            $csvEntries[$key] = [
+                'agency'         => $agencyNorm,
+                'contact_person' => $contactPersonNorm,
+                'count'          => 0,
+            ];
+        }
+        $csvEntries[$key]['count']++;
     }
 
     $parsedRows[] = $row;
@@ -80,16 +95,16 @@ fclose($handle);
 // ── Pre-flight analysis ───────────────────────────────────────────────────────
 
 $alreadyExists = []; // in DB  → would be duplicate
-$newAgencies   = []; // not in DB → will be inserted
+$newEntries    = []; // not in DB → will be inserted
 $withinCsvDups = []; // appears more than once inside the CSV itself
 
-foreach ($csvAgencies as $name => $count) {
-    if (isset($existingSet[$name])) {
-        $alreadyExists[$name] = $count;
+foreach ($csvEntries as $key => $meta) {
+    if (isset($existingSet[$key])) {
+        $alreadyExists[$key] = $meta;
     } else {
-        $newAgencies[$name] = $count;
-        if ($count > 1) {
-            $withinCsvDups[$name] = $count;
+        $newEntries[$key] = $meta;
+        if ($meta['count'] > 1) {
+            $withinCsvDups[$key] = $meta;
         }
     }
 }
@@ -98,13 +113,11 @@ $preflightPassed = empty($alreadyExists) && empty($withinCsvDups);
 
 // ── PASS 2: Import ────────────────────────────────────────────────────────────
 
-$inserted    = 0;
-$skipped     = 0;
-$duplicates  = [];
-$errors      = [];
-
-// Track agencies inserted THIS session to catch within-CSV dups at row level
-$insertedThisRun = [];
+$inserted        = 0;
+$skipped         = 0;
+$duplicates      = [];
+$errors          = [];
+$insertedThisRun = []; // combined key → true
 
 $sql = "
     INSERT INTO [IPROM].[dbo].[agencies]
@@ -137,23 +150,31 @@ foreach ($parsedRows as $row) {
         continue;
     }
 
-    // Duplicate: already in DB
-    if (isset($existingSet[$agencyNorm])) {
-        $duplicates[] = ['row' => implode(', ', $row), 'reason' => 'Already exists in database.'];
+    $key = makeKey($agencyNorm, $contactPersonNorm);
+
+    // Duplicate: already in DB (same agency name + contact person)
+    if (isset($existingSet[$key])) {
+        $duplicates[] = [
+            'row'    => implode(', ', $row),
+            'reason' => 'Agency with the same name and contact person already exists in database.',
+        ];
         continue;
     }
 
     // Duplicate: inserted earlier in THIS import run
-    if (isset($insertedThisRun[$agencyNorm])) {
-        $duplicates[] = ['row' => implode(', ', $row), 'reason' => 'Duplicate within CSV (first occurrence already imported).'];
+    if (isset($insertedThisRun[$key])) {
+        $duplicates[] = [
+            'row'    => implode(', ', $row),
+            'reason' => 'Duplicate within CSV (first occurrence already imported).',
+        ];
         continue;
     }
 
     // status is a bit column: 1 = active, 0 = inactive
     $statusRaw  = mb_strtoupper(clean($status), 'UTF-8');
     $statusNorm = match(true) {
-        in_array($statusRaw, ['0', 'INACTIVE', 'DISABLED', 'NO'])  => 0,
-        default                                                      => 1, // blank or any truthy value → active
+        in_array($statusRaw, ['0', 'INACTIVE', 'DISABLED', 'NO']) => 0,
+        default                                                     => 1,
     };
 
     $params = [
@@ -167,7 +188,7 @@ foreach ($parsedRows as $row) {
 
     try {
         $stmt->execute($params);
-        $insertedThisRun[$agencyNorm] = true;
+        $insertedThisRun[$key] = true;
         $inserted++;
     } catch (PDOException $e) {
         $errors[] = ['row' => implode(', ', $row), 'error' => $e->getMessage()];
@@ -191,23 +212,24 @@ foreach ($parsedRows as $row) {
     <div class="alert alert-warning">⚠️ Some issues found below — rows without conflicts were still imported.</div>
 <?php endif; ?>
 
-<?php /* ── Agency status table ── */ ?>
 <h5 class="mt-4">Agencies in CSV</h5>
 <table class="table table-sm table-bordered">
     <thead class="table-dark">
         <tr>
             <th>Agency Name</th>
+            <th>Contact Person</th>
             <th class="text-center">CSV Rows</th>
             <th class="text-center">Status</th>
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($newAgencies as $name => $count): ?>
-        <tr class="<?= $count > 1 ? 'table-warning' : 'table-success' ?>">
-            <td><?= htmlspecialchars($name) ?></td>
-            <td class="text-center"><?= $count ?></td>
+        <?php foreach ($newEntries as $meta): ?>
+        <tr class="<?= $meta['count'] > 1 ? 'table-warning' : 'table-success' ?>">
+            <td><?= htmlspecialchars($meta['agency']) ?></td>
+            <td><?= htmlspecialchars($meta['contact_person'] ?: '—') ?></td>
+            <td class="text-center"><?= $meta['count'] ?></td>
             <td class="text-center">
-                <?php if ($count > 1): ?>
+                <?php if ($meta['count'] > 1): ?>
                     ⚠️ Duplicate within CSV — only first row imported
                 <?php else: ?>
                     ✅ New — will be imported
@@ -216,16 +238,17 @@ foreach ($parsedRows as $row) {
         </tr>
         <?php endforeach; ?>
 
-        <?php foreach ($alreadyExists as $name => $count): ?>
+        <?php foreach ($alreadyExists as $meta): ?>
         <tr class="table-danger">
-            <td><?= htmlspecialchars($name) ?></td>
-            <td class="text-center"><?= $count ?></td>
+            <td><?= htmlspecialchars($meta['agency']) ?></td>
+            <td><?= htmlspecialchars($meta['contact_person'] ?: '—') ?></td>
+            <td class="text-center"><?= $meta['count'] ?></td>
             <td class="text-center">❌ Already in database — skipped</td>
         </tr>
         <?php endforeach; ?>
 
-        <?php if (empty($csvAgencies)): ?>
-        <tr><td colspan="3" class="text-muted">No agencies found in CSV.</td></tr>
+        <?php if (empty($csvEntries)): ?>
+        <tr><td colspan="4" class="text-muted">No agencies found in CSV.</td></tr>
         <?php endif; ?>
     </tbody>
 </table>
