@@ -74,7 +74,7 @@ $check = $pdo->prepare("
 
 $check->execute([
     $agency,
-    $contact_person,
+    $person,
     $id,
     $id
 ]);

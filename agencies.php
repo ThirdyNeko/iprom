@@ -392,7 +392,7 @@ $(document).ready(function () {
 
         $(".mobile-input").each(function () {
             let val = $(this).val().trim();
-            if (val && !/^\d{11}$/.test(val)) {
+            if (val && !/^\d{4} \d{3} \d{4}$/.test(val)) {
                 valid = false;
                 $(this).addClass("is-invalid");
             } else {
@@ -402,7 +402,7 @@ $(document).ready(function () {
 
         $(".telephone-input").each(function () {
             let val = $(this).val().trim();
-            if (val && !/^\(\d{3}\) \d{3} \d{4}$/.test(val)) {
+            if (val && !/^\(\d{3}\) \d{3}-\d{2}-\d{2}$/.test(val)) {
                 valid = false;
                 $(this).addClass("is-invalid");
             } else {
