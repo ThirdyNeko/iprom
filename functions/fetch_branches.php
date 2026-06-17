@@ -30,14 +30,12 @@ if (!empty($name)) {
         branch LIKE :name1 OR
         corpo  LIKE :name2 OR
         region LIKE :name3 OR
-        area   LIKE :name4 OR
-        status LIKE :name5
+        area   LIKE :name4
     )";
     $params[':name1'] = "%$name%";
     $params[':name2'] = "%$name%";
     $params[':name3'] = "%$name%";
     $params[':name4'] = "%$name%";
-    $params[':name5'] = "%$name%";
 }
 
 /* TOTAL */

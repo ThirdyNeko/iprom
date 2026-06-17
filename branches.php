@@ -99,7 +99,7 @@ $pdo = qa_db();
                         <div class="clear-input">
                             <input type="text" id="filterName"
                                 class="form-control form-control-sm filter-control"
-                                placeholder="Search...">
+                                placeholder="Branch, Company, Region, Area">
                             <button type="button" class="clear-btn" data-target="filterName">×</button>
                         </div>
                     </div>
