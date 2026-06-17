@@ -31,7 +31,7 @@ try {
 
     // check if exists
     $checkStmt = $pdo->prepare("
-        SELECT 1 
+        SELECT branch, region, corpo, area
         FROM branches 
         WHERE branch_code = :code
     ");
@@ -77,7 +77,7 @@ try {
         $seen[$branchCode] = true;
 
         $checkStmt->execute([':code' => $branchCode]);
-        $exists = (bool) $checkStmt->fetchColumn();
+        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
         $data = [
             ':code'   => $branchCode,
@@ -87,13 +87,21 @@ try {
             ':area'   => cleanValue($row['DM'] ?? null)
         ];
 
-        if ($exists) {
-            $updateStmt->execute($data);
-            $updated++;
+        if ($existing) {
+            $hasChanges = $existing['branch'] !== $data[':branch']
+                    || $existing['region'] !== $data[':region']
+                    || $existing['corpo']  !== $data[':corpo']
+                    || $existing['area']   !== $data[':area'];
+
+            if ($hasChanges) {
+                $updateStmt->execute($data);
+                $updated++;
+            }
         } else {
             $insertStmt->execute($data);
             $inserted++;
         }
+
     }
 
     $pdo->commit();
