@@ -1,6 +1,6 @@
 <?php
 define('BASE_URL', '/iprom/');
-define('SESSION_TIMEOUT', 3600);
+define('SESSION_TIMEOUT', 600);
 
 // Not logged in
 if (empty($_SESSION['user_id'])) {
