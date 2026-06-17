@@ -200,8 +200,8 @@ $pdo = qa_db();
                                 <input type="text"
                                     name="contact_numbers[]"
                                     class="form-control mobile-input"
-                                    placeholder="09XXXXXXXXX"
-                                    maxlength="11">
+                                    placeholder="09XX XXX XXXX"
+                                    maxlength="13">
                             </div>
 
                         </div>
@@ -223,8 +223,8 @@ $pdo = qa_db();
                                 <input type="text"
                                     name="tel_numbers[]"
                                     class="form-control telephone-input"
-                                    placeholder="(XXX) XXX XXXX"
-                                    maxlength="14">
+                                    placeholder="(XXX) XXX-XX-XX"
+                                    maxlength="15">
                             </div>
 
                         </div>
@@ -274,21 +274,34 @@ $pdo = qa_db();
 <script>
 document.addEventListener("input", function (e) {
     if (e.target.classList.contains("mobile-input")) {
-        e.target.value = e.target.value.replace(/\D/g, '');
+        let value = e.target.value.replace(/\D/g, '');
+
+        // limit to 11 digits (09XX XXX XXXX)
+        value = value.substring(0, 11);
+
+        // format: XXXX XXX XXXX
+        if (value.length > 7) {
+            value = value.substring(0, 4) + ' ' + value.substring(4, 7) + ' ' + value.substring(7);
+        } else if (value.length > 4) {
+            value = value.substring(0, 4) + ' ' + value.substring(4);
+        }
+
+        e.target.value = value;
     }
 });
 
 document.addEventListener("input", function (e) {
     if (e.target.classList.contains("telephone-input")) {
-
         let value = e.target.value.replace(/\D/g, '');
 
-        // limit to 10 digits (3 area + 3 + 4)
+        // limit to 10 digits (XXX XXX XX XX)
         value = value.substring(0, 10);
 
-        // format: (XXX) XXX XXXX
-        if (value.length > 6) {
-            value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + ' ' + value.substring(6);
+        // format: (XXX) XXX-XX-XX — branch on actual digit count to avoid trailing separators
+        if (value.length > 8) {
+            value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6, 8) + '-' + value.substring(8);
+        } else if (value.length > 6) {
+            value = '(' + value.substring(0, 3) + ') ' + value.substring(3, 6) + '-' + value.substring(6);
         } else if (value.length > 3) {
             value = '(' + value.substring(0, 3) + ') ' + value.substring(3);
         } else if (value.length > 0) {
@@ -321,8 +334,8 @@ $(document).ready(function () {
                 <input type="text"
                         name="contact_numbers[]"
                         class="form-control mobile-input"
-                        placeholder="09XXXXXXXXX"
-                        maxlength="11">
+                        placeholder="09XX XXX XXXX"
+                        maxlength="13">
 
                 <button type="button"
                         class="btn btn-outline-danger remove-mobile">
@@ -358,8 +371,8 @@ $(document).ready(function () {
                 <input type="text"
                         name="tel_numbers[]"
                         class="form-control telephone-input"
-                        placeholder="(XXX) XXX XXXX"
-                        maxlength="14">
+                        placeholder="(XXX) XXX-XX-XX"
+                        maxlength="15">
 
                 <button type="button"
                         class="btn btn-outline-danger remove-telephone">

@@ -53,14 +53,6 @@ if (count($numbers) === 0) {
     exit;
 }
 
-if (count($tels) === 0) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'At least one telephone number is required.'
-    ]);
-    exit;
-}
-
 if ($email === '') {
     echo json_encode([
         'success' => false,
@@ -70,17 +62,19 @@ if ($email === '') {
 }
 
 // =========================
-// DUPLICATE CHECK (AGENCY NAME)
+// DUPLICATE CHECK (AGENCY NAME + CONTACT PERSON)
 // =========================
 $check = $pdo->prepare("
     SELECT COUNT(*)
     FROM agencies
     WHERE UPPER(LTRIM(RTRIM(agencies))) = UPPER(LTRIM(RTRIM(?)))
+    AND   UPPER(LTRIM(RTRIM(contact_person))) = UPPER(LTRIM(RTRIM(?)))
     AND (? IS NULL OR id != ?)
 ");
 
 $check->execute([
     $agency,
+    $contact_person,
     $id,
     $id
 ]);
@@ -88,7 +82,7 @@ $check->execute([
 if ($check->fetchColumn() > 0) {
     echo json_encode([
         'success' => false,
-        'message' => 'Agency already exists.'
+        'message' => 'An agency with the same name and contact person already exists.'
     ]);
     exit;
 }

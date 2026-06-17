@@ -94,8 +94,8 @@ $(document).ready(function () {
         <input type="text"
                name="contact_numbers[]"
                class="form-control mobile-input"
-               placeholder="09XXXXXXXXX"
-               maxlength="11">
+               placeholder="09XX XXX XXXX"
+               maxlength="13">
       </div>
     `);
 
@@ -105,8 +105,8 @@ $(document).ready(function () {
         <input type="text"
                name="tel_numbers[]"
                class="form-control telephone-input"
-               placeholder="(XXX) XXX XXXX"
-               maxlength="14">
+               placeholder="(XXX) XXX-XX-XX"
+               maxlength="15">
       </div>
     `);
 
@@ -144,8 +144,8 @@ $(document).ready(function () {
                  name="contact_numbers[]"
                  class="form-control mobile-input"
                  value="${num.trim()}"
-                 placeholder="09XXXXXXXXX"
-                 maxlength="11">
+                 placeholder="09XX XXX XXXX"
+                 maxlength="13">
 
           ${
             index > 0
@@ -175,8 +175,8 @@ $(document).ready(function () {
                  name="tel_numbers[]"
                  class="form-control telephone-input"
                  value="${num.trim()}"
-                 placeholder="(XXX) XXX XXXX"
-                 maxlength="14">
+                 placeholder="(XXX) XXX-XX-XX"
+                 maxlength="15">
 
           ${
             index > 0
@@ -233,8 +233,8 @@ $(document).ready(function () {
         <input type="text"
                name="contact_numbers[]"
                class="form-control mobile-input"
-               placeholder="09XXXXXXXXX"
-               maxlength="11">
+               placeholder="09XX XXX XXXX"
+               maxlength="13">
       </div>
     `);
 
@@ -243,8 +243,8 @@ $(document).ready(function () {
         <input type="text"
                name="tel_numbers[]"
                class="form-control telephone-input"
-               placeholder="(XXX) XXX XXXX"
-               maxlength="14">
+               placeholder="(XXX) XXX-XX-XX"
+               maxlength="15">
       </div>
     `);
 
@@ -358,13 +358,7 @@ $(document).ready(function () {
 
     const isEdit = id && id !== "";
 
-    if (
-      !agency ||
-      !contact_person ||
-      contact_numbers.length === 0 ||
-      tel_numbers.length === 0 ||
-      !email
-    ) {
+    if (!agency || !contact_person || contact_numbers.length === 0 || !email) {
       Swal.fire({
         icon: "warning",
         title: "Required",
