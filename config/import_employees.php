@@ -451,6 +451,7 @@ foreach ($parsedRows as $row) {
     <meta charset="UTF-8">
     <title>Employee Import</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="p-4">
 
@@ -549,7 +550,10 @@ foreach ($parsedRows as $row) {
 
 
 <hr>
-<h4>Import Result</h4>
+<h4 class="d-flex align-items-center gap-3">
+    Import Result
+    <button class="btn btn-sm btn-success" onclick="exportResultsToExcel()">⬇️ Export to Excel</button>
+</h4>
 <ul>
     <li>✅ <strong><?= $count ?></strong> row(s) inserted successfully.</li>
     <li>⏭️ <strong><?= $skipped ?></strong> blank row(s) skipped.</li>
@@ -563,7 +567,7 @@ foreach ($parsedRows as $row) {
 
 <?php if ($duplicates): ?>
 <h5 class="text-secondary">🔁 Skipped — Exact Duplicates</h5>
-<table class="table table-sm table-bordered table-secondary">
+<table id="tbl-duplicates" class="table table-sm table-bordered table-secondary">
     <thead><tr><th>Row Data</th></tr></thead>
     <tbody>
         <?php foreach ($duplicates as $d): ?>
@@ -575,7 +579,7 @@ foreach ($parsedRows as $row) {
 
 <?php if ($slotErrors): ?>
 <h5 class="text-warning">🚫 Rejected During Import</h5>
-<table class="table table-sm table-bordered table-warning">
+<table id="tbl-slot-errors" class="table table-sm table-bordered table-warning">
     <thead><tr><th>Row Data</th><th>Reason</th></tr></thead>
     <tbody>
         <?php foreach ($slotErrors as $e): ?>
@@ -590,7 +594,7 @@ foreach ($parsedRows as $row) {
 
 <?php if ($errors): ?>
 <h5 class="text-danger">❌ Database Errors</h5>
-<table class="table table-sm table-bordered table-striped">
+<table id="tbl-db-errors" class="table table-sm table-bordered table-striped">
     <thead><tr><th>Row Data</th><th>Error</th></tr></thead>
     <tbody>
         <?php foreach ($errors as $e): ?>
@@ -602,6 +606,44 @@ foreach ($parsedRows as $row) {
     </tbody>
 </table>
 <?php endif; ?>
+
+<script>
+function exportResultsToExcel() {
+    const wb = XLSX.utils.book_new();
+    const date = new Date().toISOString().slice(0, 10);
+
+    // Summary sheet
+    const summaryData = [
+        ['Metric', 'Count'],
+        ['Inserted successfully',            <?= $count ?>],
+        ['Blank rows skipped',               <?= $skipped ?>],
+        ['Skipped — exact duplicates',       <?= count($duplicates) ?>],
+        ['Rejected (agency/slot/branch)',     <?= count($slotErrors) ?>],
+        ['Database errors',                  <?= count($errors) ?>],
+        ['Unique employee IDs generated',    <?= count($employeeIdMap) ?>],
+        ['Roving group IDs generated',       <?= count($rovingGroupIdMap) ?>],
+        ['Multi-brand group IDs generated',  <?= count($multiBrandGroupIdMap) ?>],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryData), 'Summary');
+
+    // Table helper — reads any <table> by id into a sheet
+    function sheetFromTable(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        return XLSX.utils.table_to_sheet(el, { raw: false });
+    }
+
+    const dupSheet   = sheetFromTable('tbl-duplicates');
+    const slotSheet  = sheetFromTable('tbl-slot-errors');
+    const errSheet   = sheetFromTable('tbl-db-errors');
+
+    if (dupSheet)  XLSX.utils.book_append_sheet(wb, dupSheet,  'Duplicates');
+    if (slotSheet) XLSX.utils.book_append_sheet(wb, slotSheet, 'Rejected');
+    if (errSheet)  XLSX.utils.book_append_sheet(wb, errSheet,  'DB Errors');
+
+    XLSX.writeFile(wb, `import_result_${date}.xlsx`);
+}
+</script>
 
 <div class="alert alert-danger mt-3">
     ⚠️ Delete or move <code>import_employees.php</code> from your server now that the import is done.
