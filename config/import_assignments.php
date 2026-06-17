@@ -8,6 +8,8 @@
  * Expected CSV columns (row 1 = header, ignored):
  *   branch_name | brand_name | required_count
  *
+ *   branch_name may be either the branch name OR branch code — both resolve to code.
+ *
  * Hardcoded values:
  *   assigned_count → 0
  *   created_at     → GETDATE()
@@ -50,16 +52,19 @@ function upperClean(string $val): string {
 $pdo = qa_db();
 $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 
-// Branch lookup: UPPER(branch_code) → true  (validates branch_name from CSV)
-$branchSet = [];
+// Branch lookup: UPPER(branch) → branch_code  AND  UPPER(branch_code) → branch_code
+// Accepts either the human-readable branch name or the code from the CSV.
+$branchMap = [];
 try {
-    $rows = $pdo->query("SELECT [branch_code] FROM [IPROM].[dbo].[branches]")->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($rows as $r) {
-        $branchSet[strtoupper(trim($r['branch_code']))] = true;
+    $branchRows = $pdo->query("SELECT [branch], [branch_code] FROM [IPROM].[dbo].[branches]")->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($branchRows as $r) {
+        $code = strtoupper(trim($r['branch_code']));
+        $branchMap[strtoupper(trim($r['branch']))] = $code; // name  → code
+        $branchMap[$code]                          = $code; // code  → code (self-resolve)
     }
 } catch (PDOException $e) { die("Branch lookup failed: " . $e->getMessage()); }
 
-// Existing assignments: UPPER(branch_name)|UPPER(brand_name) → true  (for duplicate detection)
+// Existing assignments: UPPER(branch_code)|UPPER(brand_name) → true  (for duplicate detection)
 $existingSet = [];
 try {
     $rows = $pdo->query("SELECT [branch_name],[brand_name] FROM [IPROM].[dbo].[assignment]")->fetchAll(PDO::FETCH_ASSOC);
@@ -76,8 +81,8 @@ if (!$handle) die("Cannot open CSV.");
 fgetcsv($handle); // skip header
 
 $parsedRows    = [];
-$csvKeys       = []; // "BRANCH|BRAND" → count in CSV
-$branchMissing = []; // branch codes not found in [branches]
+$csvKeys       = []; // "BRANCHCODE|BRAND" → count in CSV
+$branchMissing = []; // raw branch values not resolvable in branchMap
 
 while (($row = fgetcsv($handle)) !== false) {
     $row = toUtf8($row);
@@ -86,16 +91,16 @@ while (($row = fgetcsv($handle)) !== false) {
 
     [$branchName, $brandName, $requiredCount] = $row;
 
-    $branchNorm = upperClean($branchName);
+    $branchRaw  = upperClean($branchName);
+    $branchCode = $branchMap[$branchRaw] ?? null; // resolve name or code → code
     $brandNorm  = upperClean($brandName);
-    $csvKey     = $branchNorm . '|' . $brandNorm;
+    $csvKey     = ($branchCode ?? $branchRaw) . '|' . $brandNorm;
 
-    if ($branchNorm !== '') {
+    if ($branchRaw !== '') {
         $csvKeys[$csvKey] = ($csvKeys[$csvKey] ?? 0) + 1;
 
-        // Flag branches not in the branches table
-        if (!isset($branchSet[$branchNorm])) {
-            $branchMissing[$branchNorm] = true;
+        if ($branchCode === null) {
+            $branchMissing[$branchRaw] = true;
         }
     }
 
@@ -108,12 +113,12 @@ fclose($handle);
 $alreadyExists = []; // combination already in DB
 $newEntries    = []; // new, safe to insert
 $withinCsvDups = []; // appears more than once in the CSV
-$invalidBranch = []; // branch code not in branches table
+$invalidBranch = []; // branch not resolvable
 
 foreach ($csvKeys as $key => $count) {
-    [$branchNorm, $brandNorm] = explode('|', $key, 2);
+    [$resolvedBranch] = explode('|', $key, 2);
 
-    if (isset($branchMissing[$branchNorm])) {
+    if (isset($branchMissing[$resolvedBranch])) {
         $invalidBranch[$key] = $count;
     } elseif (isset($existingSet[$key])) {
         $alreadyExists[$key] = $count;
@@ -159,20 +164,21 @@ foreach ($parsedRows as $row) {
     while (count($row) < 3) $row[] = '';
     [$branchName, $brandName, $requiredCount] = $row;
 
-    $branchNorm   = upperClean($branchName);
+    $branchRaw    = upperClean($branchName);
+    $branchCode   = $branchMap[$branchRaw] ?? null; // resolve name or code → code
     $brandNorm    = upperClean($brandName);
-    $csvKey       = $branchNorm . '|' . $brandNorm;
+    $csvKey       = ($branchCode ?? $branchRaw) . '|' . $brandNorm;
     $requiredNorm = max(1, (int)clean($requiredCount)); // guard against 0 or blank
 
     // Skip blank branch
-    if ($branchNorm === '') {
+    if ($branchRaw === '') {
         $skipped++;
         continue;
     }
 
-    // Reject: branch not in branches table
-    if (!isset($branchSet[$branchNorm])) {
-        $rejections[] = ['row' => implode(', ', $row), 'reason' => "Branch code '{$branchNorm}' not found in branches table."];
+    // Reject: branch not resolvable
+    if ($branchCode === null) {
+        $rejections[] = ['row' => implode(', ', $row), 'reason' => "Branch '{$branchRaw}' not found in branches table."];
         continue;
     }
 
@@ -189,7 +195,7 @@ foreach ($parsedRows as $row) {
     }
 
     $params = [
-        ':branch_name'    => $branchNorm,
+        ':branch_name'    => $branchCode,   // always insert the resolved code
         ':brand_name'     => $brandNorm,
         ':required_count' => $requiredNorm,
     ];
@@ -209,6 +215,7 @@ foreach ($parsedRows as $row) {
     <meta charset="UTF-8">
     <title>Assignment Import</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="p-4">
 
@@ -225,7 +232,7 @@ foreach ($parsedRows as $row) {
 <table class="table table-sm table-bordered">
     <thead class="table-dark">
         <tr>
-            <th>Branch</th>
+            <th>Branch Code</th>
             <th>Brand</th>
             <th class="text-center">Required</th>
             <th class="text-center">Status</th>
@@ -234,10 +241,13 @@ foreach ($parsedRows as $row) {
     <tbody>
         <?php foreach ($newEntries as $key => $count):
             [$b, $br] = explode('|', $key, 2);
-            // get required_count from parsed data
             $req = '—';
             foreach ($parsedRows as $r) {
-                if (upperClean($r[0]) === $b && upperClean($r[1]) === $br) { $req = (int)$r[2]; break; }
+                $resolvedCode = $branchMap[upperClean($r[0])] ?? null;
+                if ($resolvedCode === $b && upperClean($r[1]) === $br) {
+                    $req = max(1, (int)clean($r[2]));
+                    break;
+                }
             }
         ?>
         <tr class="<?= $count > 1 ? 'table-warning' : 'table-success' ?>">
@@ -281,7 +291,10 @@ foreach ($parsedRows as $row) {
 </table>
 
 <hr>
-<h4>Import Result</h4>
+<h4 class="d-flex align-items-center gap-3">
+    Import Result
+    <button class="btn btn-sm btn-success" onclick="exportResultsToExcel()">⬇️ Export to Excel</button>
+</h4>
 <ul>
     <li>✅ <strong><?= $inserted ?></strong> assignment(s) inserted successfully.</li>
     <li>⏭️ <strong><?= $skipped ?></strong> blank row(s) skipped.</li>
@@ -292,7 +305,7 @@ foreach ($parsedRows as $row) {
 
 <?php if ($duplicates): ?>
 <h5 class="text-secondary">🔁 Skipped — Duplicates</h5>
-<table class="table table-sm table-bordered table-secondary">
+<table id="tbl-duplicates" class="table table-sm table-bordered table-secondary">
     <thead><tr><th>Row Data</th><th>Reason</th></tr></thead>
     <tbody>
         <?php foreach ($duplicates as $d): ?>
@@ -307,7 +320,7 @@ foreach ($parsedRows as $row) {
 
 <?php if ($rejections): ?>
 <h5 class="text-warning">🚫 Rejected During Import</h5>
-<table class="table table-sm table-bordered table-warning">
+<table id="tbl-rejections" class="table table-sm table-bordered table-warning">
     <thead><tr><th>Row Data</th><th>Reason</th></tr></thead>
     <tbody>
         <?php foreach ($rejections as $e): ?>
@@ -322,7 +335,7 @@ foreach ($parsedRows as $row) {
 
 <?php if ($errors): ?>
 <h5 class="text-danger">❌ Database Errors</h5>
-<table class="table table-sm table-bordered table-striped">
+<table id="tbl-db-errors" class="table table-sm table-bordered table-striped">
     <thead><tr><th>Row Data</th><th>Error</th></tr></thead>
     <tbody>
         <?php foreach ($errors as $e): ?>
@@ -338,6 +351,40 @@ foreach ($parsedRows as $row) {
 <div class="alert alert-danger mt-3">
     ⚠️ Delete or move <code>import_assignments.php</code> from your server now that the import is done.
 </div>
+
+<script>
+function exportResultsToExcel() {
+    const wb   = XLSX.utils.book_new();
+    const date = new Date().toISOString().slice(0, 10);
+
+    // Summary sheet
+    const summaryData = [
+        ['Metric', 'Count'],
+        ['Inserted successfully',      <?= $inserted ?>],
+        ['Blank rows skipped',         <?= $skipped ?>],
+        ['Skipped — duplicates',       <?= count($duplicates) ?>],
+        ['Rejected (invalid branch)',  <?= count($rejections) ?>],
+        ['Database errors',            <?= count($errors) ?>],
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryData), 'Summary');
+
+    function sheetFromTable(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        return XLSX.utils.table_to_sheet(el, { raw: false });
+    }
+
+    const dupSheet = sheetFromTable('tbl-duplicates');
+    const rejSheet = sheetFromTable('tbl-rejections');
+    const errSheet = sheetFromTable('tbl-db-errors');
+
+    if (dupSheet) XLSX.utils.book_append_sheet(wb, dupSheet, 'Duplicates');
+    if (rejSheet) XLSX.utils.book_append_sheet(wb, rejSheet, 'Rejected');
+    if (errSheet) XLSX.utils.book_append_sheet(wb, errSheet, 'DB Errors');
+
+    XLSX.writeFile(wb, `import_assignments_result_${date}.xlsx`);
+}
+</script>
 
 </body>
 </html>
