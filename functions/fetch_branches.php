@@ -7,7 +7,7 @@ $pdo = qa_db();
 $draw   = $_POST['draw'] ?? 0;
 $start  = (int)($_POST['start'] ?? 0);
 $length = (int)($_POST['length'] ?? 25);
-$search = $_POST['search']['value'] ?? '';
+$name   = trim($_POST['name'] ?? '');  // <-- custom filter from JS
 
 $columns = [
     0 => 'branch',
@@ -25,15 +25,19 @@ $orderColumn = $columns[$orderColumnIndex] ?? 'branch';
 $where = "WHERE 1=1";
 $params = [];
 
-if (!empty($search)) {
+if (!empty($name)) {
     $where .= " AND (
-        branch LIKE :search OR
-        corpo LIKE :search OR
-        region LIKE :search OR
-        area LIKE :search OR
-        status LIKE :search
+        branch LIKE :name1 OR
+        corpo  LIKE :name2 OR
+        region LIKE :name3 OR
+        area   LIKE :name4 OR
+        status LIKE :name5
     )";
-    $params[':search'] = "%$search%";
+    $params[':name1'] = "%$name%";
+    $params[':name2'] = "%$name%";
+    $params[':name3'] = "%$name%";
+    $params[':name4'] = "%$name%";
+    $params[':name5'] = "%$name%";
 }
 
 /* TOTAL */
@@ -66,30 +70,24 @@ WHERE t.rownum > :start
 
 $stmt = $pdo->prepare($sql);
 
-/* bind search */
 foreach ($params as $key => $value) {
     $stmt->bindValue($key, $value);
 }
 
-/* pagination */
 $stmt->bindValue(':start', $start, PDO::PARAM_INT);
 $stmt->bindValue(':end', $start + $length, PDO::PARAM_INT);
 
 $stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-/* format status */
 foreach ($data as &$row) {
-    $row['status'] = ($row['status'] == 1)
-        ? 'Active'
-        : 'Inactive';
-
+    $row['status'] = ($row['status'] == 1) ? 'Active' : 'Inactive';
     unset($row['rownum']);
 }
 
 echo json_encode([
-    "draw" => intval($draw),
-    "recordsTotal" => intval($recordsTotal),
+    "draw"            => intval($draw),
+    "recordsTotal"    => intval($recordsTotal),
     "recordsFiltered" => intval($recordsFiltered),
-    "data" => $data
+    "data"            => $data
 ]);

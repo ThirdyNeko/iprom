@@ -10,6 +10,9 @@ $(document).ready(function () {
     ajax: {
       url: "functions/fetch_branches.php",
       type: "POST",
+      data: function (d) {
+        d.name = $("#filterName").val();
+      },
     },
 
     columns: [
@@ -56,6 +59,10 @@ $(document).ready(function () {
         },
       },
     ],
+  });
+
+  $("#filterName").on("input", function () {
+    table.draw();
   });
 
   // =========================
@@ -143,7 +150,7 @@ $(document).on("change", ".branch-status-switch", function () {
           text: brands
             ? `A promodiser is currently assigned and must be removed or reassigned before proceeding.`
             : "This branch has active assignments.",
-            // Assigned to: ${brands}
+          // Assigned to: ${brands}
         });
 
         toggle.prop("disabled", false);

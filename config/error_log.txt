@@ -1089,3 +1089,5 @@
 [2026-06-17 15:20:16] Error [2]: Undefined variable $contact_person in C:\xampp\htdocs\iprom\functions\save_agency.php on line 77
 [2026-06-17 15:20:16] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-06-17 15:20:34] Error [2]: Undefined variable $contact_person in C:\xampp\htdocs\iprom\functions\save_agency.php on line 77
+[2026-06-17 16:54:48] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-06-17 16:54:53] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
