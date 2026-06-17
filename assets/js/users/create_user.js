@@ -34,20 +34,28 @@
    BRANCH HELPERS
 ─────────────────────────────────────────── */
 function sortCreateBranches() {
-  const leftPane = document.getElementById("branchLeftPane");
-  const rightPane = document.getElementById("branchRightPane");
+  const leftPane = document.getElementById("branchLeftPane"); // Branches
+  const rightPane = document.getElementById("branchRightPane"); // Selected
   if (!leftPane || !rightPane) return;
 
-  // collect items from both panes
   const allItems = [
     ...leftPane.querySelectorAll(".branch-item"),
     ...rightPane.querySelectorAll(".branch-item"),
   ];
 
+  // distribute between panes
   allItems.forEach((el) => {
     const checked = el.querySelector("input[type='checkbox']").checked;
     (checked ? rightPane : leftPane).appendChild(el);
   });
+
+  // FIX: restore original order in Branches pane
+  [...leftPane.querySelectorAll(".branch-item")]
+    .sort(
+      (a, b) =>
+        (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0),
+    )
+    .forEach((el) => leftPane.appendChild(el));
 }
 
 function updateCreateBranchCounter() {

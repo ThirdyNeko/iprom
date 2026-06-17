@@ -2,8 +2,8 @@
    BRANCH HELPERS
 ─────────────────────────────────────────── */
 function sortBranches() {
-  const leftPane = document.getElementById("v_branch_left");
-  const rightPane = document.getElementById("v_branch_right");
+  const leftPane = document.getElementById("v_branch_left"); // Branches
+  const rightPane = document.getElementById("v_branch_right"); // Selected
   if (!leftPane || !rightPane) return;
 
   const allItems = [
@@ -11,10 +11,19 @@ function sortBranches() {
     ...rightPane.querySelectorAll(".branch-item"),
   ];
 
+  // distribute between panes
   allItems.forEach((el) => {
     const checked = el.querySelector(".branch-checkbox").checked;
     (checked ? rightPane : leftPane).appendChild(el);
   });
+
+  // FIX: restore original order in Branches pane
+  [...leftPane.querySelectorAll(".branch-item")]
+    .sort(
+      (a, b) =>
+        (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0),
+    )
+    .forEach((el) => leftPane.appendChild(el));
 }
 
 /* ───────────────────────────────────────────

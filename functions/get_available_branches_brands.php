@@ -29,6 +29,9 @@ $sql = "
         b.corpo,
         a.brand_name,
         a.required_count
+    ORDER BY
+        b.branch,
+        a.brand_name
 ";
 
 $stmt = $pdo->query($sql);
