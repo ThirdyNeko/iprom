@@ -15,6 +15,9 @@ $(document).ready(function () {
     ajax: {
       url: "functions/fetch_agencies.php",
       type: "POST",
+      data: function (d) {
+        d.name = $("#filterName").val();
+      },
     },
 
     columns: [
@@ -76,6 +79,10 @@ $(document).ready(function () {
         },
       },
     ],
+  });
+
+  $("#filterName").on("input", function () {
+    table.draw();
   });
 
   // =========================

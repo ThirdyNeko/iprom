@@ -99,6 +99,32 @@ $pdo = qa_db();
     width: 60px !important;
 }
 
+.clear-input {
+    position: relative;
+}
+
+.clear-input input {
+    padding-right: 28px; /* space for X */
+}
+
+.clear-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    line-height: 1;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+}
+
+.clear-btn:hover {
+    color: #333;
+}
+
 </style>
 
 <div class="content">
@@ -118,6 +144,22 @@ $pdo = qa_db();
 
         <!-- CARD -->
         <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+
+                    <!-- NAME SEARCH -->
+                    <div class="col-md-4">
+                        <label class="form-label">Search</label>
+                        <div class="clear-input">
+                            <input type="text" id="filterName"
+                                class="form-control form-control-sm filter-control"
+                                placeholder="Agency, Contact Person, Email">
+                            <button type="button" class="clear-btn" data-target="filterName">×</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
 
             <div class="card-body">
 
@@ -422,5 +464,18 @@ $(document).ready(function () {
 });
 </script>
 <script src="assets/js/agencies/agencies.js"></script>
+<script>
+document.querySelectorAll(".clear-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
 
+    const targetId = btn.getAttribute("data-target");
+    const input = document.getElementById(targetId);
+
+    input.value = "";
+
+    // trigger DataTable refresh
+    input.dispatchEvent(new Event("input"));
+  });
+});
+</script>
 <?php include 'modals/change_password_modal.php'; ?>

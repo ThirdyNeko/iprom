@@ -9,7 +9,7 @@ $pdo = qa_db();
 $draw   = (int)($_POST['draw'] ?? 1);
 $start  = (int)($_POST['start'] ?? 0);
 $length = (int)($_POST['length'] ?? 10);
-$search = trim($_POST['search']['value'] ?? '');
+$search = trim($_POST['name'] ?? '');
 
 $startRow = $start + 1;
 $endRow   = $start + $length;
@@ -23,12 +23,9 @@ $hasSearch = false;
 if ($search !== '') {
     $where = "
         WHERE 
-            agencies LIKE :search OR
-            contact_person LIKE :search OR
-            contact_number LIKE :search OR
-            tel_number LIKE :search OR
-            email LIKE :search OR
-            CAST(status AS VARCHAR(10)) LIKE :search
+            agencies       LIKE :s1 OR
+            contact_person LIKE :s2 OR
+            email          LIKE :s3
     ";
     $hasSearch = true;
 }
@@ -39,14 +36,12 @@ if ($search !== '') {
 $totalStmt = $pdo->query("SELECT COUNT(*) FROM agencies");
 $recordsTotal = $totalStmt->fetchColumn();
 
-// =========================
 // FILTERED COUNT
-// =========================
 if ($hasSearch) {
-    $filteredStmt = $pdo->prepare("
-        SELECT COUNT(*) FROM agencies $where
-    ");
-    $filteredStmt->bindValue(':search', "%$search%", PDO::PARAM_STR);
+    $filteredStmt = $pdo->prepare("SELECT COUNT(*) FROM agencies $where");
+    $filteredStmt->bindValue(':s1', "%$search%", PDO::PARAM_STR);
+    $filteredStmt->bindValue(':s2', "%$search%", PDO::PARAM_STR);
+    $filteredStmt->bindValue(':s3', "%$search%", PDO::PARAM_STR);
     $filteredStmt->execute();
     $recordsFiltered = $filteredStmt->fetchColumn();
 } else {
@@ -77,13 +72,14 @@ $sql = "
 
 $stmt = $pdo->prepare($sql);
 
-// bind pagination ONLY
 $stmt->bindValue(':startRow', $startRow, PDO::PARAM_INT);
-$stmt->bindValue(':endRow', $endRow, PDO::PARAM_INT);
+$stmt->bindValue(':endRow',   $endRow,   PDO::PARAM_INT);
 
-// bind search ONLY if needed
+// DATA QUERY binds
 if ($hasSearch) {
-    $stmt->bindValue(':search', "%$search%", PDO::PARAM_STR);
+    $stmt->bindValue(':s1', "%$search%", PDO::PARAM_STR);
+    $stmt->bindValue(':s2', "%$search%", PDO::PARAM_STR);
+    $stmt->bindValue(':s3', "%$search%", PDO::PARAM_STR);
 }
 
 $stmt->execute();
@@ -94,8 +90,8 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // RESPONSE
 // =========================
 echo json_encode([
-    "draw" => $draw,
-    "recordsTotal" => (int)$recordsTotal,
+    "draw"            => $draw,
+    "recordsTotal"    => (int)$recordsTotal,
     "recordsFiltered" => (int)$recordsFiltered,
-    "data" => $data
+    "data"            => $data
 ]);
