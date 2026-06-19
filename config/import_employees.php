@@ -239,6 +239,7 @@ $historySql = "
     )
 ";
 $historyStmt = $pdo->prepare($historySql);
+$historyData = []; // employee_id → {date_hired, sub_status, branches[], brands[]} for deferred write
 
 // Helper: capture a rejected row into $rejectedExport
 $reject = function(
@@ -383,26 +384,62 @@ foreach ($parsedRows as $row) {
         // Register this row so any identical row later in the CSV is caught as a duplicate
         $existingSet[$dupKey] = true;
 
-        if (!isset($historyInserted[$employeeId])) {
-            $branchName   = $branchNameMap[strtoupper($branchCode)] ?? $branchCode;
-            $dateHiredFmt = toSqlDate($dateHired) ? date('m/d/Y', strtotime(toSqlDate($dateHired))) : 'N/A';
-
-            $historyStmt->execute([
-                ':employee_id'       => $employeeId,
-                ':reason_for_update' =>
-                    'ASSIGNED | Date Hired: '     . $dateHiredFmt .
-                    ' | Employment Status: '       . $empStatusNorm .
-                    ' | Sub-Status: '              . $subStatusNorm .
-                    ' | Branch: '                  . $branchName .
-                    ' Brand: '                     . $brandNorm,
-                ':remarks'           => clean($branchDeployed) ?: null,
-            ]);
-
-            $historyInserted[$employeeId] = true;
+        // Accumulate branches + brands per employee for deferred history write
+        if (!isset($historyData[$employeeId])) {
+            $historyData[$employeeId] = [
+                'date_hired'        => toSqlDate($dateHired),
+                'employment_status' => $empStatusNorm,
+                'sub_status'        => $subStatusNorm,
+                'remarks'           => clean($branchDeployed) ?: null,
+                'branches'          => [],
+                'brands'            => [],
+            ];
         }
+        $branchName = $branchNameMap[strtoupper($branchCode)] ?? $branchCode;
+        $historyData[$employeeId]['branches'][$branchName] = true; // key = distinct
+        $historyData[$employeeId]['brands'][$brandNorm]    = true;
 
     } catch (PDOException $e) {
         $errors[] = ['row' => implode(', ', $row), 'error' => $e->getMessage()];
+    }
+}
+
+// ── Write history (deferred so non-STATIONARY employees get all branches/brands) ──
+
+foreach ($historyData as $employeeId => $h) {
+    $dateHiredFmt = $h['date_hired']
+        ? date('m/d/Y', strtotime($h['date_hired']))
+        : 'N/A';
+
+    $branches = implode(', ', array_keys($h['branches']));
+    $brands   = implode(', ', array_keys($h['brands']));
+
+    if ($h['sub_status'] === 'STATIONARY') {
+        // Single branch + brand — match existing stored proc format exactly
+        $reasonForUpdate =
+            'ASSIGNED | Date Hired: '   . $dateHiredFmt .
+            ' | Employment Status: '    . $h['employment_status'] .
+            ' | Sub-Status: '           . $h['sub_status'] .
+            ' | Branch: '               . $branches .
+            ' Brand: '                  . $brands;
+    } else {
+        // Non-stationary: list all distinct branches and brands
+        $reasonForUpdate =
+            'ASSIGNED | Date Hired: '   . $dateHiredFmt .
+            ' | Employment Status: '    . $h['employment_status'] .
+            ' | Sub-Status: '           . $h['sub_status'] .
+            ' | Branches: '             . $branches .
+            ' | Brands: '               . $brands;
+    }
+
+    try {
+        $historyStmt->execute([
+            ':employee_id'       => $employeeId,
+            ':reason_for_update' => $reasonForUpdate,
+            ':remarks'           => $h['remarks'],
+        ]);
+    } catch (PDOException $e) {
+        $errors[] = ['row' => "History for {$employeeId}", 'error' => $e->getMessage()];
     }
 }
 

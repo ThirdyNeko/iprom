@@ -432,7 +432,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     data-company="<?= htmlspecialchars($p['corpo'] ?? '') ?>"
                                     data-agency="<?= htmlspecialchars($p['agency'] ?? '') ?>">
                                     
-                                    <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name'] . ' ' . $p['suffix']) ?></td>
                                     <td data-branch-code="<?= htmlspecialchars($p['branch']) ?>">
                                         <?= htmlspecialchars($branchMap[$p['branch']]['branch'] ?? '-') ?>
                                     </td>
