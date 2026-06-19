@@ -26,7 +26,14 @@ function clean(string $val): string {
 }
 
 function toUtf8(array $row): array {
-    return array_map(fn($v) => mb_convert_encoding($v, 'UTF-8', 'Windows-1252'), $row);
+    return array_map(function($v) {
+        // If already valid UTF-8 (e.g. Excel saved as UTF-8 CSV), don't convert —
+        // converting again would double-encode Ñ into Ã'
+        if (mb_check_encoding($v, 'UTF-8')) {
+            return $v;
+        }
+        return mb_convert_encoding($v, 'UTF-8', 'Windows-1252');
+    }, $row);
 }
 
 function generateId(string $prefix): string {
@@ -46,7 +53,7 @@ function claimAssignmentSlot(string $branchCode, string $brand, array &$assignme
     if (!isset($assignmentMap[$key])) {
         return [false, "No assignment setup found for {$branchCode} - {$brand}."];
     }
-    $available = $assignmentMap[$key]['available'];
+    $available       = $assignmentMap[$key]['available'];
     $alreadyConsumed = $consumed[$key] ?? 0;
     if (($available - $alreadyConsumed) <= 0) {
         return [false, "Slot is full for {$branchCode} - {$brand} (required: {$assignmentMap[$key]['required']}, assigned: {$assignmentMap[$key]['assigned']}, imported this session: {$alreadyConsumed})."];
@@ -112,87 +119,15 @@ try {
     }
 } catch (PDOException $e) { die("Existing records lookup failed: " . $e->getMessage()); }
 
-// ── CSV Export (run scan then output CSV, skip HTML) ─────────────────────────
-// Access via: import_employees.php?export=slots
-
-if (($_GET['export'] ?? '') === 'slots') {
-
-    // Run the scan inline
-    $scanHandle = fopen($csvFile, 'r');
-    fgetcsv($scanHandle); // skip header
-    $exportSlotNeeds = [];
-
-    while (($row = fgetcsv($scanHandle)) !== false) {
-        $row = toUtf8($row);
-        if (count(array_filter($row, fn($v) => trim($v) !== '')) === 0) continue;
-        while (count($row) < 15) $row[] = '';
-
-        [
-            $branch, $lastName, $firstName, $mi, $suffix,
-            $gender, $birthday, $dateHired, $branchDeployed,
-            $brand, $employmentStatus, $subStatus, $agency, $from, $to
-        ] = $row;
-
-        $branchKey  = strtoupper(clean($branch));
-        $branchCode = $branchMap[$branchKey] ?? null;
-        $brandNorm  = mb_strtoupper(clean($brand), 'UTF-8');
-
-        if ($branchCode === null || $brandNorm === '') continue;
-
-        $dupKey = mb_strtoupper(clean($lastName),  'UTF-8') . '|' .
-                  mb_strtoupper(clean($firstName), 'UTF-8') . '|' .
-                  (toSqlDate($birthday) ?? '')               . '|' .
-                  strtoupper($branchCode)                    . '|' .
-                  $brandNorm;
-
-        if (isset($existingSet[$dupKey])) continue; // skip duplicates
-
-        $slotKey = strtoupper($branchCode) . '|' . $brandNorm;
-        if (!isset($exportSlotNeeds[$slotKey])) {
-            $exportSlotNeeds[$slotKey] = ['branch' => $branchCode, 'brand' => $brandNorm, 'needed' => 0];
-        }
-        $exportSlotNeeds[$slotKey]['needed']++;
-    }
-    fclose($scanHandle);
-
-    // Only export slots that are missing or short
-    $exportRows = [];
-    foreach ($exportSlotNeeds as $key => $info) {
-        $available = $assignmentMap[$key]['available'] ?? 0;
-        $exists    = isset($assignmentMap[$key]);
-        $needed    = $info['needed'];
-
-        if (!$exists || $available < $needed) {
-            $required = $exists
-                ? $assignmentMap[$key]['assigned'] + $needed   // current assigned + what we still need
-                : $needed;                                      // no setup yet — required = needed
-
-            $exportRows[] = [$info['branch'], $info['brand'], $required];
-        }
-    }
-
-    // Output CSV
-    header('Content-Type: text/csv');
-    header('Content-Disposition: attachment; filename="needed_assignments_' . date('Ymd') . '.csv"');
-
-    $out = fopen('php://output', 'w');
-    fputcsv($out, ['branch_name', 'brand_name', 'required_count']); // header
-    foreach ($exportRows as $r) {
-        fputcsv($out, $r);
-    }
-    fclose($out);
-    exit;
-}
-
 // ── PASS 1: Scan CSV — collect needs, parse rows ──────────────────────────────
 
 $handle = fopen($csvFile, 'r');
 if (!$handle) die("Cannot open CSV.");
 fgetcsv($handle); // skip header
 
-$parsedRows   = []; // all valid non-blank rows for pass 2
-$agencyNeeds  = []; // UPPER(agency) → count needed from CSV
-$slotNeeds    = []; // BRANCHCODE|BRAND → ['label' => '...', 'needed' => N]
+$parsedRows  = [];
+$agencyNeeds = [];
+$slotNeeds   = [];
 
 while (($row = fgetcsv($handle)) !== false) {
     $row = toUtf8($row);
@@ -210,12 +145,10 @@ while (($row = fgetcsv($handle)) !== false) {
     $brandNorm  = mb_strtoupper(clean($brand), 'UTF-8');
     $agencyNorm = mb_strtoupper(clean($agency), 'UTF-8');
 
-    // Collect agency needs
     if ($agencyNorm !== '') {
         $agencyNeeds[$agencyNorm] = ($agencyNeeds[$agencyNorm] ?? 0) + 1;
     }
 
-    // Collect slot needs (only if branch resolved, agency valid, and not a duplicate)
     if ($branchCode !== null && $brandNorm !== '' && isset($agencySet[$agencyNorm])) {
         $dupKey = mb_strtoupper(clean($lastName),  'UTF-8') . '|' .
                   mb_strtoupper(clean($firstName), 'UTF-8') . '|' .
@@ -226,11 +159,7 @@ while (($row = fgetcsv($handle)) !== false) {
         if (!isset($existingSet[$dupKey])) {
             $slotKey = strtoupper($branchCode) . '|' . $brandNorm;
             if (!isset($slotNeeds[$slotKey])) {
-                $slotNeeds[$slotKey] = [
-                    'branch' => $branchCode,
-                    'brand'  => $brandNorm,
-                    'needed' => 0,
-                ];
+                $slotNeeds[$slotKey] = ['branch' => $branchCode, 'brand' => $brandNorm, 'needed' => 0];
             }
             $slotNeeds[$slotKey]['needed']++;
         }
@@ -242,59 +171,51 @@ fclose($handle);
 
 // ── Pre-flight analysis ───────────────────────────────────────────────────────
 
-// Agencies: split into found vs missing
 $agenciesOk      = [];
 $agenciesMissing = [];
 foreach ($agencyNeeds as $name => $count) {
-    if (isset($agencySet[$name])) {
-        $agenciesOk[$name] = $count;
-    } else {
-        $agenciesMissing[$name] = $count;
-    }
+    if (isset($agencySet[$name])) $agenciesOk[$name] = $count;
+    else                          $agenciesMissing[$name] = $count;
 }
 
-// Slots: categorize each needed slot
-$slotsOk      = []; // exists and has enough capacity
-$slotsShort   = []; // exists but not enough capacity
-$slotsMissing = []; // no setup at all
+$slotsOk      = [];
+$slotsShort   = [];
+$slotsMissing = [];
 foreach ($slotNeeds as $key => $info) {
     if (!isset($assignmentMap[$key])) {
         $slotsMissing[$key] = $info;
     } else {
         $available = $assignmentMap[$key]['available'];
-        $needed    = $info['needed'];
         $info['available'] = $available;
         $info['required']  = $assignmentMap[$key]['required'];
         $info['assigned']  = $assignmentMap[$key]['assigned'];
-        if ($available >= $needed) {
-            $slotsOk[$key] = $info;
-        } else {
-            $slotsShort[$key] = $info;
-        }
+        if ($available >= $info['needed']) $slotsOk[$key]    = $info;
+        else                               $slotsShort[$key] = $info;
     }
 }
 
 $preflightPassed = empty($agenciesMissing) && empty($slotsMissing) && empty($slotsShort);
-// Note: import always runs regardless — pre-flight is informational only.
 
 // ── PASS 2: Import ────────────────────────────────────────────────────────────
 
-$errors        = [];
-$slotErrors    = [];
-$duplicates    = [];
-$count         = 0;
-$skipped       = 0;
-$consumed      = [];
+$errors               = [];
+$slotErrors           = [];
+$duplicates           = [];
+$rejectedExport       = []; // structured data for Excel export of all rejected rows
+$count                = 0;
+$skipped              = 0;
+$consumed             = [];
 $employeeIdMap        = [];
 $rovingGroupIdMap     = [];
 $multiBrandGroupIdMap = [];
+$historyInserted      = [];
 
 $sql = "
     INSERT INTO [IPROM].[dbo].[employee_info] (
         [first_name],[last_name],[middle_name],[suffix],
         [gender],[birthday],[branch],[brand],
         [employment_status],[sub_status],[agency],
-        [date_hired],[start_date],[end_date],[remarks], [first_remark],
+        [date_hired],[start_date],[end_date],[remarks],[first_remark],
         [employee_id],[roving_group_id],[multi_brand_group_id],
         [status],[hidden],[created_at],[updated_at],
         [assignment_date],[last_assigned_by],[last_updated_by]
@@ -302,7 +223,7 @@ $sql = "
         :first_name,:last_name,:middle_name,:suffix,
         :gender,:birthday,:branch,:brand,
         :employment_status,:sub_status,:agency,
-        :date_hired,:start_date,:end_date,:remarks, :first_remark,
+        :date_hired,:start_date,:end_date,:remarks,:first_remark,
         :employee_id,:roving_group_id,:multi_brand_group_id,
         'ACTIVE',0,GETDATE(),GETDATE(),
         GETDATE(),'SYSTEM','SYSTEM'
@@ -310,140 +231,235 @@ $sql = "
 ";
 $stmt = $pdo->prepare($sql);
 
-$historyInserted = []; // tracks employee_ids that already have a history row this session
-
 $historySql = "
     INSERT INTO [IPROM].[dbo].[employee_reason_history] (
-        [employee_id],
-        [reason_for_update],
-        [update_date],
-        [remarks],
-        [updated_by]
+        [employee_id],[reason_for_update],[update_date],[remarks],[updated_by]
     ) VALUES (
-        :employee_id,
-        :reason_for_update,
-        GETDATE(),
-        :remarks,
-        'SYSTEM'
+        :employee_id,:reason_for_update,GETDATE(),:remarks,'SYSTEM'
     )
 ";
 $historyStmt = $pdo->prepare($historySql);
 
+// Helper: capture a rejected row into $rejectedExport
+$reject = function(
+    array  $row,
+    string $reason,
+    string $branchCode = '',
+    string $brandNorm  = '',
+    string $agencyNorm = '',
+    string $subStatusNorm = '',
+    string $employmentStatus = ''
+) use (&$rejectedExport, &$slotErrors) {
+
+    [
+        $branch, $lastName, $firstName, $mi, $suffix,
+        $gender, $birthday, $dateHired, $branchDeployed,
+        $brand, $empStatus, $subStatus, $agency, $from, $to
+    ] = array_pad($row, 15, '');
+
+    $rejectedExport[] = [
+        'last_name'          => clean($lastName),
+        'first_name'         => clean($firstName),
+        'middle_name'        => clean($mi),
+        'suffix'             => clean($suffix),
+        'gender'             => mb_strtoupper(clean($gender), 'UTF-8'),
+        'birthday'           => toSqlDate($birthday) ?? clean($birthday),
+        'branch'             => $branchCode ?: strtoupper(clean($branch)),
+        'brand'              => $brandNorm  ?: mb_strtoupper(clean($brand), 'UTF-8'),
+        'employment_status'  => $employmentStatus ?: mb_strtoupper(clean($empStatus), 'UTF-8'),
+        'sub_status'         => $subStatusNorm ?: mb_strtoupper(clean($subStatus), 'UTF-8'),
+        'agency'             => $agencyNorm ?: mb_strtoupper(clean($agency), 'UTF-8'),
+        'date_hired'         => toSqlDate($dateHired) ?? clean($dateHired),
+        'reason'             => $reason,
+    ];
+
+    $slotErrors[] = ['row' => implode(', ', $row), 'reason' => $reason];
+};
+
 foreach ($parsedRows as $row) {
 
-        if (count(array_filter($row, fn($v) => trim($v) !== '')) === 0) {
-            $skipped++;
-            continue;
-        }
+    if (count(array_filter($row, fn($v) => trim($v) !== '')) === 0) {
+        $skipped++;
+        continue;
+    }
 
-        while (count($row) < 15) $row[] = '';
+    while (count($row) < 15) $row[] = '';
 
-        [
-            $branch, $lastName, $firstName, $mi, $suffix,
-            $gender, $birthday, $dateHired, $branchDeployed,
-            $brand, $employmentStatus, $subStatus, $agency, $from, $to
-        ] = $row;
+    [
+        $branch, $lastName, $firstName, $mi, $suffix,
+        $gender, $birthday, $dateHired, $branchDeployed,
+        $brand, $employmentStatus, $subStatus, $agency, $from, $to
+    ] = $row;
 
-        $subStatusNorm = mb_strtoupper(clean($subStatus), 'UTF-8');
-        $brandNorm     = mb_strtoupper(clean($brand),     'UTF-8');
-        $agencyNorm    = mb_strtoupper(clean($agency),    'UTF-8');
-        $branchKey     = strtoupper(clean($branch));
-        $branchCode    = $branchMap[$branchKey] ?? null;
+    $subStatusNorm   = mb_strtoupper(clean($subStatus),       'UTF-8');
+    $brandNorm       = mb_strtoupper(clean($brand),           'UTF-8');
+    $agencyNorm      = mb_strtoupper(clean($agency),          'UTF-8');
+    $empStatusNorm   = mb_strtoupper(clean($employmentStatus),'UTF-8');
+    $branchKey       = strtoupper(clean($branch));
+    $branchCode      = $branchMap[$branchKey] ?? null;
 
-        // Skip if branch still unresolved
-        if ($branchCode === null && $branchKey !== '') {
-            $slotErrors[] = ['row' => implode(', ', $row), 'reason' => "Branch '{$branchKey}' not found."];
-            continue;
-        }
+    // Branch check
+    if ($branchCode === null && $branchKey !== '') {
+        $reject($row, "Branch '{$branchKey}' not found in branches table.");
+        continue;
+    }
 
-        // Duplicate check
-        $dupKey = mb_strtoupper(clean($lastName),  'UTF-8') . '|' .
-                  mb_strtoupper(clean($firstName), 'UTF-8') . '|' .
-                  (toSqlDate($birthday) ?? '')               . '|' .
-                  strtoupper($branchCode ?? '')               . '|' .
-                  $brandNorm;
-        if (isset($existingSet[$dupKey])) {
-            $duplicates[] = implode(', ', $row);
-            continue;
-        }
-
-        // Agency check
-        if ($agencyNorm !== '' && !isset($agencySet[$agencyNorm])) {
-            $slotErrors[] = ['row' => implode(', ', $row), 'reason' => "Agency '{$agencyNorm}' not found."];
-            continue;
-        }
-
-        // Slot check
-        [$valid, $reason] = claimAssignmentSlot($branchCode, $brandNorm, $assignmentMap, $consumed);
-        if (!$valid) {
-            $slotErrors[] = ['row' => implode(', ', $row), 'reason' => $reason];
-            continue;
-        }
-
-        // Group IDs
-        $employeeId = resolveGroupId($lastName, $firstName, 'EMP', $employeeIdMap);
-        $rovingGroupId = null;
-        if (in_array($subStatusNorm, ['MULTI BRANCH', 'HYBRID'])) {
-            $rovingGroupId = resolveGroupId($lastName, $firstName, 'ROV', $rovingGroupIdMap);
-        }
-        $multiBrandGroupId = null;
-        if (in_array($subStatusNorm, ['MULTI BRAND', 'HYBRID'])) {
-            $multiBrandGroupId = resolveGroupId($lastName, $firstName, 'MBR', $multiBrandGroupIdMap);
-        }
-
-        $params = [
-            ':first_name'           => clean($firstName)                          ?: null,
-            ':last_name'            => clean($lastName)                           ?: null,
-            ':middle_name'          => clean($mi)                                 ?: null,
-            ':suffix'               => clean($suffix)                             ?: null,
-            ':gender'               => mb_strtoupper(clean($gender), 'UTF-8')     ?: null,
-            ':birthday'             => toSqlDate($birthday),
-            ':branch'               => $branchCode,
-            ':brand'                => $brandNorm                                 ?: null,
-            ':employment_status'    => mb_strtoupper(clean($employmentStatus), 'UTF-8') ?: null,
-            ':sub_status'           => $subStatusNorm                             ?: null,
-            ':agency'               => $agencyNorm                                ?: null,
-            ':date_hired'           => toSqlDate($dateHired),
-            ':start_date'           => toSqlDate($from),
-            ':end_date'             => toSqlDate($to),
-            ':remarks'              => clean($branchDeployed)                     ?: null,
-            ':first_remark'         => clean($branchDeployed)                     ?: null, // for easier querying
-            ':employee_id'          => $employeeId,
-            ':roving_group_id'      => $rovingGroupId,
-            ':multi_brand_group_id' => $multiBrandGroupId,
+    // Duplicate check
+    $dupKey = mb_strtoupper(clean($lastName),  'UTF-8') . '|' .
+              mb_strtoupper(clean($firstName), 'UTF-8') . '|' .
+              (toSqlDate($birthday) ?? '')               . '|' .
+              strtoupper($branchCode ?? '')               . '|' .
+              $brandNorm;
+    if (isset($existingSet[$dupKey])) {
+        $duplicates[] = implode(', ', $row);
+        $rejectedExport[] = [
+            'last_name'         => clean($lastName),
+            'first_name'        => clean($firstName),
+            'middle_name'       => clean($mi),
+            'suffix'            => clean($suffix),
+            'gender'            => mb_strtoupper(clean($gender), 'UTF-8'),
+            'birthday'          => toSqlDate($birthday) ?? clean($birthday),
+            'branch'            => $branchCode,
+            'brand'             => $brandNorm,
+            'employment_status' => $empStatusNorm,
+            'sub_status'        => $subStatusNorm,
+            'agency'            => $agencyNorm,
+            'date_hired'        => toSqlDate($dateHired) ?? clean($dateHired),
+            'reason'            => 'Duplicate — already exists in employee_info',
         ];
+        continue;
+    }
 
-        try {
-            $stmt->execute($params);
-            $count++;
+    // Agency check
+    if ($agencyNorm !== '' && !isset($agencySet[$agencyNorm])) {
+        $reject($row, "Agency '{$agencyNorm}' not found in agencies table.", $branchCode, $brandNorm, $agencyNorm, $subStatusNorm, $empStatusNorm);
+        continue;
+    }
 
-            // Insert history once per employee_id (mirrors IF NOT EXISTS in stored proc)
-            if (!isset($historyInserted[$employeeId])) {
-                $branchName    = $branchNameMap[strtoupper($branchCode)] ?? $branchCode;
-                $dateHiredFmt  = toSqlDate($dateHired)
-                    ? date('m/d/Y', strtotime(toSqlDate($dateHired)))
-                    : 'N/A';
+    // Slot check
+    [$valid, $reason] = claimAssignmentSlot($branchCode, $brandNorm, $assignmentMap, $consumed);
+    if (!$valid) {
+        $reject($row, $reason, $branchCode, $brandNorm, $agencyNorm, $subStatusNorm, $empStatusNorm);
+        continue;
+    }
 
-                $reasonForUpdate =
-                    'ASSIGNED | Date Hired: ' . $dateHiredFmt .
-                    ' | Employment Status: '  . mb_strtoupper(clean($employmentStatus), 'UTF-8') .
-                    ' | Sub-Status: '         . $subStatusNorm .
-                    ' | Branch: '             . $branchName .
-                    ' Brand: '                . $brandNorm;
+    // Group IDs
+    $employeeId        = resolveGroupId($lastName, $firstName, 'EMP', $employeeIdMap);
+    $rovingGroupId     = null;
+    $multiBrandGroupId = null;
+    if (in_array($subStatusNorm, ['MULTI BRANCH', 'HYBRID'])) {
+        $rovingGroupId = resolveGroupId($lastName, $firstName, 'ROV', $rovingGroupIdMap);
+    }
+    if (in_array($subStatusNorm, ['MULTI BRAND', 'HYBRID'])) {
+        $multiBrandGroupId = resolveGroupId($lastName, $firstName, 'MBR', $multiBrandGroupIdMap);
+    }
 
-                $historyStmt->execute([
-                    ':employee_id'       => $employeeId,
-                    ':reason_for_update' => $reasonForUpdate,
-                    ':remarks'           => clean($branchDeployed) ?: null,
-                ]);
+    $params = [
+        ':first_name'           => clean($firstName)      ?: null,
+        ':last_name'            => clean($lastName)       ?: null,
+        ':middle_name'          => clean($mi)             ?: null,
+        ':suffix'               => clean($suffix)         ?: null,
+        ':gender'               => mb_strtoupper(clean($gender), 'UTF-8') ?: null,
+        ':birthday'             => toSqlDate($birthday),
+        ':branch'               => $branchCode,
+        ':brand'                => $brandNorm             ?: null,
+        ':employment_status'    => $empStatusNorm         ?: null,
+        ':sub_status'           => $subStatusNorm         ?: null,
+        ':agency'               => $agencyNorm            ?: null,
+        ':date_hired'           => toSqlDate($dateHired),
+        ':start_date'           => toSqlDate($from),
+        ':end_date'             => toSqlDate($to),
+        ':remarks'              => clean($branchDeployed) ?: null,
+        ':first_remark'         => clean($branchDeployed) ?: null,
+        ':employee_id'          => $employeeId,
+        ':roving_group_id'      => $rovingGroupId,
+        ':multi_brand_group_id' => $multiBrandGroupId,
+    ];
 
-                $historyInserted[$employeeId] = true;
-            }
+    try {
+        $stmt->execute($params);
+        $count++;
 
-        } catch (PDOException $e) {
-            $errors[] = ['row' => implode(', ', $row), 'error' => $e->getMessage()];
+        // Register this row so any identical row later in the CSV is caught as a duplicate
+        $existingSet[$dupKey] = true;
+
+        if (!isset($historyInserted[$employeeId])) {
+            $branchName   = $branchNameMap[strtoupper($branchCode)] ?? $branchCode;
+            $dateHiredFmt = toSqlDate($dateHired) ? date('m/d/Y', strtotime(toSqlDate($dateHired))) : 'N/A';
+
+            $historyStmt->execute([
+                ':employee_id'       => $employeeId,
+                ':reason_for_update' =>
+                    'ASSIGNED | Date Hired: '     . $dateHiredFmt .
+                    ' | Employment Status: '       . $empStatusNorm .
+                    ' | Sub-Status: '              . $subStatusNorm .
+                    ' | Branch: '                  . $branchName .
+                    ' Brand: '                     . $brandNorm,
+                ':remarks'           => clean($branchDeployed) ?: null,
+            ]);
+
+            $historyInserted[$employeeId] = true;
+        }
+
+    } catch (PDOException $e) {
+        $errors[] = ['row' => implode(', ', $row), 'error' => $e->getMessage()];
+    }
+}
+
+// ── Exports (run after both passes so all data is available) ──────────────────
+
+$exportType = $_GET['export'] ?? '';
+
+if ($exportType === 'slots') {
+
+    // Recalculate slot needs for export (missing + short only)
+    $exportRows = [];
+    foreach ($slotNeeds as $key => $info) {
+        $available = $assignmentMap[$key]['available'] ?? 0;
+        $exists    = isset($assignmentMap[$key]);
+        $needed    = $info['needed'];
+
+        if (!$exists || $available < $needed) {
+            $required = $exists
+                ? $assignmentMap[$key]['assigned'] + $needed
+                : $needed;
+            $exportRows[] = [$info['branch'], $info['brand'], $required];
         }
     }
+
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="needed_assignments_' . date('Ymd') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM for Excel
+    fputcsv($out, ['branch_name', 'brand_name', 'required_count']);
+    foreach ($exportRows as $r) fputcsv($out, $r);
+    fclose($out);
+    exit;
+}
+
+if ($exportType === 'rejected') {
+
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="rejected_employees_' . date('Ymd') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM for Excel
+    fputcsv($out, [
+        'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Gender',
+        'Birthday', 'Branch', 'Brand', 'Employment Status', 'Sub Status',
+        'Agency', 'Date Hired', 'Reason'
+    ]);
+    foreach ($rejectedExport as $r) {
+        fputcsv($out, [
+            $r['last_name'], $r['first_name'], $r['middle_name'], $r['suffix'], $r['gender'],
+            $r['birthday'],  $r['branch'],     $r['brand'],       $r['employment_status'],
+            $r['sub_status'],$r['agency'],     $r['date_hired'],  $r['reason'],
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
+header('Content-Type: text/html; charset=UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -451,7 +467,6 @@ foreach ($parsedRows as $row) {
     <meta charset="UTF-8">
     <title>Employee Import</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="p-4">
 
@@ -463,24 +478,23 @@ foreach ($parsedRows as $row) {
     <div class="alert alert-warning">⚠️ Some issues found below — rows that meet all requirements were still imported.</div>
 <?php endif; ?>
 
-<?php /* ── Agencies ── */ ?>
 <h5 class="mt-4">Agencies</h5>
 <table class="table table-sm table-bordered">
     <thead class="table-dark">
         <tr><th>Agency</th><th class="text-center">Employees in CSV</th><th class="text-center">Status</th></tr>
     </thead>
     <tbody>
-        <?php foreach ($agenciesOk as $name => $count): ?>
+        <?php foreach ($agenciesOk as $name => $c): ?>
         <tr class="table-success">
-            <td><?= htmlspecialchars($name) ?></td>
-            <td class="text-center"><?= $count ?></td>
+            <td><?= htmlspecialchars($name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+            <td class="text-center"><?= $c ?></td>
             <td class="text-center">✅ Found</td>
         </tr>
         <?php endforeach; ?>
-        <?php foreach ($agenciesMissing as $name => $count): ?>
+        <?php foreach ($agenciesMissing as $name => $c): ?>
         <tr class="table-danger">
-            <td><?= htmlspecialchars($name) ?></td>
-            <td class="text-center"><?= $count ?></td>
+            <td><?= htmlspecialchars($name, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+            <td class="text-center"><?= $c ?></td>
             <td class="text-center">❌ Missing — add to <code>agencies</code> table</td>
         </tr>
         <?php endforeach; ?>
@@ -490,7 +504,6 @@ foreach ($parsedRows as $row) {
     </tbody>
 </table>
 
-<?php /* ── Plantillas (assignment slots) ── */ ?>
 <h5 class="mt-4 d-flex align-items-center gap-3">
     Plantillas (Assignment Slots)
     <?php if (!empty($slotsMissing) || !empty($slotsShort)): ?>
@@ -511,8 +524,8 @@ foreach ($parsedRows as $row) {
     <tbody>
         <?php foreach ($slotsOk as $info): ?>
         <tr class="table-success">
-            <td><?= htmlspecialchars($info['branch']) ?></td>
-            <td><?= htmlspecialchars($info['brand'])  ?></td>
+            <td><?= htmlspecialchars($info['branch'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($info['brand'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')  ?></td>
             <td class="text-center"><?= $info['needed']    ?></td>
             <td class="text-center"><?= $info['required']  ?></td>
             <td class="text-center"><?= $info['assigned']  ?></td>
@@ -522,19 +535,19 @@ foreach ($parsedRows as $row) {
         <?php endforeach; ?>
         <?php foreach ($slotsShort as $info): ?>
         <tr class="table-warning">
-            <td><?= htmlspecialchars($info['branch']) ?></td>
-            <td><?= htmlspecialchars($info['brand'])  ?></td>
+            <td><?= htmlspecialchars($info['branch'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($info['brand'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')  ?></td>
             <td class="text-center"><?= $info['needed']    ?></td>
             <td class="text-center"><?= $info['required']  ?></td>
             <td class="text-center"><?= $info['assigned']  ?></td>
             <td class="text-center"><?= $info['available'] ?></td>
-            <td class="text-center">⚠️ Not enough — needs <?= $info['needed'] - $info['available'] ?> more slot(s)</td>
+            <td class="text-center">⚠️ Needs <?= $info['needed'] - $info['available'] ?> more slot(s)</td>
         </tr>
         <?php endforeach; ?>
         <?php foreach ($slotsMissing as $info): ?>
         <tr class="table-danger">
-            <td><?= htmlspecialchars($info['branch']) ?></td>
-            <td><?= htmlspecialchars($info['brand'])  ?></td>
+            <td><?= htmlspecialchars($info['branch'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($info['brand'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')  ?></td>
             <td class="text-center"><?= $info['needed'] ?></td>
             <td class="text-center">—</td>
             <td class="text-center">—</td>
@@ -548,17 +561,19 @@ foreach ($parsedRows as $row) {
     </tbody>
 </table>
 
-
 <hr>
 <h4 class="d-flex align-items-center gap-3">
     Import Result
-    <button class="btn btn-sm btn-success" onclick="exportResultsToExcel()">⬇️ Export to Excel</button>
+    <button onclick="exportResultsCsv()" class="btn btn-sm btn-outline-secondary">⬇️ Download Results as CSV</button>
+    <?php if (!empty($rejectedExport)): ?>
+    <a href="?export=rejected" class="btn btn-sm btn-outline-danger">⬇️ Download Rejected as CSV</a>
+    <?php endif; ?>
 </h4>
-<ul>
+<ul id="import-summary">
     <li>✅ <strong><?= $count ?></strong> row(s) inserted successfully.</li>
     <li>⏭️ <strong><?= $skipped ?></strong> blank row(s) skipped.</li>
     <li>🔁 <strong><?= count($duplicates) ?></strong> row(s) skipped as exact duplicates.</li>
-    <li>🚫 <strong><?= count($slotErrors) ?></strong> row(s) rejected (agency / slot / branch).</li>
+    <li>🚫 <strong><?= count($slotErrors) ?></strong> row(s) rejected (branch / agency / slot).</li>
     <li>❌ <strong><?= count($errors) ?></strong> database error(s).</li>
     <li>🪪 <strong><?= count($employeeIdMap) ?></strong> unique employee ID(s) generated.</li>
     <li>🔀 <strong><?= count($rovingGroupIdMap) ?></strong> roving group ID(s) generated.</li>
@@ -567,11 +582,11 @@ foreach ($parsedRows as $row) {
 
 <?php if ($duplicates): ?>
 <h5 class="text-secondary">🔁 Skipped — Exact Duplicates</h5>
-<table id="tbl-duplicates" class="table table-sm table-bordered table-secondary">
+<table class="table table-sm table-bordered table-secondary result-table">
     <thead><tr><th>Row Data</th></tr></thead>
     <tbody>
         <?php foreach ($duplicates as $d): ?>
-        <tr><td><small><?= htmlspecialchars($d) ?></small></td></tr>
+        <tr><td><small><?= htmlspecialchars($d, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></small></td></tr>
         <?php endforeach; ?>
     </tbody>
 </table>
@@ -579,13 +594,13 @@ foreach ($parsedRows as $row) {
 
 <?php if ($slotErrors): ?>
 <h5 class="text-warning">🚫 Rejected During Import</h5>
-<table id="tbl-slot-errors" class="table table-sm table-bordered table-warning">
+<table class="table table-sm table-bordered table-warning result-table">
     <thead><tr><th>Row Data</th><th>Reason</th></tr></thead>
     <tbody>
         <?php foreach ($slotErrors as $e): ?>
         <tr>
-            <td><small><?= htmlspecialchars($e['row']) ?></small></td>
-            <td><small><?= htmlspecialchars($e['reason']) ?></small></td>
+            <td><small><?= htmlspecialchars($e['row'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></small></td>
+            <td><small><?= htmlspecialchars($e['reason'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></small></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
@@ -594,60 +609,60 @@ foreach ($parsedRows as $row) {
 
 <?php if ($errors): ?>
 <h5 class="text-danger">❌ Database Errors</h5>
-<table id="tbl-db-errors" class="table table-sm table-bordered table-striped">
+<table class="table table-sm table-bordered table-striped result-table">
     <thead><tr><th>Row Data</th><th>Error</th></tr></thead>
     <tbody>
         <?php foreach ($errors as $e): ?>
         <tr>
-            <td><small><?= htmlspecialchars($e['row']) ?></small></td>
-            <td><small class="text-danger"><?= htmlspecialchars($e['error']) ?></small></td>
+            <td><small><?= htmlspecialchars($e['row'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></small></td>
+            <td><small class="text-danger"><?= htmlspecialchars($e['error'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></small></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
 </table>
 <?php endif; ?>
 
-<script>
-function exportResultsToExcel() {
-    const wb = XLSX.utils.book_new();
-    const date = new Date().toISOString().slice(0, 10);
-
-    // Summary sheet
-    const summaryData = [
-        ['Metric', 'Count'],
-        ['Inserted successfully',            <?= $count ?>],
-        ['Blank rows skipped',               <?= $skipped ?>],
-        ['Skipped — exact duplicates',       <?= count($duplicates) ?>],
-        ['Rejected (agency/slot/branch)',     <?= count($slotErrors) ?>],
-        ['Database errors',                  <?= count($errors) ?>],
-        ['Unique employee IDs generated',    <?= count($employeeIdMap) ?>],
-        ['Roving group IDs generated',       <?= count($rovingGroupIdMap) ?>],
-        ['Multi-brand group IDs generated',  <?= count($multiBrandGroupIdMap) ?>],
-    ];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryData), 'Summary');
-
-    // Table helper — reads any <table> by id into a sheet
-    function sheetFromTable(id) {
-        const el = document.getElementById(id);
-        if (!el) return null;
-        return XLSX.utils.table_to_sheet(el, { raw: false });
-    }
-
-    const dupSheet   = sheetFromTable('tbl-duplicates');
-    const slotSheet  = sheetFromTable('tbl-slot-errors');
-    const errSheet   = sheetFromTable('tbl-db-errors');
-
-    if (dupSheet)  XLSX.utils.book_append_sheet(wb, dupSheet,  'Duplicates');
-    if (slotSheet) XLSX.utils.book_append_sheet(wb, slotSheet, 'Rejected');
-    if (errSheet)  XLSX.utils.book_append_sheet(wb, errSheet,  'DB Errors');
-
-    XLSX.writeFile(wb, `import_result_${date}.xlsx`);
-}
-</script>
-
 <div class="alert alert-danger mt-3">
     ⚠️ Delete or move <code>import_employees.php</code> from your server now that the import is done.
 </div>
 
+<script>
+function exportResultsCsv() {
+    const rows = [];
+    const now  = new Date().toLocaleString();
+
+    // ── Summary ───────────────────────────────────────────────────────────────
+    rows.push(['IMPORT RESULTS — ' + now]);
+    rows.push([]);
+    document.querySelectorAll('#import-summary li').forEach(li => {
+        rows.push([li.innerText]);
+    });
+    rows.push([]);
+
+    // ── Tables ────────────────────────────────────────────────────────────────
+    document.querySelectorAll('.result-table').forEach(table => {
+        const heading = table.previousElementSibling?.innerText ?? '';
+        rows.push([heading]);
+
+        table.querySelectorAll('tr').forEach(tr => {
+            const cells = [...tr.querySelectorAll('th, td')].map(td => td.innerText.trim());
+            rows.push(cells);
+        });
+        rows.push([]);
+    });
+
+    // ── Encode & download ─────────────────────────────────────────────────────
+    const csv     = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const bom     = '\uFEFF'; // UTF-8 BOM so Excel opens Ñ correctly
+    const blob    = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+    const url     = URL.createObjectURL(blob);
+    const link    = document.createElement('a');
+    const date    = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    link.href     = url;
+    link.download = 'import_results_' + date + '.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+}
+</script>
 </body>
 </html>
