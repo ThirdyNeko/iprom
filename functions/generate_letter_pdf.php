@@ -78,7 +78,7 @@ $remarks = $data['remarks'] ?? '';
 
 if (!empty($employeeId)) {
     $stmt = $pdo->prepare("
-        SELECT first_remark
+        SELECT remarks
         FROM IPROM.dbo.employee_info
         WHERE id = :id
     ");
@@ -86,8 +86,8 @@ if (!empty($employeeId)) {
     $stmt->execute(['id' => $employeeId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!empty($row['first_remark'])) {
-        $remarks = $row['first_remark'];
+    if (!empty($row['remarks'])) {
+        $remarks = $row['remarks'];
     }
 }
 $effectivityDate = $data['effectivity_date'] ?? '';
