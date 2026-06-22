@@ -195,7 +195,7 @@ $users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
 <script>
 $(document).ready(function () {
     var table = $('#usersTable').DataTable({
-        pageLength: 10,
+        pageLength: 25,
         responsive: true,
         dom: 'lrtip',
         language: {
