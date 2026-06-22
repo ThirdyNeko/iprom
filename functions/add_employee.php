@@ -101,7 +101,7 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
     }
 
     // slot full
-    if ((int)$row['assigned_count'] >= (int)$row['required_count']) {
+    if ((int)$row['assigned_count'] > (int)$row['required_count']) {
         return [
             'valid' => false,
             'message' => "Slot is already full for {$branch} - {$brand}."
@@ -259,7 +259,9 @@ try {
                 @end_date = :end_date,
                 @gender = :gender,
                 @birthday = :birthday,
-                @employee_id = :employee_id
+                @employee_id = :employee_id,
+                @roving_branches = :roving_branches,
+                @multi_brands = :multi_brands
         ";
 
         $stmt = $pdo->prepare($sql);
@@ -285,7 +287,9 @@ try {
             ':end_date'             => $end_date,
             ':gender'               => $gender,
             ':birthday'             => $birthday,
-            ':employee_id'          => $employee_id
+            ':employee_id'          => $employee_id,
+            ':roving_branches'      => !empty($roving_branches) ? implode(',', $roving_branches) : null,
+            ':multi_brands'         => !empty($multi_brands) ? implode(',', $multi_brands) : null
         ]);
     }
 
