@@ -496,8 +496,8 @@ $(document).on("change", ".agency-status-switch", function () {
           icon: "warning",
           title: "Cannot Update Agency Status",
           text: employees
-            ? `Active employees: ${employees}`
-            : "This agency still has active employees.",
+            ? `A promodiser is currently assigned and must be removed or reassigned before proceeding.`
+            : "This agency has active promodizers.",
         });
 
         toggle.prop("disabled", false);
