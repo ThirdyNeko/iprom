@@ -305,7 +305,10 @@ function exportVacantPlantillas(brand, status = "all") {
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Vacant Plantillas Report");
-      XLSX.writeFile(wb, `${brand}_VACANT_PLANTILLAS_${fileSuffix}.xlsx`);
+      XLSX.writeFile(
+        wb,
+        `${brand}_${status.toUpperCase()}_PLANTILLAS_${fileSuffix}.xlsx`,
+      );
     })
     .catch(() => {
       Swal.fire({
@@ -448,7 +451,10 @@ function exportBranchPlantillas(branch, status = "all") {
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Branch Plantilla Report");
-      XLSX.writeFile(wb, `${branch}_PLANTILLAS_${fileSuffix}.xlsx`);
+      XLSX.writeFile(
+        wb,
+        `${branch}_${status.toUpperCase()}_PLANTILLAS_${fileSuffix}.xlsx`,
+      );
     })
     .catch(() => {
       Swal.fire({
