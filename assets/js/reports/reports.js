@@ -96,8 +96,8 @@ function exportEmployeeReport(branchCode, branchLabel) {
       // ── Row 2: Column headers ─────────────────────────────────────────
       const colHeaders = [
         "Brand",
-        "First Name",
         "Last Name",
+        "First Name",
         "Middle Name",
         "Suffix",
         "Employment Status",
@@ -108,8 +108,8 @@ function exportEmployeeReport(branchCode, branchLabel) {
       // ── Data rows ─────────────────────────────────────────────────────
       const dataRows = data.map((p) => [
         p.brand ?? "",
-        p.first_name ?? "",
         p.last_name ?? "",
+        p.first_name ?? "",
         p.middle_name ?? "",
         p.suffix ?? "",
         p.employment_status ?? "",
