@@ -35,7 +35,15 @@ $visibleRoles = match($_SESSION['role']) {
     default       => []
 };
 
-$users = array_filter($users, fn($u) => in_array($u['role'], $visibleRoles));
+$hiddenUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
+$excludeUsernames = in_array($_SESSION['role'], ['admin', 'supervisor'])
+    ? $hiddenUsernames
+    : [];
+
+$users = array_filter($users, fn($u) =>
+    in_array($u['role'], $visibleRoles) &&
+    !in_array($u['username'], $excludeUsernames)
+);
 ?>
 
 <style>
