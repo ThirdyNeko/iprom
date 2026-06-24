@@ -29,23 +29,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // ❌ Prevent inactive users from logging in
             if (strtoupper(trim($user['status'] ?? '')) === 'INACTIVE') {
                 $error = "Your account is inactive. Please contact the administrator.";
+
             } else {
 
-                // 🔥 Regenerate session ID (VERY IMPORTANT)
-                session_regenerate_id(true);
+                // 🚧 Check maintenance mode
+                $maintenanceFile = __DIR__ . '/../maintenance.flag';
+                $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
+                $blockedByMaintenance = file_exists($maintenanceFile)
+                    && $user['role'] !== 'super_admin'
+                    && !in_array($user['username'], $allowedUsernames);
 
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['branch'] = $user['branch'] ?? null;
-                $_SESSION['brand']  = $user['brand'] ?? null;
-                $_SESSION['position'] = $user['position'] ?? null;
-                $_SESSION['department'] = $user['department'] ?? null;
-                $_SESSION['status'] = $user['status'] ?? null;
-                $_SESSION['first_login'] = $user['first_login'] ?? null;
+                if ($blockedByMaintenance) {
+                    $error = "The system is currently under maintenance. Please try again later.";
+                } else {
 
-                header("Location: ../index.php");
-                exit;
+                    // 🔥 Regenerate session ID (VERY IMPORTANT)
+                    session_regenerate_id(true);
+
+                    $_SESSION['user_id']     = $user['id'];
+                    $_SESSION['username']    = $user['username'];
+                    $_SESSION['role']        = $user['role'];
+                    $_SESSION['branch']      = $user['branch'] ?? null;
+                    $_SESSION['brand']       = $user['brand'] ?? null;
+                    $_SESSION['position']    = $user['position'] ?? null;
+                    $_SESSION['department']  = $user['department'] ?? null;
+                    $_SESSION['status']      = $user['status'] ?? null;
+                    $_SESSION['first_login'] = $user['first_login'] ?? null;
+
+                    header("Location: ../index.php");
+                    exit;
+                }
             }
 
         } else {
@@ -74,7 +87,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #f1f5f9; /* light background like dashboard */
+    background: #f1f5f9;
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
@@ -158,6 +171,14 @@ body {
     color: #991b1b;
     border-radius: 8px;
 }
+
+/* MAINTENANCE ALERT */
+.alert-warning {
+    background: #fef9c3;
+    border: 1px solid #fde047;
+    color: #854d0e;
+    border-radius: 8px;
+}
 </style>
 </head>
 <body>
@@ -169,7 +190,13 @@ body {
     </div>
 
     <?php if ($error): ?>
-        <div class="alert alert-danger text-center small"><?= $error ?></div>
+        <?php $isMaintenance = str_contains($error, 'maintenance'); ?>
+        <div class="alert <?= $isMaintenance ? 'alert-warning' : 'alert-danger' ?> text-center small">
+            <?php if ($isMaintenance): ?>
+                <i class="bi bi-cone-striped me-1"></i>
+            <?php endif; ?>
+            <?= $error ?>
+        </div>
     <?php endif; ?>
 
     <form method="POST">
@@ -183,12 +210,10 @@ body {
         </div>
 
         <style>
-        /* Only transform the typed text, not the placeholder */
         .uppercase-input {
-            text-transform: none; /* base input text will be controlled by JS */
+            text-transform: none;
         }
-
-        .uppercase-input::-ms-input-placeholder { /* IE 10+ */
+        .uppercase-input::-ms-input-placeholder {
             text-transform: none;
         }
         .uppercase-input::placeholder {

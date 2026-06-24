@@ -111,6 +111,36 @@
                 <span>Change Password</span>
             </a>
         </li>
+
+        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
+        <?php
+            // If sidebar is in partials/ → go up one level to reach app root
+            $maintenanceFile = dirname(__DIR__) . '/maintenance.flag';
+
+            // If sidebar is already in root → use this instead:
+            // $maintenanceFile = __DIR__ . '/maintenance.flag';
+
+            $isMaintenanceOn = file_exists($maintenanceFile);
+        ?>
+
+        <!-- ✅ SUPER ADMIN ONLY: Maintenance Mode -->
+        <hr class="border-secondary my-2">
+
+        <li>
+            <a href="#"
+            class="nav-link d-flex align-items-center gap-2 maintenance-btn <?= $isMaintenanceOn ? 'maintenance-on' : 'maintenance-off' ?>"
+            id="maintenanceToggleBtn"
+            data-status="<?= $isMaintenanceOn ? '1' : '0' ?>">
+                <i class="bi <?= $isMaintenanceOn ? 'bi-cone-striped' : 'bi-cone' ?>"></i>
+                <span>Maintenance Mode</span>
+                <span class="badge ms-auto <?= $isMaintenanceOn ? 'bg-warning' : 'bg-secondary' ?>">
+                    <?= $isMaintenanceOn ? 'ON' : 'OFF' ?>
+                </span>
+            </a>
+        </li>
+
+        <hr class="border-secondary my-2">
+        <?php endif; ?>
     </ul>
 
     <!-- Spacer pushes bottom down -->
@@ -140,3 +170,32 @@
     </div>
 
 </div>
+
+<?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
+<script>
+document.getElementById('maintenanceToggleBtn')?.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    const isOn = this.dataset.status === '1';
+
+    Swal.fire({
+        title: isOn ? 'Disable Maintenance Mode?' : 'Enable Maintenance Mode?',
+        html: isOn
+            ? 'The system will be <b>accessible to all users</b> again.'
+            : 'Only <b>super_admin</b> and QA accounts will be able to log in.',
+        icon: isOn ? 'question' : 'warning',
+        iconColor: isOn ? '#3b82f6' : '#f59e0b',
+        showCancelButton: true,
+        confirmButtonText: isOn ? 'Yes, Disable' : 'Yes, Enable',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: isOn ? '#3b82f6' : '#ef4444',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = 'toggle_maintenance.php';
+        }
+    });
+});
+</script>
+<?php endif; ?>

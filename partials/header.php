@@ -203,6 +203,46 @@ body {
 .collapsed .d-flex.align-items-center.gap-2 {
     justify-content: center !important;
 }
+
+/* ── MAINTENANCE MODE BUTTON ───────────────────────── */
+.maintenance-btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.maintenance-off {
+    background: rgba(100, 116, 139, 0.12);
+    color: #64748b;
+}
+
+.maintenance-off:hover {
+    background: rgba(100, 116, 139, 0.22);
+    color: #334155;
+    transform: translateX(2px);
+}
+
+.maintenance-on {
+    background: rgba(234, 179, 8, 0.12);
+    color: #ca8a04;
+    animation: pulse-maintenance 2s infinite;
+}
+
+.maintenance-on:hover {
+    background: rgba(234, 179, 8, 0.22);
+    color: #a16207;
+    transform: translateX(2px);
+}
+
+@keyframes pulse-maintenance {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.0); }
+    50%       { box-shadow: 0 0 0 5px rgba(234, 179, 8, 0.25); }
+}
+
+/* Hide badge text when sidebar is collapsed */
+.collapsed .maintenance-btn .badge {
+    display: none;
+}
 </style>
 </head>
 <body>
@@ -277,3 +317,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('touchstart', onActivity);
 })();
 </script>
+
+
