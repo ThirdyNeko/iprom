@@ -149,17 +149,15 @@
     <!-- Bottom Section -->
     <div class="mt-auto pt-3 border-top border-secondary">
         <?php
-        $roleLabels = [
-            'admin' => 'ADMIN',
-            'hr'    => 'HUMAN RESOURCES',
-            'manager' => 'MANAGER', // optional if you have manager too
-        ];
-        $currentRole = $_SESSION['username'] ?? 'Guest';
-        $roleDisplay = $roleLabels[$currentRole] ?? $currentRole;
+        $nameDisplay     = $_SESSION['username'] ?? 'Guest';
+        $positionDisplay = $_SESSION['position'] ?? 'Guest';
         ?>
         <div class="small mb-2 d-flex align-items-center gap-2">
             <i class="bi bi-person-circle"></i>
-            <span class="sidebar-text"><?= htmlspecialchars($roleDisplay) ?></span>
+            <span class="sidebar-text d-flex flex-column">
+                <span><?= htmlspecialchars($nameDisplay) ?></span>
+                <small class="text-muted"><?= htmlspecialchars($positionDisplay) ?></small>
+            </span>
         </div>
 
         <!-- Logout Button -->
