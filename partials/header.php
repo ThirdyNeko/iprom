@@ -243,3 +243,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<script>
+(function () {
+    const PING_INTERVAL  = 30_000;
+    const IDLE_THRESHOLD = 5_000;
+
+    let lastPing  = 0;
+    let idleTimer = null;
+
+    function ping() {
+        const now = Date.now();
+        if (now - lastPing < PING_INTERVAL) return;
+        lastPing = now;
+
+        fetch('/iprom/auth/ping.php', { method: 'POST' })
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = '/iprom/auth/login.php';
+                }
+            })
+            .catch(() => {});
+    }
+
+    function onActivity() {
+        ping();
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => { /* idle — pings stop */ }, IDLE_THRESHOLD);
+    }
+
+    document.addEventListener('mousemove',  onActivity);
+    document.addEventListener('keydown',    onActivity);
+    document.addEventListener('touchstart', onActivity);
+})();
+</script>
