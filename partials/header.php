@@ -318,4 +318,79 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+<!-- ── MAINTENANCE COUNTDOWN ─────────────────────────── -->
+<script>
+(function () {
+    const isSuperAdmin = <?= json_encode(($_SESSION['role'] ?? '') === 'super_admin') ?>;
+    const isExempt     = <?= json_encode(in_array($_SESSION['username'] ?? '', ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'])) ?>;
+
+    let swalShown         = false;
+    let countdownInterval = null;
+
+    function checkMaintenance() {
+        fetch('/iprom/get_maintenance_status.php')
+            .then(r => r.json())
+            .then(data => {
+                const wrap  = document.getElementById('maintenance-countdown-wrap');
+                const el    = document.getElementById('maintenance-countdown');
+                const label = document.querySelector('#maintenance-countdown-wrap .sidebar-text');
+
+                if (!data.active) {
+                    if (wrap) wrap.style.display = 'none';
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    swalShown = false;
+                    return;
+                }
+
+                // ── Show Swal once — only for users who will be kicked ──
+                if (!swalShown && !isSuperAdmin && !isExempt) {
+                    swalShown = true;
+                    Swal.fire({
+                        title: '⚠️ System Maintenance',
+                        text: data.message,
+                        icon: 'warning',
+                        iconColor: '#f59e0b',
+                        confirmButtonText: 'I understand',
+                        confirmButtonColor: '#f59e0b',
+                        allowOutsideClick: false,
+                    });
+                }
+
+                // ── Show countdown for everyone ─────────────────────────
+                if (wrap) wrap.style.display = 'block';
+
+                if (label) {
+                    label.textContent = (isSuperAdmin || isExempt)
+                        ? 'Maintenance starts in'
+                        : 'Logging out in';
+                }
+
+                if (countdownInterval) clearInterval(countdownInterval);
+
+                let secondsLeft = data.seconds_remaining;
+
+                function tick() {
+                    if (secondsLeft < 0) {
+                        clearInterval(countdownInterval);
+                        if (el) el.textContent = '00:00';
+                        return;
+                    }
+                    const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+                    const s = (secondsLeft % 60).toString().padStart(2, '0');
+                    if (el) el.textContent = `${m}:${s}`;
+                    if (el) el.style.color  = secondsLeft <= 60 ? '#dc2626' : '#ca8a04';
+                    secondsLeft--;
+                }
+
+                tick();
+                countdownInterval = setInterval(tick, 1000);
+            })
+            .catch(() => {});
+    }
+
+    document.addEventListener('DOMContentLoaded', checkMaintenance);
+    setInterval(checkMaintenance, 30_000);
+})();
+</script>
+
 

@@ -35,12 +35,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // 🚧 Check maintenance mode
                 $maintenanceFile = __DIR__ . '/../maintenance.flag';
                 $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
-                $blockedByMaintenance = file_exists($maintenanceFile)
-                    && $user['role'] !== 'super_admin'
-                    && !in_array($user['username'], $allowedUsernames);
+                $blockedByMaintenance = false;
+                $maintenanceMessage = 'The system is currently under maintenance. Please try again later.';
+
+                if (file_exists($maintenanceFile)) {
+                    $flagData = json_decode(file_get_contents($maintenanceFile), true);
+                    if (!empty($flagData['message'])) {
+                        $maintenanceMessage = $flagData['message'];
+                    }
+
+                    if ($user['role'] !== 'super_admin' && !in_array($user['username'], $allowedUsernames)) {
+                        $blockedByMaintenance = true;
+                    }
+                }
 
                 if ($blockedByMaintenance) {
-                    $error = "The system is currently under maintenance. Please try again later.";
+                    $error = $maintenanceMessage;
                 } else {
 
                     // 🔥 Regenerate session ID (VERY IMPORTANT)

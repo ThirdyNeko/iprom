@@ -143,6 +143,21 @@
         <?php endif; ?>
     </ul>
 
+    <!-- Maintenance Countdown — visible to all roles when active -->
+    <div id="maintenance-countdown-wrap" style="display:none;"
+        class="mx-1 mb-3 p-2 rounded-3"
+        style="background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3);">
+        <div class="small fw-semibold d-flex align-items-center gap-1 mb-1" style="color:#ca8a04;">
+            <i class="bi bi-cone-striped"></i>
+            <span class="sidebar-text">Logging out in</span>
+        </div>
+        <div id="maintenance-countdown"
+            class="fw-bold text-center"
+            style="font-size: 22px; color: #dc2626; letter-spacing: 2px;">
+            --:--
+        </div>
+    </div>
+
     <!-- Spacer pushes bottom down -->
     <div class="flex-grow-1"></div>
 
@@ -176,24 +191,107 @@ document.getElementById('maintenanceToggleBtn')?.addEventListener('click', funct
 
     const isOn = this.dataset.status === '1';
 
-    Swal.fire({
-        title: isOn ? 'Disable Maintenance Mode?' : 'Enable Maintenance Mode?',
-        html: isOn
-            ? 'The system will be <b>accessible to all users</b> again.'
-            : 'Only <b>super_admin</b> and QA accounts will be able to log in.',
-        icon: isOn ? 'question' : 'warning',
-        iconColor: isOn ? '#3b82f6' : '#f59e0b',
-        showCancelButton: true,
-        confirmButtonText: isOn ? 'Yes, Disable' : 'Yes, Enable',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: isOn ? '#3b82f6' : '#ef4444',
-        cancelButtonColor: '#6b7280',
-        reverseButtons: true,
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = 'toggle_maintenance.php';
-        }
-    });
+    if (isOn) {
+        Swal.fire({
+            title: 'Disable Maintenance Mode?',
+            html: 'The system will be <b>accessible to all users</b> again.',
+            icon: 'question',
+            iconColor: '#3b82f6',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Disable',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6b7280',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = 'toggle_maintenance.php';
+            }
+        });
+
+    } else {
+        // Fetch active user count first, then show Swal
+        fetch('get_active_count.php')
+            .then(res => res.json())
+            .then(data => {
+                const count = data.count ?? 0;
+                const userLabel = count === 1 ? 'user is' : 'users are';
+
+                Swal.fire({
+                    title: 'Enable Maintenance Mode?',
+                    icon: 'warning',
+                    iconColor: '#f59e0b',
+                    showCancelButton: true,
+                    confirmButtonText: 'Enable',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    reverseButtons: true,
+                    html: `
+                        <div class="text-start mt-2">
+
+                            ${count > 0 ? `
+                            <div class="alert alert-warning py-2 px-3 mb-3 small">
+                                <i class="bi bi-people-fill me-1"></i>
+                                <b>${count}</b> ${userLabel} currently logged in and will be kicked after the timer.
+                            </div>` : `
+                            <div class="alert alert-success py-2 px-3 mb-3 small">
+                                <i class="bi bi-check-circle me-1"></i>
+                                No active users currently logged in.
+                            </div>`}
+
+                            <label class="fw-semibold small mb-1 d-block">Message shown on login page</label>
+                            <textarea id="swal-maint-msg" class="swal2-textarea"
+                                placeholder="The system is currently under maintenance. Please try again later."
+                                style="height:80px; font-size:13px;"></textarea>
+
+                            <label class="fw-semibold small mb-1 mt-2 d-block">Kick logged-in users after (minutes)</label>
+                            <input type="number" id="swal-maint-timer" class="swal2-input"
+                                placeholder="e.g. 5" min="1" max="60" value="5"
+                                style="font-size:13px;">
+                        </div>
+                    `,
+                    preConfirm: () => {
+                        const msg   = document.getElementById('swal-maint-msg').value.trim();
+                        const timer = parseInt(document.getElementById('swal-maint-timer').value);
+
+                        if (!msg) {
+                            Swal.showValidationMessage('Please enter a maintenance message.');
+                            return false;
+                        }
+                        if (!timer || timer < 1) {
+                            Swal.showValidationMessage('Please enter a valid timer (minimum 1 minute).');
+                            return false;
+                        }
+                        return { msg, timer };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = 'toggle_maintenance.php';
+
+                        const msgInput   = document.createElement('input');
+                        msgInput.type    = 'hidden';
+                        msgInput.name    = 'message';
+                        msgInput.value   = result.value.msg;
+
+                        const timerInput  = document.createElement('input');
+                        timerInput.type   = 'hidden';
+                        timerInput.name   = 'kick_after';
+                        timerInput.value  = result.value.timer;
+
+                        form.appendChild(msgInput);
+                        form.appendChild(timerInput);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Could not fetch active user count.', 'error');
+            });
+    }
 });
 </script>
 <?php endif; ?>
