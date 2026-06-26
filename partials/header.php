@@ -203,6 +203,46 @@ body {
 .collapsed .d-flex.align-items-center.gap-2 {
     justify-content: center !important;
 }
+
+/* ── MAINTENANCE MODE BUTTON ───────────────────────── */
+.maintenance-btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.maintenance-off {
+    background: rgba(100, 116, 139, 0.12);
+    color: #64748b;
+}
+
+.maintenance-off:hover {
+    background: rgba(100, 116, 139, 0.22);
+    color: #334155;
+    transform: translateX(2px);
+}
+
+.maintenance-on {
+    background: rgba(234, 179, 8, 0.12);
+    color: #ca8a04;
+    animation: pulse-maintenance 2s infinite;
+}
+
+.maintenance-on:hover {
+    background: rgba(234, 179, 8, 0.22);
+    color: #a16207;
+    transform: translateX(2px);
+}
+
+@keyframes pulse-maintenance {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.0); }
+    50%       { box-shadow: 0 0 0 5px rgba(234, 179, 8, 0.25); }
+}
+
+/* Hide badge text when sidebar is collapsed */
+.collapsed .maintenance-btn .badge {
+    display: none;
+}
 </style>
 </head>
 <body>
@@ -243,3 +283,114 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<script>
+(function () {
+    const PING_INTERVAL  = 30_000;
+    const IDLE_THRESHOLD = 5_000;
+
+    let lastPing  = 0;
+    let idleTimer = null;
+
+    function ping() {
+        const now = Date.now();
+        if (now - lastPing < PING_INTERVAL) return;
+        lastPing = now;
+
+        fetch('/iprom/auth/ping.php', { method: 'POST' })
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = '/iprom/auth/login.php';
+                }
+            })
+            .catch(() => {});
+    }
+
+    function onActivity() {
+        ping();
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => { /* idle — pings stop */ }, IDLE_THRESHOLD);
+    }
+
+    document.addEventListener('mousemove',  onActivity);
+    document.addEventListener('keydown',    onActivity);
+    document.addEventListener('touchstart', onActivity);
+})();
+</script>
+
+<!-- ── MAINTENANCE COUNTDOWN ─────────────────────────── -->
+<script>
+(function () {
+    const isSuperAdmin = <?= json_encode(($_SESSION['role'] ?? '') === 'super_admin') ?>;
+    const isExempt     = <?= json_encode(in_array($_SESSION['username'] ?? '', ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'])) ?>;
+
+    let swalShown         = false;
+    let countdownInterval = null;
+
+    function checkMaintenance() {
+        fetch('/iprom/get_maintenance_status.php')
+            .then(r => r.json())
+            .then(data => {
+                const wrap  = document.getElementById('maintenance-countdown-wrap');
+                const el    = document.getElementById('maintenance-countdown');
+                const label = document.querySelector('#maintenance-countdown-wrap .sidebar-text');
+
+                if (!data.active) {
+                    if (wrap) wrap.style.display = 'none';
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    swalShown = false;
+                    return;
+                }
+
+                // ── Show Swal once — only for users who will be kicked ──
+                if (!swalShown && !isSuperAdmin && !isExempt) {
+                    swalShown = true;
+                    Swal.fire({
+                        title: '⚠️ System Maintenance',
+                        text: data.message,
+                        icon: 'warning',
+                        iconColor: '#f59e0b',
+                        confirmButtonText: 'I understand',
+                        confirmButtonColor: '#f59e0b',
+                        allowOutsideClick: false,
+                    });
+                }
+
+                // ── Show countdown for everyone ─────────────────────────
+                if (wrap) wrap.style.display = 'block';
+
+                if (label) {
+                    label.textContent = (isSuperAdmin || isExempt)
+                        ? 'Maintenance starts in'
+                        : 'Logging out in';
+                }
+
+                if (countdownInterval) clearInterval(countdownInterval);
+
+                let secondsLeft = data.seconds_remaining;
+
+                function tick() {
+                    if (secondsLeft < 0) {
+                        clearInterval(countdownInterval);
+                        if (el) el.textContent = '00:00';
+                        return;
+                    }
+                    const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+                    const s = (secondsLeft % 60).toString().padStart(2, '0');
+                    if (el) el.textContent = `${m}:${s}`;
+                    if (el) el.style.color  = secondsLeft <= 60 ? '#dc2626' : '#ca8a04';
+                    secondsLeft--;
+                }
+
+                tick();
+                countdownInterval = setInterval(tick, 1000);
+            })
+            .catch(() => {});
+    }
+
+    document.addEventListener('DOMContentLoaded', checkMaintenance);
+    setInterval(checkMaintenance, 30_000);
+})();
+</script>
+
+

@@ -58,6 +58,12 @@ $pdo = qa_db();
     text-align: center;
 }
 
+#agencyTable td:nth-child(1),
+#agencyTable td:nth-child(2),
+#agencyTable td:nth-child(5){
+    text-align: left;
+}
+
 #agencyTable.table-hover tbody tr:hover > td {
     background-color: #eef4ff !important;
 }
