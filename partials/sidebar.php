@@ -226,7 +226,6 @@ document.getElementById('maintenanceToggleBtn')?.addEventListener('click', funct
                     cancelButtonText: 'Cancel',
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#6b7280',
-                    reverseButtons: true,
                     html: `
                         <div class="text-start mt-2">
 
