@@ -1,9 +1,8 @@
 const modalEl = document.getElementById("editPromodizerModal");
 let branchBrandPairs = [];
 
-
 function getCorpoForBranch(branchCode) {
-  const pair = branchBrandPairs.find(p => p.branch_code === branchCode);
+  const pair = branchBrandPairs.find((p) => p.branch_code === branchCode);
   return pair?.corpo || "";
 }
 
@@ -182,20 +181,52 @@ function toggleEmploymentDates() {
 }
 
 function toggleBranchReasonOptions() {
+  if (!reasonSelect) return;
+
   const subStatus = (
     document.getElementById("editSubStatus")?.value || ""
   ).toUpperCase();
-  const isStationary = subStatus === "STATIONARY";
+  const status = (
+    document.getElementById("editStatus")?.value || ""
+  ).toUpperCase();
 
-  const addOpt = reasonSelect?.querySelector(
-    'option[value="ADD BRANCH/BRAND"]',
-  );
-  const removeOpt = reasonSelect?.querySelector(
+  const isStationary = subStatus === "STATIONARY";
+  const isInactive = status === "INACTIVE";
+
+  // --- Original logic (untouched) ---
+  const addOpt = reasonSelect.querySelector('option[value="ADD BRANCH/BRAND"]');
+  const removeOpt = reasonSelect.querySelector(
     'option[value="REMOVE BRANCH/BRAND"]',
   );
 
   if (addOpt) addOpt.disabled = isStationary;
   if (removeOpt) removeOpt.disabled = isStationary;
+
+  // --- New: INACTIVE filter ---
+  const inactiveOnly = new Set([
+    "BLACKLISTED / AWOL / TERMINATED",
+    "PULL-OUT / END OF CONTRACT",
+    "RESIGNED",
+  ]);
+
+  reasonSelect.querySelectorAll("option").forEach((opt) => {
+    if (opt.value === "") return; // leave placeholder alone
+
+    if (isInactive) {
+      const belongs = inactiveOnly.has(opt.value);
+      opt.disabled = !belongs;
+      opt.style.color = !belongs ? "#aaa" : "";
+    } else {
+      // Restore styles when switching back from INACTIVE
+      opt.style.color = "";
+    }
+  });
+
+  // Reset selection if current value is now disabled
+  const selected = reasonSelect.querySelector(
+    `option[value="${CSS.escape(reasonSelect.value)}"]`,
+  );
+  if (selected?.disabled) reasonSelect.value = "";
 }
 
 function toggleReasonDates() {

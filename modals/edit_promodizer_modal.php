@@ -139,6 +139,7 @@ th{
                                     <option value="CHANGE AGENCY">CHANGE AGENCY</option>
                                     <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
                                     <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
+                                    <option value="CLERICAL ERROR">CLERICAL ERROR</option>
                                     <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
                                     <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>                                    
                                     <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
