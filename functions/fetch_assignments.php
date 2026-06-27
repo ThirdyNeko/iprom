@@ -26,7 +26,7 @@ $brand  = clean($brand);
 $from   = clean($from);
 $to     = clean($to);
 
-// ✅ Session branch enforcement
+// Session branch enforcement
 $sessionBranches = !empty($_SESSION['branch'])
     ? array_map('trim', explode(',', $_SESSION['branch']))
     : [];
@@ -50,7 +50,7 @@ $stmt->execute([$branch, $brand, $from, $to]);
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $rows = array_values(array_filter($rows, fn($r) => (int)$r['required_count'] > 0));
 
-// ✅ Filter to session branches
+// Filter to session branches
 if (!empty($sessionBranches)) {
     $rows = array_values(array_filter($rows, fn($r) => in_array(trim($r['branch_name']), $sessionBranches)));
 }
@@ -61,7 +61,6 @@ $recordsTotal = count($rows);
 // STATUS FILTER
 if ($status) {
     $rows = array_filter($rows, function ($a) use ($status) {
-
         $required = (int)$a['required_count'];
         $assigned = (int)$a['assigned_count'];
         $shortage = $required - $assigned;
@@ -89,32 +88,63 @@ if ($status) {
 $rows = array_values($rows);
 $recordsFiltered = count($rows);
 
-// ======================================================
-// ✅ ORDER: BRAND FIRST, THEN DATE
-// ======================================================
+// ORDER: BRAND FIRST, THEN DATE
 $orderDir = strtolower($_POST['order'][0]['dir'] ?? 'asc');
 
 usort($rows, function ($a, $b) use ($orderDir) {
-
     $brandA = $a['brand_name'] ?? '';
     $brandB = $b['brand_name'] ?? '';
 
     $dateA = strtotime($a['updated_at'] ?? '1970-01-01');
     $dateB = strtotime($b['updated_at'] ?? '1970-01-01');
 
-    // PRIMARY SORT: brand_name
     if ($brandA !== $brandB) {
         $cmp = strcmp($brandA, $brandB);
         return $orderDir === 'asc' ? $cmp : -$cmp;
     }
 
-    // SECONDARY SORT: updated_at
     if ($dateA === $dateB) return 0;
 
     $cmp = $dateA <=> $dateB;
-
     return $orderDir === 'desc' ? $cmp : -$cmp;
 });
+
+// ======================================================
+// EXPORT (skip pagination, return all rows)
+// ======================================================
+if (!empty($_POST['export'])) {
+
+    $exportResult = [];
+
+    foreach ($rows as $a) {
+        $required = (int)$a['required_count'];
+        $assigned = (int)$a['assigned_count'];
+        $shortage = $required - $assigned;
+
+        if ($required === 0) {
+            $statusLabel = 'INACTIVE';
+        } elseif ($assigned === 0) {
+            $statusLabel = 'VACANT';
+        } elseif ($shortage > 0) {
+            $statusLabel = "INCOMPLETE: $shortage";
+        } else {
+            $statusLabel = 'COMPLETE';
+        }
+
+        $exportResult[] = [
+            $a['branch_name'],
+            $a['brand_name'],
+            $a['required_count'],
+            $a['assigned_count'],
+            $statusLabel,
+            $a['updated_at'] ? date('m/d/Y', strtotime($a['updated_at'])) : '-',
+            $a['updated_by'] ?? '-',
+        ];
+    }
+
+    echo json_encode(['data' => $exportResult]);
+    exit;
+}
 
 // PAGINATION
 $paged = array_slice($rows, $start, $length);
@@ -123,7 +153,6 @@ $paged = array_slice($rows, $start, $length);
 $result = [];
 
 foreach ($paged as $a) {
-
     $required = (int)$a['required_count'];
     $assigned = (int)$a['assigned_count'];
     $shortage = $required - $assigned;
@@ -151,10 +180,10 @@ foreach ($paged as $a) {
 
 // RESPONSE
 echo json_encode([
-    "draw" => intval($draw),
-    "recordsTotal" => $recordsTotal,
+    "draw"            => intval($draw),
+    "recordsTotal"    => $recordsTotal,
     "recordsFiltered" => $recordsFiltered,
-    "data" => $result
+    "data"            => $result
 ]);
 
 exit;

@@ -5,6 +5,18 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// ✅ Check timeout BEFORE doing anything — don't rescue an expired session
+define('SESSION_TIMEOUT', 600);
+if (isset($_SESSION['LAST_ACTIVITY']) &&
+    (time() - $_SESSION['LAST_ACTIVITY'] > SESSION_TIMEOUT)) {
+
+    $_SESSION = [];
+    session_destroy();
+    http_response_code(401);
+    exit;
+}
+$_SESSION['LAST_ACTIVITY'] = time();
+
 include_once __DIR__ . '/../config/db.php';
 $pdo = qa_db();
 
@@ -19,7 +31,6 @@ if (file_exists($maintenanceFile) && !$isSuperAdmin && !$isAllowed) {
     $kickAt   = $flagData['kick_at'] ?? 0;
 
     if (time() >= $kickAt) {
-        // Remove from active sessions before kicking
         $pdo->prepare("DELETE FROM active_sessions WHERE user_id = ?")
             ->execute([$_SESSION['user_id']]);
 
@@ -29,7 +40,7 @@ if (file_exists($maintenanceFile) && !$isSuperAdmin && !$isAllowed) {
     }
 }
 
-// ✅ Upsert active session (SQL Server 2012 MERGE)
+// ✅ Upsert active session
 $stmt = $pdo->prepare("
     MERGE active_sessions AS target
     USING (SELECT :user_id AS user_id) AS source ON target.user_id = source.user_id
@@ -46,7 +57,6 @@ $stmt->execute([
     ':role'      => $_SESSION['role'],
 ]);
 
-// Clean up stale sessions (no ping in last 2 minutes)
 $pdo->exec("DELETE FROM active_sessions WHERE last_seen < DATEADD(MINUTE, -2, GETDATE())");
 
 http_response_code(200);

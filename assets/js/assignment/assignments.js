@@ -4,6 +4,7 @@ $(document).ready(function () {
   // 1. LOAD BRANCH LOOKUP FIRST
   $.getJSON("functions/get_branches.php", function (res) {
     branchMap = res;
+    window.branchMap = res;
     initTable(); // always init — __NO_ACCESS__ handles empty branch case
   });
   function applyFiltersFromURL() {
@@ -182,20 +183,38 @@ $(document).ready(function () {
 document
   .getElementById("exportExcel")
   .addEventListener("click", async function () {
-    const table = $("#assignmentTable").DataTable();
-    const rows = table.rows({ search: "applied" }).nodes();
+    const filters = {
+      branch: $("#filterBranch").val(),
+      brand: $("#filterBrand").val(),
+      status: $("#filterStatus").val(),
+      from_date: $("#filterFrom").val(),
+      to_date: $("#filterTo").val(),
+      export: 1,
+    };
 
-    // warn if large export
-    if ($(rows).length > 1000) {
+    const res = await fetch("functions/fetch_assignments.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(filters),
+    });
+
+    const json = await res.json();
+    const allData = json.data;
+
+    if (!allData || !allData.length) {
+      Swal.fire("No Data", "Nothing to export.", "info");
+      return;
+    }
+
+    if (allData.length > 1000) {
       const proceed = await Swal.fire({
         title: "Large Export",
-        text: `You're about to export ${$(rows).length} rows. This may take a moment. Continue?`,
+        text: `You're about to export ${allData.length} rows. This may take a moment. Continue?`,
         icon: "warning",
         showCancelButton: true,
         confirmButtonText: "Yes, export",
         cancelButtonText: "Cancel",
       });
-
       if (!proceed.isConfirmed) return;
     }
 
@@ -206,39 +225,33 @@ document
     $("#assignmentTable thead th").each(function () {
       headers.push($(this).text().trim());
     });
-
     exportData.push(headers);
 
     // rows
-    $(rows).each(function () {
-      let row = [];
-
-      $(this)
-        .find("td")
-        .each(function () {
-          row.push($(this).text().trim());
-        });
-
-      exportData.push(row);
+    allData.forEach((row) => {
+      exportData.push([
+        window.branchMap[row[0]] || row[0], // resolve branch code → full name
+        row[1],
+        row[2],
+        row[3],
+        row[4],
+        row[5],
+        row[6],
+      ]);
     });
 
-    // worksheet
     const ws = XLSX.utils.aoa_to_sheet(exportData);
 
-    // auto column width
     ws["!cols"] = exportData[0].map((_, i) => {
       let max = 10;
-
       exportData.forEach((r) => {
         const val = r[i] ? r[i].toString() : "";
         max = Math.max(max, val.length);
       });
-
       return { wch: max + 2 };
     });
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Assignments");
-
     XLSX.writeFile(wb, "Assignment_Overview.xlsx");
   });

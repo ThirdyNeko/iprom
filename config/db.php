@@ -18,7 +18,7 @@ set_error_handler("errorHandler");
    DATABASE CONFIG
 ================================ */
 $servername = "192.168.101.68";
-$database   = "IPROM";
+$database   = "IPROM_TEST";
 $username   = "sa";
 $password   = "SB1Admin";
 
