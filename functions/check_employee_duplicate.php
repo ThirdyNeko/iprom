@@ -41,6 +41,7 @@ try {
             AND UPPER(last_name) = :last_name
             AND ISNULL(UPPER(LTRIM(RTRIM(middle_name))), '') = :middle_name
             AND birthday = :birthday
+            AND reason_for_update != 'Clerical Error'
         ORDER BY id DESC
     ";
 
