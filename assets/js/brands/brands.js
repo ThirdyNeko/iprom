@@ -24,7 +24,7 @@ $(document).ready(function () {
       // STATUS SWITCH
       {
         data: null,
-        width: "120px",
+        width: "150px",
         className: "text-center",
         render: function (data, type, row) {
           const isActive = String(row.status) === "1";

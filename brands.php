@@ -36,6 +36,7 @@ if (!$isAllowed) {
     border: none;
     border-radius: 12px;
     overflow: hidden;
+    max-width: 45%;   /* ← constrain the whole card */
 }
 
 .card-header-custom {
@@ -46,12 +47,13 @@ if (!$isAllowed) {
     font-weight: 600;
 }
 
+/* remove the old .card-body { max-width: 600px } rule entirely */
+
 /* =========================
    TABLE
 ========================= */
 .table-responsive {
-    max-width: 600px;
-    margin: 0 auto;
+    width: 100%;   /* ← no max-width needed; card already caps it */
 }
 
 #brandTable {
@@ -150,24 +152,19 @@ if (!$isAllowed) {
     <div class="container-fluid">
 
         <!-- PAGE TITLE -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3"
+            style="max-width: 600px;">
             <h4 class="page-title mb-0">Brand Management</h4>
 
-            <button class="btn btn-primary btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#brandModal">
-                <i class="bi bi-plus-lg"></i>
-                Add Brand
-            </button>
         </div>
 
         <!-- CARD -->
         <div class="card shadow-sm">
             <div class="card-body">
-                <div class="row g-2 align-items-end">
+                <div class="row g-2 justify-content-between align-items-end">
 
                     <!-- NAME SEARCH -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label">Search</label>
                         <div class="clear-input">
                             <input type="text" id="filterName"
@@ -175,6 +172,15 @@ if (!$isAllowed) {
                                 placeholder="Brand">
                             <button type="button" class="clear-btn" data-target="filterName">×</button>
                         </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <button class="btn btn-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#brandModal">
+                            <i class="bi bi-plus-lg"></i>
+                            Add Brand
+                        </button>
                     </div>
 
                 </div>
