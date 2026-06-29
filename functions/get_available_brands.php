@@ -9,11 +9,11 @@ try {
         exit;
     }
 
+    $pdo = qa_db(); // ← was missing
+
     $branch = $_GET['branch'];
 
-    $stmt = $pdo->prepare("
-        EXEC dbo.get_branches_brands @branch = ?
-    ");
+    $stmt = $pdo->prepare("EXEC dbo.get_branches_brands @branch = ?");
     $stmt->execute([$branch]);
 
     // Skip the first result set (branches) and fetch the second (brands)
@@ -26,5 +26,5 @@ try {
     echo json_encode($brands);
 
 } catch (PDOException $e) {
-    echo json_encode([]);
+    echo json_encode(['error' => $e->getMessage()]); // ← surface the error while debugging
 }

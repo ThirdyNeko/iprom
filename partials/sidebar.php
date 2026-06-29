@@ -40,11 +40,11 @@
         <!-- ✅ ADMIN ONLY: Users -->
         <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center gap-2 <?= in_array($current_page, ['branches.php', 'agencies.php']) ? '' : 'collapsed' ?>"
+            <a class="nav-link d-flex align-items-center gap-2 <?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php']) ? '' : 'collapsed' ?>"
             data-bs-toggle="collapse"
             href="#settingsSubmenu"
             role="button"
-            aria-expanded="<?= in_array($current_page, ['branches.php', 'agencies.php']) ? 'true' : 'false' ?>"
+            aria-expanded="<?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php']) ? 'true' : 'false' ?>"
             aria-controls="settingsSubmenu">
 
                 <i class="bi bi-gear"></i>
@@ -52,7 +52,7 @@
                 <i class="bi bi-chevron-down ms-auto"></i>
             </a>
 
-            <div class="collapse <?= in_array($current_page, ['branches.php', 'agencies.php']) ? 'show' : '' ?>"
+            <div class="collapse <?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php']) ? 'show' : '' ?>"
                 id="settingsSubmenu">
 
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small ms-4">
@@ -71,6 +71,15 @@
                         </a>
                     </li>
 
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
+                    <li>
+                        <a href="brands.php"
+                        class="nav-link <?= $current_page == 'brands.php' ? 'active' : '' ?>">
+                            Brands
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
                 </ul>
             </div>
         </li>
