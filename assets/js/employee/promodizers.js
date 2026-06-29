@@ -1,285 +1,184 @@
 $(document).ready(function () {
-  var table = $("#promodizerTable").DataTable({
-    pageLength: 25,
-    responsive: true,
-    dom: "lrtip",
-    autoWidth: false, // 👈 IMPORTANT
-    ordering: false,
-
-    language: {
-      emptyTable: "No data available",
-      zeroRecords: "No promodisers match the selected filters",
-    },
-
-    columnDefs: [
-      { targets: 0, width: "20%" }, // Name (bigger)
-      { targets: 6, width: "12%" }, // Assignment Date (smaller)
-      { targets: 7, width: "12%" }, // Assigned By (smaller)
-    ],
-  });
-
   // =========================
-  // STATUS FILTER HANDLER FIRST
-  // =========================
-  $("#filterStatus").on("change", function () {
-    var val = this.value;
-
-    if (val === "ACTIVE" || val === "INACTIVE") {
-      table.column(3).search("^" + val + "$", true, false);
-    } else {
-      table.column(3).search("");
-    }
-
-    table.draw();
-  });
-
-  // =========================
-  // DEFAULT = ACTIVE
-  // =========================
-  $("#filterStatus").val("ACTIVE").trigger("change");
-
-  // =========================
-  // URL PARAM SUPPORT
+  // URL PARAMS (read before table init so ajax.data picks them up)
   // =========================
   const params = new URLSearchParams(window.location.search);
   const statusParam = params.get("status");
   const editId = params.get("edit");
   const addParam = params.get("add");
 
+  // Pre-set status dropdown so the very first ajax.data call uses it
+  if (statusParam) {
+    $("#filterStatus").val(statusParam.toUpperCase());
+  }
+  // Default to ACTIVE if no status param (HTML already has selected, but be explicit)
+  if (!statusParam && !$("#filterStatus").val()) {
+    $("#filterStatus").val("ACTIVE");
+  }
+
   // =========================
-  // EDIT FLOW
+  // DATATABLE — SERVER SIDE
+  // =========================
+  var table = $("#promodizerTable").DataTable({
+    serverSide: true,
+    processing: true,
+    pageLength: 25,
+    responsive: true,
+    dom: "lrtip",
+    autoWidth: false,
+    ordering: false,
+
+    language: {
+      emptyTable: "No data available",
+      zeroRecords: "No promodisers match the selected filters",
+      processing: "Loading...",
+    },
+
+    ajax: {
+      url: "functions/get_promodizers.php",
+      type: "GET",
+      data: function (d) {
+        d.name_search = $("#filterName").val();
+        d.branch = $("#filterBranch").val();
+        d.brand = $("#filterBrand").val();
+        d.status = $("#filterStatus").val();
+        d.employment_status = $("#filterEmploymentStatus").val();
+        d.sub_status = $("#filterSubStatus").val();
+        d.assigned_by = $("#filterAssignedBy").val();
+        d.from_date = $("#filterFrom").val();
+        d.to_date = $("#filterTo").val();
+        d.corpo = $("#filterCompany").val();
+        d.agency = $("#filterAgency").val();
+        d.region = $("#filterRegion").val();
+        d.area = $("#filterArea").val();
+        return d;
+      },
+      error: function (xhr, error, thrown) {
+        console.error("DataTable AJAX error:", error, thrown);
+      },
+    },
+
+    columns: [
+      {
+        // Name
+        data: null,
+        render: function (d) {
+          const parts = [d.first_name, d.last_name];
+          if (d.suffix && d.suffix.trim()) parts.push(d.suffix.trim());
+          return parts.join(" ");
+        },
+      },
+      { data: "branch_display", defaultContent: "-" }, // Branch
+      { data: "brand", defaultContent: "-" }, // Brand
+      { data: "status", defaultContent: "-" }, // Status
+      { data: "employment_status", defaultContent: "-" }, // Employment Status
+      { data: "sub_status", defaultContent: "-" }, // Sub-Status
+      {
+        // Assignment Date
+        data: "assignment_date",
+        render: function (d) {
+          return d ? formatDate(d) : "-";
+        },
+      },
+      { data: "last_assigned_by", defaultContent: "-" }, // Last Assigned By
+    ],
+
+    // Set data-* attributes on each row for the modal click handler
+    createdRow: function (row, data) {
+      $(row).addClass("clickable-row");
+      $(row).attr("data-id", data.id);
+      $(row).attr("data-branch", data.branch); // branch_code
+      $(row).attr("data-company", data.corpo || "");
+      $(row).attr("data-agency", data.agency || "");
+    },
+
+    columnDefs: [
+      { targets: 0, width: "20%" },
+      { targets: 6, width: "12%" },
+      { targets: 7, width: "12%" },
+    ],
+  });
+
+  // =========================
+  // SHARED RELOAD HELPER
+  // =========================
+  function reloadTable() {
+    table.ajax.reload(null, false); // false = keep current page
+  }
+
+  // =========================
+  // NAME FILTER (debounced)
+  // =========================
+  var nameTimer;
+  $("#filterName").on("input", function () {
+    clearTimeout(nameTimer);
+    nameTimer = setTimeout(reloadTable, 400);
+  });
+
+  // =========================
+  // ASSIGNED BY FILTER (debounced)
+  // =========================
+  var assignedByTimer;
+  $("#filterAssignedBy").on("input", function () {
+    clearTimeout(assignedByTimer);
+    assignedByTimer = setTimeout(reloadTable, 400);
+  });
+
+  // =========================
+  // ALL SELECT FILTERS
+  // =========================
+  $(
+    "#filterBranch, #filterBrand, #filterStatus, #filterEmploymentStatus, " +
+      "#filterSubStatus, #filterCompany, #filterAgency, " +
+      "#filterArea, #filterRegion, #filterFrom, #filterTo",
+  ).on("change", reloadTable);
+
+  // =========================
+  // EDIT FLOW — open modal directly via openEmployeeModal()
   // =========================
   if (editId) {
-    table.on("draw.dt", function () {
-      const row = table
-        .rows()
-        .nodes()
-        .to$()
-        .filter(function () {
-          return String($(this).data("id")) === String(editId);
-        });
-
-      if (!row.length) return;
-
-      row.trigger("click");
-
-      table.off("draw.dt");
-    });
-
-    table.draw(false);
+    // Wait briefly for modal JS (edit_promodizer_modal.js) to finish setup
+    setTimeout(function () {
+      if (typeof openEmployeeModal === "function") {
+        openEmployeeModal(editId);
+      }
+    }, 150);
   }
+
   // =========================
-  // ADD FLOW (OPEN MODAL)
+  // ADD FLOW — open add modal
   // =========================
   if (addParam === "1") {
-    setTimeout(() => {
-      const modalEl = document.getElementById("addEmployeeModal");
-
+    setTimeout(function () {
+      var modalEl = document.getElementById("addEmployeeModal");
       if (!modalEl) {
         console.error("addEmployeeModal not found");
         return;
       }
-
       bootstrap.Modal.getOrCreateInstance(modalEl).show();
     }, 200);
   }
-
-  // =========================
-  // STATUS PARAM
-  // =========================
-  if (statusParam) {
-    $("#filterStatus").val(statusParam.toUpperCase()).trigger("change");
-  }
-
-  // =========================
-  // NAME FILTER
-  // =========================
-  $("#filterName").on("input", function () {
-    table.column(0).search(this.value).draw();
-  });
-
-  // =========================
-  // BRANCH FILTER
-  // =========================
-  $("#filterBranch").on("change", function () {
-    table.draw();
-  });
-
-  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-    var selectedBranch = $("#filterBranch").val();
-
-    if (!selectedBranch) return true;
-
-    var row = table.row(dataIndex).node();
-    var branchCode = $(row).find("td[data-branch-code]").data("branch-code");
-
-    return branchCode === selectedBranch;
-  });
-
-  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-    var area = $("#filterArea").val();
-    var region = $("#filterRegion").val();
-
-    // get row element
-    var row = table.row(dataIndex).node();
-
-    // branch_code must come from HTML (we will use data-branch-code)
-    var branchCode = $(row).data("branch");
-
-    if (!branchCode) return true;
-
-    var info = branchMap[branchCode];
-
-    if (!info) return true;
-
-    if (area && info.area !== area) return false;
-    if (region && info.region !== region) return false;
-
-    return true;
-  });
-
-  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-    var company = ($("#filterCompany").val() || "").toLowerCase().trim();
-    var agency = ($("#filterAgency").val() || "").toLowerCase().trim();
-
-    var row = table.row(dataIndex).node();
-    var branchCode = $(row).data("branch");
-
-    var rowCompany = (branchMap[branchCode]?.corpo || "").toLowerCase().trim(); // ← derived from branch
-    var rowAgency = ($(row).data("agency") || "").toLowerCase().trim();
-
-    if (company && rowCompany !== company) return false;
-    if (agency && rowAgency !== agency) return false;
-
-    return true;
-  });
-
-  $("#filterCompany, #filterAgency").on("change", function () {
-    table.draw();
-  });
-
-  $("#filterArea, #filterRegion").on("change", function () {
-    table.draw();
-  });
-
-  // =========================
-  // BRAND FILTER
-  // =========================
-  $("#filterBrand").on("change", function () {
-    var val = this.value;
-    table
-      .column(2)
-      .search(val ? "^" + val + "$" : "", true, false)
-      .draw();
-  });
-
-  // =========================
-  // ASSIGNED BY FILTER
-  // =========================
-  $("#filterAssignedBy").on("input", function () {
-    table.column(7).search(this.value).draw();
-  });
-
-  // =========================
-  // DATE FILTER
-  // =========================
-  $.fn.dataTable.ext.search.push(function (settings, data) {
-    var from = $("#filterFrom").val();
-    var to = $("#filterTo").val();
-    var date = data[6];
-
-    if (!date) return true;
-
-    var rowDate = new Date(date);
-    var fromDate = from ? new Date(from) : null;
-    var toDate = to ? new Date(to) : null;
-
-    return (!fromDate || rowDate >= fromDate) && (!toDate || rowDate <= toDate);
-  });
-
-  $("#filterFrom, #filterTo").on("change", function () {
-    table.draw();
-  });
-
-  // =========================
-  // EMPLOYMENT STATUS FILTER
-  // =========================
-  $("#filterEmploymentStatus").on("change", function () {
-    var val = this.value;
-    table
-      .column(4)
-      .search(val ? "^" + escapeRegex(val) + "$" : "", true, false)
-      .draw();
-  });
-
-  // =========================
-  // SUB STATUS FILTER
-  // =========================
-  $("#filterSubStatus").on("change", function () {
-    var val = this.value;
-    table
-      .column(5)
-      .search(val ? "^" + escapeRegex(val) + "$" : "", true, false)
-      .draw();
-  });
-
-  function escapeRegex(val) {
-    return val.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
 });
 
+// =========================
+// FORMAT DATE HELPER
+// =========================
 function formatDate(dateStr) {
   if (!dateStr) return "";
-
   const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr; // fallback if already formatted
-
+  if (isNaN(d)) return dateStr;
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   const year = d.getFullYear();
-
   return `${month}/${day}/${year}`;
 }
 
-$(document).on("click", ".clickable-row", function () {
-  // BASIC INFO
-  $("#editFirstName").val($(this).data("first-name"));
-  $("#editMiddleName").val($(this).data("middle-name"));
-  $("#editLastName").val($(this).data("last-name"));
-  $("#editSuffix").val($(this).data("suffix"));
-
-  // DROPDOWNS
-  $("#editBranch").val($(this).data("branch"));
-  $("#editBrand").val($(this).data("brand"));
-  $("#editAgency").val($(this).data("agency"));
-
-  $("#editEmploymentStatus").val($(this).data("employment-status"));
-  $("#editSubStatus").val($(this).data("sub-status"));
-
-  // TEXT FIELDS
-  $("#editCorpo").val($(this).data("corpo"));
-  $("#editGender").val($(this).data("gender"));
-  $("#editStatus").val($(this).data("status"));
-
-  // DATES
-  $("#editAssignmentDate").val($(this).data("assignment-date"));
-  $("#editDateHired").val($(this).data("date-hired"));
-  $("#editDateLastUpdated").val($(this).data("date-last-updated"));
-  $("#editBirthdate").val($(this).data("birthdate"));
-
-  // USERS
-  $("#editLastAssignedBy").val($(this).data("last-assigned-by"));
-  $("#editLastUpdatedBy").val($(this).data("last-updated-by"));
-
-  // OPEN MODAL
-  $("#editPromodizerModal").modal("show");
-});
-
+// =========================
+// EXPORT (unchanged — uses its own fetch endpoint)
+// =========================
 document.getElementById("exportExcel").addEventListener("click", function () {
-
-  // reverse lookup: branch name → branchMap entry
   const branchByName = Object.fromEntries(
-    Object.values(branchMap).map(b => [b.branch, b])
+    Object.values(branchMap).map((b) => [b.branch, b]),
   );
 
   const filters = {
@@ -289,7 +188,6 @@ document.getElementById("exportExcel").addEventListener("click", function () {
     employment_status: $("#filterEmploymentStatus").val(),
     sub_status: $("#filterSubStatus").val(),
     agency: $("#filterAgency").val(),
-    // corpo removed — filtered client-side via branchMap
     assigned_by: $("#filterAssignedBy").val(),
     region: $("#filterRegion").val(),
     area: $("#filterArea").val(),
@@ -301,17 +199,19 @@ document.getElementById("exportExcel").addEventListener("click", function () {
   fetch("functions/get_promodizers_export.php?" + new URLSearchParams(filters))
     .then((res) => res.json())
     .then(async (data) => {
-
-      // ← filter corpo client-side using branchMap
-      const corpoFilter = ($("#filterCompany").val() || "").toLowerCase().trim();
+      // Filter corpo client-side using branchMap (export endpoint doesn't expose it)
+      const corpoFilter = ($("#filterCompany").val() || "")
+        .toLowerCase()
+        .trim();
       if (corpoFilter) {
-        data = data.filter(p => {
-          const rowCorpo = (branchByName[p.branch]?.corpo || "").toLowerCase().trim();
+        data = data.filter((p) => {
+          const rowCorpo = (branchByName[p.branch]?.corpo || "")
+            .toLowerCase()
+            .trim();
           return rowCorpo === corpoFilter;
         });
       }
 
-      // warn if large export
       if (data.length > 1000) {
         const proceed = await Swal.fire({
           title: "Large Export",
@@ -321,7 +221,6 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           confirmButtonText: "Yes, export",
           cancelButtonText: "Cancel",
         });
-
         if (!proceed.isConfirmed) return;
       }
 
@@ -361,7 +260,7 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           p.employment_status,
           p.sub_status,
           p.agency,
-          (branchByName[p.branch]?.corpo || "").toUpperCase(), // ← Company column
+          (branchByName[p.branch]?.corpo || "").toUpperCase(),
           formatDate(p.assignment_date),
           p.last_assigned_by,
         ]);
@@ -381,7 +280,6 @@ document.getElementById("exportExcel").addEventListener("click", function () {
 
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Promodizers");
-
       XLSX.writeFile(wb, "Promodizer_Overview.xlsx");
     });
 });

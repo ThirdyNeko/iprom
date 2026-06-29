@@ -8,7 +8,6 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
-// ✅ Define once, use everywhere
 $sessionBranches = !empty($_SESSION['branch'])
     ? array_map('trim', explode(',', $_SESSION['branch']))
     : [];
@@ -26,47 +25,11 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         'branch' => $row['branch'],
         'area'   => $row['area'],
         'region' => $row['region'],
-        'corpo'  => $row['corpo'],   // ← add this
+        'corpo'  => $row['corpo'],
     ];
 }
 
-/* =========================
-   FETCH PROMODIZERS
-========================= */
-// Call SP without any parameters
-$filters = [
-    ':branch' => $_GET['branch'] ?? null,
-    ':brand' => $_GET['brand'] ?? null,
-    ':status' => $_GET['status'] ?? null,
-    ':assigned_by' => $_GET['assigned_by'] ?? null,
-    ':from_date' => $_GET['from_date'] ?? null,
-    ':to_date' => $_GET['to_date'] ?? null,
-
-    ':employment_status' => $_GET['employment_status'] ?? null,
-    ':sub_status' => $_GET['sub_status'] ?? null,
-    ':search' => $_GET['search'] ?? null,
-    ':corpo' => $_GET['corpo'] ?? null,
-    ':agency' => $_GET['agency'] ?? null
-];
-
-$stmt = $pdo->prepare("EXEC get_promodizers 
-    @branch = :branch,
-    @brand = :brand,
-    @status = :status,
-    @assigned_by = :assigned_by,
-    @from_date = :from_date,
-    @to_date = :to_date,
-    @employment_status = :employment_status,
-    @sub_status = :sub_status,
-    @search = :search,
-    @corpo = :corpo,
-    @agency = :agency
-");
-
-foreach ($filters as $key => $value) {
-    $stmt->bindValue($key, $value);
-}
-
+// Fetch branches & brands for filter dropdowns
 $branches = $pdo->query("
     SELECT DISTINCT 
         a.branch_name AS branch_code,
@@ -76,27 +39,6 @@ $branches = $pdo->query("
         ON a.branch_name = b.branch_code
     ORDER BY b.branch
 ")->fetchAll(PDO::FETCH_ASSOC);
-
-$stmt->execute();
-$promodizers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// ✅ Restrict to session branches
-$sessionBranches = !empty($_SESSION['branch'])
-    ? array_map('trim', explode(',', $_SESSION['branch']))
-    : [];
-
-$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
-
-if ($isStaff) {
-    $promodizers = empty($sessionBranches)
-        ? []
-        : array_values(array_filter(
-            $promodizers,
-            fn($p) => in_array(trim($p['branch']), $sessionBranches)
-        ));
-}
-// else: non-staff sees everything — no filtering
-// Fetch branches & brands for filter dropdowns
 
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
              ->fetchAll(PDO::FETCH_COLUMN);
@@ -128,51 +70,40 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
         text-align: center;
         vertical-align: middle;
     }
-    /* Change this */
     #promodizerTable td:first-child {
         text-align: left !important;
     }
-
-    /* To this */
     #promodizerTable tbody tr td[colspan] {
         text-align: center !important;
     }
-
     #promodizerTable th,
     #promodizerTable td {
         border-right: 1px solid #dee2e6;
     }
-
     #promodizerTable th:first-child,
     #promodizerTable td:first-child {
-        border-left: 1px solid #dee2e6; /* remove extra line at start */
+        border-left: 1px solid #dee2e6;
     }
     .card-body .col {
         min-width: 150px;
     }
-
     .card-body .row.g-2 .col {
         min-width: 160px;
     }
-
     .filter-control {
         height: 32px !important;
         font-size: 14px;
     }
-
-    #promodizerTable th{
+    #promodizerTable th {
         background-color: #2d68c4;
-        color : white;
+        color: white;
     }
-
     .clear-input {
         position: relative;
     }
-
     .clear-input input {
-        padding-right: 28px; /* space for X */
+        padding-right: 28px;
     }
-
     .clear-btn {
         position: absolute;
         right: 6px;
@@ -186,7 +117,6 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
         cursor: pointer;
         padding: 0;
     }
-
     .clear-btn:hover {
         color: #333;
     }
@@ -201,19 +131,14 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
 
             <!-- ACTION BUTTONS -->
             <div class="col-md-6 text-md-end mt-2 mt-md-0">
-
                 <div class="d-flex justify-content-md-end gap-2 flex-wrap">
-
                     <button id="exportExcel" class="btn btn-success">
                         <i class="bi bi-file-earmark-excel"></i> Export
                     </button>
-
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
                         <i class="bi bi-plus-circle"></i> Add Employee
                     </button>
-
                 </div>
-
             </div>
 
         </div>
@@ -261,7 +186,6 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
 
                         <!-- BODY -->
                         <div class="modal-body">
-
                             <div class="row g-3">
 
                                 <!-- BRANCH -->
@@ -270,10 +194,6 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <select id="filterBranch" class="form-select filter-control">
                                         <option value="">All</option>
                                         <?php 
-                                        $sessionBranches = !empty($_SESSION['branch']) 
-                                            ? array_map('trim', explode(',', $_SESSION['branch'])) 
-                                            : [];
-
                                         foreach($branches as $b): 
                                             if (!empty($sessionBranches) && !in_array($b['branch_code'], $sessionBranches)) continue;
                                         ?>
@@ -394,7 +314,6 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                 </div>
 
                             </div>
-
                         </div>
 
                         <!-- FOOTER -->
@@ -408,6 +327,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                     </div>
                 </div>
             </div>
+
             <div class="card-body">
                 <div class="table-responsive">
                     <table id="promodizerTable" class="table table-striped table-hover align-middle text-center">
@@ -417,37 +337,13 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                 <th>Branch</th>
                                 <th>Brand</th>
                                 <th>Status</th>
-                                <th>Employment Status</th> <!-- NEW -->
-                                <th>Sub-Status</th> <!-- NEW -->
+                                <th>Employment Status</th>
+                                <th>Sub-Status</th>
                                 <th>Assignment Date</th>
-                                <th>Last Assigned By</th>                                
+                                <th>Last Assigned By</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <?php foreach($promodizers as $p): ?>
-                                <tr class="clickable-row"
-                                    data-id="<?= $p['id'] ?>"
-                                    data-branch="<?= htmlspecialchars($p['branch']) ?>"
-                                    data-brand="<?= htmlspecialchars($p['brand']) ?>"
-                                    data-company="<?= htmlspecialchars($p['corpo'] ?? '') ?>"
-                                    data-agency="<?= htmlspecialchars($p['agency'] ?? '') ?>">
-                                    
-                                    <td><?= htmlspecialchars($p['first_name'] . ' ' . $p['last_name'] . ' ' . $p['suffix']) ?></td>
-                                    <td data-branch-code="<?= htmlspecialchars($p['branch']) ?>">
-                                        <?= htmlspecialchars($branchMap[$p['branch']]['branch'] ?? '-') ?>
-                                    </td>
-                                    <td><?= htmlspecialchars($p['brand'] ?? '-') ?></td>
-                                    <td><?= htmlspecialchars($p['status'] ?? '-') ?></td>
-
-                                    <!-- NEW -->
-                                    <td><?= htmlspecialchars($p['employment_status'] ?? '-') ?></td>
-                                    <td><?= htmlspecialchars($p['sub_status'] ?? '-') ?></td>
-
-                                    <td><?= $p['assignment_date'] ? date('m/d/y', strtotime($p['assignment_date'])) : '-' ?></td>
-                                    <td><?= htmlspecialchars($p['last_assigned_by'] ?? '-') ?></td>                                    
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -462,16 +358,12 @@ const branchMap = <?= json_encode($branchMap, JSON_UNESCAPED_UNICODE); ?>;
 </script>
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-
-    const targetId = btn.getAttribute("data-target");
-    const input = document.getElementById(targetId);
-
-    input.value = "";
-
-    // trigger DataTable refresh
-    input.dispatchEvent(new Event("input"));
-  });
+    btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        const input = document.getElementById(targetId);
+        input.value = "";
+        input.dispatchEvent(new Event("input"));
+    });
 });
 </script>
 <script src="assets/js/jquery-4.0.0.min.js"></script>
