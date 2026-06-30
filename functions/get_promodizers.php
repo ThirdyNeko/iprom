@@ -14,6 +14,9 @@ $length = intval($_GET['length'] ?? 25);
 // =========================
 // SP FILTERS
 // Coerce empty strings → null so SP's IS NULL checks work correctly
+// corpo is intentionally NOT passed to the SP — it only exists on
+// IPROM.dbo.branches, not on whatever table @corpo would filter.
+// It's filtered in PHP below using $branchMap instead.
 // =========================
 function nullIfEmpty($val) {
     $v = trim($val ?? '');
@@ -30,13 +33,14 @@ $filters = [
     ':employment_status' => nullIfEmpty($_GET['employment_status'] ?? ''),
     ':sub_status'        => nullIfEmpty($_GET['sub_status']        ?? ''),
     ':search'            => nullIfEmpty($_GET['name_search']       ?? ''),
-    ':corpo'             => nullIfEmpty($_GET['corpo']             ?? ''),
+    ':corpo'             => null, // always null — filtered in PHP via branchMap
     ':agency'            => nullIfEmpty($_GET['agency']            ?? ''),
 ];
 
-// PHP-side filters (SP has no params for these)
+// PHP-side filters (SP has no usable params for these)
 $region = trim($_GET['region'] ?? '');
 $area   = trim($_GET['area']   ?? '');
+$corpo  = trim($_GET['corpo']  ?? '');
 
 // Session / role
 $sessionBranches = !empty($_SESSION['branch'])
@@ -46,11 +50,11 @@ $isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
 
 // =========================
 // BRANCH MAP
-// Needed for branch_display and region/area PHP filtering
+// Needed for branch_display and region/area/corpo PHP filtering
 // =========================
 $branchMap = [];
 $bmStmt = $pdo->query("
-    SELECT branch_code, branch, area, region
+    SELECT branch_code, branch, area, region, corpo
     FROM IPROM.dbo.branches
     WHERE status = 1
 ");
@@ -97,7 +101,7 @@ if ($isStaff) {
 }
 
 // =========================
-// REGION / AREA FILTER (PHP-side)
+// REGION / AREA / CORPO FILTER (PHP-side, via branchMap)
 // =========================
 if ($region !== '') {
     $rows = array_values(array_filter(
@@ -113,6 +117,13 @@ if ($area !== '') {
     ));
 }
 
+if ($corpo !== '') {
+    $rows = array_values(array_filter(
+        $rows,
+        fn($p) => strcasecmp(trim($branchMap[trim($p['branch'])]['corpo'] ?? ''), $corpo) === 0
+    ));
+}
+
 // =========================
 // COUNTS
 // SP already applies all other filters, so total = filtered here
@@ -121,10 +132,12 @@ $recordsTotal    = count($rows);
 $recordsFiltered = count($rows);
 
 // =========================
-// ADD branch_display TO EACH ROW
+// ADD branch_display + corpo TO EACH ROW
 // =========================
 $rows = array_map(function ($p) use ($branchMap) {
-    $p['branch_display'] = $branchMap[trim($p['branch'])]['branch'] ?? $p['branch'];
+    $branchInfo = $branchMap[trim($p['branch'])] ?? null;
+    $p['branch_display'] = $branchInfo['branch'] ?? $p['branch'];
+    $p['corpo']           = $branchInfo['corpo']  ?? '';
     return $p;
 }, $rows);
 
