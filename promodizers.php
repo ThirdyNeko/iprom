@@ -371,7 +371,6 @@ document.querySelectorAll(".clear-btn").forEach(btn => {
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/xlsx.full.min.js"></script>
 <script src="assets/js/employee/promodizers.js"></script>
-<?php include 'modals/edit_promodizer_modal.php'; ?>
 <?php include 'modals/add_employee_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 </body>

@@ -136,14 +136,14 @@ $(document).ready(function () {
   // =========================
   // EDIT FLOW — open modal directly via openEmployeeModal()
   // =========================
-  if (editId) {
-    // Wait briefly for modal JS (edit_promodizer_modal.js) to finish setup
-    setTimeout(function () {
-      if (typeof openEmployeeModal === "function") {
-        openEmployeeModal(editId);
-      }
-    }, 150);
-  }
+  // if (editId) {
+  //   // Wait briefly for modal JS (edit_promodizer_modal.js) to finish setup
+  //   setTimeout(function () {
+  //     if (typeof openEmployeeModal === "function") {
+  //       openEmployeeModal(editId);
+  //     }
+  //   }, 150);
+  // }
 
   // =========================
   // ADD FLOW — open add modal
@@ -172,6 +172,14 @@ function formatDate(dateStr) {
   const year = d.getFullYear();
   return `${month}/${day}/${year}`;
 }
+
+// =========================
+// ROW CLICK — navigate to edit page
+// =========================
+$(document).on("click", ".clickable-row", function () {
+  const id = $(this).data("id");
+  window.location.href = "edit_promodizer.php?id=" + id;
+});
 
 // =========================
 // EXPORT (unchanged — uses its own fetch endpoint)

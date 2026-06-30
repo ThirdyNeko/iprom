@@ -24,7 +24,7 @@
         </li>
 
         <li>
-            <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'promodizers.php' ? 'active' : '' ?>">
+            <a href="promodizers.php" class="nav-link d-flex align-items-center gap-2 <?= in_array($current_page, ['promodizers.php', 'edit_promodizer.php']) ? 'active' : '' ?>">
                 <i class="bi bi-people"></i>
                 <span>Promodisers</span>
             </a>

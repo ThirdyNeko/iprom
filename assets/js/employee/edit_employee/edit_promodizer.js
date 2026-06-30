@@ -1,4 +1,3 @@
-const modalEl = document.getElementById("editPromodizerModal");
 let branchBrandPairs = [];
 
 function getCorpoForBranch(branchCode) {
@@ -48,40 +47,14 @@ function checkPrintBtnState() {
   const isAdmin = ["admin", "super_admin"].includes(window.userRole || "");
   const canPrintLOA = Number(rawCanPrintLOA || 0) === 1;
 
-  console.log("canPrintLOA raw value:", rawCanPrintLOA);
-  console.log("canPrintLOA normalized:", canPrintLOA);
-  console.log("userRole:", window.userRole);
-
   const allowed = isAdmin || canPrintLOA;
   printBtn.disabled = !allowed || status === "INACTIVE";
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const editModal = document.getElementById("editPromodizerModal");
-
-  editModal.addEventListener("show.bs.modal", function () {
-    const editStatus = document.getElementById("editStatus");
-    checkPrintBtnState();
-
-    if (!editStatus._bound) {
-      editStatus.addEventListener("change", checkPrintBtnState);
-      editStatus.addEventListener("input", checkPrintBtnState);
-
-      const observer = new MutationObserver(checkPrintBtnState);
-      observer.observe(editStatus, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
-
-      editStatus._bound = true;
-    }
-  });
-});
-
 // =========================
 // ELEMENT REFERENCES
 // =========================
+const pageEl = document.getElementById("editPromodizerPage");
 const reasonSelect = document.getElementById("editReasonUpdate");
 const dateSeparatedRow = document.getElementById("rowDateSeparated");
 const dateSeparatedInput = document.getElementById("editDateSeparated");
@@ -226,7 +199,7 @@ function toggleReasonDates() {
 }
 
 if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
-  console.error("Modal elements not found. Check modal HTML.");
+  console.error("Page elements not found. Check edit_promodizer.php markup.");
 }
 
 const showDateSeparatedReasons = [
@@ -574,7 +547,7 @@ function collectAssignments() {
   return { branches, removedBranches: [], brands, removedBrands: [] };
 }
 
-function resetEditModal() {
+function resetEditPage() {
   editRovingContainer.innerHTML = "";
   editMultiBrandContainer.innerHTML = "";
 
@@ -584,7 +557,7 @@ function resetEditModal() {
     "editSubStatus",
   ];
 
-  modalEl.querySelectorAll("select").forEach((s) => {
+  pageEl.querySelectorAll("select").forEach((s) => {
     if (!protectedSelects.includes(s.id)) {
       s.value = "";
       s.disabled = false;
@@ -598,22 +571,24 @@ function resetEditModal() {
 }
 
 // =========================
-// OPEN EMPLOYEE MODAL
-// Extracted into a named function so promodizers.js can call it
-// directly for the ?edit=ID URL flow.
+// LOAD EMPLOYEE INTO PAGE
 // =========================
-async function openEmployeeModal(id) {
+async function loadEmployeePage(id) {
   await initPromise;
-  resetEditModal();
-
-  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  resetEditPage();
 
   try {
     const res = await fetch(`functions/get_employee.php?id=${id}`);
     const p = await res.json();
 
     if (!p || !p.id) {
-      Swal.fire({ icon: "error", title: "Error", text: "Employee not found" });
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Employee not found",
+      }).then(() => {
+        window.location.href = "promodizers.php";
+      });
       return;
     }
 
@@ -663,9 +638,6 @@ async function openEmployeeModal(id) {
 
     if (el("editBranch")) {
       populateEditBranch([employee.branch], employee.brand, employee.branch);
-      console.log("branchBrandPairs", branchBrandPairs.length);
-      console.log("employee.branch", employee.branch);
-      console.log("employee.brand", employee.brand);
     }
     if (el("editCorpo")) setCorpoFromBranch(employee.branch);
     if (el("editBrand"))
@@ -773,12 +745,12 @@ async function openEmployeeModal(id) {
       "editAgency",
     ];
 
-    modalEl.querySelectorAll("input, select, textarea").forEach((el) => {
+    pageEl.querySelectorAll("input, select, textarea").forEach((el) => {
       el.disabled = !editable.includes(el.id);
     });
 
-    modal.show();
     loadHistory(employee.employee_id);
+    checkPrintBtnState();
 
     toggleDateSeparated();
     toggleDateReturned();
@@ -797,16 +769,6 @@ async function openEmployeeModal(id) {
     });
   }
 }
-
-// =========================
-// DELEGATED CLICK HANDLER
-// Works with server-side DataTables (rows are created dynamically)
-// =========================
-document.addEventListener("click", async function (e) {
-  const row = e.target.closest(".clickable-row");
-  if (!row) return;
-  await openEmployeeModal(row.dataset.id);
-});
 
 // =========================
 // SAVE BUTTON
@@ -879,12 +841,12 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   ).toUpperCase();
 
   const rovingBranches = Array.from(
-    modalEl.querySelectorAll("#editRovingContainer select"),
+    pageEl.querySelectorAll("#editRovingContainer select"),
   )
     .map((s) => s.value)
     .filter(Boolean);
   const multiBrands = Array.from(
-    modalEl.querySelectorAll("#editMultiBrandContainer select"),
+    pageEl.querySelectorAll("#editMultiBrandContainer select"),
   )
     .map((s) => s.value)
     .filter(Boolean);
@@ -988,7 +950,6 @@ function populateAgencyDropdown(selected = "") {
   agencyEl.innerHTML = finalList
     .map((a) => `<option value="${a}">${a}</option>`)
     .join("");
-
   agencyEl.value = normalizedSelected;
 }
 
@@ -1079,11 +1040,9 @@ function isComboAvailable(branch, brand) {
 }
 
 // =========================
-// INIT LISTENERS
+// INIT
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
-  await initPromise;
-
   if (reasonSelect) {
     reasonSelect.addEventListener("change", toggleDateSeparated);
     reasonSelect.addEventListener("change", toggleDateReturned);
@@ -1095,6 +1054,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   if (employmentStatusSelect) {
     employmentStatusSelect.addEventListener("change", toggleEmploymentDates);
+  }
+
+  const editStatus = document.getElementById("editStatus");
+  if (editStatus) {
+    editStatus.addEventListener("change", checkPrintBtnState);
+    editStatus.addEventListener("input", checkPrintBtnState);
   }
 
   editRovingContainer.addEventListener("click", (e) => {
@@ -1226,8 +1191,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     updateBrandOptions();
   });
 
-  modalEl.addEventListener("hidden.bs.modal", () => {
-    editRovingContainer.innerHTML = "";
-    editMultiBrandContainer.innerHTML = "";
-  });
+  // Load the employee record this page was opened for
+  if (window.editEmployeeRecordId) {
+    loadEmployeePage(window.editEmployeeRecordId);
+  }
 });
