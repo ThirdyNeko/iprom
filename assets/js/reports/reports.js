@@ -480,7 +480,9 @@ function buildFullName(first, middle, last, suffix) {
 }
 
 function vacantCount(required, assigned) {
-  return required - assigned;
+  const r = Number(required) || 0;
+  const a = Number(assigned) || 0;
+  return Math.max(0, r - a);
 }
 
 function monthDaysSince(timestamp) {

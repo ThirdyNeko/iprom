@@ -12,7 +12,7 @@ if (!$branch) {
 }
 
 $isAll = $branch === 'ALL';
-$branchFilter = $isAll ? '' : 'AND a.branch_name = :branch';
+$branchFilter = $isAll ? '' : 'AND a.branch_name COLLATE DATABASE_DEFAULT = :branch COLLATE DATABASE_DEFAULT';
 
 $stmt = $pdo->prepare("
     SELECT
@@ -21,9 +21,9 @@ $stmt = $pdo->prepare("
         a.assigned_count,
         a.timestamp,
         a.brand_name AS brand
-    FROM [IPROM].[dbo].[assignment] a
-    LEFT JOIN [IPROM].[dbo].[branches] b
-        ON a.branch_name = b.branch_code
+    FROM [IPROM_TEST].[dbo].[assignment] a
+    LEFT JOIN [IPROM_TEST].[dbo].[branches] b
+        ON a.branch_name COLLATE DATABASE_DEFAULT = b.branch_code COLLATE DATABASE_DEFAULT
     WHERE required_count = assigned_count
       AND required_count > 0
       $branchFilter
