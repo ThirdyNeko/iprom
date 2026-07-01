@@ -133,135 +133,197 @@ th {
                 <input type="hidden" id="editPromodizerId">
                 <input type="hidden" id="editEmployeeId">
 
-                <table class="table table-bordered table-striped table-sm mb-3">
-                    <tbody>
-                        <tr>
-                            <th>Reason for Update</th>
-                            <td colspan="3">
-                                <select id="editReasonUpdate" class="form-select reason-select" required>
-                                    <option value="" disabled selected>-- Select Reason --</option>
-                                    <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
-                                    <option value="BLACKLISTED / AWOL / TERMINATED">BLACKLISTED / AWOL / TERMINATED</option>
-                                    <option value="CHANGE AGENCY">CHANGE AGENCY</option>
-                                    <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
-                                    <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
-                                    <option value="CLERICAL ERROR">CLERICAL ERROR</option>
-                                    <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
-                                    <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
-                                    <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
-                                    <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
-                                    <option value="RESIGNED">RESIGNED</option>
-                                    <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
-                                </select>
-                            </td>
-                        </tr>
+                <!-- Reason for Update -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Reason for Update</label>
+                        <select id="editReasonUpdate" class="form-select reason-select" required>
+                            <option value="" disabled selected>-- Select Reason --</option>
+                            <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
+                            <option value="BLACKLISTED / AWOL / TERMINATED">BLACKLISTED / AWOL / TERMINATED</option>
+                            <option value="CHANGE AGENCY">CHANGE AGENCY</option>
+                            <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
+                            <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
+                            <option value="CLERICAL ERROR">CLERICAL ERROR</option>
+                            <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
+                            <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
+                            <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
+                            <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
+                            <option value="RESIGNED">RESIGNED</option>
+                            <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                        </select>
+                    </div>
+                </div>
 
-                        <tr>
-                            <th>First Name</th>
-                            <td><input type="text" id="editFirstName" class="form-control" readonly></td>
-                            <th>Branch</th>
-                            <td><select id="editBranch" class="form-control"></select></td>
-                        </tr>
+                <!-- Names -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" id="editFirstName" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Middle Name</label>
+                        <input type="text" id="editMiddleName" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" id="editLastName" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Suffix</label>
+                        <input type="text" id="editSuffix" class="form-control" readonly>
+                    </div>
+                    
+                </div>
 
-                        <tr>
-                            <th>Middle Name</th>
-                            <td><input type="text" id="editMiddleName" class="form-control" readonly></td>
-                            <th>Brand</th>
-                            <td><select id="editBrand" class="form-control"></select></td>
-                        </tr>
+                <!-- Personal details -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-1">
+                        <label class="form-label">Gender</label>
+                        <input type="text" id="editGender" class="form-control" readonly>
+                    </div>             
+                    <div class="col-md-2">
+                        <label class="form-label">Birthdate</label>
+                        <input type="date" id="editBirthday" class="form-control" readonly>
+                    </div>       
+                    <div class="col-md-2">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" id="editContactNumber" class="form-control" readonly>
+                    </div>
+                    
+                </div>
 
-                        <tr>
-                            <th>Last Name</th>
-                            <td><input type="text" id="editLastName" class="form-control" readonly></td>
-                            <th>Employment Status</th>
-                            <td>
-                                <select id="editEmploymentStatus" class="form-select">
-                                    <option value="PERMANENT">PERMANENT</option>
-                                    <option value="RELIEVER">RELIEVER</option>
-                                    <option value="SEASONAL">SEASONAL</option>
-                                </select>
-                            </td>
-                        </tr>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Province</label>
+                        <input type="text" id="editProvince" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Municipality</label>
+                        <input type="text" id="editMunicipality" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Barangay</label>
+                        <input type="text" id="editBarangay" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Street</label>
+                        <input type="text" id="editStreet" class="form-control" readonly>
+                    </div>
+                </div>
 
-                        <tr>
-                            <th>Suffix</th>
-                            <td><input type="text" id="editSuffix" class="form-control" readonly></td>
-                            <th>Sub-Status</th>
-                            <td>
-                                <select id="editSubStatus" class="form-select">
-                                    <option value="STATIONARY">STATIONARY</option>
-                                    <option value="MULTI BRANCH">MULTI BRANCH</option>
-                                    <option value="MULTI BRAND">MULTI BRAND</option>
-                                    <option value="HYBRID">HYBRID</option>
-                                </select>
-                            </td>
-                        </tr>
+                <!-- Assignment classification -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label">Branch</label>
+                        <select id="editBranch" class="form-control"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Brand</label>
+                        <select id="editBrand" class="form-control"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Date Hired</label>
+                        <input type="date" id="editDateHired" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">Status</label>
+                        <input type="text" id="editStatus" class="form-control" readonly>
+                    </div>                    
+                </div>
 
-                        <tr>
-                            <th>Agency</th>
-                            <td colspan="3"><select id="editAgency" class="form-select"></select></td>
-                        </tr>
+                <!-- Agency + assignment meta -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Agency</label>
+                        <select id="editAgency" class="form-select"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Employment Status</label>
+                        <select id="editEmploymentStatus" class="form-select">
+                            <option value="PERMANENT">PERMANENT</option>
+                            <option value="RELIEVER">RELIEVER</option>
+                            <option value="SEASONAL">SEASONAL</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Sub-Status</label>
+                        <select id="editSubStatus" class="form-select">
+                            <option value="STATIONARY">STATIONARY</option>
+                            <option value="MULTI BRANCH">MULTI BRANCH</option>
+                            <option value="MULTI BRAND">MULTI BRAND</option>
+                            <option value="HYBRID">HYBRID</option>
+                        </select>
+                    </div>                    
+                </div>
 
-                        <tr>
-                            <th>Gender</th>
-                            <td><input type="text" id="editGender" class="form-control" readonly></td>
-                            <th>Assignment Date</th>
-                            <td><input type="text" id="editAssignmentDate" class="form-control" readonly></td>
-                        </tr>
+                <!-- Update meta -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label">Date Last Updated</label>
+                        <input type="date" id="editDateLastUpdated" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Last Updated By</label>
+                        <input type="text" id="editLastUpdatedBy" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Assignment Date</label>
+                        <input type="text" id="editAssignmentDate" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Last Assigned By</label>
+                        <input type="text" id="editLastAssignedBy" class="form-control" readonly>
+                    </div>
+                </div>
 
-                        <tr>
-                            <th>Birthdate</th>
-                            <td><input type="date" id="editBirthday" class="form-control" readonly></td>
-                            <th>Last Assigned By</th>
-                            <td><input type="text" id="editLastAssignedBy" class="form-control" readonly></td>
-                        </tr>
+                <!-- Conditional: separation / return -->
+                <div class="row g-3 mb-3" id="rowDateSeparated">
+                    <div class="col-md-2">
+                        <label class="form-label" id="thDateSeparated">Date Separated</label>
+                        <input type="date" id="editDateSeparated" class="form-control date-input required">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" id="thDateReturned">Date Returned</label>
+                        <input type="date" id="editDateReturn" class="form-control date-input required">
+                    </div>
+                </div>
 
-                        <tr>
-                            <th>Date Hired</th>
-                            <td><input type="date" id="editDateHired" class="form-control" readonly></td>
-                            <th>Date Last Updated</th>
-                            <td><input type="date" id="editDateLastUpdated" class="form-control" readonly></td>
-                        </tr>
+                <!-- Conditional: start / end -->
+                <div class="row g-3 mb-3" id="rowStartDate">
+                    <div class="col-md-2">
+                        <label class="form-label" id="thStartDate">Start</label>
+                        <input type="date" id="editStartDate" class="form-control date-input required">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" id="thEndDate">End</label>
+                        <input type="date" id="editEndDate" class="form-control date-input required">
+                    </div>
+                </div>
 
-                        <tr>
-                            <th>Status</th>
-                            <td><input type="text" id="editStatus" class="form-control" readonly></td>
-                            <th>Last Updated By</th>
-                            <td><input type="text" id="editLastUpdatedBy" class="form-control" readonly></td>
-                        </tr>
+                <!-- Roving branches -->
+                <div class="row g-3 mb-3 d-none" id="editRovingField">
+                    <div class="col-12">
+                        <label class="form-label">Roving Branches</label>
+                        <div id="editRovingContainer"></div>
+                    </div>
+                </div>
 
-                        <tr id="rowDateSeparated">
-                            <th id="thDateSeparated">Date Separated</th>
-                            <td><input type="date" id="editDateSeparated" class="form-control date-input required"></td>
-                            <th id="thDateReturned">Date Returned</th>
-                            <td><input type="date" id="editDateReturn" class="form-control date-input required"></td>
-                        </tr>
+                <!-- Multi brands -->
+                <div class="row g-3 mb-3 d-none" id="editMultiBrandField">
+                    <div class="col-12">
+                        <label class="form-label">Multi Brands</label>
+                        <div id="editMultiBrandContainer"></div>
+                    </div>
+                </div>
 
-                        <tr id="rowStartDate">
-                            <th id="thStartDate">Start</th>
-                            <td><input type="date" id="editStartDate" class="form-control date-input required"></td>
-                            <th id="thEndDate">End</th>
-                            <td><input type="date" id="editEndDate" class="form-control date-input required"></td>
-                        </tr>
-
-                        <tr id="editRovingField" class="d-none">
-                            <th>Roving Branches</th>
-                            <td colspan="3"><div id="editRovingContainer"></div></td>
-                        </tr>
-
-                        <tr id="editMultiBrandField" class="d-none">
-                            <th>Multi Brands</th>
-                            <td colspan="3"><div id="editMultiBrandContainer"></div></td>
-                        </tr>
-
-                        <tr>
-                            <th>Remarks</th>
-                            <td colspan="3">
-                                <input type="text" id="editRemarks" class="form-control remarks-input" maxlength="100" placeholder="e.g. immediate resignation, pull out product">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <!-- Remarks -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <label class="form-label">Remarks</label>
+                        <input type="text" id="editRemarks" class="form-control remarks-input" maxlength="100" placeholder="e.g. immediate resignation, pull out product">
+                    </div>
+                </div>
 
                 <div class="mt-3">
                     <h6 class="fw-bold mb-2">Update History</h6>
@@ -331,13 +393,17 @@ th {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    // ============================================================
+    // REASON / HEADER TOGGLE LOGIC
+    // ============================================================
     const reasonSelect = document.getElementById("editReasonUpdate");
     const employmentStatusSelect = document.getElementById("editEmploymentStatus");
 
-    const thDateSeparated = document.querySelector("#rowDateSeparated th:nth-child(1)");
-    const thDateReturned  = document.querySelector("#rowDateSeparated th:nth-child(3)");
-    const thStartDate     = document.querySelector("#rowStartDate th:nth-child(1)");
-    const thEndDate       = document.querySelector("#rowStartDate th:nth-child(3)");
+    const thDateSeparated = document.getElementById("thDateSeparated");
+    const thDateReturned  = document.getElementById("thDateReturned");
+    const thStartDate     = document.getElementById("thStartDate");
+    const thEndDate       = document.getElementById("thEndDate");
 
     function updateHeaders() {
         const value = reasonSelect.value;
@@ -376,5 +442,57 @@ document.addEventListener("DOMContentLoaded", function () {
     reasonSelect.addEventListener("change", updateHeaders);
     employmentStatusSelect.addEventListener("change", updateHeaders);
     updateHeaders();
+
+
+    // ============================================================
+    // ADDRESS FIELD HOVER-TOOLTIP LOGIC
+    // Shows full value on hover for Province, Municipality,
+    // Baranggay, and Street — useful when text is too long
+    // to display fully inside the input/select.
+    // ============================================================
+    const addressFieldIds = [
+        "editProvince",
+        "editMunicipality",
+        "editBarangay",
+        "editStreet"
+    ];
+
+    function setAddressTooltip(el) {
+        if (!el) return;
+        if (el.tagName === "SELECT") {
+            const selectedOption = el.options[el.selectedIndex];
+            el.title = selectedOption ? selectedOption.text : "";
+        } else {
+            el.title = el.value || "";
+        }
+    }
+
+    function refreshAddressTooltips() {
+        addressFieldIds.forEach(function (id) {
+            setAddressTooltip(document.getElementById(id));
+        });
+    }
+
+    // Live update as values change (in case fields become editable later)
+    addressFieldIds.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        if (el.tagName === "SELECT") {
+            el.addEventListener("change", function () { setAddressTooltip(el); });
+        } else {
+            el.addEventListener("input", function () { setAddressTooltip(el); });
+        }
+    });
+
+    // Run once on load in case fields are pre-filled server-side
+    refreshAddressTooltips();
+
+    // Expose globally so edit_promodizer.js can call this after
+    // populating the form fields via AJAX
+    window.refreshAddressTooltips = refreshAddressTooltips;
+
 });
 </script>
+
+<?php include 'modals/change_password_modal.php'; ?>

@@ -146,6 +146,13 @@ $(document).ready(function () {
   // }
 
   // =========================
+  // EDIT FLOW — redirect to standalone edit page
+  // =========================
+  if (editId) {
+    window.location.href = "edit_promodizer.php?id=" + editId;
+  }
+
+  // =========================
   // ADD FLOW — open add modal
   // =========================
   if (addParam === "1") {

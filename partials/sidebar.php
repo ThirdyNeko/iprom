@@ -52,7 +52,7 @@
                 <i class="bi bi-chevron-down ms-auto"></i>
             </a>
 
-            <div class="collapse <?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php']) ? 'show' : '' ?>"
+            <div class="collapse <?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php', 'blacklisted.php']) ? 'show' : '' ?>"
                 id="settingsSubmenu">
 
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small ms-4">
@@ -79,6 +79,13 @@
                         </a>
                     </li>
                     <?php endif; ?>
+
+                    <li>
+                        <a href="blacklisted.php"
+                        class="nav-link <?= $current_page == 'blacklisted.php' ? 'active' : '' ?>">
+                            Blacklisted
+                        </a>
+                    </li>
                     
                 </ul>
             </div>
