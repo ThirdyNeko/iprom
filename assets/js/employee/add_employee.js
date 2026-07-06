@@ -184,24 +184,19 @@ document.addEventListener("DOMContentLoaded", async function () {
       .querySelectorAll(".multi-brand-select")
       .forEach((s) => (s.required = false));
 
-    // Reset
-    dateRangeFields.classList.add("d-none");
+    // Reset roving
     rovingField.classList.add("d-none");
-
-    dateRangeFields
-      .querySelectorAll("input")
-      .forEach((i) => (i.required = false));
     rovingField
       .querySelectorAll(".roving-select")
       .forEach((s) => (s.required = false));
 
-    // Show date range for seasonal/reliever
-    if (empStatus === "SEASONAL" || empStatus === "RELIEVER") {
-      dateRangeFields.classList.remove("d-none");
-      dateRangeFields
-        .querySelectorAll("input")
-        .forEach((i) => (i.required = true));
-    }
+    // Date range: stays visible, just enabled/disabled based on status
+    const needsDateRange = empStatus === "SEASONAL" || empStatus === "RELIEVER";
+    dateRangeFields.querySelectorAll("input").forEach((i) => {
+      i.required = needsDateRange;
+      i.disabled = !needsDateRange;
+      if (!needsDateRange) i.value = "";
+    });
 
     // Show roving when MULTI BRANCH
     if (sub === "MULTI BRANCH" || sub === "HYBRID") {
@@ -448,6 +443,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Initial populate
   populateBranchSelect();
   updateBrandSelect(mainBranchSelect, mainBrandSelect);
+  toggleFields();
   rovingContainer
     .querySelectorAll(".roving-select")
     .forEach((s) => populateRovingSelect(s));

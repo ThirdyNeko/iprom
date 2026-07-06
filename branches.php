@@ -35,10 +35,6 @@ $pdo = qa_db();
         font-size: 14px;
     }
 
-    #Branchtable td {
-        font-size: 14px;
-    }
-
     #Branchtable th:first-child,
     #Branchtable td:first-child {
         border-left: 1px solid #dee2e6; /* remove extra line at start */

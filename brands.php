@@ -65,12 +65,10 @@ if (!$isAllowed) {
     color: white;
     text-align: center;
     vertical-align: middle;
-    font-size: 14px;
 }
 
 #brandTable td {
     vertical-align: middle;
-    font-size: 14px;
     text-align: center;
 }
 

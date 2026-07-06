@@ -137,6 +137,15 @@ function toggleBranchReasonOptions() {
   const isStationary = subStatus === "STATIONARY";
   const isInactive = status === "INACTIVE";
 
+  // Check the EMPLOYEE'S STORED reason (from DB), not the live dropdown
+  // value — the dropdown gets reset to blank on every load, so relying
+  // on reasonSelect.value here would never catch an already-blacklisted
+  // employee.
+  const storedReason = (window.currentEmployee?.reason_update || "")
+    .trim()
+    .toUpperCase();
+  const isBlacklisted = storedReason === "BLACKLISTED / AWOL / TERMINATED";
+
   const addOpt = reasonSelect.querySelector('option[value="ADD BRANCH/BRAND"]');
   const removeOpt = reasonSelect.querySelector(
     'option[value="REMOVE BRANCH/BRAND"]',
@@ -174,6 +183,17 @@ function toggleBranchReasonOptions() {
   if (transferOpt && isInactive) {
     transferOpt.disabled = true;
     transferOpt.style.color = "#aaa";
+  }
+
+  // Terminal state: the employee's STORED reason is
+  // "BLACKLISTED / AWOL / TERMINATED" → lock every option, overriding
+  // the isInactive block above.
+  if (isBlacklisted) {
+    reasonSelect.querySelectorAll("option").forEach((opt) => {
+      if (opt.value === "") return; // placeholder stays untouched
+      opt.disabled = true;
+      opt.style.color = "#aaa";
+    });
   }
 
   const selected = reasonSelect.querySelector(
@@ -1323,7 +1343,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   editProvince?.addEventListener("change", async (e) => {
     const code = e.target.value;
     if (editProvinceName)
-      editProvinceName.value = e.target.options[e.target.selectedIndex]?.text || "";
+      editProvinceName.value =
+        e.target.options[e.target.selectedIndex]?.text || "";
     await loadEditMunicipalities(code);
     toggleContactAddressEditable();
   });

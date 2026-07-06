@@ -36,15 +36,15 @@ $pdo = qa_db();
     }
 
     #Blacklistedtable td {
-        font-size: 14px;
+        text-align: center;
     }
 
     #Blacklistedtable th:first-child,
     #Blacklistedtable td:first-child {
         border-left: 1px solid #dee2e6;
     }
-    #Blacklistedtable td:last-child {
-        text-align: center !important;
+    #Blacklistedtable td:first-child {
+        text-align: left;
     }
 
     .clear-input {
@@ -79,6 +79,9 @@ $pdo = qa_db();
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold mb-0">Blacklisted</h4>
+            <button type="button" class="btn btn-sm btn-success" id="addBlacklistedBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedModal">
+                <i class="bi bi-plus-lg"></i> Add Blacklisted
+            </button>
         </div>
 
         <div class="card shadow-sm">
@@ -96,6 +99,13 @@ $pdo = qa_db();
                         </div>
                     </div>
 
+                    <div class="col-md-auto">
+                        <label class="form-label d-block">&nbsp;</label>
+                        <button type="button" id="syncBlacklistBtn" class="btn btn-sm btn-primary">
+                            <i class="bi bi-arrow-repeat"></i> Sync from Employees
+                        </button>
+                    </div>
+
                 </div>
             </div>
             <div class="card-body">
@@ -104,7 +114,9 @@ $pdo = qa_db();
                         <thead class="table-primary">
                             <tr>
                                 <th>Full Name</th>
-                                <th>Birthday</th>
+                                <th>Branch</th>
+                                <th>Brand</th>
+                                <th>Employment Status</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -121,6 +133,7 @@ $pdo = qa_db();
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/blacklisted/blacklisted.js"></script>
+<script src="assets/js/blacklisted/add_blacklisted.js"></script>
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -136,3 +149,4 @@ document.querySelectorAll(".clear-btn").forEach(btn => {
 </script>
 
 <?php include 'modals/change_password_modal.php'; ?>
+<?php include 'modals/add_blacklisted_modal.php'; ?>

@@ -20,7 +20,7 @@ $length = $length > 0 ? $length : 10;
 $searchValue = nullIfEmpty($_POST['search']['value'] ?? '');
 
 // DataTable column index -> actual sortable column name
-$columns = ['full_name', 'birthday'];
+$columns = ['full_name', 'branch', 'brand', 'employment_status'];
 
 $orderColIndex = (int)($_POST['order'][0]['column'] ?? 0);
 $orderDir      = strtoupper($_POST['order'][0]['dir'] ?? 'ASC');
@@ -51,9 +51,11 @@ try {
     $data = [];
     foreach ($rows as $r) {
         $data[] = [
-            'id'        => $r['id'],
-            'full_name' => htmlspecialchars($r['full_name']),
-            'birthday'  => $r['birthday'] ? date('M d, Y', strtotime($r['birthday'])) : '',
+            'id'                 => $r['id'],
+            'full_name'          => htmlspecialchars($r['full_name']),
+            'branch'             => htmlspecialchars($r['branch'] ?? ''),
+            'brand'              => htmlspecialchars($r['brand'] ?? ''),
+            'employment_status'  => htmlspecialchars($r['employment_status'] ?? ''),
         ];
     }
 

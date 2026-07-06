@@ -129,6 +129,9 @@ th {
 
         <div class="card shadow-sm">
             <div class="card-body">
+                <button type="button" class="btn btn-secondary" id="backBtn">
+                    &larr; Back
+                </button>
                 <div id="editAlert"></div>
                 <input type="hidden" id="editPromodizerId">
                 <input type="hidden" id="editEmployeeId">
@@ -151,9 +154,9 @@ th {
                             <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
                             <option value="RESIGNED">RESIGNED</option>
                             <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
-                            <option value="UPDATE MARITAL STATUS">UPDATE MARITAL STATUS</option>
-                            <option value="UPDATE CONTACT NUMBER">UPDATE CONTACT NUMBER</option>
                             <option value="UPDATE ADDRESS">UPDATE ADDRESS</option>
+                            <option value="UPDATE CONTACT NUMBER">UPDATE CONTACT NUMBER</option>
+                            <option value="UPDATE MARITAL STATUS">UPDATE MARITAL STATUS</option>
                         </select>
                     </div>
                 </div>
@@ -239,6 +242,11 @@ th {
                     </div>
                 </div>
 
+                <div class="row g-3 mb-3">
+                    <hr>
+                    <H3 class="fw-bold mb-2">Employment Details</H6>
+                </div>
+
                 <!-- Assignment classification -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
@@ -257,12 +265,7 @@ th {
                         <label class="form-label">Status</label>
                         <input type="text" id="editStatus" class="form-control" readonly>
                     </div>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <hr>
-                    <H3 class="fw-bold mb-2">Employment Details</H6>
-                </div>
+                </div>                
 
                 <!-- Statuses and Dates - all in one row, all equal width -->
                 <div class="row g-3 mb-3">
@@ -362,10 +365,7 @@ th {
             </div>
 
             <div class="card-footer d-flex justify-content-between">
-                <div>
-                    <button type="button" class="btn btn-secondary" id="backBtn">
-                        &larr; Back
-                    </button>
+                <div>                    
                     <button type="button" class="btn btn-danger" id="openPrintModalBtn">
                         Print LOA
                     </button>

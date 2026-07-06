@@ -250,7 +250,7 @@ $branch_brand_pairs = $pdo->query("
                             </select>
                         </div>
 
-                        <div id="dateRangeFields" class="col-md-6 d-none">
+                        <div id="dateRangeFields" class="col-md-6">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Start Date</label>
