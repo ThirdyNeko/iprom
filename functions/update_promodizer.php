@@ -77,10 +77,58 @@ $raw_start_date = $_POST['start_date'] ?? null;
 $raw_end_date   = $_POST['end_date'] ?? null;
 $agency         = $_POST['agency'] ?? null;
 
+// ✅ NEW: personal / address fields
+$marital_status     = $_POST['marital_status'] ?? null;
+$contact_number     = $_POST['contact_number'] ?? null;
+$province           = $_POST['province'] ?? null;
+$province_name      = $_POST['province_name'] ?? null;
+$municipality       = $_POST['municipality'] ?? null;
+$municipality_name  = $_POST['municipality_name'] ?? null;
+$barangay           = $_POST['barangay'] ?? null;
+$barangay_name      = $_POST['barangay_name'] ?? null;
+$street             = $_POST['street'] ?? null;
+
 if ($reason_for_update === 'ADD BRANCH/BRAND' && empty($raw_start_date)) {
     echo json_encode([
         'status' => 'danger',
         'message' => 'Start date is required for ADD BRANCH/BRAND'
+    ]);
+    exit;
+}
+
+// ✅ NEW: personal / address validation (defense-in-depth; JS already checks this)
+if ($reason_for_update === 'UPDATE MARITAL STATUS' && empty($marital_status)) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Marital Status is required'
+    ]);
+    exit;
+}
+
+if ($reason_for_update === 'UPDATE CONTACT NUMBER') {
+    if (empty($contact_number)) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Contact Number is required'
+        ]);
+        exit;
+    }
+    if (!preg_match('/^09\d{9}$/', $contact_number)) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Contact number must be 11 digits and start with 09.'
+        ]);
+        exit;
+    }
+}
+
+if (
+    $reason_for_update === 'UPDATE ADDRESS' &&
+    (empty($province) || empty($municipality) || empty($barangay) || empty($street))
+) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Please complete Province, Municipality, Barangay, and Street.'
     ]);
     exit;
 }
@@ -565,7 +613,16 @@ try {
             @removedBrand = :removedBrand,
             @branch = :branch,
             @brand = :brand,
-            @agency = :agency
+            @agency = :agency,
+            @marital_status = :marital_status,
+            @contact_number = :contact_number,
+            @province = :province,
+            @province_name = :province_name,
+            @municipality = :municipality,
+            @municipality_name = :municipality_name,
+            @barangay = :barangay,
+            @barangay_name = :barangay_name,
+            @street = :street
     ");
 
     $stmt->execute([
@@ -593,7 +650,16 @@ try {
             : null,
         ':branch' => $branchParam,
         ':brand' => $brandParam,
-        ':agency'=> $agency
+        ':agency'=> $agency,
+        ':marital_status' => $marital_status,
+        ':contact_number' => $contact_number,
+        ':province' => $province,
+        ':province_name' => $province_name,
+        ':municipality' => $municipality,
+        ':municipality_name' => $municipality_name,
+        ':barangay' => $barangay,
+        ':barangay_name' => $barangay_name,
+        ':street' => $street
     ]);
 
     $filteredBranches = [];
@@ -700,7 +766,16 @@ try {
                 birthday,
                 hidden,
                 agency,
-                corpo
+                corpo,
+                marital_status,
+                contact_number,
+                province,
+                province_name,
+                municipality,
+                municipality_name,
+                barangay,
+                barangay_name,
+                street
             )
             VALUES (
                 :employee_id,
@@ -731,7 +806,16 @@ try {
                 :birthday,
                 :hidden,
                 :agency,
-                :corpo
+                :corpo,
+                :marital_status,
+                :contact_number,
+                :province,
+                :province_name,
+                :municipality,
+                :municipality_name,
+                :barangay,
+                :barangay_name,
+                :street
             )
         ");
 
@@ -800,7 +884,16 @@ try {
                     ':birthday'   => $base['birthday'],
                     ':hidden' => $hidden,
                     ':agency' => $agency,
-                    ':corpo'  => $base['corpo']
+                    ':corpo'  => $base['corpo'],
+                    ':marital_status' => $base['marital_status'],
+                    ':contact_number' => $base['contact_number'],
+                    ':province' => $base['province'],
+                    ':province_name' => $base['province_name'],
+                    ':municipality' => $base['municipality'],
+                    ':municipality_name' => $base['municipality_name'],
+                    ':barangay' => $base['barangay'],
+                    ':barangay_name' => $base['barangay_name'],
+                    ':street' => $base['street']
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -877,7 +970,16 @@ try {
                     ':birthday'   => $base['birthday'],
                     ':hidden' => $hidden,
                     ':agency' => $agency,
-                    ':corpo' => $base['corpo']
+                    ':corpo' => $base['corpo'],
+                    ':marital_status' => $base['marital_status'],
+                    ':contact_number' => $base['contact_number'],
+                    ':province' => $base['province'],
+                    ':province_name' => $base['province_name'],
+                    ':municipality' => $base['municipality'],
+                    ':municipality_name' => $base['municipality_name'],
+                    ':barangay' => $base['barangay'],
+                    ':barangay_name' => $base['barangay_name'],
+                    ':street' => $base['street']
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -964,7 +1066,16 @@ try {
                         ':birthday' => $base['birthday'],
                         ':hidden' => $hidden,
                         ':agency' => $agency,
-                        ':corpo' => $base['corpo']
+                        ':corpo' => $base['corpo'],
+                        ':marital_status' => $base['marital_status'],
+                        ':contact_number' => $base['contact_number'],
+                        ':province' => $base['province'],
+                        ':province_name' => $base['province_name'],
+                        ':municipality' => $base['municipality'],
+                        ':municipality_name' => $base['municipality_name'],
+                        ':barangay' => $base['barangay'],
+                        ':barangay_name' => $base['barangay_name'],
+                        ':street' => $base['street']
                     ]);
 
                     $newId = $pdo->lastInsertId();

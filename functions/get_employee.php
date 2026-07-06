@@ -77,6 +77,18 @@ $employee['roving_branches'] = $rovingBranches;
 $employee['multi_brands'] = $multiBrands;
 $employee['employee_id'] = $employee['employee_id'] ?? null; // ✅ ADD THIS
 
+// ✅ NEW: personal / address fields (explicit fallback in case columns
+// were just added and older rows return them as missing keys instead of NULL)
+$employee['marital_status']      = $employee['marital_status'] ?? null;
+$employee['contact_number']      = $employee['contact_number'] ?? null;
+$employee['province']            = $employee['province'] ?? null;
+$employee['province_name']       = $employee['province_name'] ?? null;
+$employee['municipality']        = $employee['municipality'] ?? null;
+$employee['municipality_name']   = $employee['municipality_name'] ?? null;
+$employee['barangay']            = $employee['barangay'] ?? null;
+$employee['barangay_name']       = $employee['barangay_name'] ?? null;
+$employee['street']              = $employee['street'] ?? null;
+
 // =========================
 // RETURN JSON
 // =========================

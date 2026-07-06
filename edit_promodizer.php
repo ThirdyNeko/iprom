@@ -151,8 +151,16 @@ th {
                             <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
                             <option value="RESIGNED">RESIGNED</option>
                             <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                            <option value="UPDATE MARITAL STATUS">UPDATE MARITAL STATUS</option>
+                            <option value="UPDATE CONTACT NUMBER">UPDATE CONTACT NUMBER</option>
+                            <option value="UPDATE ADDRESS">UPDATE ADDRESS</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <hr>
+                    <H3 class="fw-bold mb-2">Personal Details</H6>
                 </div>
 
                 <!-- Names -->
@@ -173,72 +181,92 @@ th {
                         <label class="form-label">Suffix</label>
                         <input type="text" id="editSuffix" class="form-control" readonly>
                     </div>
-                    
                 </div>
 
                 <!-- Personal details -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-1">
+                    <div class="col-md-3">
                         <label class="form-label">Gender</label>
                         <input type="text" id="editGender" class="form-control" readonly>
-                    </div>             
-                    <div class="col-md-2">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Marital Status</label>
+                        <select id="editMaritalStatus" class="form-select" disabled>
+                            <option value="" disabled selected>Select Marital Status</option>
+                            <option value="SINGLE">SINGLE</option>
+                            <option value="MARRIED">MARRIED</option>
+                            <option value="WIDOWED">WIDOWED</option>
+                            <option value="SEPARATED">SEPARATED</option>
+                            <option value="DIVORCED">DIVORCED</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">Birthdate</label>
                         <input type="date" id="editBirthday" class="form-control" readonly>
-                    </div>       
-                    <div class="col-md-2">
-                        <label class="form-label">Contact Number</label>
-                        <input type="text" id="editContactNumber" class="form-control" readonly>
                     </div>
-                    
+                    <div class="col-md-3">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" id="editContactNumber" class="form-control" maxlength="11" inputmode="numeric" disabled>
+                    </div>
                 </div>
 
+                <!-- Address -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
                         <label class="form-label">Province</label>
-                        <input type="text" id="editProvince" class="form-control" readonly>
+                        <select id="editProvince" name="province" class="form-select" disabled>
+                            <option value="" disabled selected>-- Select Province --</option>
+                        </select>
+                        <input type="hidden" id="editProvinceName" name="province_name">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Municipality</label>
-                        <input type="text" id="editMunicipality" class="form-control" readonly>
+                        <select id="editMunicipality" name="municipality" class="form-select" disabled>
+                            <option value="" disabled selected>-- Select Municipality --</option>
+                        </select>
+                        <input type="hidden" id="editMunicipalityName" name="municipality_name">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Barangay</label>
-                        <input type="text" id="editBarangay" class="form-control" readonly>
+                        <select id="editBarangay" name="barangay" class="form-select" disabled>
+                            <option value="" disabled selected>-- Select Barangay --</option>
+                        </select>
+                        <input type="hidden" id="editBarangayName" name="barangay_name">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Street</label>
-                        <input type="text" id="editStreet" class="form-control" readonly>
+                        <input type="text" id="editStreet" name="street" class="form-control" disabled style="text-transform: uppercase;">
                     </div>
                 </div>
 
                 <!-- Assignment classification -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">Branch</label>
                         <select id="editBranch" class="form-control"></select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">Brand</label>
                         <select id="editBrand" class="form-control"></select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">Date Hired</label>
                         <input type="date" id="editDateHired" class="form-control" readonly>
                     </div>
-                    <div class="col-md-1">
+                    <div class="col-md-3">
                         <label class="form-label">Status</label>
                         <input type="text" id="editStatus" class="form-control" readonly>
-                    </div>                    
+                    </div>
                 </div>
 
-                <!-- Agency + assignment meta -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-5">
-                        <label class="form-label">Agency</label>
-                        <select id="editAgency" class="form-select"></select>
-                    </div>
-                    <div class="col-md-2">
+                    <hr>
+                    <H3 class="fw-bold mb-2">Employment Details</H6>
+                </div>
+
+                <!-- Statuses and Dates - all in one row, all equal width -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
                         <label class="form-label">Employment Status</label>
                         <select id="editEmploymentStatus" class="form-select">
                             <option value="PERMANENT">PERMANENT</option>
@@ -246,7 +274,7 @@ th {
                             <option value="SEASONAL">SEASONAL</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">Sub-Status</label>
                         <select id="editSubStatus" class="form-select">
                             <option value="STATIONARY">STATIONARY</option>
@@ -254,20 +282,40 @@ th {
                             <option value="MULTI BRAND">MULTI BRAND</option>
                             <option value="HYBRID">HYBRID</option>
                         </select>
-                    </div>                    
+                    </div>
+
+                    <!-- Conditional: separation / return -->
+                    <div class="col-md-3 date-separated-group">
+                        <label class="form-label" id="thDateSeparated">Date Separated</label>
+                        <input type="date" id="editDateSeparated" class="form-control date-input required">
+                    </div>
+                    <div class="col-md-3 date-separated-group">
+                        <label class="form-label" id="thDateReturned">Date Returned</label>
+                        <input type="date" id="editDateReturn" class="form-control date-input required">
+                    </div>
+
+                    <!-- Conditional: start / end -->
+                    <div class="col-md-3 date-start-group">
+                        <label class="form-label" id="thStartDate">Start</label>
+                        <input type="date" id="editStartDate" class="form-control date-input required">
+                    </div>
+                    <div class="col-md-3 date-start-group">
+                        <label class="form-label" id="thEndDate">End</label>
+                        <input type="date" id="editEndDate" class="form-control date-input required">
+                    </div>
+                </div>
+
+                <!-- Agency -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Agency</label>
+                        <select id="editAgency" class="form-select"></select>
+                    </div>
                 </div>
 
                 <!-- Update meta -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-2">
-                        <label class="form-label">Date Last Updated</label>
-                        <input type="date" id="editDateLastUpdated" class="form-control" readonly>
-                    </div>
                     <div class="col-md-3">
-                        <label class="form-label">Last Updated By</label>
-                        <input type="text" id="editLastUpdatedBy" class="form-control" readonly>
-                    </div>
-                    <div class="col-md-2">
                         <label class="form-label">Assignment Date</label>
                         <input type="text" id="editAssignmentDate" class="form-control" readonly>
                     </div>
@@ -275,43 +323,23 @@ th {
                         <label class="form-label">Last Assigned By</label>
                         <input type="text" id="editLastAssignedBy" class="form-control" readonly>
                     </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Date Last Updated</label>
+                        <input type="date" id="editDateLastUpdated" class="form-control" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Last Updated By</label>
+                        <input type="text" id="editLastUpdatedBy" class="form-control" readonly>
+                    </div>                    
                 </div>
 
-                <!-- Conditional: separation / return -->
-                <div class="row g-3 mb-3" id="rowDateSeparated">
-                    <div class="col-md-2">
-                        <label class="form-label" id="thDateSeparated">Date Separated</label>
-                        <input type="date" id="editDateSeparated" class="form-control date-input required">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label" id="thDateReturned">Date Returned</label>
-                        <input type="date" id="editDateReturn" class="form-control date-input required">
-                    </div>
-                </div>
-
-                <!-- Conditional: start / end -->
-                <div class="row g-3 mb-3" id="rowStartDate">
-                    <div class="col-md-2">
-                        <label class="form-label" id="thStartDate">Start</label>
-                        <input type="date" id="editStartDate" class="form-control date-input required">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label" id="thEndDate">End</label>
-                        <input type="date" id="editEndDate" class="form-control date-input required">
-                    </div>
-                </div>
-
-                <!-- Roving branches -->
-                <div class="row g-3 mb-3 d-none" id="editRovingField">
-                    <div class="col-12">
+                <!-- Roving branches / Multi brands -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6 d-none" id="editRovingField">
                         <label class="form-label">Roving Branches</label>
                         <div id="editRovingContainer"></div>
                     </div>
-                </div>
-
-                <!-- Multi brands -->
-                <div class="row g-3 mb-3 d-none" id="editMultiBrandField">
-                    <div class="col-12">
+                    <div class="col-md-6 d-none" id="editMultiBrandField">
                         <label class="form-label">Multi Brands</label>
                         <div id="editMultiBrandContainer"></div>
                     </div>
@@ -334,9 +362,14 @@ th {
             </div>
 
             <div class="card-footer d-flex justify-content-between">
-                <button type="button" class="btn btn-danger" id="openPrintModalBtn">
-                    Print LOA
-                </button>
+                <div>
+                    <button type="button" class="btn btn-secondary" id="backBtn">
+                        &larr; Back
+                    </button>
+                    <button type="button" class="btn btn-danger" id="openPrintModalBtn">
+                        Print LOA
+                    </button>
+                </div>
                 <button type="button" class="btn btn-primary" id="saveBtn">
                     Save Changes
                 </button>
@@ -395,7 +428,19 @@ th {
 document.addEventListener("DOMContentLoaded", function () {
 
     // ============================================================
+    // BACK BUTTON — return to promodizer list with filters restored
+    // ============================================================
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) {
+        backBtn.addEventListener("click", function () {
+            window.location.href = "promodizers.php?restore=1";
+        });
+    }
+
+    // ============================================================
     // REASON / HEADER TOGGLE LOGIC
+    // Also toggles visibility of the date-separated-group vs
+    // date-start-group fields based on the selected reason.
     // ============================================================
     const reasonSelect = document.getElementById("editReasonUpdate");
     const employmentStatusSelect = document.getElementById("editEmploymentStatus");
@@ -404,6 +449,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const thDateReturned  = document.getElementById("thDateReturned");
     const thStartDate     = document.getElementById("thStartDate");
     const thEndDate       = document.getElementById("thEndDate");
+
+    const dateSeparatedGroup = document.querySelectorAll(".date-separated-group");
+    const dateStartGroup     = document.querySelectorAll(".date-start-group");
 
     function updateHeaders() {
         const value = reasonSelect.value;
@@ -437,6 +485,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (employmentStatusSelect.value === "PERMANENT") {
             thStartDate.textContent = "Effectivity Date";
         }
+
+        // Toggle which date group is visible.
+        // NOTE: adjust this condition to match your actual business
+        // rule for which reasons use "separated/return" vs "start/end".
+        if (effectivityReasons.includes(value) || leaveReasons.includes(value)) {
+            dateSeparatedGroup.forEach(el => el.classList.remove("d-none"));
+            dateStartGroup.forEach(el => el.classList.add("d-none"));
+        } else {
+            dateSeparatedGroup.forEach(el => el.classList.add("d-none"));
+            dateStartGroup.forEach(el => el.classList.remove("d-none"));
+        }
     }
 
     reasonSelect.addEventListener("change", updateHeaders);
@@ -447,8 +506,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // ============================================================
     // ADDRESS FIELD HOVER-TOOLTIP LOGIC
     // Shows full value on hover for Province, Municipality,
-    // Baranggay, and Street — useful when text is too long
-    // to display fully inside the input/select.
+    // Barangay, and Street — useful when text is too long
+    // to display fully inside the input.
     // ============================================================
     const addressFieldIds = [
         "editProvince",
@@ -473,7 +532,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Live update as values change (in case fields become editable later)
+    // Live update as values change
     addressFieldIds.forEach(function (id) {
         const el = document.getElementById(id);
         if (!el) return;
@@ -487,6 +546,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Run once on load in case fields are pre-filled server-side
     refreshAddressTooltips();
+
+    // Poll every 500ms to catch values set programmatically
+    // (e.g. jQuery .val() from an AJAX response), since those
+    // don't fire native "input"/"change" events.
+    setInterval(refreshAddressTooltips, 500);
 
     // Expose globally so edit_promodizer.js can call this after
     // populating the form fields via AJAX

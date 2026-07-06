@@ -1,4 +1,5 @@
 let branchBrandPairs = [];
+let provinceList = [];
 
 function getCorpoForBranch(branchCode) {
   const pair = branchBrandPairs.find((p) => p.branch_code === branchCode);
@@ -76,6 +77,17 @@ const editGender = document.getElementById("editGender");
 const editBirthday = document.getElementById("editBirthday");
 const editDateHired = document.getElementById("editDateHired");
 
+// NEW: personal / address element references
+const editMaritalStatus = document.getElementById("editMaritalStatus");
+const editContactNumber = document.getElementById("editContactNumber");
+const editProvince = document.getElementById("editProvince");
+const editProvinceName = document.getElementById("editProvinceName");
+const editMunicipality = document.getElementById("editMunicipality");
+const editMunicipalityName = document.getElementById("editMunicipalityName");
+const editBarangay = document.getElementById("editBarangay");
+const editBarangayName = document.getElementById("editBarangayName");
+const editStreet = document.getElementById("editStreet");
+
 function toggleEmploymentDates() {
   if (!employmentStatusSelect || !reasonSelect) return;
 
@@ -129,9 +141,16 @@ function toggleBranchReasonOptions() {
   const removeOpt = reasonSelect.querySelector(
     'option[value="REMOVE BRANCH/BRAND"]',
   );
+  const transferOpt = reasonSelect.querySelector(
+    'option[value="TRANSFER BRANCH"]',
+  );
 
   if (addOpt) addOpt.disabled = isStationary;
   if (removeOpt) removeOpt.disabled = isStationary;
+  if (transferOpt) {
+    transferOpt.disabled = !isStationary;
+    transferOpt.style.color = !isStationary ? "#aaa" : "";
+  }
 
   const inactiveOnly = new Set([
     "BLACKLISTED / AWOL / TERMINATED",
@@ -141,6 +160,7 @@ function toggleBranchReasonOptions() {
 
   reasonSelect.querySelectorAll("option").forEach((opt) => {
     if (opt.value === "") return;
+    if (opt === transferOpt) return; // already handled above
     if (isInactive) {
       const belongs = inactiveOnly.has(opt.value);
       opt.disabled = !belongs;
@@ -149,6 +169,12 @@ function toggleBranchReasonOptions() {
       opt.style.color = "";
     }
   });
+
+  // TRANSFER BRANCH should also be disabled when INACTIVE
+  if (transferOpt && isInactive) {
+    transferOpt.disabled = true;
+    transferOpt.style.color = "#aaa";
+  }
 
   const selected = reasonSelect.querySelector(
     `option[value="${CSS.escape(reasonSelect.value)}"]`,
@@ -261,6 +287,33 @@ function toggleStatusesEditable() {
     case "CHANGE AGENCY":
       if (agencyEl) agencyEl.disabled = false;
       break;
+  }
+}
+
+// =========================
+// NEW: gate personal info / address fields by reason
+// =========================
+function toggleContactAddressEditable() {
+  if (!reasonSelect) return;
+  const reason = (reasonSelect.value || "").toUpperCase();
+
+  const enableMaritalStatus = reason === "UPDATE MARITAL STATUS";
+  const enableContactNumber = reason === "UPDATE CONTACT NUMBER";
+  const enableAddress = reason === "UPDATE ADDRESS";
+
+  if (editMaritalStatus) editMaritalStatus.disabled = !enableMaritalStatus;
+  if (editContactNumber) editContactNumber.disabled = !enableContactNumber;
+
+  if (editProvince) editProvince.disabled = !enableAddress;
+  if (editStreet) editStreet.disabled = !enableAddress;
+
+  // municipality/barangay stay disabled unless address editing is on
+  // AND their parent has a value (cascade dependency)
+  if (editMunicipality) {
+    editMunicipality.disabled = !enableAddress || !editProvince?.value;
+  }
+  if (editBarangay) {
+    editBarangay.disabled = !enableAddress || !editMunicipality?.value;
   }
 }
 
@@ -568,6 +621,125 @@ function resetEditPage() {
     editAgency.value = "";
     editAgency.disabled = true;
   }
+
+  // NEW: reset personal / address fields
+  if (editContactNumber) editContactNumber.value = "";
+  if (editStreet) editStreet.value = "";
+  if (editProvinceName) editProvinceName.value = "";
+  if (editMunicipalityName) editMunicipalityName.value = "";
+  if (editBarangayName) editBarangayName.value = "";
+  if (editMunicipality) {
+    editMunicipality.innerHTML =
+      '<option value="" disabled selected>-- Select Municipality --</option>';
+    editMunicipality.disabled = true;
+  }
+  if (editBarangay) {
+    editBarangay.innerHTML =
+      '<option value="" disabled selected>-- Select Barangay --</option>';
+    editBarangay.disabled = true;
+  }
+}
+
+// =========================
+// NEW: PH address cascade (edit page)
+// =========================
+async function loadProvinceListOnce() {
+  try {
+    const res = await fetch("functions/get_provinces.php");
+    provinceList = await res.json();
+  } catch (err) {
+    console.error("Failed to load provinces", err);
+    provinceList = [];
+  }
+}
+
+function populateEditProvinceSelect(selectedCode = "") {
+  if (!editProvince) return;
+  editProvince.innerHTML =
+    '<option value="" disabled selected>-- Select Province --</option>' +
+    provinceList
+      .map(
+        (p) =>
+          `<option value="${p.code}" ${p.code === selectedCode ? "selected" : ""}>${p.name}</option>`,
+      )
+      .join("");
+
+  if (editProvinceName) {
+    const match = provinceList.find((p) => p.code === selectedCode);
+    editProvinceName.value = match ? match.name : "";
+  }
+}
+
+async function loadEditMunicipalities(provinceCode, selectedCode = "") {
+  if (!editMunicipality) return;
+
+  editMunicipality.innerHTML =
+    '<option value="" disabled selected>-- Select Municipality --</option>';
+  if (editMunicipalityName) editMunicipalityName.value = "";
+
+  if (!provinceCode) {
+    editMunicipality.disabled = true;
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `functions/get_municipalities.php?province_code=${encodeURIComponent(provinceCode)}`,
+    );
+    const list = await res.json();
+
+    editMunicipality.innerHTML =
+      '<option value="" disabled selected>-- Select Municipality --</option>' +
+      list
+        .map(
+          (m) =>
+            `<option value="${m.code}" ${m.code === selectedCode ? "selected" : ""}>${m.name}</option>`,
+        )
+        .join("");
+
+    if (editMunicipalityName) {
+      const match = list.find((m) => m.code === selectedCode);
+      editMunicipalityName.value = match ? match.name : "";
+    }
+  } catch (err) {
+    console.error("Failed to load municipalities", err);
+  }
+}
+
+async function loadEditBarangays(municipalityCode, selectedCode = "") {
+  if (!editBarangay) return;
+
+  editBarangay.innerHTML =
+    '<option value="" disabled selected>-- Select Barangay --</option>';
+  if (editBarangayName) editBarangayName.value = "";
+
+  if (!municipalityCode) {
+    editBarangay.disabled = true;
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `functions/get_barangays.php?municipality_code=${encodeURIComponent(municipalityCode)}`,
+    );
+    const list = await res.json();
+
+    editBarangay.innerHTML =
+      '<option value="" disabled selected>-- Select Barangay --</option>' +
+      list
+        .map(
+          (b) =>
+            `<option value="${b.code}" ${b.code === selectedCode ? "selected" : ""}>${b.name}</option>`,
+        )
+        .join("");
+
+    if (editBarangayName) {
+      const match = list.find((b) => b.code === selectedCode);
+      editBarangayName.value = match ? match.name : "";
+    }
+  } catch (err) {
+    console.error("Failed to load barangays", err);
+  }
 }
 
 // =========================
@@ -619,6 +791,16 @@ async function loadEmployeePage(id) {
       end_date: p.end_date,
       gender: p.gender,
       birthday: p.birthday,
+      // NEW: personal / address fields
+      marital_status: p.marital_status,
+      contact_number: p.contact_number,
+      province: p.province,
+      province_name: p.province_name,
+      municipality: p.municipality,
+      municipality_name: p.municipality_name,
+      barangay: p.barangay,
+      barangay_name: p.barangay_name,
+      street: p.street,
     };
 
     window.currentEmployee = employee;
@@ -653,6 +835,25 @@ async function loadEmployeePage(id) {
       el("editStatus").value = cleanValue(employee.status) || "-";
     if (el("editLastAssignedBy"))
       el("editLastAssignedBy").value = cleanValue(employee.last_assigned_by);
+
+    // NEW: marital status / contact number / street (direct fields)
+    if (editMaritalStatus)
+      editMaritalStatus.value = cleanValue(employee.marital_status) || "";
+    if (editContactNumber)
+      editContactNumber.value = cleanValue(employee.contact_number);
+    if (editStreet) editStreet.value = cleanValue(employee.street);
+
+    // NEW: address cascade — populate province, then load matching
+    // municipality/barangay lists and pre-select the saved codes
+    populateEditProvinceSelect(employee.province || "");
+    await loadEditMunicipalities(
+      employee.province || "",
+      employee.municipality || "",
+    );
+    await loadEditBarangays(
+      employee.municipality || "",
+      employee.barangay || "",
+    );
 
     if (el("editAssignmentDate")) {
       const d = employee.assignment_date;
@@ -758,6 +959,7 @@ async function loadEmployeePage(id) {
     toggleEmploymentDates();
     toggleTransferEditable();
     toggleStatusesEditable();
+    toggleContactAddressEditable();
     toggleAddButtons();
     toggleBranchReasonOptions();
   } catch (err) {
@@ -834,6 +1036,45 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     return Swal.fire({ icon: "warning", title: "Effectivity Date Required" });
   if (reason === "ADD BRANCH/BRAND" && !startDate.value)
     return Swal.fire({ icon: "warning", title: "Effectivity Date Required" });
+
+  // NEW: marital status / contact number / address validation
+  if (reason === "UPDATE MARITAL STATUS" && !editMaritalStatus?.value) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Missing Data",
+      text: "Please select a Marital Status.",
+    });
+  }
+  if (reason === "UPDATE CONTACT NUMBER") {
+    if (!editContactNumber?.value) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Missing Data",
+        text: "Please enter a Contact Number.",
+      });
+    }
+    if (!/^09\d{9}$/.test(editContactNumber.value)) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Invalid Contact Number",
+        text: "Contact number must be 11 digits and start with 09.",
+      });
+    }
+  }
+  if (
+    reason === "UPDATE ADDRESS" &&
+    (!editProvince?.value ||
+      !editMunicipality?.value ||
+      !editBarangay?.value ||
+      !editStreet?.value)
+  ) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Missing Address",
+      text: "Please complete Province, Municipality, Barangay, and Street.",
+    });
+  }
+
   if (!reason) return Swal.fire({ icon: "warning", title: "Reason Required" });
 
   const subStatus = (
@@ -892,6 +1133,17 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   formData.set("brand", brand);
   formData.set("agency", document.getElementById("editAgency")?.value || "");
 
+  // NEW: personal / address fields
+  formData.set("marital_status", editMaritalStatus?.value || "");
+  formData.set("contact_number", editContactNumber?.value || "");
+  formData.set("province", editProvince?.value || "");
+  formData.set("province_name", editProvinceName?.value || "");
+  formData.set("municipality", editMunicipality?.value || "");
+  formData.set("municipality_name", editMunicipalityName?.value || "");
+  formData.set("barangay", editBarangay?.value || "");
+  formData.set("barangay_name", editBarangayName?.value || "");
+  formData.set("street", editStreet?.value || "");
+
   rovingBranches.forEach((b) => formData.append("roving_branches[]", b));
   multiBrands.forEach((b) => formData.append("multi_brands[]", b));
 
@@ -923,7 +1175,11 @@ async function loadBranchBrandPairs() {
 
 let agencyList = [];
 
-const initPromise = Promise.all([loadAgencies(), loadBranchBrandPairs()]);
+const initPromise = Promise.all([
+  loadAgencies(),
+  loadBranchBrandPairs(),
+  loadProvinceListOnce(),
+]);
 
 async function loadAgencies() {
   try {
@@ -1049,6 +1305,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     reasonSelect.addEventListener("change", toggleReasonDates);
     reasonSelect.addEventListener("change", toggleTransferEditable);
     reasonSelect.addEventListener("change", toggleStatusesEditable);
+    reasonSelect.addEventListener("change", toggleContactAddressEditable);
     reasonSelect.addEventListener("change", toggleAddButtons);
   }
 
@@ -1061,6 +1318,38 @@ document.addEventListener("DOMContentLoaded", async function () {
     editStatus.addEventListener("change", checkPrintBtnState);
     editStatus.addEventListener("input", checkPrintBtnState);
   }
+
+  // NEW: address cascade change listeners
+  editProvince?.addEventListener("change", async (e) => {
+    const code = e.target.value;
+    if (editProvinceName)
+      editProvinceName.value = e.target.options[e.target.selectedIndex]?.text || "";
+    await loadEditMunicipalities(code);
+    toggleContactAddressEditable();
+  });
+
+  editMunicipality?.addEventListener("change", async (e) => {
+    const code = e.target.value;
+    if (editMunicipalityName)
+      editMunicipalityName.value =
+        e.target.options[e.target.selectedIndex]?.text || "";
+    await loadEditBarangays(code);
+    toggleContactAddressEditable();
+  });
+
+  editBarangay?.addEventListener("change", (e) => {
+    if (editBarangayName)
+      editBarangayName.value =
+        e.target.options[e.target.selectedIndex]?.text || "";
+  });
+
+  editContactNumber?.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "").slice(0, 11);
+  });
+
+  editStreet?.addEventListener("input", function () {
+    this.value = this.value.toUpperCase();
+  });
 
   editRovingContainer.addEventListener("click", (e) => {
     if (e.target.classList.contains("btn-add-branch")) {

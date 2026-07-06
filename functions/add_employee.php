@@ -29,6 +29,17 @@ $suffix      = $_POST['suffix'] ?? null;
 $reassign = $_POST['reassign'] ?? null;
 $employee_id = $_POST['employee_id'] ?? null;
 
+// ✅ NEW FIELDS
+$marital_status = $_POST['marital_status'] ?? null;
+$contact_number = $_POST['contact_number'] ?? null;
+$province       = $_POST['province'] ?? null;
+$province_name  = $_POST['province_name'] ?? null;
+$municipality   = $_POST['municipality'] ?? null;
+$municipality_name = $_POST['municipality_name'] ?? null;
+$barangay       = $_POST['barangay'] ?? null;
+$barangay_name  = $_POST['barangay_name'] ?? null;
+$street         = $_POST['street'] ?? null;
+
 $stmt = $pdo->prepare("
     SELECT TOP 1 corpo
     FROM branches
@@ -261,7 +272,16 @@ try {
                 @birthday = :birthday,
                 @employee_id = :employee_id,
                 @roving_branches = :roving_branches,
-                @multi_brands = :multi_brands
+                @multi_brands = :multi_brands,
+                @marital_status = :marital_status,
+                @contact_number = :contact_number,
+                @province = :province,
+                @province_name = :province_name,
+                @municipality = :municipality,
+                @municipality_name = :municipality_name,
+                @barangay = :barangay,
+                @barangay_name = :barangay_name,
+                @street = :street
         ";
 
         $stmt = $pdo->prepare($sql);
@@ -289,7 +309,16 @@ try {
             ':birthday'             => $birthday,
             ':employee_id'          => $employee_id,
             ':roving_branches'      => !empty($roving_branches) ? implode(',', $roving_branches) : null,
-            ':multi_brands'         => !empty($multi_brands) ? implode(',', $multi_brands) : null
+            ':multi_brands'         => !empty($multi_brands) ? implode(',', $multi_brands) : null,
+            ':marital_status'       => $marital_status,
+            ':contact_number'       => $contact_number,
+            ':province'             => $province,
+            ':province_name'        => $province_name,
+            ':municipality'         => $municipality,
+            ':municipality_name'    => $municipality_name,
+            ':barangay'             => $barangay,
+            ':barangay_name'        => $barangay_name,
+            ':street'               => $street
         ]);
     }
 
@@ -328,7 +357,16 @@ try {
                 @gender = :gender,
                 @birthday = :birthday,
                 @employee_id = :employee_id,
-                @hidden = :hidden
+                @hidden = :hidden,
+                @marital_status = :marital_status,
+                @contact_number = :contact_number,
+                @province = :province,
+                @province_name = :province_name,
+                @municipality = :municipality,
+                @municipality_name = :municipality_name,
+                @barangay = :barangay,
+                @barangay_name = :barangay_name,
+                @street = :street
         ");
 
         $stmt->execute([
@@ -353,7 +391,16 @@ try {
             ':gender'            => $gender,
             ':birthday'          => $birthday,
             ':employee_id'       => $employee_id,
-            ':hidden'            => $hidden
+            ':hidden'            => $hidden,
+            ':marital_status'    => $marital_status,
+            ':contact_number'    => $contact_number,
+            ':province'          => $province,
+            ':province_name'     => $province_name,
+            ':municipality'      => $municipality,
+            ':municipality_name' => $municipality_name,
+            ':barangay'          => $barangay,
+            ':barangay_name'     => $barangay_name,
+            ':street'            => $street
         ]);
     }
 
@@ -385,7 +432,16 @@ try {
                 @gender = :gender,
                 @birthday = :birthday,
                 @employee_id = :employee_id,
-                @hidden = :hidden
+                @hidden = :hidden,
+                @marital_status = :marital_status,
+                @contact_number = :contact_number,
+                @province = :province,
+                @province_name = :province_name,
+                @municipality = :municipality,
+                @municipality_name = :municipality_name,
+                @barangay = :barangay,
+                @barangay_name = :barangay_name,
+                @street = :street
         ");
 
         $stmt->execute([
@@ -410,10 +466,19 @@ try {
             ':gender'                => $gender,
             ':birthday'              => $birthday,
             ':employee_id'           => $employee_id,
-            ':hidden'                => $hidden
+            ':hidden'                => $hidden,
+            ':marital_status'        => $marital_status,
+            ':contact_number'        => $contact_number,
+            ':province'              => $province,
+            ':province_name'         => $province_name,
+            ':municipality'          => $municipality,
+            ':municipality_name'     => $municipality_name,
+            ':barangay'              => $barangay,
+            ':barangay_name'         => $barangay_name,
+            ':street'                => $street
         ]);
     }
-    
+
     // =========================
     // HYBRID INSERTS
     // (ROVING BRANCH × MULTI BRAND)
@@ -463,7 +528,16 @@ try {
                         @gender = :gender,
                         @birthday = :birthday,
                         @employee_id = :employee_id,
-                        @hidden = :hidden
+                        @hidden = :hidden,
+                        @marital_status = :marital_status,
+                        @contact_number = :contact_number,
+                        @province = :province,
+                        @province_name = :province_name,
+                        @municipality = :municipality,
+                        @municipality_name = :municipality_name,
+                        @barangay = :barangay,
+                        @barangay_name = :barangay_name,
+                        @street = :street
                 ");
 
                 $stmt->execute([
@@ -488,7 +562,16 @@ try {
                     ':gender'                => $gender,
                     ':birthday'              => $birthday,
                     ':employee_id'           => $employee_id,
-                    ':hidden'                => $hidden
+                    ':hidden'                => $hidden,
+                    ':marital_status'        => $marital_status,
+                    ':contact_number'        => $contact_number,
+                    ':province'              => $province,
+                    ':province_name'         => $province_name,
+                    ':municipality'          => $municipality,
+                    ':municipality_name'     => $municipality_name,
+                    ':barangay'              => $barangay,
+                    ':barangay_name'         => $barangay_name,
+                    ':street'                => $street
                 ]);
             }
         }

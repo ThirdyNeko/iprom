@@ -1,8 +1,15 @@
 $(document).ready(function () {
   // =========================
-  // URL PARAMS (read before table init so ajax.data picks them up)
+  // FILTER PERSISTENCE — only restore when arriving via the edit page's
+  // Back button (?restore=1). A normal sidebar/direct visit starts fresh.
   // =========================
   const params = new URLSearchParams(window.location.search);
+  if (params.get("restore") === "1") {
+    restoreFilters();
+  } else {
+    sessionStorage.removeItem("promodizerFilters"); // discard stale filters
+  }
+
   const statusParam = params.get("status");
   const editId = params.get("edit");
   const addParam = params.get("add");
@@ -149,6 +156,7 @@ $(document).ready(function () {
   // EDIT FLOW — redirect to standalone edit page
   // =========================
   if (editId) {
+    saveFilters();
     window.location.href = "edit_promodizer.php?id=" + editId;
   }
 
@@ -168,6 +176,47 @@ $(document).ready(function () {
 });
 
 // =========================
+// FILTER PERSISTENCE (sessionStorage)
+// =========================
+const FILTER_IDS = [
+  "filterName",
+  "filterBranch",
+  "filterBrand",
+  "filterStatus",
+  "filterEmploymentStatus",
+  "filterSubStatus",
+  "filterAssignedBy",
+  "filterFrom",
+  "filterTo",
+  "filterCompany",
+  "filterAgency",
+  "filterRegion",
+  "filterArea",
+];
+
+function saveFilters() {
+  const filters = {};
+  FILTER_IDS.forEach(function (id) {
+    filters[id] = $("#" + id).val();
+  });
+  sessionStorage.setItem("promodizerFilters", JSON.stringify(filters));
+}
+
+function restoreFilters() {
+  const raw = sessionStorage.getItem("promodizerFilters");
+  if (!raw) return;
+  try {
+    const filters = JSON.parse(raw);
+    FILTER_IDS.forEach(function (id) {
+      if (filters[id]) $("#" + id).val(filters[id]);
+    });
+  } catch (e) {
+    console.error("Failed to restore filters:", e);
+  }
+  sessionStorage.removeItem("promodizerFilters"); // one-time use
+}
+
+// =========================
 // FORMAT DATE HELPER
 // =========================
 function formatDate(dateStr) {
@@ -185,6 +234,7 @@ function formatDate(dateStr) {
 // =========================
 $(document).on("click", ".clickable-row", function () {
   const id = $(this).data("id");
+  saveFilters();
   window.location.href = "edit_promodizer.php?id=" + id;
 });
 

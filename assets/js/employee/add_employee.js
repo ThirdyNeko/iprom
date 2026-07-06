@@ -13,6 +13,21 @@ document.addEventListener("DOMContentLoaded", async function () {
   const noMiddleName = document.getElementById("noMiddleName");
   const middleNameInput = document.getElementById("middleName");
 
+  // NEW fields
+  const maritalStatusInput = document.getElementById("maritalStatus");
+  const contactNumberInput = document.getElementById("contactNumber");
+
+  // Address fields (now cascading selects instead of free text)
+  const provinceInput = document.getElementById("province");
+  const municipalityInput = document.getElementById("municipality");
+  const barangayInput = document.getElementById("barangay");
+  const streetInput = document.getElementById("street");
+
+  // Hidden fields that carry the human-readable names alongside the codes
+  const provinceNameInput = document.getElementById("provinceName");
+  const municipalityNameInput = document.getElementById("municipalityName");
+  const barangayNameInput = document.getElementById("barangayName");
+
   const mainBranchSelect = form.querySelector('select[name="branch"]');
   const mainBrandSelect = form.querySelector('select[name="brand"]');
   const agencySelect = form.querySelector('select[name="agency"]');
@@ -27,6 +42,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
       middleNameInput.disabled = false;
     }
+  });
+
+  // Contact number: digits only, max 11
+  contactNumberInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "").slice(0, 11);
   });
 
   // =========================
@@ -53,6 +73,101 @@ document.addEventListener("DOMContentLoaded", async function () {
     select.addEventListener("change", () => {
       if (select.value) select.value = select.value.toUpperCase();
     });
+  });
+
+  // =========================
+  // PH Address cascade: Province -> Municipality -> Barangay
+  // =========================
+  async function loadProvinces() {
+    try {
+      const res = await fetch("functions/get_provinces.php");
+      const provinces = await res.json();
+
+      provinceInput.innerHTML =
+        '<option value="" disabled selected>-- Select Province --</option>';
+
+      provinces.forEach((p) => {
+        provinceInput.appendChild(new Option(p.name, p.code));
+      });
+    } catch (err) {
+      console.error("Failed to load provinces", err);
+      Swal.fire(
+        "Error",
+        "Failed to load provinces. Please refresh and try again.",
+        "error",
+      );
+    }
+  }
+
+  async function loadMunicipalities(provinceCode) {
+    municipalityInput.innerHTML =
+      '<option value="" disabled selected>-- Select Municipality --</option>';
+    barangayInput.innerHTML =
+      '<option value="" disabled selected>-- Select Barangay --</option>';
+    municipalityInput.disabled = true;
+    barangayInput.disabled = true;
+
+    if (!provinceCode) return;
+
+    try {
+      const res = await fetch(
+        `functions/get_municipalities.php?province_code=${encodeURIComponent(provinceCode)}`,
+      );
+      const municipalities = await res.json();
+
+      municipalities.forEach((m) => {
+        municipalityInput.appendChild(new Option(m.name, m.code));
+      });
+
+      municipalityInput.disabled = false;
+    } catch (err) {
+      console.error("Failed to load municipalities", err);
+      Swal.fire("Error", "Failed to load municipalities.", "error");
+    }
+  }
+
+  async function loadBarangays(municipalityCode) {
+    barangayInput.innerHTML =
+      '<option value="" disabled selected>-- Select Barangay --</option>';
+    barangayInput.disabled = true;
+
+    if (!municipalityCode) return;
+
+    try {
+      const res = await fetch(
+        `functions/get_barangays.php?municipality_code=${encodeURIComponent(municipalityCode)}`,
+      );
+      const barangays = await res.json();
+
+      barangays.forEach((b) => {
+        barangayInput.appendChild(new Option(b.name, b.code));
+      });
+
+      barangayInput.disabled = false;
+    } catch (err) {
+      console.error("Failed to load barangays", err);
+      Swal.fire("Error", "Failed to load barangays.", "error");
+    }
+  }
+
+  provinceInput.addEventListener("change", () => {
+    provinceNameInput.value =
+      provinceInput.options[provinceInput.selectedIndex]?.text || "";
+    municipalityNameInput.value = "";
+    barangayNameInput.value = "";
+    loadMunicipalities(provinceInput.value);
+  });
+
+  municipalityInput.addEventListener("change", () => {
+    municipalityNameInput.value =
+      municipalityInput.options[municipalityInput.selectedIndex]?.text || "";
+    barangayNameInput.value = "";
+    loadBarangays(municipalityInput.value);
+  });
+
+  barangayInput.addEventListener("change", () => {
+    barangayNameInput.value =
+      barangayInput.options[barangayInput.selectedIndex]?.text || "";
   });
 
   // =========================
@@ -88,7 +203,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         .forEach((i) => (i.required = true));
     }
 
-    // ✅ NEW: Show roving when MULTI BRANCH
+    // Show roving when MULTI BRANCH
     if (sub === "MULTI BRANCH" || sub === "HYBRID") {
       rovingField.classList.remove("d-none");
       rovingField
@@ -183,7 +298,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         branchBrandPairs.find((p) => p.branch_code === code)?.branch_name ||
         code;
 
-      const opt = new Option(displayName, code); // 👈 label = name, value = code
+      const opt = new Option(displayName, code); // label = name, value = code
 
       const allFull = branchBrandPairs
         .filter((p) => p.branch_code === code)
@@ -244,13 +359,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         branchBrandPairs.find((p) => p.branch_code === code)?.branch_name ||
         code;
 
-      // ❌ exclude main branch (by code)
+      // exclude main branch (by code)
       if (code === currentBranch) return;
 
-      // ❌ exclude already selected
+      // exclude already selected
       if (selectedBranches.includes(code)) return;
 
-      const opt = new Option(displayName, code); // 👈 label=name, value=code
+      const opt = new Option(displayName, code); // label=name, value=code
 
       const allFull = branchBrandPairs
         .filter((p) => p.branch_code === code)
@@ -286,7 +401,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const filtered = branchBrandPairs.filter((p) => p.branch_code === branch);
 
     filtered.forEach((p) => {
-      // ✅ IMPORTANT FIX: use passed value, not global only
+      // use passed value, not global only
       if (p.brand_name === brandToExclude) return;
 
       const opt = new Option(p.brand_name, p.brand_name);
@@ -312,7 +427,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         populateMultiBrandSelect(sel, branch, brand);
       });
 
-      // ✅ refresh ALL roving selects immediately
+      // refresh ALL roving selects immediately
       document.querySelectorAll(".roving-select").forEach((sel) => {
         populateRovingSelect(sel);
       });
@@ -343,6 +458,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       mainBrandSelect.value,
     );
   });
+  loadProvinces();
 
   rovingContainer.addEventListener("change", function (e) {
     if (e.target.classList.contains("roving-select")) {
@@ -361,8 +477,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const formData = new FormData(form);
 
-    let reassignEmployeeId = null;
-
     // Handle optional middle name & suffix (send NULL instead of empty)
     if (!formData.get("middle_name")) formData.delete("middle_name");
     if (!formData.get("suffix")) formData.delete("suffix");
@@ -370,7 +484,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Start / End date validation
     const startDateInput = form.querySelector('input[name="start_date"]');
     const endDateInput = form.querySelector('input[name="end_date"]');
-    // ✅ FIX: remove empty date fields so PHP gets NULL
+    // remove empty date fields so PHP gets NULL
     if (!startDateInput.value) formData.delete("start_date");
     if (!endDateInput.value) formData.delete("end_date");
     const branch = mainBranchSelect.value;
@@ -382,9 +496,56 @@ document.addEventListener("DOMContentLoaded", async function () {
     const birthday = birthdayInput.value;
     const agency = agencySelect.value;
 
+    // NEW field values
+    const maritalStatus = maritalStatusInput.value;
+    const contactNumber = contactNumberInput.value;
+
+    // Address values: codes come from the selects, names from the hidden inputs
+    const provinceCode = provinceInput.value;
+    const provinceName = provinceNameInput.value.trim();
+    const municipalityCode = municipalityInput.value;
+    const municipalityName = municipalityNameInput.value.trim();
+    const barangayCode = barangayInput.value;
+    const barangayName = barangayNameInput.value.trim();
+    const street = streetInput.value.trim();
+
     // Gender validation
     if (!gender) {
       return Swal.fire("Missing Gender", "Please select gender.", "warning");
+    }
+
+    // Marital Status validation
+    if (!maritalStatus) {
+      return Swal.fire(
+        "Missing Marital Status",
+        "Please select marital status.",
+        "warning",
+      );
+    }
+
+    // Contact Number validation
+    if (!contactNumber) {
+      return Swal.fire(
+        "Missing Contact Number",
+        "Please enter a contact number.",
+        "warning",
+      );
+    }
+    if (!/^09\d{9}$/.test(contactNumber)) {
+      return Swal.fire(
+        "Invalid Contact Number",
+        "Contact number must be 11 digits and start with 09.",
+        "warning",
+      );
+    }
+
+    // Address validation
+    if (!provinceCode || !municipalityCode || !barangayCode || !street) {
+      return Swal.fire(
+        "Missing Address",
+        "Please complete Province, Municipality, Barangay, and Street.",
+        "warning",
+      );
     }
 
     // Birthday validation
@@ -563,8 +724,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       // expected response example:
       // { exists: true, reason_for_update: "BLACKLISTED" }
 
-      const blockedReasons = ["BLACKLISTED / AWOL / TERMINATED"];
-
       if (checkData && checkData.exists === true) {
         const reason = (checkData.reason_for_update || "").toUpperCase();
         const employeeId = checkData.employee_id;
@@ -581,7 +740,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const blockedReasons = ["BLACKLISTED / AWOL / TERMINATED"];
 
-        // 🚫 Hard block
+        // Hard block
         if (blockedReasons.includes(reason)) {
           return Swal.fire(
             "Cannot Add Employee",
@@ -590,7 +749,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           );
         }
 
-        // 🟡 INACTIVE → offer reassign (NO redirect)
+        // INACTIVE -> offer reassign (NO redirect)
         if (status === "INACTIVE") {
           const result = await Swal.fire({
             icon: "question",
@@ -603,11 +762,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
           if (!result.isConfirmed) return;
 
-          // ✅ mark for reassignment (IMPORTANT)
+          // mark for reassignment (IMPORTANT)
           formData.set("reassign", "1");
           formData.set("employee_id", employeeId);
         } else {
-          // 🟢 ACTIVE → open instead
+          // ACTIVE -> open instead
           const result = await Swal.fire({
             icon: "info",
             title: "Duplicate Record Found",
@@ -627,17 +786,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.error(err);
       return Swal.fire("Error", "Failed to validate employee.", "error");
     }
-
-    // // Confirmation
-    // const confirm = await Swal.fire({
-    //   icon: "warning",
-    //   title: "Are you sure?",
-    //   showCancelButton: true,
-    //   confirmButtonText: "Yes, Save",
-    //   cancelButtonText: "Cancel",
-    //   confirmButtonColor: "#d33",
-    // });
-    // if (!confirm.isConfirmed) return;
 
     try {
       btn.disabled = true;
@@ -668,6 +816,19 @@ document.addEventListener("DOMContentLoaded", async function () {
       formData.set("gender", gender);
       formData.set("birthday", birthday);
       formData.set("agency", agency);
+      formData.set("marital_status", maritalStatus);
+      formData.set("contact_number", contactNumber);
+
+      // Address: send both codes and human-readable names.
+      // Adjust to formData.set("province", provinceName) etc. if
+      // add_employee.php stores address as plain text rather than codes.
+      formData.set("province", provinceCode);
+      formData.set("province_name", provinceName);
+      formData.set("municipality", municipalityCode);
+      formData.set("municipality_name", municipalityName);
+      formData.set("barangay", barangayCode);
+      formData.set("barangay_name", barangayName);
+      formData.set("street", street);
 
       const res = await fetch("functions/add_employee.php", {
         method: "POST",
@@ -687,6 +848,18 @@ document.addEventListener("DOMContentLoaded", async function () {
               if (idx > 0) row.remove();
             });
           rovingContainer.querySelector("select").value = "";
+
+          // reset address cascade back to province-only state
+          municipalityInput.innerHTML =
+            '<option value="" disabled selected>-- Select Municipality --</option>';
+          barangayInput.innerHTML =
+            '<option value="" disabled selected>-- Select Barangay --</option>';
+          municipalityInput.disabled = true;
+          barangayInput.disabled = true;
+          provinceNameInput.value = "";
+          municipalityNameInput.value = "";
+          barangayNameInput.value = "";
+
           bootstrap.Modal.getInstance(
             document.getElementById("addEmployeeModal"),
           ).hide();
