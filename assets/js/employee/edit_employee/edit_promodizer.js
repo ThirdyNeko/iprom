@@ -496,12 +496,18 @@ function populateEditRoving(
 ) {
   if (!editRovingContainer) return;
 
+  const status = (document.getElementById("editStatus")?.value || "")
+    .trim()
+    .toUpperCase();
+  const isInactive = status === "INACTIVE";
+
   let list = [...new Set(safeArray(branches))];
 
   const selectedReason = cleanValue(reasonSelect?.value).toUpperCase();
   const canAddBranch =
-    selectedReason === "ADD BRANCH/BRAND" ||
-    selectedReason === "CHANGE SUB STATUS";
+    !isInactive &&
+    (selectedReason === "ADD BRANCH/BRAND" ||
+      selectedReason === "CHANGE SUB STATUS");
 
   const validBranches = branchBrandPairs
     .filter(
@@ -529,9 +535,13 @@ function populateEditRoving(
     .map((b, index) => {
       const isExisting = b !== "";
       if (isExisting && !uniqueBranches.includes(b)) return "";
+
+      const disableSelect = isInactive || isExisting;
+      const hideRemove = isInactive || isExisting || index === 0;
+
       return `
         <div class="d-flex gap-2 mb-2 align-items-center roving-row">
-          <select class="form-control" ${isExisting ? "disabled" : ""}>
+          <select class="form-control" ${disableSelect ? "disabled" : ""}>
             <option value="">Select branch</option>
             ${uniqueBranches
               .map((branchCode) => {
@@ -546,7 +556,7 @@ function populateEditRoving(
               .join("")}
           </select>
           <button type="button" class="btn btn-success btn-add-branch" style="${canAddBranch ? "" : "display:none;"}">+</button>
-          <button type="button" class="btn btn-danger btn-remove-branch" style="${isExisting || index === 0 ? "display:none;" : ""}">−</button>
+          <button type="button" class="btn btn-danger btn-remove-branch" style="${hideRemove ? "display:none;" : ""}">−</button>
         </div>`;
     })
     .join("");
@@ -559,12 +569,18 @@ function populateEditBrands(
 ) {
   if (!editMultiBrandContainer) return;
 
+  const status = (document.getElementById("editStatus")?.value || "")
+    .trim()
+    .toUpperCase();
+  const isInactive = status === "INACTIVE";
+
   let list = [...new Set(safeArray(brands))];
 
   const selectedReason = cleanValue(reasonSelect?.value).toUpperCase();
   const canAddBrand =
-    selectedReason === "ADD BRANCH/BRAND" ||
-    selectedReason === "CHANGE SUB STATUS";
+    !isInactive &&
+    (selectedReason === "ADD BRANCH/BRAND" ||
+      selectedReason === "CHANGE SUB STATUS");
 
   const validBrands = branchBrandPairs
     .filter(
@@ -592,9 +608,13 @@ function populateEditBrands(
     .map((b, index) => {
       const isExisting = b !== "";
       if (isExisting && !uniqueBrands.includes(b)) return "";
+
+      const disableSelect = isInactive || isExisting;
+      const hideRemove = isInactive || isExisting || index === 0;
+
       return `
         <div class="d-flex gap-2 mb-2 align-items-center brand-row">
-          <select class="form-control" ${isExisting ? "disabled" : ""}>
+          <select class="form-control" ${disableSelect ? "disabled" : ""}>
             <option value="">Select brand</option>
             ${uniqueBrands
               .map(
@@ -604,7 +624,7 @@ function populateEditBrands(
               .join("")}
           </select>
           <button type="button" class="btn btn-success btn-add-brand" style="${canAddBrand ? "" : "display:none;"}">+</button>
-          <button type="button" class="btn btn-danger btn-remove-brand" style="${isExisting || index === 0 ? "display:none;" : ""}">−</button>
+          <button type="button" class="btn btn-danger btn-remove-brand" style="${hideRemove ? "display:none;" : ""}">−</button>
         </div>`;
     })
     .join("");

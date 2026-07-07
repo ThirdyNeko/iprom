@@ -94,20 +94,14 @@
                 <option value="" selected disabled>Select Branch</option>
               </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4" id="bl_brand_group">
               <label class="form-label">Brand <span class="text-danger">*</span></label>
               <select class="form-select" id="bl_brand" required>
                 <option value="" selected disabled>Select Brand</option>
               </select>
-              <div class="form-check mt-2">
-                <input class="form-check-input" type="checkbox" id="bl_direct_hire">
-                <label class="form-check-label" for="bl_direct_hire">
-                  Direct Hired
-                </label>
-              </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-6" id="bl_employment_status_group">
               <label class="form-label">Employment Status <span class="text-danger">*</span></label>
               <select class="form-select" id="bl_employment_status" required>
                 <option value="" selected disabled>Select Employment Status</option>
@@ -123,7 +117,7 @@
 
             <div class="col-12">
               <label class="form-label">Remarks / Violation <span class="text-danger">*</span></label>
-              <textarea class="form-control" id="bl_remarks" rows="3" maxlength="100" style="text-transform: uppercase;" required></textarea>
+              <textarea class="form-control" id="bl_remarks" rows="3" maxlength="100" required></textarea>
               <div class="d-flex justify-content-end">
                 <small class="text-muted"><span id="bl_remarks_count">0</span>/100</small>
               </div>

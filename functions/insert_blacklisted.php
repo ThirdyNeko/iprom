@@ -13,12 +13,18 @@ if (!$input) {
     exit;
 }
 
-// NOTE: adjust required keys / column names below to match your actual
-// `blacklisted` table schema.
+function nullIfEmpty($val) {
+    $val = trim($val ?? '');
+    return $val === '' ? null : $val;
+}
+
+// NOTE: employment_status is intentionally NOT required here — Direct Hire
+// records are saved with employment_status = NULL since that field only
+// applies to Promodiser records.
 $required = [
     'first_name', 'last_name', 'gender',
     'birthdate', 'marital_status', 'branch', 'brand',
-    'employment_status', 'end_date', 'remarks'
+    'end_date', 'remarks'
 ];
 
 foreach ($required as $field) {
@@ -50,7 +56,7 @@ try {
         $input['marital_status'],
         $input['branch'],
         $input['brand'],
-        $input['employment_status'],
+        nullIfEmpty($input['employment_status'] ?? ''),
         $input['end_date'],
         $input['remarks'],
         $_SESSION['username'] ?? 'SYSTEM',

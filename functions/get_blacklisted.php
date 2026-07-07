@@ -19,6 +19,9 @@ $length = $length > 0 ? $length : 10;
 
 $searchValue = nullIfEmpty($_POST['search']['value'] ?? '');
 
+$category = nullIfEmpty($_POST['category'] ?? '');
+$category = in_array($category, ['promodiser', 'direct_hire'], true) ? $category : null;
+
 // DataTable column index -> actual sortable column name
 $columns = ['full_name', 'branch', 'brand', 'employment_status'];
 
@@ -31,6 +34,7 @@ try {
     $stmt = $pdo->prepare("
         EXEC dbo.get_blacklisted
             @Search     = :search,
+            @Category   = :category,
             @SortColumn = :sortColumn,
             @SortDir    = :sortDir,
             @Skip       = :skip,
@@ -38,6 +42,7 @@ try {
     ");
 
     $stmt->bindValue(':search', $searchValue, PDO::PARAM_STR);
+    $stmt->bindValue(':category', $category, PDO::PARAM_STR);
     $stmt->bindValue(':sortColumn', $sortColumn, PDO::PARAM_STR);
     $stmt->bindValue(':sortDir', $orderDir, PDO::PARAM_STR);
     $stmt->bindValue(':skip', $start, PDO::PARAM_INT);

@@ -3,6 +3,9 @@ $(document).ready(function () {
   // [{branch_code, branch_name, brand_name, required_count, assigned_count}]
   let branchBrandPairs = [];
 
+  // Which tab the modal was opened from: 'promodiser' | 'direct_hire'
+  let currentCategory = "promodiser";
+
   async function loadBranchBrandPairs() {
     try {
       const res = await fetch("functions/get_available_branches_brands.php");
@@ -44,11 +47,23 @@ $(document).ready(function () {
       });
   }
 
+  // ---- Show/hide Brand + Employment Status depending on active tab ----
+  function applyCategoryToForm(category) {
+    const isDirectHire = category === "direct_hire";
+
+    $("#bl_brand_group").toggle(!isDirectHire);
+    $("#bl_employment_status_group").toggle(!isDirectHire);
+
+    $("#bl_brand").prop("required", !isDirectHire);
+    $("#bl_employment_status").prop("required", !isDirectHire);
+  }
+
   $("#bl_branch").on("change", updateBrandSelect);
 
-  // ---- Uppercase all text inputs / textarea as the user types ----
+  // ---- Uppercase all text inputs / textarea as the user types (remarks excluded) ----
   $("#addBlacklistedForm")
     .find('input[type="text"], textarea')
+    .not("#bl_remarks")
     .on("input", function () {
       const cursor = this.selectionStart;
       this.value = this.value.toUpperCase();
@@ -59,10 +74,13 @@ $(document).ready(function () {
   $("#addBlacklistedBtn").on("click", async function () {
     $("#addBlacklistedForm")[0].reset();
     $("#bl_remarks_count").text("0");
-    $("#bl_direct_hire").prop("checked", false);
-    resetDirectHireLock();
     $("#bl_no_middle_name").prop("checked", false);
     $("#bl_middle_name").prop("disabled", false).prop("required", true);
+
+    currentCategory = $("#direct-hire-pane").hasClass("active")
+      ? "direct_hire"
+      : "promodiser";
+    applyCategoryToForm(currentCategory);
 
     await loadBranchBrandPairs();
     populateBranchSelect();
@@ -91,58 +109,10 @@ $(document).ready(function () {
     $("#bl_remarks_count").text($(this).val().length);
   });
 
-  // ---- Direct Hire checkbox behavior ----
-  const DIRECT_HIRE_VALUE = "Direct Hired";
+  function buildPayload() {
+    const isDirectHire = currentCategory === "direct_hire";
 
-  $("#bl_direct_hire").on("change", function () {
-    if ($(this).is(":checked")) {
-      lockAsDirectHire();
-    } else {
-      resetDirectHireLock();
-    }
-  });
-
-  function lockAsDirectHire() {
-    const $brand = $("#bl_brand");
-    const $status = $("#bl_employment_status");
-
-    if ($brand.find(`option[value="${DIRECT_HIRE_VALUE}"]`).length === 0) {
-      $brand.append(
-        `<option value="${DIRECT_HIRE_VALUE}">${DIRECT_HIRE_VALUE}</option>`,
-      );
-    }
-    $brand.val(DIRECT_HIRE_VALUE).prop("disabled", true);
-
-    if ($status.find(`option[value="${DIRECT_HIRE_VALUE}"]`).length === 0) {
-      $status.append(
-        `<option value="${DIRECT_HIRE_VALUE}">${DIRECT_HIRE_VALUE}</option>`,
-      );
-    }
-    $status.val(DIRECT_HIRE_VALUE).prop("disabled", true);
-  }
-
-  function resetDirectHireLock() {
-    const $brand = $("#bl_brand");
-    const $status = $("#bl_employment_status");
-
-    $brand.find(`option[value="${DIRECT_HIRE_VALUE}"]`).remove();
-    $status.find(`option[value="${DIRECT_HIRE_VALUE}"]`).remove();
-
-    $brand.prop("disabled", false).val("");
-    $status.prop("disabled", false).val("");
-  }
-
-  // ---- Save ----
-  $("#saveBlacklistedBtn").on("click", function () {
-    const form = document.getElementById("addBlacklistedForm");
-
-    // Native validation, but skip disabled fields (they're locked via Direct Hire)
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    const payload = {
+    return {
       first_name: $("#bl_first_name").val().trim(),
       middle_name: $("#bl_no_middle_name").is(":checked")
         ? ""
@@ -153,12 +123,14 @@ $(document).ready(function () {
       birthdate: $("#bl_birthdate").val(),
       marital_status: $("#bl_marital_status").val(),
       branch: $("#bl_branch").val(),
-      brand: $("#bl_brand").val(),
-      employment_status: $("#bl_employment_status").val(),
+      brand: isDirectHire ? "DIRECT HIRE" : $("#bl_brand").val(),
+      employment_status: isDirectHire ? "" : $("#bl_employment_status").val(),
       end_date: $("#bl_end_date").val(),
       remarks: $("#bl_remarks").val().trim(),
     };
+  }
 
+  function submitBlacklisted(payload) {
     $("#saveBlacklistedBtn").prop("disabled", true).text("Saving...");
 
     $.ajax({
@@ -177,11 +149,9 @@ $(document).ready(function () {
             text: "Blacklisted record has been added successfully.",
             timer: 1800,
             showConfirmButton: false,
+          }).then(() => {
+            location.reload();
           });
-          // Adjust to match your DataTable variable name in blacklisted.js
-          if (typeof blacklistedTable !== "undefined") {
-            blacklistedTable.ajax.reload(null, false);
-          }
         } else {
           Swal.fire("Error", res.message || "Failed to add record.", "error");
         }
@@ -191,6 +161,81 @@ $(document).ready(function () {
       })
       .always(function () {
         $("#saveBlacklistedBtn").prop("disabled", false).text("Save");
+      });
+  }
+
+  // ---- Save ----
+  $("#saveBlacklistedBtn").on("click", function () {
+    const form = document.getElementById("addBlacklistedForm");
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const payload = buildPayload();
+
+    $("#saveBlacklistedBtn").prop("disabled", true).text("Checking...");
+
+    $.ajax({
+      url: "functions/check_blacklisted_match.php",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({
+        first_name: payload.first_name,
+        middle_name: payload.middle_name,
+        last_name: payload.last_name,
+        birthdate: payload.birthdate,
+        branch: payload.branch,
+        brand: payload.brand,
+      }),
+      dataType: "json",
+    })
+      .done(function (res) {
+        $("#saveBlacklistedBtn").prop("disabled", false).text("Save");
+
+        if (!res.success) {
+          Swal.fire(
+            "Error",
+            res.message || "Unable to check for a matching employee.",
+            "error",
+          );
+          return;
+        }
+
+        if (!res.match) {
+          // No match — safe to save directly.
+          submitBlacklisted(payload);
+          return;
+        }
+
+        // Match found — confirm before cascading. Modal stays open either way.
+        const m = res.match;
+        const matchedName = [m.first_name, m.middle_name, m.last_name]
+          .filter(Boolean)
+          .join(" ");
+
+        Swal.fire({
+          icon: "warning",
+          title: "Matching Employee Found",
+          html: `This matches an existing employee record:<br><b>${matchedName}</b> (${m.employee_id})<br>Branch: ${m.branch} &nbsp; Brand: ${m.brand}<br><br>Continuing will mark that employee as <b>INACTIVE</b> and cascade this blacklist entry. Continue?`,
+          showCancelButton: true,
+          confirmButtonText: "Yes, Continue",
+          cancelButtonText: "No, Let Me Edit",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            submitBlacklisted(payload);
+          }
+          // If cancelled: do nothing — modal stays open, no reload, user can edit fields.
+        });
+      })
+      .fail(function () {
+        $("#saveBlacklistedBtn").prop("disabled", false).text("Save");
+        Swal.fire(
+          "Error",
+          "Something went wrong while checking for a match.",
+          "error",
+        );
       });
   });
 });
