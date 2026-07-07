@@ -712,15 +712,103 @@ document.addEventListener("DOMContentLoaded", async function () {
           middle_name: noMiddleName.checked || !middleName ? null : middleName,
           last_name: lastName,
           birthday: birthdayValue,
+          gender: gender,
+          marital_status: maritalStatus,
         }),
       });
 
       const checkData = await checkRes.json();
 
-      // expected response example:
-      // { exists: true, reason_for_update: "BLACKLISTED" }
+      // expected response shapes:
+      // exact match:    { exists: true, source: "employee_info" | "blacklisted", ... }
+      // maiden-name match: { exists: false, possible_match: true, source: "...", ... }
 
-      if (checkData && checkData.exists === true) {
+      // =========================
+      // Exact blacklist match -> hard block, no reassign path
+      // =========================
+      if (
+        checkData &&
+        checkData.exists === true &&
+        checkData.source === "blacklisted"
+      ) {
+        return Swal.fire(
+          "Cannot Add Employee",
+          "This person is on the blacklist. Adding is not allowed.",
+          "error",
+        );
+      }
+
+      // =========================
+      // Possible maiden-name match (MARRIED + FEMALE cross-check)
+      // =========================
+      if (checkData && checkData.possible_match === true) {
+        const result = await Swal.fire({
+          icon: "question",
+          title: "Possible Match Found",
+          html: `Found a record with the same first name and birthday, where the existing last name (<b>${checkData.matched_last_name}</b>) matches the middle name you entered (<b>${checkData.matched_middle_name || middleName}</b>). This may be the same person under a maiden name.<br><br>Is this the same person?`,
+          showCancelButton: true,
+          confirmButtonText: "Yes, same person",
+          cancelButtonText: "No, different person",
+        });
+
+        if (result.isConfirmed) {
+          if (checkData.source === "blacklisted") {
+            return Swal.fire(
+              "Cannot Add Employee",
+              "This person is on the blacklist. Adding is not allowed.",
+              "error",
+            );
+          }
+
+          // Confirmed same person, matched via employee_info ->
+          // treat exactly like a normal duplicate from here on
+          const employeeId = checkData.employee_id;
+          const id = checkData.id;
+          const status = (checkData.status || "").toUpperCase();
+
+          if (!employeeId) {
+            return Swal.fire(
+              "Error",
+              "Match confirmed but employee ID is missing.",
+              "error",
+            );
+          }
+
+          if (status === "INACTIVE") {
+            const reassignResult = await Swal.fire({
+              icon: "question",
+              title: "Duplicate Record Found",
+              html: "This employee already exists but is currently <b>inactive</b>. Would you like to <b>reassign and overwrite</b> the existing record?",
+              showCancelButton: true,
+              confirmButtonText: "Yes",
+              cancelButtonText: "Cancel",
+            });
+
+            if (!reassignResult.isConfirmed) return;
+
+            formData.set("reassign", "1");
+            formData.set("employee_id", employeeId);
+          } else {
+            const openResult = await Swal.fire({
+              icon: "info",
+              title: "Duplicate Record Found",
+              html: "This employee already exists but is currently <b>active</b>. Would you like to <b>open</b> the existing record?",
+              showCancelButton: true,
+              confirmButtonText: "Yes",
+              cancelButtonText: "Cancel",
+            });
+
+            if (!openResult.isConfirmed) return;
+
+            window.location.href = `promodizers.php?edit=${id}`;
+            return;
+          }
+        }
+        // If not confirmed, fall through and continue as a genuinely new employee
+      } else if (checkData && checkData.exists === true) {
+        // =========================
+        // Exact employee_info match (existing behavior, unchanged)
+        // =========================
         const reason = (checkData.reason_for_update || "").toUpperCase();
         const employeeId = checkData.employee_id;
         const id = checkData.id;
