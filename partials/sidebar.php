@@ -37,6 +37,13 @@
             </a>
         </li>
 
+        <li>
+            <a href="Verification.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'Verification.php' ? 'active' : '' ?>">
+                <i class="bi bi-journal-check"></i>
+                <span>Verification</span>
+            </a>
+        </li>
+
         <!-- ✅ ADMIN ONLY: Users -->
         <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
         <li class="nav-item">

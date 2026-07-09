@@ -104,6 +104,92 @@ function fpdf_str(string $s): string {
     return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $s);
 }
 
+// ============================================================
+// Save to DB (only if not already recorded)
+// ============================================================
+$existingStmt = $pdo->prepare("
+    SELECT id
+    FROM letters_of_advice
+    WHERE employee_id = :employee_id
+      AND effectivity_date = :effectivity_date
+");
+$existingStmt->execute([
+    'employee_id'      => $employeeId,
+    'effectivity_date' => $effectivityDate,
+]);
+$existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$existing) {
+    $insertStmt = $pdo->prepare("
+        INSERT INTO letters_of_advice (
+            recipient_name,
+            recipient_position,
+            employee_id,
+            first_name,
+            middle_name,
+            last_name,
+            suffix,
+            branch_code,
+            roving_branches,
+            brand,
+            multi_brands,
+            agency,
+            employment_status,
+            sub_status,
+            status,
+            effectivity_date,
+            end_date,
+            remarks,
+            issued_by,
+            issued_position
+        ) VALUES (
+            :recipient_name,
+            :recipient_position,
+            :employee_id,
+            :first_name,
+            :middle_name,
+            :last_name,
+            :suffix,
+            :branch_code,
+            :roving_branches,
+            :brand,
+            :multi_brands,
+            :agency,
+            :employment_status,
+            :sub_status,
+            :status,
+            :effectivity_date,
+            :end_date,
+            :remarks,
+            :issued_by,
+            :issued_position
+        )
+    ");
+
+    $insertStmt->execute([
+        'recipient_name'     => $recipientName,
+        'recipient_position' => $recipientPosition,
+        'employee_id'        => !empty($employeeId) ? $employeeId : null,
+        'first_name'         => $firstName,
+        'middle_name'        => $middleName,
+        'last_name'          => $lastName,
+        'suffix'             => $suffix,
+        'branch_code'        => $branchCode,
+        'roving_branches'    => !empty($rovingBranches) ? implode(',', $rovingBranches) : null,
+        'brand'              => $brand,
+        'multi_brands'       => !empty($multiBrands) ? implode(',', $multiBrands) : null,
+        'agency'             => $agency,
+        'employment_status'  => $employmentStatus,
+        'sub_status'         => $subStatus,
+        'status'             => $status,
+        'effectivity_date'   => $effectivityDate,
+        'end_date'           => $endDate,
+        'remarks'            => $remarks,
+        'issued_by'          => $_SESSION['username'] ?? null,
+        'issued_position'    => $_SESSION['position'] ?? null,
+    ]);
+}
+
 // Header branch for this specific LOA (per-branch when multi-branch, else main branch)
 $headerBranch = $recipientBranchName !== '' ? $recipientBranchName : $branch;
 
