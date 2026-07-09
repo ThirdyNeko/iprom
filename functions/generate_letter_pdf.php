@@ -256,10 +256,28 @@ $pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($endDate))), 1, 1);
 
 $pdf->Ln(4);
 
-// Status on the left, LOA code right-aligned on the same line
+// Status on the left
+$pdf->SetFont('Arial', '', 10);
+
+// Left side
 $pdf->Cell(15, 7, 'Status:', 0, 0);
-$pdf->Cell(90, 7, 'CONTRACTUAL', 0, 0, 'L');
-$pdf->Cell(0, 7, fpdf_str($loaCode ? 'LOA Code: ' . $loaCode : ''), 0, 1, 'R');
+$pdf->Cell(90, 7, 'CONTRACTUAL', 0, 0);
+
+// Right side
+$label = 'LOA Code: ';
+$value = fpdf_str($loaCode);
+
+$labelWidth = $pdf->GetStringWidth($label);
+$valueWidth = $pdf->GetStringWidth($value);
+
+// Fill the remaining space before the LOA code
+$pdf->Cell(190 - 15 - 90 - $labelWidth - $valueWidth, 7, '', 0, 0);
+
+$pdf->SetFont('Arial', '', 10);
+$pdf->Cell($labelWidth, 7, $label, 0, 0);
+
+$pdf->SetFont('Arial', 'B', 10);
+$pdf->Cell($valueWidth, 7, $value, 0, 1);
 
 $pdf->Ln(5);
 
@@ -296,6 +314,7 @@ $pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['username'] ?? ''), 0, 1, 'L');
 // Position
 $pdf->SetX(10);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['position'] ?? ''), 0, 1, 'L');
+$pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['position'] ?? ''), 0, 0, 'L');
+$pdf->Cell(0, 6, date('F d, Y h:i:s A'), 0, 1, 'R');
 
 $pdf->Output('I', 'letter_of_advice.pdf');
