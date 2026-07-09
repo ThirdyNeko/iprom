@@ -7,9 +7,10 @@ $pdo = qa_db();
 // 🔥 FIX: Read JSON payload correctly
 $data = json_decode(file_get_contents("php://input"), true);
 
-// Recipient data
+// Recipient data (one recipient per call — JS loops per branch for multi-branch employees)
 $recipientName = $data['recipient_name'] ?? '';
 $recipientPosition = $data['recipient_position'] ?? '';
+$recipientBranchName = $data['recipient_branch_name'] ?? '';
 $endDate = $data['end_date'] ?? '';
 
 // Employee data
@@ -101,6 +102,9 @@ function fpdf_str(string $s): string {
     return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $s);
 }
 
+// Header branch for this specific LOA (per-branch when multi-branch, else main branch)
+$headerBranch = $recipientBranchName !== '' ? $recipientBranchName : $branch;
+
 $pdf = new FPDF('P', 'mm', 'Letter');
 $pdf->AddPage();
 
@@ -115,12 +119,12 @@ $pdf->Ln(10);
 
 $pdf->SetFont('Arial', 'B', 11);
 
-$pdf->Cell(150, 6, $recipientName, 0, 0);
+$pdf->Cell(150, 6, fpdf_str($recipientName), 0, 0);
 $pdf->SetFont('Arial', '', 11);
 $pdf->Cell(0, 6, date('F d, Y'), 0, 1, 'R');
 
-$pdf->Cell(120, 6, $recipientPosition, 0, 1);
-$pdf->Cell(120, 6, $branch, 0, 1);
+$pdf->Cell(120, 6, fpdf_str($recipientPosition), 0, 1);
+$pdf->Cell(120, 6, fpdf_str($headerBranch), 0, 1);
 
 $pdf->Ln(10);
 
@@ -142,19 +146,19 @@ $pdf->Cell(55, 7, 'Employee Name', 1, 0);
 $pdf->Cell(0, 7, fpdf_str($employeeName), 1, 1);
 
 $pdf->Cell(55, 7, 'Branch', 1, 0);
-$pdf->Cell(0, 7, $branchDisplay, 1, 1);
+$pdf->Cell(0, 7, fpdf_str($branchDisplay), 1, 1);
 
 $pdf->Cell(55, 7, 'Brand', 1, 0);
-$pdf->Cell(0, 7, $brandDisplay, 1, 1);
+$pdf->Cell(0, 7, fpdf_str($brandDisplay), 1, 1);
 
 $pdf->Cell(55, 7, 'Agency', 1, 0);
-$pdf->Cell(0, 7, $agency, 1, 1);
+$pdf->Cell(0, 7, fpdf_str($agency), 1, 1);
 
 $pdf->Cell(55, 7, 'Employment Status', 1, 0);
-$pdf->Cell(0, 7, $employmentStatus, 1, 1);
+$pdf->Cell(0, 7, fpdf_str($employmentStatus), 1, 1);
 
 $pdf->Cell(55, 7, 'Sub Status', 1, 0);
-$pdf->Cell(0, 7, $subStatus, 1, 1);
+$pdf->Cell(0, 7, fpdf_str($subStatus), 1, 1);
 
 $pdf->Cell(55, 7, 'Date of Effectivity', 1, 0);
 $pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($effectivityDate))), 1, 1);
@@ -170,7 +174,7 @@ $pdf->Cell(0, 7, 'CONTRACTUAL', 0, 1, 'L');
 $pdf->Ln(5);
 
 // Remarks WITHOUT label
-$pdf->MultiCell(0, 7, $remarks);
+$pdf->MultiCell(0, 7, fpdf_str($remarks));
 
 $pdf->Ln(5);
 
@@ -198,10 +202,10 @@ $pdf->Ln(15);
 // Username (centered within underline width)
 $pdf->SetX(10);
 $pdf->SetFont('Arial', 'B', 11);
-$pdf->Cell($lineWidth, 6, $_SESSION['username'], 0, 1, 'L');
+$pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['username'] ?? ''), 0, 1, 'L');
 // Position
 $pdf->SetX(10);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Cell($lineWidth, 6, $_SESSION['position'] ?? '', 0, 1, 'L');
+$pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['position'] ?? ''), 0, 1, 'L');
 
 $pdf->Output('I', 'letter_of_advice.pdf');

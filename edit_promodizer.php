@@ -113,6 +113,11 @@ th {
     text-transform: uppercase;
 }
 
+#printPdfModal .recipient-name-multi,
+#printPdfModal .recipient-position-multi {
+    text-transform: uppercase;
+}
+
 #editReasonUpdate option:disabled {
     color: #adb5bd;
 }
@@ -387,14 +392,19 @@ th {
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Recipient Full Name</label>
-                    <input type="text" id="recipientName" class="form-control" required>
+                <div id="singleRecipientFields">
+                    <div class="mb-3">
+                        <label class="form-label">Recipient Full Name</label>
+                        <input type="text" id="recipientName" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Position</label>
+                        <input type="text" id="recipientPosition" class="form-control">
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Position</label>
-                    <input type="text" id="recipientPosition" class="form-control" required>
-                </div>
+
+                <div id="multiRecipientFields" class="d-none"></div>
+
                 <div class="mb-3">
                     <label class="form-label" for="loaDateHired">Date Hired</label>
                     <input type="date" id="loaDateHired" class="form-control" readonly>
@@ -465,7 +475,6 @@ document.addEventListener("DOMContentLoaded", function () {
             "RESIGNED",
             "PULL-OUT / END OF CONTRACT",
             "BLACKLISTED / AWOL / TERMINATED",
-            "CHANGE SUB STATUS",
             "TRANSFER BRANCH",
             "REMOVE BRANCH/BRAND",
         ];
