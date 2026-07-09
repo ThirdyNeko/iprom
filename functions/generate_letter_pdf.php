@@ -11,7 +11,9 @@ $data = json_decode(file_get_contents("php://input"), true);
 $recipientName = $data['recipient_name'] ?? '';
 $recipientPosition = $data['recipient_position'] ?? '';
 $recipientBranchName = $data['recipient_branch_name'] ?? '';
+$recipientBranchCode = $data['recipient_branch_code'] ?? '';
 $endDate = $data['end_date'] ?? '';
+$loaCode = $data['loa_code'] ?? '';
 
 // Employee data
 $firstName = $data['first_name'] ?? '';
@@ -168,8 +170,10 @@ $pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($endDate))), 1, 1);
 
 $pdf->Ln(4);
 
+// Status on the left, LOA code right-aligned on the same line
 $pdf->Cell(15, 7, 'Status:', 0, 0);
-$pdf->Cell(0, 7, 'CONTRACTUAL', 0, 1, 'L');
+$pdf->Cell(90, 7, 'CONTRACTUAL', 0, 0, 'L');
+$pdf->Cell(0, 7, fpdf_str($loaCode ? 'LOA Code: ' . $loaCode : ''), 0, 1, 'R');
 
 $pdf->Ln(5);
 

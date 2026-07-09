@@ -9,8 +9,22 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   const multiRecipientFields = document.getElementById("multiRecipientFields");
 
+  // Defensive getter: never throws on a missing element — logs exactly
+  // which ID was missing so a DOM/markup mismatch is easy to spot instead
+  // of surfacing as a generic "Cannot read properties of null" crash.
+  function val(id) {
+    const el = document.getElementById(id);
+    if (!el) {
+      console.error(
+        `pdf.js: expected element #${id} was not found in the DOM.`,
+      );
+      return "";
+    }
+    return el.value;
+  }
+
   function isMultiBranch() {
-    const subStatus = document.getElementById("editSubStatus").value;
+    const subStatus = val("editSubStatus");
     return subStatus === "MULTI BRANCH" || subStatus === "HYBRID";
   }
 
@@ -72,20 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // OPEN MODAL
   // =========================
   openPrintModalBtn.addEventListener("click", () => {
-    const startDate = document.getElementById("editStartDate").value;
-    const effectivityDate =
-      startDate || document.getElementById("editDateHired").value;
+    const startDate = val("editStartDate");
+    const effectivityDate = startDate || val("editDateHired");
 
-    document.getElementById("loaDateHired").value = effectivityDate;
-    document.querySelector("label[for='loaDateHired']").textContent = startDate
-      ? "Effectivity Date"
-      : "Date Hired";
+    const loaDateHired = document.getElementById("loaDateHired");
+    if (loaDateHired) loaDateHired.value = effectivityDate;
 
-    const dateHired =
-      document.getElementById("editStartDate").value ||
-      document.getElementById("editDateHired").value;
+    const loaLabel = document.querySelector("label[for='loaDateHired']");
+    if (loaLabel) {
+      loaLabel.textContent = startDate ? "Effectivity Date" : "Date Hired";
+    }
 
-    document.getElementById("loaDateHired").value = dateHired;
+    const dateHired = val("editStartDate") || val("editDateHired");
+    if (loaDateHired) loaDateHired.value = dateHired;
 
     if (dateHired) {
       const hiredDate = new Date(dateHired);
@@ -101,20 +114,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const endInput = document.getElementById("recipientEndDate");
       const existingEndDate = document.getElementById("editEndDate")?.value;
 
-      endInput.value = existingEndDate || formatDate(defaultDate);
-      endInput.min = formatDate(hiredDate);
-      endInput.max = formatDate(maxDate);
+      if (endInput) {
+        endInput.value = existingEndDate || formatDate(defaultDate);
+        endInput.min = formatDate(hiredDate);
+        endInput.max = formatDate(maxDate);
+      }
     }
 
     // Toggle single vs. multi recipient UI based on sub_status
     if (isMultiBranch()) {
       buildMultiRecipientFields(getBranchList());
-      singleRecipientFields.classList.add("d-none");
-      multiRecipientFields.classList.remove("d-none");
+      singleRecipientFields?.classList.add("d-none");
+      multiRecipientFields?.classList.remove("d-none");
     } else {
-      multiRecipientFields.innerHTML = "";
-      multiRecipientFields.classList.add("d-none");
-      singleRecipientFields.classList.remove("d-none");
+      if (multiRecipientFields) multiRecipientFields.innerHTML = "";
+      multiRecipientFields?.classList.add("d-none");
+      singleRecipientFields?.classList.remove("d-none");
     }
 
     printPdfModal.show();
@@ -145,17 +160,28 @@ document.addEventListener("DOMContentLoaded", () => {
           multiRecipientFields.querySelectorAll("[data-branch-code]");
 
         for (const block of blocks) {
-          const branchName = block.querySelector(
-            ".recipient-branch-label",
-          ).textContent;
-          const recipientName = block
-            .querySelector(".recipient-name-multi")
-            .value.trim()
-            .toUpperCase();
-          const recipientPosition = block
-            .querySelector(".recipient-position-multi")
-            .value.trim()
-            .toUpperCase();
+          const labelEl = block.querySelector(".recipient-branch-label");
+          const nameInput = block.querySelector(".recipient-name-multi");
+          const positionInput = block.querySelector(
+            ".recipient-position-multi",
+          );
+
+          if (!labelEl || !nameInput || !positionInput) {
+            console.error(
+              "pdf.js: a multi-recipient block is missing expected fields.",
+              block,
+            );
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "Something went wrong building the branch fields. Please close and reopen the Print LOA modal.",
+            });
+            return;
+          }
+
+          const branchName = labelEl.textContent;
+          const recipientName = nameInput.value.trim().toUpperCase();
+          const recipientPosition = positionInput.value.trim().toUpperCase();
 
           if (!recipientName || !recipientPosition) {
             Swal.fire({
@@ -183,14 +209,23 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
       } else {
-        const recipientName = document
-          .getElementById("recipientName")
-          .value.trim()
-          .toUpperCase();
-        const recipientPosition = document
-          .getElementById("recipientPosition")
-          .value.trim()
-          .toUpperCase();
+        const nameInput = document.getElementById("recipientName");
+        const positionInput = document.getElementById("recipientPosition");
+
+        if (!nameInput || !positionInput) {
+          console.error(
+            "pdf.js: #recipientName or #recipientPosition not found in the DOM.",
+          );
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Something went wrong loading the print form. Please refresh and try again.",
+          });
+          return;
+        }
+
+        const recipientName = nameInput.value.trim().toUpperCase();
+        const recipientPosition = positionInput.value.trim().toUpperCase();
 
         if (!recipientName || !recipientPosition) {
           Swal.fire({
@@ -203,9 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const branchSelect = document.getElementById("editBranch");
         recipients.push({
-          branch_code: branchSelect.value,
+          branch_code: branchSelect ? branchSelect.value : "",
           branch_name:
-            branchSelect.options[branchSelect.selectedIndex]?.text || "",
+            branchSelect?.options[branchSelect.selectedIndex]?.text || "",
           recipient_name: recipientName,
           recipient_position: recipientPosition,
         });
@@ -213,16 +248,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const basePayload = {
         employee_id: employeeId,
-        id: document.getElementById("editPromodizerId").value,
+        id: val("editPromodizerId"),
+        loa_code: val("editLoaCode"),
 
-        end_date: document.getElementById("recipientEndDate").value,
+        end_date: val("recipientEndDate"),
 
-        first_name: document.getElementById("editFirstName").value,
-        middle_name: document.getElementById("editMiddleName").value,
-        last_name: document.getElementById("editLastName").value,
-        suffix: document.getElementById("editSuffix").value,
+        first_name: val("editFirstName"),
+        middle_name: val("editMiddleName"),
+        last_name: val("editLastName"),
+        suffix: val("editSuffix"),
 
-        branch: document.getElementById("editBranch").value,
+        branch: val("editBranch"),
 
         roving_branches: Array.from(
           document.querySelectorAll(
@@ -236,19 +272,16 @@ document.addEventListener("DOMContentLoaded", () => {
           ),
         ).map((el) => el.value),
 
-        brand: document.getElementById("editBrand").value,
-        agency: document.getElementById("editAgency").value,
-        employment_status: document.getElementById("editEmploymentStatus")
-          .value,
-        sub_status: document.getElementById("editSubStatus").value,
-        status: document.getElementById("editStatus").value,
-        remarks: document.getElementById("editRemarks").value,
-        effectivity_date:
-          document.getElementById("editStartDate").value ||
-          document.getElementById("editDateHired").value,
+        brand: val("editBrand"),
+        agency: val("editAgency"),
+        employment_status: val("editEmploymentStatus"),
+        sub_status: val("editSubStatus"),
+        status: val("editStatus"),
+        remarks: val("editRemarks"),
+        effectivity_date: val("editStartDate") || val("editDateHired"),
       };
 
-      const lastName = document.getElementById("editLastName").value;
+      const lastName = val("editLastName");
 
       async function finishAndRedirect() {
         const updateRes = await fetch("functions/update_print_loa.php", {

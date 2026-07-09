@@ -807,6 +807,7 @@ async function loadEmployeePage(id) {
     const employee = {
       id: p.id,
       employee_id: p.employee_id,
+      loa_code: p.loa_code,
       first_name: p.first_name,
       middle_name: p.middle_name,
       last_name: p.last_name,
@@ -850,6 +851,7 @@ async function loadEmployeePage(id) {
 
     if (el("editPromodizerId")) el("editPromodizerId").value = employee.id;
     if (el("editEmployeeId")) el("editEmployeeId").value = employee.employee_id;
+    if (el("editLoaCode")) el("editLoaCode").value = employee.loa_code;
     if (el("editFirstName"))
       el("editFirstName").value = cleanValue(employee.first_name);
     if (el("editLastName"))
@@ -1150,6 +1152,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const formData = new FormData();
   formData.set("id", document.getElementById("editPromodizerId").value);
   formData.set("employee_id", document.getElementById("editEmployeeId").value);
+  formData.set("loa_code", document.getElementById("editLoaCode").value);
   formData.set(
     "employment_status",
     document.getElementById("editEmploymentStatus").value,

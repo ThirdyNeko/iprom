@@ -140,6 +140,7 @@ th {
                 <div id="editAlert"></div>
                 <input type="hidden" id="editPromodizerId">
                 <input type="hidden" id="editEmployeeId">
+                <input type="hidden" id="editLoaCode">
 
                 <!-- Reason for Update -->
                 <div class="row g-3 mb-3">

@@ -57,7 +57,23 @@ $corpo = $stmt->fetchColumn();
 if ($reassign !== '1') {
     $employee_id = 'EMP-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
 }
-// =========================
+
+function generateAlphaNumericCode() {
+    $letters = '';
+    $letterChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for ($i = 0; $i < 4; $i++) {
+        $letters .= $letterChars[random_int(0, strlen($letterChars) - 1)];
+    }
+
+    $numbers = '';
+    for ($i = 0; $i < 6; $i++) {
+        $numbers .= random_int(0, 9);
+    }
+
+    return $letters . '-' . $numbers;
+}
+
+$loa_code = generateAlphaNumericCode();// =========================
 // ROVING BRANCHES
 // =========================
 $roving_branches = $_POST['roving_branches'] ?? [];
@@ -271,6 +287,7 @@ try {
                 @gender = :gender,
                 @birthday = :birthday,
                 @employee_id = :employee_id,
+                @loa_code = :loa_code,
                 @roving_branches = :roving_branches,
                 @multi_brands = :multi_brands,
                 @marital_status = :marital_status,
@@ -308,6 +325,7 @@ try {
             ':gender'               => $gender,
             ':birthday'             => $birthday,
             ':employee_id'          => $employee_id,
+            ':loa_code'             => $loa_code,
             ':roving_branches'      => !empty($roving_branches) ? implode(',', $roving_branches) : null,
             ':multi_brands'         => !empty($multi_brands) ? implode(',', $multi_brands) : null,
             ':marital_status'       => $marital_status,
@@ -357,6 +375,7 @@ try {
                 @gender = :gender,
                 @birthday = :birthday,
                 @employee_id = :employee_id,
+                @loa_code = :loa_code,
                 @hidden = :hidden,
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
@@ -391,6 +410,7 @@ try {
             ':gender'            => $gender,
             ':birthday'          => $birthday,
             ':employee_id'       => $employee_id,
+            ':loa_code'          => $loa_code,
             ':hidden'            => $hidden,
             ':marital_status'    => $marital_status,
             ':contact_number'    => $contact_number,
@@ -432,6 +452,7 @@ try {
                 @gender = :gender,
                 @birthday = :birthday,
                 @employee_id = :employee_id,
+                @loa_code = :loa_code,
                 @hidden = :hidden,
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
@@ -466,6 +487,7 @@ try {
             ':gender'                => $gender,
             ':birthday'              => $birthday,
             ':employee_id'           => $employee_id,
+            ':loa_code'             => $loa_code,
             ':hidden'                => $hidden,
             ':marital_status'        => $marital_status,
             ':contact_number'        => $contact_number,
@@ -528,6 +550,7 @@ try {
                         @gender = :gender,
                         @birthday = :birthday,
                         @employee_id = :employee_id,
+                        @loa_code = :loa_code,
                         @hidden = :hidden,
                         @marital_status = :marital_status,
                         @contact_number = :contact_number,
@@ -562,6 +585,7 @@ try {
                     ':gender'                => $gender,
                     ':birthday'              => $birthday,
                     ':employee_id'           => $employee_id,
+                    ':loa_code'             => $loa_code,
                     ':hidden'                => $hidden,
                     ':marital_status'        => $marital_status,
                     ':contact_number'        => $contact_number,

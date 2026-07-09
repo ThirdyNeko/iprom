@@ -76,6 +76,7 @@ if (!empty($employee['multi_brand_group_id'])) {
 $employee['roving_branches'] = $rovingBranches;
 $employee['multi_brands'] = $multiBrands;
 $employee['employee_id'] = $employee['employee_id'] ?? null; // ✅ ADD THIS
+$employee['loa_code'] = $employee['loa_code'] ?? null; // ✅ ADD THIS
 
 // ✅ NEW: personal / address fields (explicit fallback in case columns
 // were just added and older rows return them as missing keys instead of NULL)
