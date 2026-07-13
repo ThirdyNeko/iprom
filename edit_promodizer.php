@@ -161,6 +161,9 @@ th {
                             <option value="RESIGNED">RESIGNED</option>
                             <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
                             <option value="UPDATE ADDRESS">UPDATE ADDRESS</option>
+                            <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'super_admin')): ?>
+                                <option value="UPDATE BIOMETRIC NUMBER">UPDATE BIOMETRIC NUMBER</option>
+                            <?php endif; ?>
                             <option value="UPDATE CONTACT NUMBER">UPDATE CONTACT NUMBER</option>
                             <option value="UPDATE MARITAL STATUS">UPDATE MARITAL STATUS</option>
                         </select>
@@ -216,6 +219,10 @@ th {
                     <div class="col-md-3">
                         <label class="form-label">Contact Number</label>
                         <input type="text" id="editContactNumber" class="form-control" maxlength="11" inputmode="numeric" disabled>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Biometric Number</label>
+                        <input type="text" id="editBiometricNumber" class="form-control" maxlength="5" inputmode="numeric" disabled>
                     </div>
                 </div>
 

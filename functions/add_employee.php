@@ -32,6 +32,7 @@ $employee_id = $_POST['employee_id'] ?? null;
 // ✅ NEW FIELDS
 $marital_status = $_POST['marital_status'] ?? null;
 $contact_number = $_POST['contact_number'] ?? null;
+$biometric_number = $_POST['biometric_number'] ?? null;
 $province       = $_POST['province'] ?? null;
 $province_name  = $_POST['province_name'] ?? null;
 $municipality   = $_POST['municipality'] ?? null;
@@ -292,6 +293,7 @@ try {
                 @multi_brands = :multi_brands,
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
+                @biometric_number = :biometric_number,
                 @province = :province,
                 @province_name = :province_name,
                 @municipality = :municipality,
@@ -330,6 +332,7 @@ try {
             ':multi_brands'         => !empty($multi_brands) ? implode(',', $multi_brands) : null,
             ':marital_status'       => $marital_status,
             ':contact_number'       => $contact_number,
+            ':biometric_number'     => $biometric_number,
             ':province'             => $province,
             ':province_name'        => $province_name,
             ':municipality'         => $municipality,
@@ -379,6 +382,7 @@ try {
                 @hidden = :hidden,
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
+                @biometric_number = :biometric_number,
                 @province = :province,
                 @province_name = :province_name,
                 @municipality = :municipality,
@@ -414,6 +418,7 @@ try {
             ':hidden'            => $hidden,
             ':marital_status'    => $marital_status,
             ':contact_number'    => $contact_number,
+            ':biometric_number'  => $biometric_number,
             ':province'          => $province,
             ':province_name'     => $province_name,
             ':municipality'      => $municipality,
@@ -456,6 +461,7 @@ try {
                 @hidden = :hidden,
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
+                @biometric_number = :biometric_number,
                 @province = :province,
                 @province_name = :province_name,
                 @municipality = :municipality,
@@ -491,6 +497,7 @@ try {
             ':hidden'                => $hidden,
             ':marital_status'        => $marital_status,
             ':contact_number'        => $contact_number,
+            ':biometric_number'      => $biometric_number,
             ':province'              => $province,
             ':province_name'         => $province_name,
             ':municipality'          => $municipality,
@@ -554,6 +561,7 @@ try {
                         @hidden = :hidden,
                         @marital_status = :marital_status,
                         @contact_number = :contact_number,
+                        @biometric_number = :biometric_number,
                         @province = :province,
                         @province_name = :province_name,
                         @municipality = :municipality,
@@ -589,6 +597,7 @@ try {
                     ':hidden'                => $hidden,
                     ':marital_status'        => $marital_status,
                     ':contact_number'        => $contact_number,
+                    ':biometric_number'      => $biometric_number,
                     ':province'              => $province,
                     ':province_name'         => $province_name,
                     ':municipality'          => $municipality,

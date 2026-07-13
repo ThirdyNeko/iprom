@@ -80,6 +80,7 @@ $agency         = $_POST['agency'] ?? null;
 // ✅ NEW: personal / address fields
 $marital_status     = $_POST['marital_status'] ?? null;
 $contact_number     = $_POST['contact_number'] ?? null;
+$biometric_number   = $_POST['biometric_number'] ?? null;
 $province           = $_POST['province'] ?? null;
 $province_name      = $_POST['province_name'] ?? null;
 $municipality       = $_POST['municipality'] ?? null;
@@ -117,6 +118,24 @@ if ($reason_for_update === 'UPDATE CONTACT NUMBER') {
         echo json_encode([
             'status' => 'danger',
             'message' => 'Contact number must be 11 digits and start with 09.'
+        ]);
+        exit;
+    }
+}
+
+if ($reason_for_update === 'UPDATE BIOMETRIC NUMBER') {
+    $userRole = $_SESSION['role'] ?? '';
+    if (!in_array($userRole, ['admin', 'super_admin'], true)) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'You are not authorized to update Biometric Number.'
+        ]);
+        exit;
+    }
+    if (empty($biometric_number) || !preg_match('/^\d{5}$/', $biometric_number)) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Biometric number must be exactly 5 digits.'
         ]);
         exit;
     }
@@ -616,6 +635,7 @@ try {
             @agency = :agency,
             @marital_status = :marital_status,
             @contact_number = :contact_number,
+            @biometric_number = :biometric_number,
             @province = :province,
             @province_name = :province_name,
             @municipality = :municipality,
@@ -653,6 +673,7 @@ try {
         ':agency'=> $agency,
         ':marital_status' => $marital_status,
         ':contact_number' => $contact_number,
+        ':biometric_number' => $biometric_number,
         ':province' => $province,
         ':province_name' => $province_name,
         ':municipality' => $municipality,
@@ -769,6 +790,7 @@ try {
                 corpo,
                 marital_status,
                 contact_number,
+                biometric_number,
                 province,
                 province_name,
                 municipality,
@@ -809,6 +831,7 @@ try {
                 :corpo,
                 :marital_status,
                 :contact_number,
+                :biometric_number,
                 :province,
                 :province_name,
                 :municipality,
@@ -887,6 +910,7 @@ try {
                     ':corpo'  => $base['corpo'],
                     ':marital_status' => $base['marital_status'],
                     ':contact_number' => $base['contact_number'],
+                    ':biometric_number' => $biometric_number,
                     ':province' => $base['province'],
                     ':province_name' => $base['province_name'],
                     ':municipality' => $base['municipality'],
@@ -973,6 +997,7 @@ try {
                     ':corpo' => $base['corpo'],
                     ':marital_status' => $base['marital_status'],
                     ':contact_number' => $base['contact_number'],
+                    ':biometric_number' => $biometric_number,
                     ':province' => $base['province'],
                     ':province_name' => $base['province_name'],
                     ':municipality' => $base['municipality'],
@@ -1069,6 +1094,7 @@ try {
                         ':corpo' => $base['corpo'],
                         ':marital_status' => $base['marital_status'],
                         ':contact_number' => $base['contact_number'],
+                        ':biometric_number' => $biometric_number,
                         ':province' => $base['province'],
                         ':province_name' => $base['province_name'],
                         ':municipality' => $base['municipality'],

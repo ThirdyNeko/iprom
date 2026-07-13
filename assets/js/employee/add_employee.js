@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   // NEW fields
   const maritalStatusInput = document.getElementById("maritalStatus");
   const contactNumberInput = document.getElementById("contactNumber");
+  const biometricNumberInput = document.getElementById("biometricNumber");
 
   // Address fields (now cascading selects instead of free text)
   const provinceInput = document.getElementById("province");
@@ -47,6 +48,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Contact number: digits only, max 11
   contactNumberInput.addEventListener("input", function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 11);
+  });
+
+  // Biometric number: digits only, max 5
+  biometricNumberInput.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "").slice(0, 5);
   });
 
   // =========================
@@ -495,6 +501,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // NEW field values
     const maritalStatus = maritalStatusInput.value;
     const contactNumber = contactNumberInput.value;
+    const biometricNumber = biometricNumberInput.value;
 
     // Address values: codes come from the selects, names from the hidden inputs
     const provinceCode = provinceInput.value;
@@ -531,6 +538,21 @@ document.addEventListener("DOMContentLoaded", async function () {
       return Swal.fire(
         "Invalid Contact Number",
         "Contact number must be 11 digits and start with 09.",
+        "warning",
+      );
+    }
+
+    if (!biometricNumber) {
+      return Swal.fire(
+        "Missing Biometric Number",
+        "Please enter a biometric number.",
+        "warning",
+      );
+    }
+    if (!/^\d{5}$/.test(biometricNumber)) {
+      return Swal.fire(
+        "Invalid Biometric Number",
+        "Biometric number must be exactly 5 digits.",
         "warning",
       );
     }
@@ -902,6 +924,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       formData.set("agency", agency);
       formData.set("marital_status", maritalStatus);
       formData.set("contact_number", contactNumber);
+      formData.set("biometric_number", biometricNumber);
 
       // Address: send both codes and human-readable names.
       // Adjust to formData.set("province", provinceName) etc. if

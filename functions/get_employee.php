@@ -82,6 +82,7 @@ $employee['loa_code'] = $employee['loa_code'] ?? null; // ✅ ADD THIS
 // were just added and older rows return them as missing keys instead of NULL)
 $employee['marital_status']      = $employee['marital_status'] ?? null;
 $employee['contact_number']      = $employee['contact_number'] ?? null;
+$employee['biometric_number']      = $employee['biometric_number'] ?? null;
 $employee['province']            = $employee['province'] ?? null;
 $employee['province_name']       = $employee['province_name'] ?? null;
 $employee['municipality']        = $employee['municipality'] ?? null;

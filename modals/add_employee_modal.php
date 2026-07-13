@@ -156,6 +156,19 @@ $branch_brand_pairs = $pdo->query("
                                 required
                             >
                         </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Biometric Number</label>
+                            <input
+                                type="text"
+                                name="biometric_number"
+                                id="biometricNumber"
+                                class="form-control"
+                                placeholder="e.g. 12345"
+                                maxlength="5"
+                                inputmode="numeric"
+                                required
+                            >
+                        </div>
                     </div>
 
                     <!-- Address -->

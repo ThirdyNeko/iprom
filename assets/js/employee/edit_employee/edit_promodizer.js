@@ -80,6 +80,7 @@ const editDateHired = document.getElementById("editDateHired");
 // NEW: personal / address element references
 const editMaritalStatus = document.getElementById("editMaritalStatus");
 const editContactNumber = document.getElementById("editContactNumber");
+const editBiometricNumber = document.getElementById("editBiometricNumber");
 const editProvince = document.getElementById("editProvince");
 const editProvinceName = document.getElementById("editProvinceName");
 const editMunicipality = document.getElementById("editMunicipality");
@@ -320,9 +321,12 @@ function toggleContactAddressEditable() {
   const enableMaritalStatus = reason === "UPDATE MARITAL STATUS";
   const enableContactNumber = reason === "UPDATE CONTACT NUMBER";
   const enableAddress = reason === "UPDATE ADDRESS";
+  const enableBiometricNumber = reason === "UPDATE BIOMETRIC NUMBER";
 
   if (editMaritalStatus) editMaritalStatus.disabled = !enableMaritalStatus;
   if (editContactNumber) editContactNumber.disabled = !enableContactNumber;
+  if (editBiometricNumber)
+    editBiometricNumber.disabled = !enableBiometricNumber;
 
   if (editProvince) editProvince.disabled = !enableAddress;
   if (editStreet) editStreet.disabled = !enableAddress;
@@ -835,6 +839,7 @@ async function loadEmployeePage(id) {
       // NEW: personal / address fields
       marital_status: p.marital_status,
       contact_number: p.contact_number,
+      biometric_number: p.biometric_number,
       province: p.province,
       province_name: p.province_name,
       municipality: p.municipality,
@@ -883,6 +888,8 @@ async function loadEmployeePage(id) {
       editMaritalStatus.value = cleanValue(employee.marital_status) || "";
     if (editContactNumber)
       editContactNumber.value = cleanValue(employee.contact_number);
+    if (editBiometricNumber)
+      editBiometricNumber.value = cleanValue(employee.biometric_number);
     if (editStreet) editStreet.value = cleanValue(employee.street);
 
     // NEW: address cascade — populate province, then load matching
@@ -1103,6 +1110,22 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
       });
     }
   }
+  if (reason === "UPDATE BIOMETRIC NUMBER") {
+    if (!editBiometricNumber?.value) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Missing Data",
+        text: "Please enter a Biometric Number.",
+      });
+    }
+    if (!/^\d{5}$/.test(editBiometricNumber.value)) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Invalid Biometric Number",
+        text: "Biometric number must be exactly 5 digits.",
+      });
+    }
+  }
   if (
     reason === "UPDATE ADDRESS" &&
     (!editProvince?.value ||
@@ -1179,6 +1202,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // NEW: personal / address fields
   formData.set("marital_status", editMaritalStatus?.value || "");
   formData.set("contact_number", editContactNumber?.value || "");
+  formData.set("biometric_number", editBiometricNumber?.value || "");
   formData.set("province", editProvince?.value || "");
   formData.set("province_name", editProvinceName?.value || "");
   formData.set("municipality", editMunicipality?.value || "");
@@ -1361,6 +1385,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     editStatus.addEventListener("change", checkPrintBtnState);
     editStatus.addEventListener("input", checkPrintBtnState);
   }
+
+  editBiometricNumber?.addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "").slice(0, 5);
+  });
 
   // NEW: address cascade change listeners
   editProvince?.addEventListener("change", async (e) => {
