@@ -88,6 +88,27 @@ $barangay           = $_POST['barangay'] ?? null;
 $barangay_name      = $_POST['barangay_name'] ?? null;
 $street             = $_POST['street'] ?? null;
 
+// =========================
+// LOA CODE GENERATION
+// Format: EMP-YYYYMMDD-XXXX-123456
+// =========================
+function generateLoaCode() {
+    $letters = '';
+    $letterChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for ($i = 0; $i < 4; $i++) {
+        $letters .= $letterChars[random_int(0, strlen($letterChars) - 1)];
+    }
+
+    $numbers = '';
+    for ($i = 0; $i < 6; $i++) {
+        $numbers .= random_int(0, 9);
+    }
+
+    return $letters . '-' . $numbers;
+}
+
+$loa_code = generateLoaCode();
+
 if ($reason_for_update === 'ADD BRANCH/BRAND' && empty($raw_start_date)) {
     echo json_encode([
         'status' => 'danger',
@@ -220,14 +241,6 @@ $date_separated = (!empty($_POST['date_separated'])) ? $_POST['date_separated'] 
 $date_of_return = (!empty($_POST['date_returned'])) ? $_POST['date_returned'] : null;
 
 $sub_status = $_POST['sub_status'] ?? null;
-
-// if (in_array($reason_for_update, [
-//     'RESIGNED',
-//     'PULL-OUT / END OF CONTRACT',
-//     'BLACKLISTED / AWOL / TERMINATED'
-// ])) {
-//     $start_date = null;
-// }
 
 // =========================
 // VALIDATION
@@ -622,7 +635,8 @@ try {
             @municipality_name = :municipality_name,
             @barangay = :barangay,
             @barangay_name = :barangay_name,
-            @street = :street
+            @street = :street,
+            @loa_code = :loa_code
     ");
 
     $stmt->execute([
@@ -659,7 +673,8 @@ try {
         ':municipality_name' => $municipality_name,
         ':barangay' => $barangay,
         ':barangay_name' => $barangay_name,
-        ':street' => $street
+        ':street' => $street,
+        ':loa_code' => $loa_code
     ]);
 
     $filteredBranches = [];
@@ -775,7 +790,9 @@ try {
                 municipality_name,
                 barangay,
                 barangay_name,
-                street
+                street,
+                print_loa,
+                loa_code
             )
             VALUES (
                 :employee_id,
@@ -815,7 +832,9 @@ try {
                 :municipality_name,
                 :barangay,
                 :barangay_name,
-                :street
+                :street,
+                :print_loa,
+                :loa_code
             )
         ");
 
@@ -828,25 +847,24 @@ try {
 
             foreach ($rovingBranches as $branch) {
 
+                // Skip: this is the employee's current branch — already the base row, nothing to duplicate.
+                if ($branch === $currentBranch) {
+                    continue;
+                }
+
                 $check = $pdo->prepare("
                     SELECT COUNT(*) 
                     FROM employee_info
-                    WHERE first_name = ?
-                    AND last_name = ?
-                    AND middle_name = ?
-                    AND suffix = ?
+                    WHERE employee_id = ?
                     AND branch = ?
                     AND brand = ?
-                    AND status = 'ACTIVE'
+                    AND status IN ('ACTIVE', 'INACTIVE')
                     AND roving_group_id = ?
                     AND corpo = ?
                 ");
 
                 $check->execute([
-                    $base['first_name'],
-                    $base['last_name'],
-                    $base['middle_name'],
-                    $base['suffix'],
+                    $base['employee_id'],
                     $branch,
                     $currentBrand,
                     $base['roving_group_id'],
@@ -858,7 +876,7 @@ try {
                 }
 
                 $stmtInsert->execute([
-                    ':employee_id' => $_POST['employee_id'] ?? $id,
+                    ':employee_id' => $base['employee_id'],
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
                     ':middle_name' => $base['middle_name'],
@@ -893,7 +911,9 @@ try {
                     ':municipality_name' => $base['municipality_name'],
                     ':barangay' => $base['barangay'],
                     ':barangay_name' => $base['barangay_name'],
-                    ':street' => $base['street']
+                    ':street' => $base['street'],
+                    ':print_loa' => 1,
+                    ':loa_code' => $loa_code
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -914,25 +934,24 @@ try {
 
             foreach ($multiBrands as $brand) {
 
+                // Skip: this is the employee's current brand — already the base row, nothing to duplicate.
+                if ($brand === $currentBrand) {
+                    continue;
+                }
+
                 $check = $pdo->prepare("
                     SELECT COUNT(*) 
                     FROM employee_info
-                    WHERE first_name = ?
-                    AND last_name = ?
-                    AND middle_name = ?
-                    AND suffix = ?
+                    WHERE employee_id = ?
                     AND branch = ?
                     AND brand = ?
-                    AND status = 'ACTIVE'
+                    AND status IN ('ACTIVE', 'INACTIVE')
                     AND multi_brand_group_id = ?
                     AND corpo = ?
                 ");
 
                 $check->execute([
-                    $base['first_name'],
-                    $base['last_name'],
-                    $base['middle_name'],
-                    $base['suffix'],
+                    $base['employee_id'],
                     $currentBranch,
                     $brand,
                     $base['multi_brand_group_id'],
@@ -944,7 +963,7 @@ try {
                 }
 
                 $stmtInsert->execute([
-                    ':employee_id' => $_POST['employee_id'] ?? $id,
+                    ':employee_id' => $base['employee_id'],
                     ':first_name' => $base['first_name'],
                     ':last_name'  => $base['last_name'],
                     ':middle_name' => $base['middle_name'],
@@ -979,7 +998,9 @@ try {
                     ':municipality_name' => $base['municipality_name'],
                     ':barangay' => $base['barangay'],
                     ':barangay_name' => $base['barangay_name'],
-                    ':street' => $base['street']
+                    ':street' => $base['street'],
+                    ':print_loa' => 1,
+                    ':loa_code' => $loa_code
                 ]);
 
                 $newId = $pdo->lastInsertId();
@@ -1007,27 +1028,26 @@ try {
             foreach ($rovingBranches as $branchItem) {
                 foreach ($multiBrands as $brandItem) {
 
-                    // Prevent duplicate active record
+                    // Skip: this is the employee's current branch/brand pair — already the base row.
+                    if ($branchItem === $currentBranch && $brandItem === $currentBrand) {
+                        continue;
+                    }
+
+                    // Prevent duplicate record (active or pending future-dated)
                     $check = $pdo->prepare("
                         SELECT COUNT(*) 
                         FROM employee_info
-                        WHERE first_name = ?
-                        AND last_name = ?
-                        AND middle_name = ?
-                        AND suffix = ?
+                        WHERE employee_id = ?
                         AND branch = ?
                         AND brand = ?
-                        AND status = 'ACTIVE'
+                        AND status IN ('ACTIVE', 'INACTIVE')
                         AND roving_group_id = ?
                         AND multi_brand_group_id = ?
                         AND corpo = ?
                     ");
 
                     $check->execute([
-                        $base['first_name'],
-                        $base['last_name'],
-                        $base['middle_name'],
-                        $base['suffix'],
+                        $base['employee_id'],
                         $branchItem,
                         $brandItem,
                         $roving_group_id,
@@ -1040,7 +1060,7 @@ try {
                     }
 
                     $stmtInsert->execute([
-                        ':employee_id' => $_POST['employee_id'] ?? $id,
+                        ':employee_id' => $base['employee_id'],
                         ':first_name' => $base['first_name'],
                         ':last_name'  => $base['last_name'],
                         ':middle_name' => $base['middle_name'],
@@ -1075,7 +1095,9 @@ try {
                         ':municipality_name' => $base['municipality_name'],
                         ':barangay' => $base['barangay'],
                         ':barangay_name' => $base['barangay_name'],
-                        ':street' => $base['street']
+                        ':street' => $base['street'],
+                        ':print_loa' => 1,
+                        ':loa_code' => $loa_code
                     ]);
 
                     $newId = $pdo->lastInsertId();
