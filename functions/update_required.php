@@ -26,37 +26,40 @@ try {
 
     $pdo->beginTransaction();
 
-    // ✅ GET ASSIGNED COUNT
+    // ✅ GET ASSIGNED + QUEUED COUNT
     $stmt = $pdo->prepare("
-        SELECT assigned_count
+        SELECT assigned_count, queued_count
         FROM assignment
         WHERE branch_name = ? AND brand_name = ?
     ");
     $stmt->execute([$branch, $brand]);
-    $assigned = $stmt->fetchColumn();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($assigned === false) {
+    if ($row === false) {
         echo json_encode([
             "status" => "error",
             "message" => "Assignment record not found"
         ]);
+        $pdo->rollBack();
         exit;
     }
 
-    $assigned = (int)$assigned;
+    $assigned = (int)$row['assigned_count'];
+    $queued   = (int)($row['queued_count'] ?? 0);
+    $occupied = $assigned + $queued;
 
     // =====================================================
-    // 🚨 SPECIAL CASE: REQUIRED = 0 → PULL OUT ALL
+    // 🚨 SPECIAL CASE: REQUIRED = 0 → PULL OUT ALL (ACTIVE + QUEUED)
     // =====================================================
     if ($required === 0) {
 
-        // Get all active employees
+        // Get all active AND queued/pending employees
         $stmt = $pdo->prepare("
-            SELECT id, employee_id, sub_status, roving_group_id, multi_brand_group_id
+            SELECT id, employee_id, sub_status, roving_group_id, multi_brand_group_id, status
             FROM employee_info
             WHERE branch = ?
             AND brand = ?
-            AND status = 'ACTIVE'
+            AND status IN ('ACTIVE', 'PENDING', 'QUEUED')
         ");
         $stmt->execute([$branch, $brand]);
         $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -66,6 +69,7 @@ try {
             $empId = $emp['id'];
             $employeeId = $emp['employee_id'];
             $subStatus = strtoupper(trim($emp['sub_status'] ?? ''));
+            $empStatus = $emp['status'];
 
             $shouldDelete = false;
 
@@ -120,7 +124,7 @@ try {
                 $stmtHist->execute([
                     $employeeId,
                     'PULL-OUT / TERMINATED',
-                    "Auto pull-out (required = 0 | Branch: $branch | Brand: $brand)"
+                    "Auto pull-out (required = 0 | Branch: $branch | Brand: $brand | was: $empStatus)"
                 ]);
 
                 // 2. DELETE EMPLOYEE
@@ -143,7 +147,7 @@ try {
                 $stmtHist->execute([
                     $employeeId,
                     'PULL-OUT / TERMINATED',
-                    "Auto inactivated (required = 0 | Branch: $branch | Brand: $brand)"
+                    "Auto inactivated (required = 0 | Branch: $branch | Brand: $brand | was: $empStatus)"
                 ]);
 
                 // 2. UPDATE EMPLOYEE TO INACTIVE
@@ -166,11 +170,12 @@ try {
 
     // =====================================================
     // 🚨 NORMAL RULE (ONLY IF REQUIRED > 0)
+    //    Must not drop below ACTIVE + QUEUED/PENDING headcount
     // =====================================================
-    if ($required > 0 && $required < $assigned) {
+    if ($required > 0 && $required < $occupied) {
         echo json_encode([
             "status" => "error",
-            "message" => "Plantilla ($required) cannot be less than assigned ($assigned). Please reassign or remove promodizers first."
+            "message" => "Plantilla ($required) cannot be less than assigned + queued ($assigned + $queued = $occupied). Please reassign, remove, or resolve queued promodizers first."
         ]);
         $pdo->rollBack();
         exit;

@@ -1,5 +1,6 @@
 let assignmentModalDisabled = false;
 let currentAssigned = 0;
+let currentQueued = 0;
 
 // =========================
 // STATUS BADGE
@@ -39,6 +40,7 @@ $(document).on("click", "#assignmentTable tbody tr", function () {
 async function openAssignmentModal(branch, brand) {
   assignmentModalDisabled = true;
   currentAssigned = 0;
+  currentQueued = 0;
 
   $("#modalAssignedList").html('<small class="text-muted">Loading...</small>');
 
@@ -76,8 +78,10 @@ async function openAssignmentModal(branch, brand) {
     $("#modalRequired").val(data.required);
 
     currentAssigned = data.employees?.length || 0;
+    currentQueued = data.queued || 0;
 
     $("#modalStatus").html(getStatusBadge(data.required, data.assigned));
+    $("#modalQueued").text(currentQueued);
 
     $("#modalUpdated").text(
       data.updated
@@ -87,7 +91,12 @@ async function openAssignmentModal(branch, brand) {
 
     $("#modalUpdatedBy").text(data.updated_by || "-");
 
-    renderAssignedList(data.employees || [], data.required, data.assigned);
+    renderAssignedList(
+      data.employees || [],
+      data.required,
+      data.assigned,
+      currentQueued,
+    );
   } catch (err) {
     console.error(err);
 
@@ -102,7 +111,7 @@ async function openAssignmentModal(branch, brand) {
 // =========================
 // RENDER ASSIGNED LIST
 // =========================
-function renderAssignedList(employees, required, assigned) {
+function renderAssignedList(employees, required, assigned, queued = 0) {
   let html = "";
 
   if (!employees.length) {
@@ -124,7 +133,9 @@ function renderAssignedList(employees, required, assigned) {
     html += "</ul>";
   }
 
-  if (assigned < required) {
+  // "Add Promodiser" only makes sense if there's still room after
+  // accounting for employees already queued toward this slot count
+  if (assigned + queued < required) {
     html += `
     <div class="mt-2 text-left">
       <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
@@ -136,6 +147,7 @@ function renderAssignedList(employees, required, assigned) {
 
   $("#modalAssignedList").html(html);
   $("#modalStatus").html(getStatusBadge(required, assigned));
+  $("#modalQueued").text(queued);
 }
 
 // =========================
@@ -163,11 +175,13 @@ if (saveRequiredBtn) {
       return Swal.fire("Invalid Input", "Required must be valid.", "error");
     }
 
-    const currentAssigned = $("#modalAssignedList .list-group-item").length;
-    if (required < currentAssigned) {
+    const activeCount = $("#modalAssignedList .list-group-item").length;
+    const occupiedCount = activeCount + currentQueued;
+
+    if (required < occupiedCount) {
       return Swal.fire(
         "Invalid Update",
-        `Required (${required}) cannot be less than Assigned (${currentAssigned}).`,
+        `Required (${required}) cannot be less than Assigned + Queued (${activeCount} + ${currentQueued} = ${occupiedCount}).`,
         "error",
       );
     }
@@ -176,7 +190,7 @@ if (saveRequiredBtn) {
       const confirmZero = await Swal.fire({
         icon: "warning",
         title: "Full Pull-Out Warning",
-        text: "This will remove ALL assignments. Continue?",
+        text: "This will remove ALL assignments, including queued applicants. Continue?",
         showCancelButton: true,
         confirmButtonColor: "#d33",
         confirmButtonText: "Yes, continue",

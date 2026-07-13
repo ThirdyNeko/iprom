@@ -105,12 +105,19 @@ $(document).ready(function () {
     $("#assignmentModal").data("branch", branch);
     $("#assignmentModal").data("brand", brand);
 
+    // keep currentQueued (declared in assignment_modal.js) in sync
+    // so the Save-button guard uses the same number the modal displays
+    if (typeof currentQueued !== "undefined") {
+      currentQueued = queued;
+    }
+
     // UI shows FULL NAME (already mapped or fallback)
     $("#modalBranch").text(branchMap[branch] || branch);
     $("#modalBrand").text(brand);
 
     $("#modalRequired").val(required);
     $("#modalStatus").html(getStatusBadge(required, assigned));
+    $("#modalQueued").text(queued);
 
     $("#modalAssignedList").html(
       '<small class="text-muted">Loading...</small>',
@@ -157,7 +164,8 @@ $(document).ready(function () {
 
         const assignedCount = res.data.length;
 
-        if (assignedCount < required) {
+        // room check now accounts for queued applicants too
+        if (assignedCount + queued < required) {
           html += `
           <div class="mt-2 text-left">
             <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">
@@ -169,6 +177,7 @@ $(document).ready(function () {
 
         $("#modalAssignedList").html(html);
         $("#modalStatus").html(getStatusBadge(required, assignedCount));
+        $("#modalQueued").text(queued);
       })
       .catch((err) => {
         console.error(err);

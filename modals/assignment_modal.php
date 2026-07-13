@@ -82,6 +82,10 @@ $isAllowed =
                                     <td id="modalStatus" class="readonly-field"></td>
                                 </tr>
                                 <tr>
+                                    <th>Queued</th>
+                                    <td id="modalQueued" class="readonly-field"></td>
+                                </tr>
+                                <tr>
                                     <th>Date Last Updated</th>
                                     <td id="modalUpdated" class="readonly-field"></td>
                                 </tr>
@@ -114,4 +118,3 @@ $isAllowed =
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
 
 <script src="assets/js/assignment/assignment_modal.js"></script>
-

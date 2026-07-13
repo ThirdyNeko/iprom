@@ -5,6 +5,98 @@ include '../config/db.php';
 include '../auth/require_login.php';
 $pdo = qa_db();
 
+$mode = $_POST['mode'] ?? null;
+
+// ======================================================
+// MODE: MODAL — single branch/brand lookup for the
+// Assignment Details modal
+// ======================================================
+if ($mode === 'modal') {
+
+    $branch = $_POST['branch'] ?? null;
+    $brand  = $_POST['brand'] ?? null;
+
+    if (!$branch || !$brand) {
+        echo json_encode(["status" => "error", "message" => "Missing branch or brand"]);
+        exit;
+    }
+
+    // Session branch enforcement
+    $sessionBranches = !empty($_SESSION['branch'])
+        ? array_map('trim', explode(',', $_SESSION['branch']))
+        : [];
+
+    if (!empty($sessionBranches) && !in_array($branch, $sessionBranches)) {
+        echo json_encode(["status" => "error", "message" => "Not authorized for this branch"]);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("
+        EXEC get_assignments
+            @branch_name = ?,
+            @brand_name  = ?
+    ");
+    $stmt->execute([$branch, $brand]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // get_assignments does a LIKE match, so narrow to the exact row
+    $match = null;
+    foreach ($rows as $r) {
+        if (trim($r['branch_name']) === trim($branch) && trim($r['brand_name']) === trim($brand)) {
+            $match = $r;
+            break;
+        }
+    }
+
+    if (!$match) {
+        echo json_encode(["status" => "error", "message" => "Assignment not found"]);
+        exit;
+    }
+
+    // Pull the actual assigned employees for the list panel (live, not cached)
+    $stmtEmp = $pdo->prepare("
+        SELECT id, employee_id, first_name, last_name
+        FROM employee_info
+        WHERE branch = ?
+        AND brand = ?
+        AND status = 'ACTIVE'
+        ORDER BY last_name, first_name
+    ");
+    $stmtEmp->execute([$branch, $brand]);
+    $employees = $stmtEmp->fetchAll(PDO::FETCH_ASSOC);
+
+    // Live queued count — same pattern as the employees list above,
+    // rather than trusting the cached queued_count column
+    $stmtQueued = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM employee_info
+        WHERE branch = ?
+        AND brand = ?
+        AND status IN ('PENDING', 'QUEUED')
+    ");
+    $stmtQueued->execute([$branch, $brand]);
+    $queuedCount = (int)$stmtQueued->fetchColumn();
+
+    echo json_encode([
+        "status" => "success",
+        "data" => [
+            "branch"     => $match['branch_name'],
+            "brand"      => $match['brand_name'],
+            "required"   => (int)$match['required_count'],
+            "assigned"   => count($employees),
+            "queued"     => $queuedCount,
+            "updated"    => $match['updated_at'],
+            "updated_by" => $match['updated_by'],
+            "employees"  => $employees,
+        ],
+    ]);
+    exit;
+}
+
+// ======================================================
+// MODE: DATATABLE LIST (default)
+// ======================================================
+
 // DataTables params
 $draw   = $_POST['draw'] ?? 1;
 $start  = $_POST['start'] ?? 0;
