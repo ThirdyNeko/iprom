@@ -64,9 +64,10 @@ $(document).ready(function () {
         { data: 1 }, // brand
         { data: 2 }, // required
         { data: 3 }, // assigned
-        { data: 4 }, // status
-        { data: 5 }, // updated_at
-        { data: 6 }, // updated_by
+        { data: 4 }, // queued
+        { data: 5 }, // status
+        { data: 6 }, // updated_at
+        { data: 7 }, // updated_by
       ],
     });
   }
@@ -94,8 +95,9 @@ $(document).ready(function () {
 
     const required = parseInt($(rowData[2]).text()) || 0;
     const assigned = parseInt(rowData[3]) || 0;
-    const updated = rowData[5];
-    const updatedBy = rowData[6];
+    const queued = parseInt(rowData[4]) || 0;
+    const updated = rowData[6];
+    const updatedBy = rowData[7];
 
     if (!branch || !brand) return;
 
@@ -234,9 +236,10 @@ document
         row[1],
         row[2],
         row[3],
-        row[4],
-        row[5],
-        row[6],
+        row[4], // queued
+        row[5], // status
+        row[6], // updated_at
+        row[7], // updated_by
       ]);
     });
 

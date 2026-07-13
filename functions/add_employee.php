@@ -110,7 +110,7 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
     }
 
     $stmt = $pdo->prepare("
-        SELECT required_count, assigned_count
+        SELECT required_count, assigned_count, queued_count
         FROM assignment
         WHERE branch_name = ?
         AND brand_name = ?
@@ -129,7 +129,7 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
     }
 
     // slot full
-    if ((int)$row['assigned_count'] > (int)$row['required_count']) {
+    if ((int)$row['assigned_count'] + (int)$row['queued_count'] >= (int)$row['required_count']) {
         return [
             'valid' => false,
             'message' => "Slot is already full for {$branch} - {$brand}."

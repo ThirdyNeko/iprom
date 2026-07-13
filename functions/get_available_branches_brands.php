@@ -15,14 +15,15 @@ $sql = "
         b.corpo,
         a.brand_name,
         a.required_count,
-        COUNT(e.id) AS assigned_count
+        SUM(CASE WHEN e.status IN ('ACTIVE', 'PENDING', 'QUEUED') THEN 1 ELSE 0 END) AS assigned_count,
+        SUM(CASE WHEN e.status IN ('PENDING', 'QUEUED') THEN 1 ELSE 0 END) AS queued_count
     FROM assignment a
     LEFT JOIN IPROM.dbo.branches b
         ON b.branch_code = a.branch_name
     LEFT JOIN employee_info e
         ON e.branch = a.branch_name
        AND e.brand = a.brand_name
-       AND e.status = 'ACTIVE'
+       AND e.status IN ('ACTIVE', 'PENDING', 'QUEUED')
     GROUP BY
         a.branch_name,
         b.branch,

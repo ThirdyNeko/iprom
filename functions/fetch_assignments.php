@@ -63,6 +63,7 @@ if ($status) {
     $rows = array_filter($rows, function ($a) use ($status) {
         $required = (int)$a['required_count'];
         $assigned = (int)$a['assigned_count'];
+        $queued   = (int)($a['queued_count'] ?? 0);
         $shortage = $required - $assigned;
 
         if ($status === 'inactive') {
@@ -79,6 +80,10 @@ if ($status) {
 
         if ($status === 'lacking') {
             return $assigned > 0 && $shortage > 0;
+        }
+
+        if ($status === 'queued') {
+            return $queued > 0;
         }
 
         return true;
@@ -119,6 +124,7 @@ if (!empty($_POST['export'])) {
     foreach ($rows as $a) {
         $required = (int)$a['required_count'];
         $assigned = (int)$a['assigned_count'];
+        $queued   = (int)($a['queued_count'] ?? 0);
         $shortage = $required - $assigned;
 
         if ($required === 0) {
@@ -136,7 +142,7 @@ if (!empty($_POST['export'])) {
             $a['brand_name'],
             $a['required_count'],
             $a['assigned_count'],
-            $a['queued_count'],
+            $queued,
             $statusLabel,
             $a['updated_at'] ? date('m/d/Y', strtotime($a['updated_at'])) : '-',
             $a['updated_by'] ?? '-',
@@ -156,6 +162,7 @@ $result = [];
 foreach ($paged as $a) {
     $required = (int)$a['required_count'];
     $assigned = (int)$a['assigned_count'];
+    $queued   = (int)($a['queued_count'] ?? 0);
     $shortage = $required - $assigned;
 
     if ($required === 0) {
@@ -173,6 +180,7 @@ foreach ($paged as $a) {
         $a['brand_name'],
         '<span class="required-cell">'.$a['required_count'].'</span>',
         $a['assigned_count'],
+        $queued,
         $statusLabel,
         $a['updated_at'] ? date('m/d/Y', strtotime($a['updated_at'])) : '-',
         $a['updated_by'] ?? '-'

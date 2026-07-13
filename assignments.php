@@ -168,6 +168,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                             <option value="complete">COMPLETE</option>
                             <option value="lacking">INCOMPLETE</option>
                             <option value="zero">VACANT</option>
+                            <option value="queued">QUEUED</option>
                         </select>
                     </div>
 
@@ -193,6 +194,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Brand</th>
                                 <th>Plantilla Count</th>
                                 <th>Assigned</th>
+                                <th>Queued</th>
                                 <th>Status</th>
                                 <th>Date Last Updated</th>
                                 <th>Last Updated By</th>
