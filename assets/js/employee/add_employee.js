@@ -477,6 +477,25 @@ document.addEventListener("DOMContentLoaded", async function () {
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
 
+    // 🔒 Hard stop: block re-entry immediately, before any async work
+    if (form.dataset.submitting === "1") return;
+    form.dataset.submitting = "1";
+    btn.disabled = true;
+    const originalBtnText = btn.textContent;
+    btn.textContent = "Saving...";
+
+    // 🔒 Prevent modal close while submitting
+    const modalEl = document.getElementById("addEmployeeModal");
+    const dismissEls = modalEl.querySelectorAll('[data-bs-dismiss="modal"], .btn-close');
+    dismissEls.forEach((b) => (b.disabled = true));
+    const blockHide = (ev) => ev.preventDefault();
+    modalEl.addEventListener("hide.bs.modal", blockHide);
+
+    // ⏳ Reassure the user on a slow connection instead of silence
+    const slowConnTimer = setTimeout(() => {
+        btn.textContent = "Still saving... please wait";
+    }, 4000);
+
     const formData = new FormData(form);
 
     // Handle optional middle name & suffix (send NULL instead of empty)
@@ -894,7 +913,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     try {
-      btn.disabled = true;
+      // btn.disabled = true;
 
       let status =
         sub === "MULTI BRANCH" || sub === "MULTI BRAND" || (branch && brand)

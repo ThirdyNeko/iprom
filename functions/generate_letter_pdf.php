@@ -75,18 +75,42 @@ $agency = $data['agency'] ?? '';
 $employmentStatus = $data['employment_status'] ?? '';
 $subStatus = $data['sub_status'] ?? '';
 $status = $data['status'] ?? '';
-$employeeId = $data['id'] ?? '';
+
+// 🔥 FIX: read the business ID (e.g. "EMP-20260707-A9D3F91E") from `employee_id`
+// in the payload, not `id`.
+$promodiserId = $data['employee_id'] ?? '';
+
+// 🔥 Full set of branches this employee is assigned to (main branch + roving
+// branches), used below to correctly "swap" which branch is the record's own
+// branch vs. which are its roving branches, per multi-branch row.
+$allEmployeeBranches = array_values(array_unique(array_merge(
+    !empty($branchCode) ? [$branchCode] : [],
+    is_array($rovingBranches) ? $rovingBranches : []
+)));
+
+// Branch this specific LOA record belongs to (per-branch for multi-branch employees,
+// falls back to the main branch when no recipient-specific branch was sent)
+$loaBranchCode = !empty($recipientBranchCode) ? $recipientBranchCode : $branchCode;
+
+// Roving branches to store for this record: the full branch set minus
+// this record's own branch, so each per-branch row correctly lists the OTHER
+// branches the employee also covers (e.g. branch_code=JANI → roving=CBAT,
+// and branch_code=CBAT → roving=JANI), instead of always reusing the raw
+// roving_branches list unchanged across every branch call.
+$rovingBranchesForRecord = array_values(array_diff($allEmployeeBranches, [$loaBranchCode]));
 
 $remarks = $data['remarks'] ?? '';
 
-if (!empty($employeeId)) {
+if (!empty($promodiserId)) {
+    // lookup by employee_info.employee_id (the business ID column),
+    // not employee_info.id (the INT primary key).
     $stmt = $pdo->prepare("
         SELECT remarks
         FROM IPROM.dbo.employee_info
-        WHERE id = :id
+        WHERE employee_id = :employee_id
     ");
 
-    $stmt->execute(['id' => $employeeId]);
+    $stmt->execute(['employee_id' => $promodiserId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!empty($row['remarks'])) {
@@ -106,15 +130,19 @@ function fpdf_str(string $s): string {
 
 // ============================================================
 // Save to DB (only if not already recorded)
+// One row per employee + branch + effectivity date, so multi-branch
+// employees get a distinct saved record for each branch's LOA.
 // ============================================================
 $existingStmt = $pdo->prepare("
     SELECT id
     FROM letters_of_advice
     WHERE employee_id = :employee_id
+      AND branch_code = :branch_code
       AND effectivity_date = :effectivity_date
 ");
 $existingStmt->execute([
-    'employee_id'      => $employeeId,
+    'employee_id'      => $promodiserId,
+    'branch_code'      => $loaBranchCode,
     'effectivity_date' => $effectivityDate,
 ]);
 $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
@@ -169,13 +197,13 @@ if (!$existing) {
     $insertStmt->execute([
         'recipient_name'     => $recipientName,
         'recipient_position' => $recipientPosition,
-        'employee_id'        => !empty($employeeId) ? $employeeId : null,
+        'employee_id'        => $promodiserId,
         'first_name'         => $firstName,
         'middle_name'        => $middleName,
         'last_name'          => $lastName,
         'suffix'             => $suffix,
-        'branch_code'        => $branchCode,
-        'roving_branches'    => !empty($rovingBranches) ? implode(',', $rovingBranches) : null,
+        'branch_code'        => $loaBranchCode,
+        'roving_branches'    => !empty($rovingBranchesForRecord) ? implode(',', $rovingBranchesForRecord) : null,
         'brand'              => $brand,
         'multi_brands'       => !empty($multiBrands) ? implode(',', $multiBrands) : null,
         'agency'             => $agency,

@@ -71,8 +71,10 @@ $(document).ready(function () {
       .prop("disabled", true)
       .html('<i class="bi bi-hourglass-split me-1"></i>Generating...');
 
+    // 🔥 FIX: generate_letter_pdf.php now reads the business ID from
+    // `employee_id` (not `id`), to stay consistent with pdf.js's basePayload.
     const payload = {
-      id: btn.data("employee-id"), // ← actual employee_id for the remarks lookup
+      employee_id: btn.data("employee-id"), // employee_info.employee_id (business ID, e.g. "EMP-...")
       loa_id: btn.data("loa-id"),
       recipient_name: btn.data("recipient-name"),
       recipient_position: btn.data("recipient-position"),
