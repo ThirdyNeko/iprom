@@ -10,14 +10,27 @@ $updated_by = $_SESSION['username'] ?? 'system';
 // Accept JSON input
 $data = json_decode(file_get_contents("php://input"), true);
 
-$branch = $data['branch'] ?? '';
-$brand  = $data['brand'] ?? '';
-$required = isset($data['required']) ? (int)$data['required'] : -1;
+$branch      = $data['branch'] ?? '';
+$brand       = $data['brand'] ?? '';
+$required    = isset($data['required']) ? (int)$data['required'] : -1;
+$confirmZero = !empty($data['confirm_zero']);
 
 if (!$branch || !$brand || $required < 0) {
     echo json_encode([
         "status" => "error",
         "message" => "Invalid input"
+    ]);
+    exit;
+}
+
+// Server-side guard: zeroing a plantilla pulls out everyone assigned
+// AND queued. Don't allow this to happen without an explicit,
+// separate confirmation flag — protects against the request being
+// fired without the client-side SweetAlert ever being shown/confirmed.
+if ($required === 0 && !$confirmZero) {
+    echo json_encode([
+        "status"  => "confirm_required",
+        "message" => "Setting required to 0 will pull out or inactivate all assigned and queued employees. Resend with confirm_zero: true to proceed."
     ]);
     exit;
 }

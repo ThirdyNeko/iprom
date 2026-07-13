@@ -178,7 +178,7 @@ if (saveRequiredBtn) {
     const activeCount = $("#modalAssignedList .list-group-item").length;
     const occupiedCount = activeCount + currentQueued;
 
-    if (required < occupiedCount) {
+    if (required > 0 && required < occupiedCount) {
       return Swal.fire(
         "Invalid Update",
         `Required (${required}) cannot be less than Assigned + Queued (${activeCount} + ${currentQueued} = ${occupiedCount}).`,
@@ -186,8 +186,10 @@ if (saveRequiredBtn) {
       );
     }
 
+    let confirmZero = false;
+
     if (required === 0) {
-      const confirmZero = await Swal.fire({
+      const confirmZeroResult = await Swal.fire({
         icon: "warning",
         title: "Full Pull-Out Warning",
         text: "This will remove ALL assignments, including queued applicants. Continue?",
@@ -196,7 +198,9 @@ if (saveRequiredBtn) {
         confirmButtonText: "Yes, continue",
       });
 
-      if (!confirmZero.isConfirmed) return;
+      if (!confirmZeroResult.isConfirmed) return;
+
+      confirmZero = true;
     }
 
     const confirm = await Swal.fire({
@@ -213,10 +217,25 @@ if (saveRequiredBtn) {
       const res = await fetch("functions/update_required.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ branch, brand, required }),
+        body: JSON.stringify({
+          branch,
+          brand,
+          required,
+          confirm_zero: confirmZero,
+        }),
       });
 
       const result = await res.json();
+
+      // Server disagrees that zero was confirmed — surface the warning
+      // it sent back and stop, rather than silently failing.
+      if (result.status === "confirm_required") {
+        return Swal.fire(
+          "Confirmation Needed",
+          result.message || "This action requires confirmation.",
+          "warning",
+        );
+      }
 
       if (result.status !== "success") {
         throw new Error(result.message || "Update failed");
