@@ -67,7 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
       block.dataset.branchCode = branch.code;
 
       block.innerHTML = `
-        <div class="fw-bold mb-2 recipient-branch-label">${branch.name}</div>
+        <div class="form-check mb-2">
+          <input type="checkbox" class="form-check-input recipient-include-multi" checked>
+          <label class="form-check-label fw-bold recipient-branch-label">${branch.name}</label>
+        </div>
         <div class="mb-2">
           <label class="form-label">Recipient Full Name</label>
           <input type="text" class="form-control recipient-name-multi">
@@ -79,6 +82,21 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       multiRecipientFields.appendChild(block);
+
+      // Toggle the branch's inputs on/off with its checkbox
+      const checkbox = block.querySelector(".recipient-include-multi");
+      const nameInput = block.querySelector(".recipient-name-multi");
+      const positionInput = block.querySelector(".recipient-position-multi");
+
+      function syncBlockState() {
+        const included = checkbox.checked;
+        nameInput.disabled = !included;
+        positionInput.disabled = !included;
+        block.classList.toggle("opacity-50", !included);
+      }
+
+      checkbox.addEventListener("change", syncBlockState);
+      syncBlockState();
     });
   }
 
@@ -156,8 +174,22 @@ document.addEventListener("DOMContentLoaded", () => {
       let recipients = [];
 
       if (isMultiBranch()) {
-        const blocks =
+        const allBlocks =
           multiRecipientFields.querySelectorAll("[data-branch-code]");
+
+        const blocks = Array.from(allBlocks).filter((block) => {
+          const cb = block.querySelector(".recipient-include-multi");
+          return cb ? cb.checked : true; // fail-safe: include if checkbox missing
+        });
+
+        if (blocks.length === 0) {
+          Swal.fire({
+            icon: "warning",
+            title: "No Branches Selected",
+            text: "Please select at least one branch to generate an LOA for.",
+          });
+          return;
+        }
 
         for (const block of blocks) {
           const labelEl = block.querySelector(".recipient-branch-label");
