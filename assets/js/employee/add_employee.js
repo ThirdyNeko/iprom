@@ -196,13 +196,22 @@ document.addEventListener("DOMContentLoaded", async function () {
       .querySelectorAll(".roving-select")
       .forEach((s) => (s.required = false));
 
-    // Date range: stays visible, just enabled/disabled based on status
-    const needsDateRange = empStatus === "SEASONAL" || empStatus === "RELIEVER";
-    dateRangeFields.querySelectorAll("input").forEach((i) => {
-      i.required = needsDateRange;
-      i.disabled = !needsDateRange;
-      if (!needsDateRange) i.value = "";
-    });
+    // Date range: start_date now applies to ALL employment statuses (incl. PERMANENT).
+    // end_date is still only relevant for SEASONAL / RELIEVER.
+    const startDateField = dateRangeFields.querySelector(
+      'input[name="start_date"]',
+    );
+    const endDateField = dateRangeFields.querySelector(
+      'input[name="end_date"]',
+    );
+
+    startDateField.required = true;
+    startDateField.disabled = false;
+
+    const needsEndDate = empStatus === "SEASONAL" || empStatus === "RELIEVER";
+    endDateField.required = needsEndDate;
+    endDateField.disabled = !needsEndDate;
+    if (!needsEndDate) endDateField.value = "";
 
     // Show roving when MULTI BRANCH
     if (sub === "MULTI BRANCH" || sub === "HYBRID") {
@@ -486,14 +495,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // 🔒 Prevent modal close while submitting
     const modalEl = document.getElementById("addEmployeeModal");
-    const dismissEls = modalEl.querySelectorAll('[data-bs-dismiss="modal"], .btn-close');
+    const dismissEls = modalEl.querySelectorAll(
+      '[data-bs-dismiss="modal"], .btn-close',
+    );
     dismissEls.forEach((b) => (b.disabled = true));
     const blockHide = (ev) => ev.preventDefault();
     modalEl.addEventListener("hide.bs.modal", blockHide);
 
     // ⏳ Reassure the user on a slow connection instead of silence
     const slowConnTimer = setTimeout(() => {
-        btn.textContent = "Still saving... please wait";
+      btn.textContent = "Still saving... please wait";
     }, 4000);
 
     const formData = new FormData(form);
@@ -616,11 +627,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     // convert empty strings to null
     const startDate = startDateInput.value ? startDateInput.value : null;
     const endDate = endDateInput.value ? endDateInput.value : null;
+
+    // start_date is now required regardless of employment status
+    if (!startDate) {
+      return Swal.fire(
+        "Missing Start Date",
+        "Start date is required.",
+        "warning",
+      );
+    }
+
     if (statusType === "SEASONAL" || statusType === "RELIEVER") {
-      if (!startDate || !endDate) {
+      if (!endDate) {
         return Swal.fire(
-          "Missing Dates",
-          "Start and End dates are required.",
+          "Missing End Date",
+          "End date is required for Seasonal/Reliever employment.",
           "warning",
         );
       }
@@ -915,26 +936,10 @@ document.addEventListener("DOMContentLoaded", async function () {
     try {
       // btn.disabled = true;
 
-      let status =
-        sub === "MULTI BRANCH" || sub === "MULTI BRAND" || (branch && brand)
-          ? "ACTIVE"
-          : "INACTIVE";
+      // All new employees are now saved as PENDING regardless of
+      // branch/brand assignment or seasonal start date.
+      formData.set("status", "PENDING");
 
-      // =========================
-      // SEASONAL / RELIEVER RULE
-      // =========================
-      if (
-        (statusType === "SEASONAL" || statusType === "RELIEVER") &&
-        startDateInput.value
-      ) {
-        const today = new Date().toISOString().split("T")[0];
-
-        if (today < startDateInput.value) {
-          status = "INACTIVE";
-        }
-      }
-
-      formData.set("status", status);
       formData.set("employment_status", statusType);
       formData.set("assigned_by", window.currentUser || "SYSTEM");
       formData.set("updated_by", window.currentUser || "SYSTEM");

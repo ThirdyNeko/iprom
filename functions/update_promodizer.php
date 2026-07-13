@@ -390,6 +390,12 @@ if ($reason_for_update === 'EMERGENCY LEAVE' && $date_of_return) {
     }
 }
 
+// ✅ NEW: CHANGE EMPLOYMENT STATUS always forces PENDING,
+// overriding whatever the above logic computed.
+if ($reason_for_update === 'CHANGE EMPLOYMENT STATUS') {
+    $status = 'PENDING';
+}
+
 // =========================
 // ASSIGNMENT SLOT VALIDATION
 // =========================
@@ -763,10 +769,8 @@ try {
 
         if ($startTimestamp <= $today) {
             $insertStatus = 'ACTIVE';
-            $hidden = false;
         } else {
-            $insertStatus = 'INACTIVE';
-            $hidden = true;
+            $insertStatus = 'QUEUED';
         }
 
         // =========================
@@ -867,6 +871,7 @@ try {
         if (!empty($rovingBranches) && ($sub_status === 'MULTI BRANCH' || $sub_status === 'HYBRID') ) {
 
             $rovingBranches = array_filter($rovingBranches);
+            $insertStatus = 'PENDING';
 
             foreach ($rovingBranches as $branch) {
 
@@ -955,6 +960,11 @@ try {
         if (!empty($multiBrands) && ($sub_status === 'MULTI BRAND' || $sub_status === 'HYBRID') ) {
 
             $multiBrands = array_filter($multiBrands);
+            if ($startTimestamp <= $today) {
+                $insertStatus = 'ACTIVE';
+            } else {
+                $insertStatus = 'QUEUED';
+            }
 
             foreach ($multiBrands as $brand) {
 
@@ -1049,6 +1059,7 @@ try {
 
             $rovingBranches = array_filter($rovingBranches);
             $multiBrands    = array_filter($multiBrands);
+            $insertStatus = 'PENDING';
 
             foreach ($rovingBranches as $branchItem) {
                 foreach ($multiBrands as $brandItem) {

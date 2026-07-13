@@ -136,6 +136,7 @@ if (!empty($_POST['export'])) {
             $a['brand_name'],
             $a['required_count'],
             $a['assigned_count'],
+            $a['queued_count'],
             $statusLabel,
             $a['updated_at'] ? date('m/d/Y', strtotime($a['updated_at'])) : '-',
             $a['updated_by'] ?? '-',
