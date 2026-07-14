@@ -129,6 +129,7 @@ $pdo = qa_db();
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/verification/verification.js"></script>
+<script src="assets/js/verification/verify_loa.js"></script>
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -145,3 +146,4 @@ document.querySelectorAll(".clear-btn").forEach(btn => {
 </script>
 
 <?php include 'modals/change_password_modal.php'; ?>
+<?php include 'modals/verify_loa_modal.php'; ?>

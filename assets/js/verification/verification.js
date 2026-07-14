@@ -23,12 +23,12 @@ $(document).ready(function () {
       { data: "effectivity_date_display" },
       {
         data: null,
-        width: "110px",
+        width: "160px",
         className: "text-center px-1",
         orderable: false,
         render: function (data) {
           return `
-            <div class="action-btns d-flex justify-content-center">
+            <div class="action-btns d-flex justify-content-center gap-1">
               <button class="btn btn-primary btn-sm px-2 py-1 printLOABtn"
                 data-loa-id="${data.loa_id}"
                 data-employee-id="${data.employee_id ?? ""}"
@@ -50,6 +50,13 @@ $(document).ready(function () {
                 data-end-date="${data.end_date ?? ""}"
                 data-remarks="${data.remarks ?? ""}">
                 <i class="bi bi-printer me-1"></i>View LOA
+              </button>
+
+              <button class="btn btn-success btn-sm px-2 py-1 verifyLOABtn"
+                data-loa-id="${data.loa_id}"
+                data-employee-id="${data.employee_id ?? ""}"
+                data-branch="${data.branch_code ?? ""}">
+                <i class="bi bi-patch-check me-1"></i>Verify
               </button>
             </div>
           `;
@@ -125,4 +132,7 @@ $(document).ready(function () {
         .html('<i class="bi bi-printer me-1"></i>View LOA');
     }
   });
+
+  // Note: the "Verify" button click handler lives in assets/js/verify_loa.js
+  // so the verification modal logic stays in its own file.
 });
