@@ -13,6 +13,20 @@
   width: 140px; height: 170px; border: 2px dashed #2d68c4; border-radius: 8px;
   display: flex; align-items: center; justify-content: center; background: #f4f8ff;
 }
+.loa-code-box {
+  width: 42px;
+  height: 50px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 0;
+}
+.loa-letter-box { text-transform: uppercase; }
+.loa-code-dash {
+  font-size: 24px;
+  font-weight: 700;
+  color: #6c757d;
+}
 </style>
 
 <div class="modal fade" id="verifyLOAModal" tabindex="-1" aria-hidden="true">
@@ -32,9 +46,38 @@
 
         <!-- STEP 1: LOA CODE -->
         <div class="verify-step" id="verifyStep1">
-          <label class="form-label">Enter the LOA Code</label>
-          <input type="text" id="loaCodeInput" class="form-control" placeholder="ABCD-123456">
-          <div id="loaCodeError" class="text-danger small mt-2 d-none"></div>
+          <label class="form-label d-block text-center">Enter the LOA Code</label>
+
+          <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap" id="loaCodeBoxes">
+            <input type="text" maxlength="1" inputmode="text"
+              class="form-control loa-code-box loa-letter-box" data-group="letter" data-index="0">
+            <input type="text" maxlength="1" inputmode="text"
+              class="form-control loa-code-box loa-letter-box" data-group="letter" data-index="1">
+            <input type="text" maxlength="1" inputmode="text"
+              class="form-control loa-code-box loa-letter-box" data-group="letter" data-index="2">
+            <input type="text" maxlength="1" inputmode="text"
+              class="form-control loa-code-box loa-letter-box" data-group="letter" data-index="3">
+
+            <span class="loa-code-dash">&ndash;</span>
+
+            <input type="text" maxlength="1" inputmode="numeric"
+              class="form-control loa-code-box loa-digit-box" data-group="digit" data-index="0">
+            <input type="text" maxlength="1" inputmode="numeric"
+              class="form-control loa-code-box loa-digit-box" data-group="digit" data-index="1">
+            <input type="text" maxlength="1" inputmode="numeric"
+              class="form-control loa-code-box loa-digit-box" data-group="digit" data-index="2">
+            <input type="text" maxlength="1" inputmode="numeric"
+              class="form-control loa-code-box loa-digit-box" data-group="digit" data-index="3">
+            <input type="text" maxlength="1" inputmode="numeric"
+              class="form-control loa-code-box loa-digit-box" data-group="digit" data-index="4">
+            <input type="text" maxlength="1" inputmode="numeric"
+              class="form-control loa-code-box loa-digit-box" data-group="digit" data-index="5">
+          </div>
+
+          <!-- Composed value ("ABCD-123456") kept here and read by verify_loa.js -->
+          <input type="hidden" id="loaCodeInput">
+
+          <div id="loaCodeError" class="text-danger small mt-3 text-center d-none"></div>
         </div>
 
         <!-- STEP 2: ID PICTURE -->
@@ -61,7 +104,7 @@
                 <p class="fw-semibold mb-2">Existing Picture on File</p>
                 <img id="existingPictureImg" src="" class="img-fluid rounded border mb-2" style="max-height:180px;">
                 <div>
-                  <button type="button" class="btn btn-outline-secondary btn-sm" id="keepExistingBtn">Keep Existing</button>
+                  <button type="button" class="btn btn-outline-dark btn-sm" id="keepExistingBtn">Keep Existing</button>
                   <button type="button" class="btn btn-warning btn-sm" id="overwriteBtn">Overwrite</button>
                 </div>
               </div>

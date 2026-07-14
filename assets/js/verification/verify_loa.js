@@ -39,8 +39,10 @@ $(document).ready(function () {
     };
 
     // Reset modal UI
+    $(".loa-code-box").val("");
     $("#loaCodeInput").val("");
     $("#loaCodeError").addClass("d-none").text("");
+    $(".loa-code-box").first().trigger("focus");
     $("#idPictureInput").val("");
     $("#pictureError").addClass("d-none").text("");
     $("#previewWrap").addClass("d-none");
@@ -50,6 +52,119 @@ $(document).ready(function () {
 
     goToStep(1);
     new bootstrap.Modal(document.getElementById("verifyLOAModal")).show();
+  });
+
+  // ── LOA code boxes: 4 letters, dash, 6 digits ─────────────────
+  // Each box holds exactly one character. Typing in one box filters
+  // the character (letters-only / digits-only), forces uppercase for
+  // letters, and auto-advances focus to the next box. Backspace on an
+  // empty box moves focus back and clears the previous box. Pasting a
+  // full code into any box distributes it across all the boxes.
+  // updateLoaCodeValue() keeps the hidden #loaCodeInput in sync as
+  // "ABCD-123456", which is what handleStep1() actually submits.
+
+  function updateLoaCodeValue() {
+    const letters = $(".loa-letter-box")
+      .map(function () {
+        return $(this).val();
+      })
+      .get()
+      .join("");
+    const digits = $(".loa-digit-box")
+      .map(function () {
+        return $(this).val();
+      })
+      .get()
+      .join("");
+    $("#loaCodeInput").val(`${letters}-${digits}`);
+  }
+
+  function focusBox(group, index) {
+    $(`.loa-code-box[data-group="${group}"][data-index="${index}"]`)
+      .trigger("focus")
+      .select();
+  }
+
+  $(document).on("input", ".loa-letter-box", function () {
+    let val = $(this)
+      .val()
+      .replace(/[^a-zA-Z]/g, "")
+      .toUpperCase()
+      .slice(0, 1);
+    $(this).val(val);
+    updateLoaCodeValue();
+
+    if (val) {
+      const index = parseInt($(this).data("index"), 10);
+      if (index < 3) {
+        focusBox("letter", index + 1);
+      } else {
+        focusBox("digit", 0);
+      }
+    }
+  });
+
+  $(document).on("input", ".loa-digit-box", function () {
+    let val = $(this)
+      .val()
+      .replace(/[^0-9]/g, "")
+      .slice(0, 1);
+    $(this).val(val);
+    updateLoaCodeValue();
+
+    if (val) {
+      const index = parseInt($(this).data("index"), 10);
+      if (index < 5) focusBox("digit", index + 1);
+    }
+  });
+
+  $(document).on("keydown", ".loa-code-box", function (e) {
+    if (e.key !== "Backspace" || $(this).val() !== "") return;
+
+    const group = $(this).data("group");
+    const index = parseInt($(this).data("index"), 10);
+
+    if (group === "digit" && index > 0) {
+      focusBox("digit", index - 1);
+      $(`.loa-digit-box[data-index="${index - 1}"]`).val("");
+    } else if (group === "digit" && index === 0) {
+      focusBox("letter", 3);
+      $(`.loa-letter-box[data-index="3"]`).val("");
+    } else if (group === "letter" && index > 0) {
+      focusBox("letter", index - 1);
+      $(`.loa-letter-box[data-index="${index - 1}"]`).val("");
+    }
+    updateLoaCodeValue();
+  });
+
+  $(document).on("paste", ".loa-code-box", function (e) {
+    const pasted = (e.originalEvent.clipboardData || window.clipboardData)
+      .getData("text")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "");
+
+    if (!pasted) return;
+    e.preventDefault();
+
+    const letters = pasted.slice(0, 4).split("");
+    const digits = pasted.slice(4, 10).split("");
+
+    letters.forEach((ch, i) => {
+      if (/[A-Z]/.test(ch)) $(`.loa-letter-box[data-index="${i}"]`).val(ch);
+    });
+    digits.forEach((ch, i) => {
+      if (/[0-9]/.test(ch)) $(`.loa-digit-box[data-index="${i}"]`).val(ch);
+    });
+
+    updateLoaCodeValue();
+
+    if (letters.length < 4) {
+      focusBox("letter", letters.length);
+    } else if (digits.length < 6) {
+      focusBox("digit", digits.length);
+    } else {
+      focusBox("digit", 5);
+    }
   });
 
   $("#verifyBackBtn").on("click", function () {
@@ -102,8 +217,10 @@ function goToStep(step) {
 // ── STEP 1: Verify LOA code against employee_info ──────────────
 async function handleStep1() {
   const code = $("#loaCodeInput").val().trim();
-  if (!code) {
-    $("#loaCodeError").removeClass("d-none").text("Please enter the LOA code.");
+  if (!/^[A-Z]{4}-\d{6}$/.test(code)) {
+    $("#loaCodeError")
+      .removeClass("d-none")
+      .text("Please fill in all 10 characters of the LOA code.");
     return;
   }
 
