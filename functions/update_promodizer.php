@@ -179,7 +179,8 @@ $skipSlotValidation = in_array($reason_for_update, [
     'CHANGE AGENCY',
     'RESIGNED',
     'PULL-OUT / END OF CONTRACT',
-    'BLACKLISTED / AWOL / TERMINATED'
+    'BLACKLISTED / AWOL / TERMINATED',
+    'CLERICAL ERROR'
 ]);
 
 $remarks = trim($_POST['remarks'] ?? '');
