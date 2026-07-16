@@ -77,7 +77,15 @@ $(document).ready(function () {
       },
       { data: "branch_display", defaultContent: "-" }, // Branch
       { data: "brand", defaultContent: "-" }, // Brand
-      { data: "status", defaultContent: "-" }, // Status
+      {
+        // Status (display PENDING as QUEUED — underlying value stays PENDING)
+        data: "status",
+        defaultContent: "-",
+        render: function (d) {
+          if (!d) return "-";
+          return d.trim().toUpperCase() === "PENDING" ? "QUEUED" : d;
+        },
+      },
       { data: "employment_status", defaultContent: "-" }, // Employment Status
       { data: "sub_status", defaultContent: "-" }, // Sub-Status
       {
@@ -321,7 +329,9 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           formatDate(p.date_hired),
           p.branch,
           p.brand,
-          p.status,
+          (p.status || "").trim().toUpperCase() === "PENDING"
+            ? "QUEUED"
+            : p.status,
           p.employment_status,
           p.sub_status,
           p.agency,

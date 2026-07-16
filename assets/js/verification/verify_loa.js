@@ -23,8 +23,12 @@
 
 let verifyState = {};
 let currentStep = 1;
+let cropper = null; // Cropper.js instance for the currently selected file (Step 2)
+const CROP_OUTPUT_WIDTH = 350;
+const CROP_OUTPUT_HEIGHT = Math.round(350 * (170 / 140)); // matches the 140:170 guide-frame ratio
 
 $(document).ready(function () {
+
   // Open trigger uses delegation since these buttons come from a
   // DataTable's ajax-rendered rows (added to the DOM after load).
   $(document).on("click", ".verifyLOABtn", function () {
@@ -42,16 +46,21 @@ $(document).ready(function () {
     $(".loa-code-box").val("");
     $("#loaCodeInput").val("");
     $("#loaCodeError").addClass("d-none").text("");
-    $(".loa-code-box").first().trigger("focus");
     $("#idPictureInput").val("");
     $("#pictureError").addClass("d-none").text("");
-    $("#previewWrap").addClass("d-none");
     $("#existingPictureWrap").addClass("d-none");
     $("#uploadWrap").removeClass("d-none");
     $("#uploadPrompt").text("Upload ID Picture");
+    destroyCropper();
+    hideLoading();
 
-    goToStep(1);
+    // Fresh open -> X visible, Okay hidden
+    $("#verifyCloseXBtn").removeClass("d-none").prop("disabled", false);
+    $("#verifyOkayBtn").addClass("d-none");
+
+    goToStep(1, { animate: false });
     new bootstrap.Modal(document.getElementById("verifyLOAModal")).show();
+    $(".loa-code-box").first().trigger("focus");
   });
 
   // ── LOA code boxes: 4 letters, dash, 6 digits ─────────────────
@@ -65,32 +74,22 @@ $(document).ready(function () {
 
   function updateLoaCodeValue() {
     const letters = $(".loa-letter-box")
-      .map(function () {
-        return $(this).val();
-      })
+      .map(function () { return $(this).val(); })
       .get()
       .join("");
     const digits = $(".loa-digit-box")
-      .map(function () {
-        return $(this).val();
-      })
+      .map(function () { return $(this).val(); })
       .get()
       .join("");
     $("#loaCodeInput").val(`${letters}-${digits}`);
   }
 
   function focusBox(group, index) {
-    $(`.loa-code-box[data-group="${group}"][data-index="${index}"]`)
-      .trigger("focus")
-      .select();
+    $(`.loa-code-box[data-group="${group}"][data-index="${index}"]`).trigger("focus").select();
   }
 
   $(document).on("input", ".loa-letter-box", function () {
-    let val = $(this)
-      .val()
-      .replace(/[^a-zA-Z]/g, "")
-      .toUpperCase()
-      .slice(0, 1);
+    let val = $(this).val().replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 1);
     $(this).val(val);
     updateLoaCodeValue();
 
@@ -105,10 +104,7 @@ $(document).ready(function () {
   });
 
   $(document).on("input", ".loa-digit-box", function () {
-    let val = $(this)
-      .val()
-      .replace(/[^0-9]/g, "")
-      .slice(0, 1);
+    let val = $(this).val().replace(/[^0-9]/g, "").slice(0, 1);
     $(this).val(val);
     updateLoaCodeValue();
 
@@ -193,25 +189,121 @@ $(document).ready(function () {
   $("#idPictureInput").on("change", function () {
     $("#pictureError").addClass("d-none");
     const file = this.files[0];
-    if (!file) return;
+    if (!file) {
+      $("#cropWrap").addClass("d-none");
+      destroyCropper();
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      $("#previewImg").attr("src", e.target.result);
-      $("#previewWrap").removeClass("d-none");
+      $("#cropWrap").removeClass("d-none");
+      $("#cropImage").attr("src", e.target.result);
+      initCropper();
     };
     reader.readAsDataURL(file);
   });
+
+  $("#cropZoomInBtn").on("click", function () {
+    if (cropper) cropper.zoom(0.1);
+  });
+
+  $("#cropZoomOutBtn").on("click", function () {
+    if (cropper) cropper.zoom(-0.1);
+  });
+
+  $("#cropResetBtn").on("click", function () {
+    if (cropper) cropper.reset();
+  });
+
 });
 
-function goToStep(step) {
+// ── Crop UI (Step 2) ────────────────────────────────────────────
+// Cropper.js is initialized on #cropImage once a file is chosen.
+// dragMode "move" + a locked aspect ratio means the crop frame stays
+// fixed in place while the user drags/zooms the photo underneath it
+// -- the standard "move around and crop" avatar-picker interaction.
+function initCropper() {
+  destroyCropper();
+
+  const image = document.getElementById("cropImage");
+  cropper = new Cropper(image, {
+    aspectRatio: 140 / 170, // matches the photo guide frame
+    viewMode: 1,
+    dragMode: "move",
+    autoCropArea: 1,
+    cropBoxMovable: false,
+    cropBoxResizable: false,
+    toggleDragModeOnDblclick: false,
+    guides: false,
+    background: false,
+  });
+}
+
+function destroyCropper() {
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
+}
+
+// Resolves with a cropped JPEG Blob, or null if there's no active
+// cropper (i.e. no new file was chosen this session).
+function getCroppedBlob() {
+  return new Promise((resolve) => {
+    if (!cropper) {
+      resolve(null);
+      return;
+    }
+    cropper
+      .getCroppedCanvas({
+        width: CROP_OUTPUT_WIDTH,
+        height: CROP_OUTPUT_HEIGHT,
+        imageSmoothingQuality: "high",
+      })
+      .toBlob((blob) => resolve(blob), "image/jpeg", 0.92);
+  });
+}
+
+// ── Loading lock ─────────────────────────────────────────────
+// Shows a full-body overlay + spinner over the modal and disables
+// every interactive element inside it (buttons, inputs, close/X)
+// so nothing can be clicked or typed while a request is in flight.
+function showLoading(text) {
+  $("#verifyLoadingText").text(text || "Processing...");
+  $("#verifyLoadingOverlay").removeClass("d-none");
+  $("#verifyLOAModal").find("button, input").prop("disabled", true);
+}
+
+function hideLoading() {
+  $("#verifyLoadingOverlay").addClass("d-none");
+  $("#verifyLOAModal").find("button, input").prop("disabled", false);
+}
+
+// ── Step navigation with a short fade transition ───────────────
+function goToStep(step, opts) {
+  const animate = !opts || opts.animate !== false;
+  const current = $(".verify-step").not(".d-none");
+  const next = $(`#verifyStep${step}`);
+
   currentStep = step;
-  $(".verify-step").addClass("d-none");
-  $(`#verifyStep${step}`).removeClass("d-none");
+
   $(".step-item").removeClass("active");
   $(`.step-item[data-step="${step}"]`).addClass("active");
   $("#verifyBackBtn").toggleClass("d-none", step === 1 || step === 3);
   $("#verifyNextBtn").toggleClass("d-none", step === 3);
+
+  if (animate && current.length && current.attr("id") !== next.attr("id")) {
+    current.addClass("verify-step-fade-out");
+    setTimeout(() => {
+      current.addClass("d-none").removeClass("verify-step-fade-out");
+      next.removeClass("d-none").addClass("verify-step-fade-in");
+      setTimeout(() => next.removeClass("verify-step-fade-in"), 250);
+    }, 180);
+  } else {
+    $(".verify-step").addClass("d-none");
+    next.removeClass("d-none");
+  }
 }
 
 // ── STEP 1: Verify LOA code against employee_info ──────────────
@@ -224,7 +316,7 @@ async function handleStep1() {
     return;
   }
 
-  $("#verifyNextBtn").prop("disabled", true).text("Checking...");
+  showLoading("Checking LOA code...");
   try {
     const res = await fetch("functions/verify_loa_code.php", {
       method: "POST",
@@ -244,13 +336,14 @@ async function handleStep1() {
     }
 
     $("#loaCodeError").addClass("d-none");
+    showLoading("Loading picture record...");
     await loadExistingPicture();
     goToStep(2);
   } catch (err) {
     console.error("LOA code verification failed:", err);
     Swal.fire("Error", "Unable to verify LOA code. Please try again.", "error");
   } finally {
-    $("#verifyNextBtn").prop("disabled", false).text("Next");
+    hideLoading();
   }
 }
 
@@ -309,12 +402,19 @@ async function handleStep2() {
     return;
   }
 
-  $("#verifyNextBtn").prop("disabled", true).text("Uploading...");
+  showLoading("Uploading picture...");
   try {
     if (file) {
+      const croppedBlob = await getCroppedBlob();
+
+      if (!croppedBlob) {
+        Swal.fire("Error", "Could not process the cropped image. Please try again.", "error");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("employee_id", verifyState.employeeId);
-      formData.append("picture", file);
+      formData.append("picture", croppedBlob, "id_picture.jpg");
       formData.append("overwrite", verifyState.hasExistingPicture ? "1" : "0");
 
       const res = await fetch("functions/upload_employee_picture.php", {
@@ -343,13 +443,19 @@ async function handleStep2() {
       "error",
     );
   } finally {
-    $("#verifyNextBtn").prop("disabled", false).text("Next");
+    hideLoading();
   }
 }
 
 // ── STEP 3: Finalize — set status based on start_date ──────────
 async function finalizeVerification() {
+  showLoading("Finalizing verification...");
   $("#finalizeResult").html('<div class="spinner-border text-primary"></div>');
+
+  // While finalizing, no way out except waiting for the result --
+  // hide the X entirely rather than just disabling it.
+  $("#verifyCloseXBtn").addClass("d-none");
+
   try {
     const res = await fetch("functions/finalize_verification.php", {
       method: "POST",
@@ -365,7 +471,7 @@ async function finalizeVerification() {
     if (result.success) {
       $("#finalizeResult").html(`
         <i class="bi bi-check-circle-fill text-success" style="font-size:2.2rem;"></i>
-        <p class="mt-2 mb-0">Verification complete. Employee status set to <strong>${result.status}</strong>.</p>
+        <p class="mt-2 mb-0">Verification complete. Employee status set to <strong>QUEUED</strong>.</p>
       `);
       if (
         typeof table !== "undefined" &&
@@ -385,5 +491,10 @@ async function finalizeVerification() {
     $("#finalizeResult").html(
       `<p class="text-danger">Unable to complete verification.</p>`,
     );
+  } finally {
+    hideLoading();
+    destroyCropper(); // no longer needed once we're on the result step
+    // Whatever the outcome, the only way to close now is Okay.
+    $("#verifyOkayBtn").removeClass("d-none").prop("disabled", false);
   }
 }

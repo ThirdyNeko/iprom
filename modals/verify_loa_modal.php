@@ -1,8 +1,12 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
 <style>
 .verify-steps { border-bottom: 1px solid #dee2e6; padding-bottom: 8px; }
 .step-item {
   flex: 1; text-align: center; font-size: 13px; font-weight: 600;
   color: #adb5bd; position: relative; padding-bottom: 6px;
+  transition: color 0.2s ease;
 }
 .step-item.active { color: #2d68c4; }
 .step-item.active::after {
@@ -27,17 +31,104 @@
   font-weight: 700;
   color: #6c757d;
 }
+
+/* ── Crop UI (Step 2) ──────────────────────────────────── */
+.crop-outer {
+  position: relative;
+  width: 260px;
+  height: 316px; /* matches the 140:170 guide-frame aspect ratio */
+  margin: 0 auto;
+}
+.crop-frame {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.crop-frame img {
+  display: block;
+  /* Cropper.js takes over sizing once initialized */
+  max-width: 100%;
+}
+/* Face/shoulders outline drawn on top of the crop frame -- purely
+   visual, so it must never intercept drag/zoom interactions. */
+.crop-guide-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+.crop-guide-overlay ellipse,
+.crop-guide-overlay path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+
+/* ── Step transition animation ─────────────────────────── */
+.verify-step {
+  opacity: 1;
+  transform: translateX(0);
+}
+.verify-step-fade-out {
+  opacity: 0 !important;
+  transform: translateX(-10px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.verify-step-fade-in {
+  animation: verifyStepFadeIn 0.25s ease;
+}
+@keyframes verifyStepFadeIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Loading overlay (blocks interaction during requests) ── */
+.modal-body { position: relative; }
+.verify-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  border-radius: 0.375rem;
+  animation: verifyOverlayFadeIn 0.15s ease;
+}
+@keyframes verifyOverlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.verify-loading-text {
+  color: #2d68c4;
+  font-weight: 600;
+  font-size: 14px;
+}
 </style>
 
-<div class="modal fade" id="verifyLOAModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="verifyLOAModal" tabindex="-1" aria-hidden="true"
+  data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title fw-bold">Verify Letter of Advice</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close" id="verifyCloseXBtn" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
+
+        <!-- Blocks all interaction while a request is in flight -->
+        <div class="verify-loading-overlay d-none" id="verifyLoadingOverlay">
+          <div class="spinner-border text-primary mb-2" role="status"></div>
+          <div class="verify-loading-text" id="verifyLoadingText">Processing...</div>
+        </div>
+
         <div class="d-flex justify-content-between mb-4 verify-steps">
           <div class="step-item active" data-step="1">1. LOA Code</div>
           <div class="step-item" data-step="2">2. ID Picture</div>
@@ -113,8 +204,30 @@
                 <p id="uploadPrompt" class="fw-semibold mb-2">Upload ID Picture</p>
                 <input type="file" id="idPictureInput" class="form-control" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
                 <div id="pictureError" class="text-danger small mt-2 d-none"></div>
-                <div class="mt-2 text-center d-none" id="previewWrap">
-                  <img id="previewImg" class="img-fluid rounded border" style="max-height:180px;">
+
+                <!-- Crop UI: appears once a file is chosen -->
+                <div class="mt-3 d-none" id="cropWrap">
+                  <p class="small text-muted mb-2 text-center">Drag to reposition, scroll or use the buttons to zoom</p>
+                  <div class="crop-outer">
+                    <div class="crop-frame">
+                      <img id="cropImage" src="" alt="Crop preview">
+                    </div>
+                    <svg class="crop-guide-overlay" viewBox="0 0 260 316" xmlns="http://www.w3.org/2000/svg">
+                      <ellipse cx="130" cy="118" rx="52" ry="66"/>
+                      <path d="M35 300 C35 215 225 215 225 300"/>
+                    </svg>
+                  </div>
+                  <div class="d-flex justify-content-center gap-2 mt-2">
+                    <button type="button" class="btn btn-outline-dark btn-sm" id="cropZoomOutBtn" title="Zoom out">
+                      <i class="bi bi-zoom-out"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-dark btn-sm" id="cropZoomInBtn" title="Zoom in">
+                      <i class="bi bi-zoom-in"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-dark btn-sm" id="cropResetBtn" title="Reset">
+                      <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -128,9 +241,9 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="button" class="btn btn-outline-primary d-none" id="verifyBackBtn">Back</button>
         <button type="button" class="btn btn-primary" id="verifyNextBtn">Next</button>
+        <button type="button" class="btn btn-success d-none" id="verifyOkayBtn" data-bs-dismiss="modal">Okay</button>
       </div>
     </div>
   </div>

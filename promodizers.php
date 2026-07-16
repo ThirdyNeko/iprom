@@ -221,8 +221,8 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <select id="filterStatus" class="form-select filter-control">
                                         <option value="">All</option>
                                         <option value="ACTIVE" selected>ACTIVE</option>
-                                        <option value="PENDING">PENDING</option>
-                                        <option value="QUEUED">QUEUED</option><
+                                        <option value="PENDING">LATE</option>
+                                        <option value="QUEUED">ADVANCE</option><
                                         <option value="INACTIVE">INACTIVE</option>
                                     </select>
                                 </div>

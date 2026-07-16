@@ -68,7 +68,9 @@ const startDateInput = document.getElementById("editStartDate");
 const endDateRow = document.getElementById("rowEndDate");
 const endDateInput = document.getElementById("editEndDate");
 const editRovingField = document.getElementById("editRovingField");
-const editRovingContainer = document.getElementById("editRovingContainer");
+const editRovingContainer = document.getElementById(
+  "editRovingContainer",
+);
 const editMultiBrandField = document.getElementById("editMultiBrandField");
 const editMultiBrandContainer = document.getElementById(
   "editMultiBrandContainer",
@@ -878,8 +880,11 @@ async function loadEmployeePage(id) {
     if (el("editGender"))
       el("editGender").value = cleanValue(employee.gender) || "";
     if (el("editBirthday")) el("editBirthday").value = employee.birthday || "";
-    if (el("editStatus"))
-      el("editStatus").value = cleanValue(employee.status) || "-";
+    if (el("editStatus")) {
+      const rawStatus = cleanValue(employee.status);
+      el("editStatus").value =
+        rawStatus.toUpperCase() === "PENDING" ? "QUEUED" : rawStatus || "-";
+    }
     if (el("editLastAssignedBy"))
       el("editLastAssignedBy").value = cleanValue(employee.last_assigned_by);
 
