@@ -4,6 +4,8 @@ const roleSelect = document.querySelector('select[name="role"]');
 const branchSelect = document.getElementById("branchSelect");
 const brandSelect = document.getElementById("brandSelect");
 const departmentInput = document.getElementById("departmentInput");
+const branchSectionLabel = document.getElementById("branchSectionLabel");
+const branchSingleHint = document.getElementById("branchSingleHint");
 
 function disableBranchSelect() {
   document.getElementById("branchSearch").disabled = true;
@@ -28,10 +30,20 @@ function enableBranchSelect() {
   updateCreateBranchCounter();
 }
 
+function setBranchLabelMode(isSingle) {
+  if (branchSectionLabel) {
+    branchSectionLabel.textContent = isSingle ? "Branch" : "Branches";
+  }
+  if (branchSingleHint) {
+    branchSingleHint.classList.toggle("d-none", !isSingle);
+  }
+}
+
 function updateFieldsByRole() {
   const role = roleSelect.value;
 
   disableBranchSelect();
+  setBranchLabelMode(false);
 
   if (role === "staff") {
     enableBranchSelect();
@@ -39,6 +51,7 @@ function updateFieldsByRole() {
     if (brandSelect) brandSelect.disabled = false;
   } else if (role === "branch_manager") {
     enableBranchSelect();
+    setBranchLabelMode(true);
   }
 }
 

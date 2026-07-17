@@ -36,6 +36,17 @@ function updateBranchCounter() {
 }
 
 /* ───────────────────────────────────────────
+   ROLE → BRANCH SELECTION MODE
+─────────────────────────────────────────── */
+function branchSelectionAllowed(role) {
+  return role === "staff" || role === "branch_manager";
+}
+
+function viewModalIsBranchManagerRole() {
+  return $("#v_role").val() === "branch_manager";
+}
+
+/* ───────────────────────────────────────────
    SESSION ROLE CHECK
 ─────────────────────────────────────────── */
 function isPrivileged(requiredRole) {
@@ -82,21 +93,32 @@ function refreshSaveBtn() {
    ROLE CHANGE  →  branch access
 ─────────────────────────────────────────── */
 $(document).on("change", "#v_role", function () {
-  const becameStaff = $(this).val() === "staff";
+  const role = $(this).val();
+  const allowed = branchSelectionAllowed(role);
 
-  $("#branchSearch").prop("disabled", !becameStaff).val("");
+  $("#branchSearch").prop("disabled", !allowed).val("");
+  $("#userViewModal .branch-item").show();
 
-  if (becameStaff) {
+  if (allowed) {
     $("#userViewModal .branch-checkbox").prop("disabled", false);
+
+    // switching into single-select mode: if more than one branch is
+    // currently checked, keep only the first and drop the rest
+    if (role === "branch_manager") {
+      const checked = $("#userViewModal .branch-checkbox:checked");
+      checked.each(function (i) {
+        if (i > 0) $(this).prop("checked", false);
+      });
+    }
   } else {
     $("#userViewModal .branch-checkbox").prop({
       checked: false,
       disabled: true,
     });
-    sortBranches();
-    updateBranchCounter();
   }
 
+  sortBranches();
+  updateBranchCounter();
   refreshSaveBtn();
 });
 
@@ -116,6 +138,15 @@ $(document).on("input", "#branchSearch", function () {
    CHECKBOX / FIELD CHANGES
 ─────────────────────────────────────────── */
 $(document).on("change", "#userViewModal .branch-checkbox", function () {
+  // BRANCH MANAGER = single branch only. Checking one unchecks the rest,
+  // giving radio-button behavior without swapping out the picker markup.
+  const changedEl = this;
+  if (viewModalIsBranchManagerRole() && changedEl.checked) {
+    $("#userViewModal .branch-checkbox:checked").each(function () {
+      if (this !== changedEl) $(this).prop("checked", false);
+    });
+  }
+
   sortBranches();
   updateBranchCounter();
   refreshSaveBtn();
@@ -150,7 +181,7 @@ $(document).on("click", ".view-user", function () {
     dataType: "json",
     success: function (data) {
       const role = (data.role || "").trim().toLowerCase();
-      const isStaff = role === "staff";
+      const allowsBranchSelection = branchSelectionAllowed(role);
       const canEdit = isReadonly ? false : isPrivileged();
       const isSuperAdmin = isReadonly ? false : isPrivileged("super_admin");
 
@@ -165,6 +196,7 @@ $(document).on("click", ".view-user", function () {
         super_admin: "SUPER ADMIN",
         staff: "STAFF",
         supervisor: "SUPERVISOR",
+        branch_manager: "BRANCH MANAGER",
       };
 
       /* ── basic fields ── */
@@ -182,6 +214,7 @@ $(document).on("click", ".view-user", function () {
             `<select id="v_role" class="form-control">
                <option value="staff">STAFF</option>
                <option value="supervisor">SUPERVISOR</option>
+               <option value="branch_manager">BRANCH MANAGER</option>
                <option value="admin">ADMIN</option>
              </select>`,
           );
@@ -196,6 +229,7 @@ $(document).on("click", ".view-user", function () {
             `<select id="v_role" class="form-control">
                <option value="staff">STAFF</option>
                <option value="supervisor">SUPERVISOR</option>
+               <option value="branch_manager">BRANCH MANAGER</option>
              </select>`,
           );
           $("#v_role").val(data.role);
@@ -215,7 +249,7 @@ $(document).on("click", ".view-user", function () {
       const $modal = $("#userViewModal");
       $modal
         .find("#branchSearch")
-        .prop("disabled", !isStaff || isReadonly)
+        .prop("disabled", !allowsBranchSelection || isReadonly)
         .val("");
 
       /* ── build two-pane branch layout ── */
@@ -224,7 +258,7 @@ $(document).on("click", ".view-user", function () {
 
       Object.entries(allBranches).forEach(([code, name], index) => {
         const checked = normalizedAssigned.includes(String(code).trim());
-        const disabled = !isStaff || isReadonly;
+        const disabled = !allowsBranchSelection || isReadonly;
 
         const item = `
           <div class="branch-item" data-index="${index}" style="margin:2px 0;">
@@ -281,6 +315,12 @@ $(document).on("click", "#saveChangesBtn", function () {
       .map((_, el) => el.value.trim())
       .get(),
   );
+
+  if (role === "branch_manager" && current.size !== 1) {
+    Swal.fire("Validation", "Please select exactly one branch for a Branch Manager.", "warning");
+    return;
+  }
+
   const branchChanged =
     !!origBranches &&
     (current.size !== origBranches.size ||

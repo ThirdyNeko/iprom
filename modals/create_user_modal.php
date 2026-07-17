@@ -133,13 +133,14 @@ try {
                         <div class="col-md-6">
 
                             <!-- ROLE -->
-                            <div class="mb-3">
+                            <div class="mb-3" id="roleSelectGroup">
 
                                 <label class="form-label">
                                     Role
                                 </label>
 
                                 <select name="role"
+                                        id="createRoleSelect"
                                         class="form-select"
                                         required>
 
@@ -153,6 +154,7 @@ try {
 
                                     <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
                                     <option value="supervisor">SUPERVISOR</option>
+                                    <option value="branch_manager">BRANCH MANAGER</option>
                                     <?php endif; ?>
 
                                     <option value="staff">STAFF</option>
@@ -161,15 +163,35 @@ try {
 
                             </div>
 
+                            <!-- ROLE (locked display — shown instead of the select when the
+                                 modal is opened from the "Add Branch Manager" button) -->
+                            <div class="mb-3" id="roleDisplayGroup" style="display:none;">
+
+                                <label class="form-label">
+                                    Role
+                                </label>
+
+                                <input type="text"
+                                       id="roleDisplayReadonly"
+                                       class="form-control"
+                                       value="BRANCH MANAGER"
+                                       readonly>
+
+                            </div>
+
                             <!-- BRANCH -->
                             <div class="mb-3">
 
-                                <label class="form-label mb-0">
+                                <label class="form-label mb-0" id="branchSectionLabel">
                                     Branches
                                 </label>
 
                                 <small id="branchCounter" class="text-muted">
                                     Selected: 0
+                                </small>
+
+                                <small id="branchSingleHint" class="text-muted d-none">
+                                    (select one branch)
                                 </small>
 
                                 <!-- Search -->
@@ -180,7 +202,9 @@ try {
                                        style="text-transform: uppercase;"
                                        disabled>
 
-                                <!-- Branch List — JS will split this into left/right panes -->
+                                <!-- Branch List — JS will split this into left/right panes.
+                                     Same picker is reused for both STAFF (multi-select) and
+                                     BRANCH MANAGER (single-select, enforced in JS). -->
                                 <div id="branchSelect">
 
                                     <?php foreach ($branches as $b): ?>
