@@ -12,6 +12,12 @@ $(document).ready(function () {
       type: "POST",
       data: function (d) {
         d.name = $("#filterName").val();
+        // Sent so fetch_loa.php can restrict results to the caller's branch(es)
+        // for role = branch manager / staff. The stored procedure/query should
+        // treat this as the source of truth (from $_SESSION), not trust a
+        // client-supplied branch override.
+        d.role = CURRENT_USER_ROLE;
+        d.branch = CURRENT_USER_BRANCH;
       },
     },
 
@@ -23,10 +29,23 @@ $(document).ready(function () {
       { data: "effectivity_date_display" },
       {
         data: null,
-        width: "160px",
+        width: "180px",
         className: "text-center px-1",
         orderable: false,
         render: function (data) {
+          const canVerify =
+            typeof CURRENT_USER_ROLE === "string" &&
+            CURRENT_USER_ROLE.toLowerCase() === "branch_manager";
+
+          const verifyBtnHtml = canVerify
+            ? `<button class="btn btn-success btn-sm px-2 py-1 verifyLOABtn"
+                data-loa-id="${data.loa_id}"
+                data-employee-id="${data.employee_id ?? ""}"
+                data-branch="${data.branch_code ?? ""}">
+                <i class="bi bi-patch-check me-1"></i>Verify
+              </button>`
+            : "";
+
           return `
             <div class="action-btns d-flex justify-content-center gap-1">
               <button class="btn btn-primary btn-sm px-2 py-1 printLOABtn"
@@ -52,12 +71,7 @@ $(document).ready(function () {
                 <i class="bi bi-printer me-1"></i>View LOA
               </button>
 
-              <button class="btn btn-success btn-sm px-2 py-1 verifyLOABtn"
-                data-loa-id="${data.loa_id}"
-                data-employee-id="${data.employee_id ?? ""}"
-                data-branch="${data.branch_code ?? ""}">
-                <i class="bi bi-patch-check me-1"></i>Verify
-              </button>
+              ${verifyBtnHtml}
             </div>
           `;
         },

@@ -8,6 +8,9 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
+$user_role   = $_SESSION['role'] ?? '';
+$user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode when filtering
+
 ?>
 
 <style>
@@ -123,6 +126,15 @@ $pdo = qa_db();
 
     </div>
 </div>
+
+<script>
+    // Session context for client-side UI gating (Verify button visibility, table filtering, etc).
+    // NOTE: this is UI convenience only — the actual verify endpoint (functions/verify_loa.php
+    // or equivalent) MUST independently re-check $_SESSION['role'] server-side. Never trust
+    // this value alone to authorize a write.
+    const CURRENT_USER_ROLE   = <?php echo json_encode($user_role); ?>;
+    const CURRENT_USER_BRANCH = <?php echo json_encode($user_branch); ?>;
+</script>
 
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="sweetalert/dist/sweetalert2.all.min.js"></script>
