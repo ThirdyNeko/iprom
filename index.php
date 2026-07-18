@@ -17,7 +17,7 @@ $stmt = $pdo->prepare("EXEC get_dashboard_counts");
 $stmt->execute();
 
 // After (with branch filtering):
-$isStaff         = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
+$isStaff         = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager';
 $sessionBranches = !empty($_SESSION['branch']) ? $_SESSION['branch'] : null;
 if ($isStaff && $sessionBranches === null) {
     $result = [

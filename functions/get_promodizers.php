@@ -46,7 +46,7 @@ $corpo  = trim($_GET['corpo']  ?? '');
 $sessionBranches = !empty($_SESSION['branch'])
     ? array_map('trim', explode(',', $_SESSION['branch']))
     : [];
-$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
+$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager';
 
 // =========================
 // BRANCH MAP

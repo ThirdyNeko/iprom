@@ -53,6 +53,82 @@ function checkPrintBtnState() {
 }
 
 // =========================
+// ROLE HELPERS
+// =========================
+function isBranchManagerRole() {
+  return (window.userRole || "").toLowerCase() === "branch_manager";
+}
+
+// Fully locks the page down to read-only for branch_manager.
+// Must be called AFTER all the other toggle*() functions run in
+// loadEmployeePage(), since several of those explicitly re-enable
+// specific fields (start date, agency, address, etc.) depending on
+// the selected reason — calling this first would just get
+// overridden by those.
+function lockPageForBranchManager() {
+  if (!pageEl) return;
+
+  pageEl.querySelectorAll("input, select, textarea").forEach((el) => {
+    el.disabled = true;
+  });
+
+  pageEl
+    .querySelectorAll(
+      ".btn-add-branch, .btn-add-brand, .btn-remove-branch, .btn-remove-brand",
+    )
+    .forEach((btn) => {
+      btn.style.display = "none";
+    });
+
+  const saveBtn = document.getElementById("saveBtn");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.style.display = "none";
+  }
+
+  const alertBox = document.getElementById("editAlert");
+  if (alertBox) {
+    alertBox.innerHTML =
+      '<div class="alert alert-warning mt-2 mb-0">You have read-only access to this record.</div>';
+  }
+}
+
+// Masks a single field's displayed value with asterisks. Selects get
+// replaced with one disabled masked option (so the actual place name
+// never touches the DOM); date/text inputs get their value swapped
+// for a fixed-length mask. Date inputs are switched to type="text"
+// first, since a native <input type="date"> silently blanks out any
+// non-date string assigned to .value.
+function maskFieldValue(el) {
+  if (!el) return;
+  const MASK = "********";
+
+  if (el.tagName === "SELECT") {
+    el.innerHTML = `<option value="" selected>${MASK}</option>`;
+    el.disabled = true;
+    return;
+  }
+
+  if (el.tagName === "INPUT") {
+    if (el.type === "date") el.type = "text";
+    el.value = MASK;
+    el.disabled = true;
+  }
+}
+
+// Masks Birthday and full Address (province/municipality/barangay/
+// street) for branch_manager only. Safe to call multiple times.
+function maskSensitiveFieldsForBranchManager() {
+  if (!isBranchManagerRole()) return;
+
+  maskFieldValue(document.getElementById("editBirthday"));
+  maskFieldValue(editProvince);
+  maskFieldValue(editMunicipality);
+  maskFieldValue(editBarangay);
+  maskFieldValue(editStreet);
+}
+
+// =========================
 // ELEMENT REFERENCES
 // =========================
 const pageEl = document.getElementById("editPromodizerPage");
@@ -974,6 +1050,14 @@ async function loadEmployeePage(id) {
         populateEditBrands(brands, employee.branch, employee.brand);
         updateBrandOptions();
       }
+
+      // Re-apply the branch_manager lock after this async UI is
+      // populated, since populateEditRoving()/populateEditBrands()
+      // render fresh <select> elements that would otherwise be
+      // enabled by default.
+      if (isBranchManagerRole()) {
+        lockPageForBranchManager();
+      }
     });
 
     if (reasonSelect) reasonSelect.selectedIndex = 0;
@@ -992,6 +1076,8 @@ async function loadEmployeePage(id) {
         : "";
     }
 
+    const isBranchManager = isBranchManagerRole();
+
     const editable = [
       "editReasonUpdate",
       "editDateSeparated",
@@ -1001,7 +1087,7 @@ async function loadEmployeePage(id) {
     ];
 
     pageEl.querySelectorAll("input, select, textarea").forEach((el) => {
-      el.disabled = !editable.includes(el.id);
+      el.disabled = isBranchManager ? true : !editable.includes(el.id);
     });
 
     loadHistory(employee.employee_id);
@@ -1016,6 +1102,14 @@ async function loadEmployeePage(id) {
     toggleContactAddressEditable();
     toggleAddButtons();
     toggleBranchReasonOptions();
+
+    // Must run last: several of the toggle*() calls above explicitly
+    // re-enable specific fields depending on the selected reason, so
+    // the lock has to be applied after all of them to actually stick.
+    if (isBranchManager) {
+      maskSensitiveFieldsForBranchManager();
+      lockPageForBranchManager();
+    }
   } catch (err) {
     console.error(err);
     Swal.fire({
@@ -1030,6 +1124,8 @@ async function loadEmployeePage(id) {
 // SAVE BUTTON
 // =========================
 document.getElementById("saveBtn").addEventListener("click", async () => {
+  if (isBranchManagerRole()) return;
+
   const branch = document.getElementById("editBranch")?.value || "";
   const brand = document.getElementById("editBrand")?.value || "";
   const reason = (

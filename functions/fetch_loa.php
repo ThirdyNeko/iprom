@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 require_once '../config/db.php';
 
@@ -25,8 +26,55 @@ $orderExpr = ($orderColumn === 'promodiser')
     ? "LTRIM(RTRIM(first_name + ' ' + ISNULL(middle_name, '') + ' ' + last_name + ' ' + ISNULL(suffix, '')))"
     : $orderColumn;
 
-$where = "WHERE 1=1";
-$params = [];
+$params       = [];   // full param set (branch + name search), used for the main/filtered query
+$branchParams = [];   // branch-only params, used for the unfiltered recordsTotal count
+
+// ── Branch restriction ──────────────────────────────────────────
+// branch manager / staff only see LOAs tied to their own branch(es).
+// $_SESSION['branch'] is set at login (auth/login.php) as a
+// comma-delimited string of branch codes, same pattern used
+// elsewhere in the app (dashboard/promodizers/assignments filtering).
+// Enforced here from the session (server-side) — never trust a
+// branch value posted from the client.
+$sessionRole     = strtolower(trim($_SESSION['role'] ?? ''));
+$sessionBranch   = $_SESSION['branch'] ?? '';
+$restrictedRoles = ['branch_manager', 'staff'];
+
+$branchWhere = "WHERE 1=1";
+
+if (in_array($sessionRole, $restrictedRoles, true)) {
+    $branchCodes = array_values(array_filter(array_map('trim', explode(',', $sessionBranch))));
+
+    if (empty($branchCodes)) {
+        // Restricted role with no branch assigned -> see nothing, fail closed.
+        $branchWhere .= " AND 1 = 0";
+    } else {
+        $branchConditions = [];
+        foreach ($branchCodes as $i => $code) {
+            // NOTE: SQL Server's PDO driver (sqlsrv/odbc) does not support
+            // reusing the same named parameter twice in one query the way
+            // MySQL/Postgres do -- each occurrence needs its own placeholder,
+            // even though both are bound to the same value, or you get
+            // "number of bound variables does not match number of tokens".
+            $keyA = ":branch{$i}a";
+            $keyB = ":branch{$i}b";
+            // Match the employee's home branch, or any of their roving
+            // branches (roving_branches is a comma-delimited string
+            // column, so pad both sides with commas to avoid a code
+            // like "B1" matching inside "B10").
+            $branchConditions[] = "(branch_code = {$keyA}
+                OR ',' + ISNULL(roving_branches, '') + ',' LIKE '%,' + {$keyB} + ',%')";
+            $branchParams[$keyA] = $code;
+            $branchParams[$keyB] = $code;
+        }
+        $branchWhere .= " AND (" . implode(' OR ', $branchConditions) . ")";
+    }
+}
+
+$params = $branchParams;
+
+// ── Name/search filter (applied on top of the branch restriction) ──
+$where = $branchWhere;
 
 if (!empty($name)) {
     $where .= " AND (
@@ -45,7 +93,11 @@ if (!empty($name)) {
     $params[':name6'] = "%$name%";
 }
 
-$totalStmt = $pdo->query("SELECT COUNT(*) FROM letters_of_advice");
+// recordsTotal reflects what this user is allowed to see (branch-restricted,
+// no search filter) — not the whole table — so DataTables' "X of Y entries"
+// footer isn't misleading for restricted roles.
+$totalStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice $branchWhere");
+$totalStmt->execute($branchParams);
 $recordsTotal = $totalStmt->fetchColumn();
 
 $countStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice $where");
