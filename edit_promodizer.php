@@ -220,10 +220,6 @@ th {
                         <label class="form-label">Contact Number</label>
                         <input type="text" id="editContactNumber" class="form-control" maxlength="11" inputmode="numeric" disabled>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Biometric Number</label>
-                        <input type="text" id="editBiometricNumber" class="form-control" maxlength="5" inputmode="numeric" disabled>
-                    </div>
                 </div>
 
                 <!-- Address -->
@@ -259,6 +255,12 @@ th {
                     <hr>
                     <H3 class="fw-bold mb-2">Employment Details</H6>
                 </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Biometric Number</label>
+                        <input type="text" id="editBiometricNumber" class="form-control" maxlength="5" inputmode="numeric" disabled>
+                    </div>
+                </div>
 
                 <!-- Assignment classification -->
                 <div class="row g-3 mb-3">
@@ -281,6 +283,7 @@ th {
                 </div>                
 
                 <!-- Statuses and Dates - all in one row, all equal width -->
+                
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
                         <label class="form-label">Employment Status</label>

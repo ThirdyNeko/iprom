@@ -156,19 +156,7 @@ $branch_brand_pairs = $pdo->query("
                                 required
                             >
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Biometric Number</label>
-                            <input
-                                type="text"
-                                name="biometric_number"
-                                id="biometricNumber"
-                                class="form-control"
-                                placeholder="e.g. 12345"
-                                maxlength="5"
-                                inputmode="numeric"
-                                required
-                            >
-                        </div>
+                        
                     </div>
 
                     <!-- Address -->
@@ -204,6 +192,22 @@ $branch_brand_pairs = $pdo->query("
                     <div class="row g-3 mb-3">
                         <hr>
                         <h6 class="fw-bold mb-2">Employment Details</h6>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Biometric Number</label>
+                            <input
+                                type="text"
+                                name="biometric_number"
+                                id="biometricNumber"
+                                class="form-control"
+                                placeholder="e.g. 12345"
+                                maxlength="5"
+                                inputmode="numeric"
+                                required
+                            >
+                        </div>
                     </div>
 
                     <!-- Branch / Brand / Agency / Date Hired -->
