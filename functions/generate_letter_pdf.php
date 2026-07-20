@@ -343,6 +343,7 @@ $pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['username'] ?? ''), 0, 1, 'L');
 $pdf->SetX(10);
 $pdf->SetFont('Arial', '', 11);
 $pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['position'] ?? ''), 0, 0, 'L');
+$pdf->SetFont('Arial', '', 8);
 $pdf->Cell(0, 6, date('F d, Y h:i:s A'), 0, 1, 'R');
 
 $pdf->Output('I', 'letter_of_advice.pdf');

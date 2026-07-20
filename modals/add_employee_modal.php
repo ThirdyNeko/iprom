@@ -130,7 +130,6 @@ $branch_brand_pairs = $pdo->query("
                                 <option value="MARRIED">MARRIED</option>
                                 <option value="WIDOWED">WIDOWED</option>
                                 <option value="SEPARATED">SEPARATED</option>
-                                <option value="DIVORCED">DIVORCED</option>
                             </select>
                         </div>
                         <div class="col-md-3">

@@ -44,6 +44,13 @@ function checkPrintBtnState() {
   const printBtn = document.getElementById("openPrintModalBtn");
   if (!printBtn) return;
 
+  // branch_manager can never print, full stop — takes priority over
+  // isAdmin/canPrintLOA below.
+  if (isBranchManagerRole()) {
+    printBtn.disabled = true;
+    return;
+  }
+
   const rawCanPrintLOA = window.canPrintLOA;
   const isAdmin = ["admin", "super_admin"].includes(window.userRole || "");
   const canPrintLOA = Number(rawCanPrintLOA || 0) === 1;
@@ -144,9 +151,7 @@ const startDateInput = document.getElementById("editStartDate");
 const endDateRow = document.getElementById("rowEndDate");
 const endDateInput = document.getElementById("editEndDate");
 const editRovingField = document.getElementById("editRovingField");
-const editRovingContainer = document.getElementById(
-  "editRovingContainer",
-);
+const editRovingContainer = document.getElementById("editRovingContainer");
 const editMultiBrandField = document.getElementById("editMultiBrandField");
 const editMultiBrandContainer = document.getElementById(
   "editMultiBrandContainer",
