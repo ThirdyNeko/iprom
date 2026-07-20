@@ -121,6 +121,32 @@ th {
 #editReasonUpdate option:disabled {
     color: #adb5bd;
 }
+
+/* Employee picture */
+#editEmployeePictureBox {
+    width: 130px;
+    height: 130px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #f1f1f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#editEmployeePictureBox img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#editEmployeePictureBox .no-picture-label {
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+    padding: 4px;
+}
 </style>
 
 <div class="content">
@@ -175,23 +201,32 @@ th {
                     <H3 class="fw-bold mb-2">Personal Details</H6>
                 </div>
 
-                <!-- Names -->
+                <!-- Picture + Names -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-3">
-                        <label class="form-label">First Name</label>
-                        <input type="text" id="editFirstName" class="form-control" readonly>
+                    <div class="col-md-2 d-flex align-items-start">
+                        <div id="editEmployeePictureBox">
+                            <div class="no-picture-label">No Photo</div>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Middle Name</label>
-                        <input type="text" id="editMiddleName" class="form-control" readonly>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" id="editLastName" class="form-control" readonly>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Suffix</label>
-                        <input type="text" id="editSuffix" class="form-control" readonly>
+                    <div class="col-md-10">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" id="editFirstName" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Middle Name</label>
+                                <input type="text" id="editMiddleName" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" id="editLastName" class="form-control" readonly>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Suffix</label>
+                                <input type="text" id="editSuffix" class="form-control" readonly>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -457,6 +492,42 @@ document.addEventListener("DOMContentLoaded", function () {
             window.location.href = "promodizers.php?restore=1";
         });
     }
+
+    // ============================================================
+    // EMPLOYEE PICTURE — fetch and display (read-only)
+    // check_employee_picture.php keys off the actual employee_id
+    // (e.g. "EMP-..."), not the promodizer record id in the URL —
+    // so this is exposed as a function and called from
+    // edit_promodizer.js once employee.employee_id is known
+    // (see loadEmployeePage()).
+    // ============================================================
+    window.loadEmployeePicture = function (employeeId) {
+        const box = document.getElementById("editEmployeePictureBox");
+        if (!box) return;
+
+        if (!employeeId) {
+            box.innerHTML = '<div class="no-picture-label">No Photo</div>';
+            return;
+        }
+
+        fetch("functions/check_employee_picture.php?employee_id=" + encodeURIComponent(employeeId))
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.exists && data.picture_data) {
+                    box.innerHTML = "";
+                    const img = document.createElement("img");
+                    img.src = data.picture_data;
+                    img.alt = "Employee Photo";
+                    box.appendChild(img);
+                } else {
+                    box.innerHTML = '<div class="no-picture-label">No Photo</div>';
+                }
+            })
+            .catch(function (err) {
+                console.error("Failed to load employee picture:", err);
+                box.innerHTML = '<div class="no-picture-label">No Photo</div>';
+            });
+    };
 
     // ============================================================
     // REASON / HEADER TOGGLE LOGIC

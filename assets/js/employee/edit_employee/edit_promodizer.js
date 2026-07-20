@@ -765,6 +765,12 @@ function resetEditPage() {
       '<option value="" disabled selected>-- Select Barangay --</option>';
     editBarangay.disabled = true;
   }
+
+  // Reset picture box back to placeholder until the real employee_id
+  // is loaded and re-fetched.
+  if (typeof window.loadEmployeePicture === "function") {
+    window.loadEmployeePicture(null);
+  }
 }
 
 // =========================
@@ -934,6 +940,13 @@ async function loadEmployeePage(id) {
 
     window.currentEmployee = employee;
     window.canPrintLOA = p.print_loa ?? 0;
+
+    // EMPLOYEE PICTURE — check_employee_picture.php keys off the
+    // actual employee_id string (e.g. "EMP-..."), which is only
+    // available now, not the promodizer record id from the URL.
+    if (typeof window.loadEmployeePicture === "function") {
+      window.loadEmployeePicture(employee.employee_id);
+    }
 
     const el = (id) => document.getElementById(id);
 
