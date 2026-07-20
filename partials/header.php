@@ -163,21 +163,21 @@ body {
 }
 
 /* COLLAPSED MODE */
-.collapsed .sidebar {
+/* .collapsed .sidebar {
     width: 70px;
 }
 
 .collapsed .content,
 .collapsed .header {
     margin-left: 70px;
-}
+} */
 
 /* HIDE TEXT */
-.collapsed .sidebar span,
+/* .collapsed .sidebar span,
 .collapsed .sidebar-text,
 .collapsed .sidebar h5 {
     display: none;
-}
+} */
 
 .sidebar .btn-danger:hover .sidebar-text {
     color: #fff !important;
@@ -188,21 +188,21 @@ body {
 }
 
 /* CENTER ICONS */
-.collapsed .sidebar .nav-link {
+/* .collapsed .sidebar .nav-link {
     justify-content: center;
-}
+} */
 
 /* CENTER LOGO */
-.collapsed .sidebar-logo {
+/* .collapsed .sidebar-logo {
     margin: 0 auto;
     display: block;
-}
+} */
 
 /* CENTER BOTTOM */
-.collapsed .btn,
+/* .collapsed .btn,
 .collapsed .d-flex.align-items-center.gap-2 {
     justify-content: center !important;
-}
+} */
 
 /* ── MAINTENANCE MODE BUTTON ───────────────────────── */
 .maintenance-btn {
@@ -240,9 +240,9 @@ body {
 }
 
 /* Hide badge text when sidebar is collapsed */
-.collapsed .maintenance-btn .badge {
+/* .collapsed .maintenance-btn .badge {
     display: none;
-}
+} */
 </style>
 </head>
 <body>

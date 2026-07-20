@@ -18,6 +18,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   const contactNumberInput = document.getElementById("contactNumber");
   const biometricNumberInput = document.getElementById("biometricNumber");
 
+  // Categories dropdown
+  const catAll = document.getElementById("catAll");
+  const catItems = document.querySelectorAll(".category-item");
+  const categoriesInput = document.getElementById("categoriesInput");
+  const categoriesBtn = document.getElementById("categoriesDropdownBtn");
+
   // Address fields (now cascading selects instead of free text)
   const provinceInput = document.getElementById("province");
   const municipalityInput = document.getElementById("municipality");
@@ -54,6 +60,52 @@ document.addEventListener("DOMContentLoaded", async function () {
   biometricNumberInput.addEventListener("input", function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 5);
   });
+
+  // =========================
+  // Categories dropdown (default "All", collapsible individual picks)
+  // =========================
+  function updateCategoriesInputAndLabel() {
+    if (catAll.checked) {
+      categoriesInput.value = "ALL";
+      categoriesBtn.textContent = "All";
+      return;
+    }
+
+    const checked = Array.from(catItems)
+      .filter((cb) => cb.checked)
+      .map((cb) => cb.value);
+
+    categoriesInput.value = checked.join(",");
+    categoriesBtn.textContent = checked.length
+      ? checked.join(", ")
+      : "None selected";
+  }
+
+  catAll.addEventListener("change", function () {
+    catItems.forEach((cb) => {
+      cb.disabled = catAll.checked;
+      if (catAll.checked) cb.checked = true;
+    });
+    updateCategoriesInputAndLabel();
+  });
+
+  catItems.forEach((cb) => {
+    cb.addEventListener("change", function () {
+      const allChecked = Array.from(catItems).every((item) => item.checked);
+      const noneChecked = Array.from(catItems).every((item) => !item.checked);
+
+      if (allChecked) {
+        catAll.checked = true;
+        catItems.forEach((item) => (item.disabled = true));
+      }
+      if (noneChecked) {
+        catAll.checked = false;
+      }
+      updateCategoriesInputAndLabel();
+    });
+  });
+
+  updateCategoriesInputAndLabel();
 
   // =========================
   // Fetch branch-brand availability mapping
@@ -535,6 +587,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       const maritalStatus = maritalStatusInput.value;
       const contactNumber = contactNumberInput.value;
       const biometricNumber = biometricNumberInput.value;
+      const categories = categoriesInput.value; // "ALL" or comma list e.g. "TV,DA"
 
       // Address values: codes come from the selects, names from the hidden inputs
       const provinceCode = provinceInput.value;
@@ -586,6 +639,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         return Swal.fire(
           "Invalid Biometric Number",
           "Biometric number must be exactly 5 digits.",
+          "warning",
+        );
+      }
+
+      // Categories validation: must be "ALL" or at least one selected
+      if (!categories) {
+        return Swal.fire(
+          "Missing Categories",
+          "Please select at least one category, or leave All checked.",
           "warning",
         );
       }
@@ -956,6 +1018,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         formData.set("marital_status", maritalStatus);
         formData.set("contact_number", contactNumber);
         formData.set("biometric_number", biometricNumber);
+        formData.set("categories", categories); // "ALL" or "TV,DA,..."
 
         // Address: send both codes and human-readable names.
         // Adjust to formData.set("province", provinceName) etc. if
@@ -986,6 +1049,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (idx > 0) row.remove();
               });
             rovingContainer.querySelector("select").value = "";
+
+            // reset categories dropdown back to "All"
+            catAll.checked = true;
+            catItems.forEach((cb) => {
+              cb.checked = false;
+              cb.disabled = true;
+            });
+            updateCategoriesInputAndLabel();
 
             // reset address cascade back to province-only state
             municipalityInput.innerHTML =

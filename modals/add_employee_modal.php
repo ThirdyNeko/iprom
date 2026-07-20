@@ -31,6 +31,10 @@ $branch_brand_pairs = $pdo->query("
     FROM assignment
     WHERE branch_name IS NOT NULL AND brand_name IS NOT NULL
 ")->fetchAll(PDO::FETCH_ASSOC);
+
+// Category options (brand categories e.g. TV, AV, DA, WM)
+// TODO: replace with a real query if these live in a table
+$categoryOptions = ['TV', 'AV', 'DA', 'WM'];
 ?>
 
 <style>
@@ -59,6 +63,12 @@ $branch_brand_pairs = $pdo->query("
 #addEmployeeModal .form-select:focus {
     box-shadow: 0 0 0 0.15rem rgba(255, 193, 7, 0.25);
     border-color: #ffc107;
+}
+
+/* Categories dropdown */
+#addEmployeeModal #categoriesMenu {
+    max-height: 220px;
+    overflow-y: auto;
 }
 </style>
 
@@ -193,6 +203,7 @@ $branch_brand_pairs = $pdo->query("
                         <h6 class="fw-bold mb-2">Employment Details</h6>
                     </div>
 
+                    <!-- Biometric Number / Categories -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-3">
                             <label class="form-label">Biometric Number</label>
@@ -206,6 +217,44 @@ $branch_brand_pairs = $pdo->query("
                                 inputmode="numeric"
                                 required
                             >
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Designated Categories</label>
+                            <div class="dropdown">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary w-100 text-start dropdown-toggle form-control"
+                                    id="categoriesDropdownBtn"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside"
+                                    aria-expanded="false"
+                                >
+                                    All
+                                </button>
+                                <ul class="dropdown-menu p-2" id="categoriesMenu" style="min-width: 100%;">
+                                    <li>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="catAll" checked>
+                                            <label class="form-check-label fw-bold" for="catAll">All</label>
+                                        </div>
+                                        <hr class="my-1">
+                                    </li>
+                                    <?php foreach ($categoryOptions as $cat): ?>
+                                    <li>
+                                        <div class="form-check">
+                                            <input class="form-check-input category-item" type="checkbox"
+                                                id="cat_<?= htmlspecialchars($cat) ?>"
+                                                value="<?= htmlspecialchars($cat) ?>" disabled>
+                                            <label class="form-check-label" for="cat_<?= htmlspecialchars($cat) ?>">
+                                                <?= htmlspecialchars($cat) ?>
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                            <input type="hidden" name="categories" id="categoriesInput" value="ALL">
                         </div>
                     </div>
 
