@@ -21,7 +21,7 @@ $isStaff         = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || 
 $sessionBranches = !empty($_SESSION['branch']) ? $_SESSION['branch'] : null;
 if ($isStaff && $sessionBranches === null) {
     $result = [
-        'total_promodizers' => 0, 'active_promodizers' => 0, 'inactive_promodizers' => 0,
+        'total_promodizers' => 0, 'active_promodizers' => 0, 'inactive_promodizers' => 0, 'queued_promodizers' => 0,
         'total_assignments' => 0, 'complete_assignments' => 0,
         'lacking_assignments' => 0, 'zero_assigned' => 0,
     ];
@@ -39,6 +39,7 @@ if ($isStaff && $sessionBranches === null) {
 $total = (int)$result['total_promodizers'];
 $assigned = (int)$result['active_promodizers'];
 $unassigned = (int)$result['inactive_promodizers'];
+$queued = (int)$result['queued_promodizers'];
 
 // Assignments
 $totalAssignments = (int)$result['total_assignments'];
@@ -49,6 +50,7 @@ $zeroAssigned = (int)$result['zero_assigned'];
 // Percentages
 $assignedPct = $total ? round($assigned / $total * 100, 1) : 0;
 $unassignedPct = $total ? round($unassigned / $total * 100, 1) : 0;
+$queuedPct = $total ? round($queued / $total * 100, 1) : 0;
 $completePct = $totalAssignments ? round($completeAssignments / $totalAssignments * 100, 1) : 0;
 $lackingPct = $totalAssignments ? round($lackingAssignments / $totalAssignments * 100, 1) : 0;
 $zeroAssignedPct = $totalAssignments ? round($zeroAssigned / $totalAssignments * 100, 1) : 0;
@@ -60,6 +62,7 @@ $cards = [
     ['label'=>'Total Promodisers','value'=>$total,'color'=>'primary','icon'=>'👥','link'=>'promodizers.php'],
     ['label'=>'ACTIVE','value'=>$assigned,'percent'=>$assignedPct,'color'=>'success','icon'=>'✅','link'=>'promodizers.php?status=active'],
     ['label'=>'INACTIVE','value'=>$unassigned,'percent'=>$unassignedPct,'color'=>'danger','icon'=>'⚠️','link'=>'promodizers.php?status=inactive'],
+    ['label'=>'QUEUED','value'=>$queued,'percent'=>$queuedPct,'color'=>'warning','icon'=>'⏳','link'=>'promodizers.php?status=queued'],
 
     ['label'=>'Total Assignments','value'=>$totalAssignments,'color'=>'primary','icon'=>'📋','link'=>'assignments.php'],
     ['label'=>'COMPLETE','value'=>$completeAssignments,'percent'=>$completePct,'color'=>'success','icon'=>'✅','link'=>'assignments.php?status=complete'],
@@ -100,9 +103,9 @@ $cards = [
                 <!-- ONE ROW ONLY -->
                 <div class="row g-3 mb-5">
 
-                    <?php foreach(array_slice($cards,0,3) as $card): ?>
+                    <?php foreach(array_slice($cards,0,4) as $card): ?>
 
-                        <div class="col-4">
+                        <div class="col-3">
 
                             <a href="<?= $card['link'] ?>" class="text-decoration-none">
 
@@ -157,7 +160,7 @@ $cards = [
                 <!-- ONE ROW ONLY -->
                 <div class="row g-3 mb-5">
 
-                    <?php foreach(array_slice($cards,3,4) as $card): ?>
+                    <?php foreach(array_slice($cards,4,4) as $card): ?>
 
                         <div class="col-3">
 
@@ -248,17 +251,17 @@ Chart.register(noDataPlugin);
 new Chart(document.getElementById('promodizerChart'), {
     type: 'doughnut',
     data: {
-        labels: ['ACTIVE', 'INACTIVE'],
+        labels: ['ACTIVE', 'INACTIVE', 'QUEUED'],
         datasets: [{
-            data: [<?= $assigned ?>, <?= $unassigned ?>],
-            backgroundColor: ['#198754', '#dc3545']
+            data: [<?= $assigned ?>, <?= $unassigned ?>, <?= $queued ?>],
+            backgroundColor: ['#198754', '#dc3545', '#ffc107']
         }]
     },
     options: {
         plugins: {
             legend: {
                 position: 'bottom',
-                display: ![<?= $assigned ?>, <?= $unassigned ?>].every(v => v === 0)
+                display: ![<?= $assigned ?>, <?= $unassigned ?>, <?= $queued ?>].every(v => v === 0)
             }
         },
         responsive: true,

@@ -154,12 +154,12 @@ $roleLabels = [
         <ul class="nav nav-tabs" id="usersTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button" role="tab" aria-controls="users-pane" aria-selected="true">
-                    Users
+                    Head Office
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="branch-managers-tab" data-bs-toggle="tab" data-bs-target="#branch-managers-pane" type="button" role="tab" aria-controls="branch-managers-pane" aria-selected="false">
-                    Branch Managers
+                    Branch
                 </button>
             </li>
         </ul>

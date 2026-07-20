@@ -1,3 +1,8 @@
+// True only when QUEUED was set via the dashboard's ?status=queued link.
+// Cleared the moment the user manually changes the dropdown.
+// Only this case should match BOTH "QUEUED" and "PENDING" server-side.
+let queuedFromDashboard = false;
+
 $(document).ready(function () {
   // =========================
   // FILTER PERSISTENCE — only restore when arriving via the edit page's
@@ -17,6 +22,9 @@ $(document).ready(function () {
   // Pre-set status dropdown so the very first ajax.data call uses it
   if (statusParam) {
     $("#filterStatus").val(statusParam.toUpperCase());
+    if (statusParam.toUpperCase() === "QUEUED") {
+      queuedFromDashboard = true;
+    }
   }
   // Default to ACTIVE if no status param (HTML already has selected, but be explicit)
   if (!statusParam && !$("#filterStatus").val()) {
@@ -48,7 +56,14 @@ $(document).ready(function () {
         d.name_search = $("#filterName").val();
         d.branch = $("#filterBranch").val();
         d.brand = $("#filterBrand").val();
-        d.status = $("#filterStatus").val();
+        // QUEUED is a display-only label; underlying stored status is PENDING.
+        // Only combine both when this came from the dashboard's QUEUED card —
+        // a manual dropdown pick of QUEUED filters on QUEUED alone.
+        const statusVal = $("#filterStatus").val();
+        d.status =
+          statusVal === "QUEUED" && queuedFromDashboard
+            ? "QUEUED,PENDING"
+            : statusVal;
         d.employment_status = $("#filterEmploymentStatus").val();
         d.sub_status = $("#filterSubStatus").val();
         d.assigned_by = $("#filterAssignedBy").val();
@@ -140,10 +155,19 @@ $(document).ready(function () {
   });
 
   // =========================
-  // ALL SELECT FILTERS
+  // STATUS FILTER — separate handler so a manual change clears the
+  // "came from dashboard QUEUED link" flag before the reload fires
+  // =========================
+  $("#filterStatus").on("change", function () {
+    queuedFromDashboard = false;
+    reloadTable();
+  });
+
+  // =========================
+  // ALL OTHER SELECT FILTERS
   // =========================
   $(
-    "#filterBranch, #filterBrand, #filterStatus, #filterEmploymentStatus, " +
+    "#filterBranch, #filterBrand, #filterEmploymentStatus, " +
       "#filterSubStatus, #filterCompany, #filterAgency, " +
       "#filterArea, #filterRegion, #filterFrom, #filterTo",
   ).on("change", reloadTable);
@@ -254,10 +278,18 @@ document.getElementById("exportExcel").addEventListener("click", function () {
     Object.values(branchMap).map((b) => [b.branch, b]),
   );
 
+  // QUEUED is a display-only label; underlying stored status is PENDING.
+  // Only combine both when this came from the dashboard's QUEUED card —
+  // a manual dropdown pick of QUEUED filters on QUEUED alone.
+  const statusVal = $("#filterStatus").val();
+
   const filters = {
     branch: $("#filterBranch").val(),
     brand: $("#filterBrand").val(),
-    status: $("#filterStatus").val(),
+    status:
+      statusVal === "QUEUED" && queuedFromDashboard
+        ? "QUEUED,PENDING"
+        : statusVal,
     employment_status: $("#filterEmploymentStatus").val(),
     sub_status: $("#filterSubStatus").val(),
     agency: $("#filterAgency").val(),
