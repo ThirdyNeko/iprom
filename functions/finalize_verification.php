@@ -1,14 +1,8 @@
 <?php
 // ─────────────────────────────────────────────────────────────
 // functions/finalize_verification.php
-// 1. Sets the employee's status for the selected LOA's branch:
-//    - start_date is today or in the past -> ACTIVE
-//    - start_date is in the future        -> QUEUED
-// 2. Deletes the now-verified row from letters_of_advice (identified
-//    by its own [id], i.e. the loa_id passed in from the DataTable).
-// Both steps run in one transaction so a failure on either leaves
-// the DB untouched.
-// Expects JSON POST: { employee_id, branch_code, loa_id }
+// Thin wrapper around dbo.sp_finalize_verification.
+// Expects JSON POST: { employee_id, branch_code, loa_id, remarks? }
 // Returns: { success: bool, status?: string, message?: string }
 // ─────────────────────────────────────────────────────────────
 
@@ -24,6 +18,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 $employeeId = trim($input['employee_id'] ?? '');
 $branchCode = trim($input['branch_code'] ?? '');
 $loaId      = trim($input['loa_id'] ?? '');
+$remarks    = trim($input['remarks'] ?? '');
 
 if ($employeeId === '' || $branchCode === '' || $loaId === '') {
     echo json_encode([
@@ -33,69 +28,45 @@ if ($employeeId === '' || $branchCode === '' || $loaId === '') {
     exit;
 }
 
+// Adjust to however the logged-in user is actually tracked in session.
+$updatedBy = $_SESSION['username'] ?? $_SESSION['user_id'] ?? 'SYSTEM';
+
+$remarksParam = $remarks !== '' ? $remarks : null;
+$loaIdInt     = (int) $loaId;
+
 try {
+    // Named "@param = :name OUTPUT" syntax doesn't survive PDO_ODBC's
+    // placeholder substitution correctly (the OUTPUT keyword ends up in
+    // the wrong spot from the driver's point of view). The ODBC call
+    // escape syntax with positional "?" placeholders is what actually
+    // works for output params on this driver.
     $stmt = $pdo->prepare("
-        SELECT start_date
-        FROM employee_info
-        WHERE employee_id = :employee_id
-          AND branch = :branch_code
+        {CALL dbo.finalize_verification (?, ?, ?, ?, ?, ?, ?, ?)}
     ");
-    $stmt->execute([
-        ':employee_id' => $employeeId,
-        ':branch_code' => $branchCode,
-    ]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $stmt->closeCursor(); // release the result set before opening a transaction
 
-    if (!$row || empty($row['start_date'])) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Start date not found for this employee.',
-        ]);
-        exit;
-    }
+    $outStatus  = null;
+    $outSuccess = null;
+    $outMessage = null;
 
-    $startDate = new DateTime($row['start_date']);
-    $startDate->setTime(0, 0, 0);
+    // Positional order MUST match the CREATE PROCEDURE parameter order exactly.
+    $stmt->bindParam(1, $employeeId);
+    $stmt->bindParam(2, $branchCode);
+    $stmt->bindParam(3, $loaIdInt, PDO::PARAM_INT);
+    $stmt->bindParam(4, $remarksParam);
+    $stmt->bindParam(5, $updatedBy);
+    $stmt->bindParam(6, $outStatus, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 20);
+    $stmt->bindParam(7, $outSuccess, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 4);
+    $stmt->bindParam(8, $outMessage, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 500);
 
-    $today = new DateTime('today');
-
-    // start_date is today or in the past -> ACTIVE, else QUEUED
-    $status = ($startDate <= $today) ? 'ACTIVE' : 'QUEUED';
-
-    $pdo->beginTransaction();
-
-    $upd = $pdo->prepare("
-        UPDATE employee_info
-        SET status = :status
-        WHERE employee_id = :employee_id
-          AND branch = :branch_code
-    ");
-    $upd->execute([
-        ':status'      => $status,
-        ':employee_id' => $employeeId,
-        ':branch_code' => $branchCode,
-    ]);
-    $upd->closeCursor();
-
-    // Verification is complete -> remove the now-consumed LOA record.
-    $del = $pdo->prepare("
-        DELETE FROM [IPROM_TEST].[dbo].[letters_of_advice]
-        WHERE [id] = :loa_id
-    ");
-    $del->execute([':loa_id' => $loaId]);
-    $del->closeCursor();
-
-    $pdo->commit();
+    $stmt->execute();
+    $stmt->closeCursor();
 
     echo json_encode([
-        'success' => true,
-        'status'  => $status,
+        'success' => (bool) $outSuccess,
+        'status'  => $outStatus,
+        'message' => $outMessage,
     ]);
 } catch (Exception $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
     echo json_encode([
         'success' => false,
         'message' => 'Failed to update status: ' . $e->getMessage(),

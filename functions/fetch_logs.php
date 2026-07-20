@@ -40,7 +40,7 @@ $conditions = [];
 $params = [];
 
 // STAFF BRANCH FILTER
-$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff';
+$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager';
 
 if ($isStaff) {
     $sessionBranches = array_values(array_filter(
