@@ -295,17 +295,22 @@ $pdf->Cell(90, 7, 'CONTRACTUAL', 0, 0);
 $label = 'LOA Code: ';
 $value = fpdf_str($loaCode);
 
-$labelWidth = $pdf->GetStringWidth($label);
-$valueWidth = $pdf->GetStringWidth($value);
+if (trim($loaCode) !== '') {
+    $labelWidth = $pdf->GetStringWidth($label);
+    $valueWidth = $pdf->GetStringWidth($value);
 
-// Fill the remaining space before the LOA code
-$pdf->Cell(190 - 15 - 90 - $labelWidth - $valueWidth, 7, '', 0, 0);
+    // Fill the remaining space before the LOA code
+    $pdf->Cell(190 - 15 - 90 - $labelWidth - $valueWidth, 7, '', 0, 0);
 
-$pdf->SetFont('Arial', '', 10);
-$pdf->Cell($labelWidth, 7, $label, 0, 0);
+    $pdf->SetFont('Arial', '', 10);
+    $pdf->Cell($labelWidth, 7, $label, 0, 0);
 
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell($valueWidth, 7, $value, 0, 1);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell($valueWidth, 7, $value, 0, 1);
+} else {
+    // Nothing to show on the right side — just close the row
+    $pdf->Cell(190 - 15 - 90, 7, '', 0, 1);
+}
 
 $pdf->Ln(5);
 
