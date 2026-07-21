@@ -196,7 +196,7 @@ $(document).on("click", ".view-user", function () {
         super_admin: "SUPER ADMIN",
         staff: "STAFF",
         supervisor: "SUPERVISOR",
-        branch_manager: "BRANCH MANAGER",
+        branch_manager: "BRANCH",
       };
 
       /* ── basic fields ── */
@@ -214,7 +214,7 @@ $(document).on("click", ".view-user", function () {
             `<select id="v_role" class="form-control">
                <option value="staff">STAFF</option>
                <option value="supervisor">SUPERVISOR</option>
-               <option value="branch_manager">BRANCH MANAGER</option>
+               <option value="branch_manager">BRANCH</option>
                <option value="admin">ADMIN</option>
              </select>`,
           );
@@ -229,7 +229,7 @@ $(document).on("click", ".view-user", function () {
             `<select id="v_role" class="form-control">
                <option value="staff">STAFF</option>
                <option value="supervisor">SUPERVISOR</option>
-               <option value="branch_manager">BRANCH MANAGER</option>
+               <option value="branch_manager">BRANCH</option>
              </select>`,
           );
           $("#v_role").val(data.role);
@@ -317,7 +317,11 @@ $(document).on("click", "#saveChangesBtn", function () {
   );
 
   if (role === "branch_manager" && current.size !== 1) {
-    Swal.fire("Validation", "Please select exactly one branch for a Branch Manager.", "warning");
+    Swal.fire(
+      "Validation",
+      "Please select exactly one branch for a Branch Manager.",
+      "warning",
+    );
     return;
   }
 

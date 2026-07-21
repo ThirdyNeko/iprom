@@ -262,7 +262,7 @@ $roleLabels = [
                                 data-bs-toggle="modal"
                                 data-bs-target="#createUserModal"
                                 data-preset-role="branch_manager">
-                            <i class="bi bi-plus-lg"></i> Add Branch Manager
+                            <i class="bi bi-plus-lg"></i> Add Branch User
                         </button>
                     </div>
                     <div class="card-body">

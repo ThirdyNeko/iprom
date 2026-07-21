@@ -154,10 +154,15 @@ try {
 
                                     <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
                                     <option value="supervisor">SUPERVISOR</option>
-                                    <option value="branch_manager">BRANCH MANAGER</option>
                                     <?php endif; ?>
 
                                     <option value="staff">STAFF</option>
+
+                                    <!-- Not user-selectable — only ever set programmatically
+                                         when the modal opens via data-preset-role="branch_manager".
+                                         Must exist as a real <option>, otherwise select.value
+                                         assignment silently fails and falls back to "". -->
+                                    <option value="branch_manager" hidden>BRANCH MANAGER</option>
 
                                 </select>
 
@@ -174,7 +179,7 @@ try {
                                 <input type="text"
                                        id="roleDisplayReadonly"
                                        class="form-control"
-                                       value="BRANCH MANAGER"
+                                       value="BRANCH"
                                        readonly>
 
                             </div>
@@ -234,24 +239,53 @@ try {
                         </div>
                         <div class="col-md-6">
 
-                            <div class="mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text"
-                                       id="first_name"
-                                       name="first_name"
-                                       class="form-control text-uppercase"
-                                       style="text-transform: uppercase;"
-                                       required>
+                            <div class="row g-2">
+                                <div class="col-8">
+                                    <div class="mb-3">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text"
+                                               id="first_name"
+                                               name="first_name"
+                                               class="form-control text-uppercase"
+                                               style="text-transform: uppercase;"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Middle Name</label>
+                                        <input type="text"
+                                               id="middle_name"
+                                               name="middle_name"
+                                               class="form-control text-uppercase"
+                                               style="text-transform: uppercase;">
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text"
-                                       id="last_name"
-                                       name="last_name"
-                                       class="form-control text-uppercase"
-                                       style="text-transform: uppercase;"
-                                       required>
+                            <div class="row g-2">
+                                <div class="col-8">
+                                    <div class="mb-3">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text"
+                                               id="last_name"
+                                               name="last_name"
+                                               class="form-control text-uppercase"
+                                               style="text-transform: uppercase;"
+                                               required>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Suffix</label>
+                                        <input type="text"
+                                               id="suffix"
+                                               name="suffix"
+                                               class="form-control text-uppercase"
+                                               style="text-transform: uppercase;"
+                                               placeholder="Jr., III">
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- USERNAME -->

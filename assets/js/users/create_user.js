@@ -68,7 +68,9 @@ function updateCreateBranchCounter() {
 }
 
 function createModalIsBranchManagerRole() {
-  return document.getElementById("createRoleSelect")?.value === "branch_manager";
+  return (
+    document.getElementById("createRoleSelect")?.value === "branch_manager"
+  );
 }
 
 /* ───────────────────────────────────────────
@@ -115,29 +117,31 @@ $(document).on(
    locks the role, hides the dropdown, and lets roles.js configure
    the branch picker for that role automatically.
 ─────────────────────────────────────────── */
-document.getElementById("createUserModal")?.addEventListener("show.bs.modal", function (e) {
-  const trigger = e.relatedTarget;
-  const presetRole = trigger?.dataset?.presetRole || "";
+document
+  .getElementById("createUserModal")
+  ?.addEventListener("show.bs.modal", function (e) {
+    const trigger = e.relatedTarget;
+    const presetRole = trigger?.dataset?.presetRole || "";
 
-  const roleSelect = document.getElementById("createRoleSelect");
-  const selectGroup = document.getElementById("roleSelectGroup");
-  const displayGroup = document.getElementById("roleDisplayGroup");
+    const roleSelect = document.getElementById("createRoleSelect");
+    const selectGroup = document.getElementById("roleSelectGroup");
+    const displayGroup = document.getElementById("roleDisplayGroup");
 
-  if (presetRole) {
-    roleSelect.value = presetRole;
-    roleSelect.required = false; // hidden fields can't satisfy native required validation
-    selectGroup.style.display = "none";
-    displayGroup.style.display = "";
-  } else {
-    roleSelect.value = "";
-    roleSelect.required = true;
-    selectGroup.style.display = "";
-    displayGroup.style.display = "none";
-  }
+    if (presetRole) {
+      roleSelect.value = presetRole;
+      roleSelect.required = false; // hidden fields can't satisfy native required validation
+      selectGroup.style.display = "none";
+      displayGroup.style.display = "";
+    } else {
+      roleSelect.value = "";
+      roleSelect.required = true;
+      selectGroup.style.display = "";
+      displayGroup.style.display = "none";
+    }
 
-  // re-run role-dependent UI (branch picker enable/disable, single-select label)
-  if (typeof updateFieldsByRole === "function") updateFieldsByRole();
-});
+    // re-run role-dependent UI (branch picker enable/disable, single-select label)
+    if (typeof updateFieldsByRole === "function") updateFieldsByRole();
+  });
 
 /* ───────────────────────────────────────────
    FORM SUBMIT
