@@ -140,6 +140,10 @@ FROM (
         end_date,
         -- Remarks
         ISNULL(remarks, '') AS remarks,
+        -- Original issuer, used when reprinting (loa_table.js) so the PDF
+        -- shows who ACTUALLY issued it, not the current viewer.
+        ISNULL(issued_by, '')       AS issued_by,
+        ISNULL(issued_position, '') AS issued_position,
         ROW_NUMBER() OVER (ORDER BY $orderExpr $orderDir) AS rownum
     FROM letters_of_advice
     $where

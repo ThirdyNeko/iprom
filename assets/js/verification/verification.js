@@ -67,7 +67,9 @@ $(document).ready(function () {
                 data-status="${data.status ?? ""}"
                 data-effectivity-date="${data.effectivity_date ?? ""}"
                 data-end-date="${data.end_date ?? ""}"
-                data-remarks="${data.remarks ?? ""}">
+                data-remarks="${data.remarks ?? ""}"
+                data-issued-by="${data.issued_by ?? ""}"
+                data-issued-position="${data.issued_position ?? ""}">
                 <i class="bi bi-printer me-1"></i>View LOA
               </button>
 
@@ -114,6 +116,10 @@ $(document).ready(function () {
       effectivity_date: btn.data("effectivity-date"),
       end_date: btn.data("end-date"),
       remarks: btn.data("remarks"),
+      // Reprinting an already-issued LOA — use the ORIGINAL issuer stored
+      // on the record (from the DB), not the current viewer's session.
+      issued_by: btn.data("issued-by"),
+      issued_position: btn.data("issued-position"),
     };
 
     try {

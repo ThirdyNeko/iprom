@@ -59,7 +59,12 @@ function checkPrintBtnState() {
 
   // branch_manager can never print, full stop — takes priority over
   // isAdmin/canPrintLOA below.
-  if (isRestrictedRole()) {
+  if (isBranchManagerRole()) {
+    printBtn.disabled = true;
+    return;
+  }
+
+  if (isStaffRole()) {
     printBtn.disabled = true;
     return;
   }
@@ -75,9 +80,12 @@ function checkPrintBtnState() {
 // =========================
 // ROLE HELPERS
 // =========================
-function isRestrictedRole() {
-  const role = (window.userRole || "").toLowerCase();
-  return role === "branch_manager" || role === "staff";
+function isBranchManagerRole() {
+  return (window.userRole || "").toLowerCase() === "branch_manager";
+}
+
+function isStaffRole() {
+  return (window.userRole || "").toLowerCase() === "staff";
 }
 
 // Fully locks the page down to read-only for branch_manager.

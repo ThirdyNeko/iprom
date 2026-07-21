@@ -36,7 +36,7 @@
                 <span>Logs</span>
             </a>
         </li>
-        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin') ||($_SESSION['role'] === 'supervisor') ): ?>
+        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin') ||($_SESSION['role'] === 'supervisor') || ($_SESSION['role'] === 'branch_manager') ): ?>
         <li>
             <a href="Verification.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'Verification.php' ? 'active' : '' ?>">
                 <i class="bi bi-journal-check"></i>

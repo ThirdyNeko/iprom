@@ -24,6 +24,17 @@ $suffix = $data['suffix'] ?? '';
 // Build full employee name
 $employeeName = trim($firstName . ' ' . $middleName . ' ' . $lastName . ' ' . $suffix);
 
+// Issuer info — used for both the DB record and the PDF signature block.
+// Two callers hit this endpoint:
+//   1. pdf.js (new LOA)      -> issued_by/issued_position come from
+//      window.currentUser on the client.
+//   2. loa_table.js (reprint) -> issued_by/issued_position come from the
+//      already-saved DB row (so a reprint always shows the ORIGINAL
+//      issuer, not whoever is currently viewing/reprinting it).
+// $_SESSION is only a last-resort fallback if neither is present.
+$issuedBy = $data['issued_by'] ?? $_SESSION['username'] ?? '';
+$issuedPosition = $data['issued_position'] ?? $_SESSION['position'] ?? '';
+
 // Other fields
 $branchCode = $data['branch'] ?? '';
 $branch = '';
@@ -132,6 +143,12 @@ function fpdf_str(string $s): string {
 // Save to DB (only if not already recorded)
 // One row per employee + branch + effectivity date, so multi-branch
 // employees get a distinct saved record for each branch's LOA.
+//
+// NOTE: this INSERT only fires for brand-new LOAs. Reprints (from
+// loa_table.js) hit the $existing check below and skip straight to
+// PDF generation using the issued_by/issued_position already pulled
+// from the payload above — so a reprint never overwrites the original
+// issuer with whoever clicked "View LOA" this time.
 // ============================================================
 $existingStmt = $pdo->prepare("
     SELECT id
@@ -213,8 +230,8 @@ if (!$existing) {
         'effectivity_date'   => $effectivityDate,
         'end_date'           => $endDate,
         'remarks'            => $remarks,
-        'issued_by'          => $_SESSION['username'] ?? null,
-        'issued_position'    => $_SESSION['position'] ?? null,
+        'issued_by'          => $issuedBy,
+        'issued_position'    => $issuedPosition,
     ]);
 }
 
@@ -343,11 +360,11 @@ $pdf->Ln(15);
 // Username (centered within underline width)
 $pdf->SetX(10);
 $pdf->SetFont('Arial', 'B', 11);
-$pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['username'] ?? ''), 0, 1, 'L');
+$pdf->Cell($lineWidth, 6, fpdf_str($issuedBy), 0, 1, 'L');
 // Position
 $pdf->SetX(10);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Cell($lineWidth, 6, fpdf_str($_SESSION['position'] ?? ''), 0, 0, 'L');
+$pdf->Cell($lineWidth, 6, fpdf_str($issuedPosition), 0, 0, 'L');
 $pdf->SetFont('Arial', '', 8);
 $pdf->Cell(0, 6, date('F d, Y h:i:s A'), 0, 1, 'R');
 
