@@ -224,7 +224,7 @@ $categoryOptions = ['TV', 'AV', 'DA', 'WM'];
                             <div class="dropdown">
                                 <button
                                     type="button"
-                                    class="btn form-select text-start dropdown-toggle "
+                                    class="form-select text-start"
                                     id="categoriesDropdownBtn"
                                     data-bs-toggle="dropdown"
                                     data-bs-auto-close="outside"

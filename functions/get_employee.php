@@ -83,6 +83,7 @@ $employee['loa_code'] = $employee['loa_code'] ?? null; // ✅ ADD THIS
 $employee['marital_status']      = $employee['marital_status'] ?? null;
 $employee['contact_number']      = $employee['contact_number'] ?? null;
 $employee['biometric_number']      = $employee['biometric_number'] ?? null;
+$employee['categories']          = $employee['categories'] ?? null;
 $employee['province']            = $employee['province'] ?? null;
 $employee['province_name']       = $employee['province_name'] ?? null;
 $employee['municipality']        = $employee['municipality'] ?? null;

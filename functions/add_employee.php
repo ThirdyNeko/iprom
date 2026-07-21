@@ -41,6 +41,9 @@ $barangay       = $_POST['barangay'] ?? null;
 $barangay_name  = $_POST['barangay_name'] ?? null;
 $street         = $_POST['street'] ?? null;
 
+// ✅ NEW: designated categories — "ALL" or comma list e.g. "TV,DA"
+$categories = $_POST['categories'] ?? null;
+
 $stmt = $pdo->prepare("
     SELECT TOP 1 corpo
     FROM branches
@@ -294,6 +297,7 @@ try {
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
                 @biometric_number = :biometric_number,
+                @categories = :categories,
                 @province = :province,
                 @province_name = :province_name,
                 @municipality = :municipality,
@@ -333,6 +337,7 @@ try {
             ':marital_status'       => $marital_status,
             ':contact_number'       => $contact_number,
             ':biometric_number'     => $biometric_number,
+            ':categories'           => $categories,
             ':province'             => $province,
             ':province_name'        => $province_name,
             ':municipality'         => $municipality,
@@ -383,6 +388,7 @@ try {
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
                 @biometric_number = :biometric_number,
+                @categories = :categories,
                 @province = :province,
                 @province_name = :province_name,
                 @municipality = :municipality,
@@ -419,6 +425,7 @@ try {
             ':marital_status'    => $marital_status,
             ':contact_number'    => $contact_number,
             ':biometric_number'  => $biometric_number,
+            ':categories'        => $categories,
             ':province'          => $province,
             ':province_name'     => $province_name,
             ':municipality'      => $municipality,
@@ -462,6 +469,7 @@ try {
                 @marital_status = :marital_status,
                 @contact_number = :contact_number,
                 @biometric_number = :biometric_number,
+                @categories = :categories,
                 @province = :province,
                 @province_name = :province_name,
                 @municipality = :municipality,
@@ -498,6 +506,7 @@ try {
             ':marital_status'        => $marital_status,
             ':contact_number'        => $contact_number,
             ':biometric_number'      => $biometric_number,
+            ':categories'            => $categories,
             ':province'              => $province,
             ':province_name'         => $province_name,
             ':municipality'          => $municipality,
@@ -562,6 +571,7 @@ try {
                         @marital_status = :marital_status,
                         @contact_number = :contact_number,
                         @biometric_number = :biometric_number,
+                        @categories = :categories,
                         @province = :province,
                         @province_name = :province_name,
                         @municipality = :municipality,
@@ -598,6 +608,7 @@ try {
                     ':marital_status'        => $marital_status,
                     ':contact_number'        => $contact_number,
                     ':biometric_number'      => $biometric_number,
+                    ':categories'            => $categories,
                     ':province'              => $province,
                     ':province_name'         => $province_name,
                     ':municipality'          => $municipality,

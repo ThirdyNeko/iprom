@@ -295,6 +295,10 @@ th {
                         <label class="form-label">Biometric Number</label>
                         <input type="text" id="editBiometricNumber" class="form-control" maxlength="5" inputmode="numeric" disabled>
                     </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Designated Categories</label>
+                        <input type="text" id="editCategories" class="form-control" readonly>
+                    </div>
                 </div>
 
                 <!-- Assignment classification -->

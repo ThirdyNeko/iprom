@@ -19,6 +19,19 @@ function cleanValue(value) {
   return trimmed.toLowerCase() === "null" || trimmed === "" ? "" : trimmed;
 }
 
+// Formats the stored categories value ("ALL" or "TV,DA,...") into a
+// friendlier display string for the read-only field.
+function formatCategoriesDisplay(value) {
+  const cleaned = cleanValue(value);
+  if (!cleaned) return "";
+  if (cleaned.toUpperCase() === "ALL") return "All";
+  return cleaned
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
 function autoResizeInput(input) {
   if (!input) return;
   const minSize = 10;
@@ -164,6 +177,7 @@ const editDateHired = document.getElementById("editDateHired");
 const editMaritalStatus = document.getElementById("editMaritalStatus");
 const editContactNumber = document.getElementById("editContactNumber");
 const editBiometricNumber = document.getElementById("editBiometricNumber");
+const editCategories = document.getElementById("editCategories");
 const editProvince = document.getElementById("editProvince");
 const editProvinceName = document.getElementById("editProvinceName");
 const editMunicipality = document.getElementById("editMunicipality");
@@ -751,6 +765,7 @@ function resetEditPage() {
 
   // NEW: reset personal / address fields
   if (editContactNumber) editContactNumber.value = "";
+  if (editCategories) editCategories.value = "";
   if (editStreet) editStreet.value = "";
   if (editProvinceName) editProvinceName.value = "";
   if (editMunicipalityName) editMunicipalityName.value = "";
@@ -929,6 +944,7 @@ async function loadEmployeePage(id) {
       marital_status: p.marital_status,
       contact_number: p.contact_number,
       biometric_number: p.biometric_number,
+      categories: p.categories,
       province: p.province,
       province_name: p.province_name,
       municipality: p.municipality,
@@ -982,13 +998,15 @@ async function loadEmployeePage(id) {
     if (el("editLastAssignedBy"))
       el("editLastAssignedBy").value = cleanValue(employee.last_assigned_by);
 
-    // NEW: marital status / contact number / street (direct fields)
+    // NEW: marital status / contact number / categories / street (direct fields)
     if (editMaritalStatus)
       editMaritalStatus.value = cleanValue(employee.marital_status) || "";
     if (editContactNumber)
       editContactNumber.value = cleanValue(employee.contact_number);
     if (editBiometricNumber)
       editBiometricNumber.value = cleanValue(employee.biometric_number);
+    if (editCategories)
+      editCategories.value = formatCategoriesDisplay(employee.categories);
     if (editStreet) editStreet.value = cleanValue(employee.street);
 
     // NEW: address cascade — populate province, then load matching
