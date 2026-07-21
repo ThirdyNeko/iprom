@@ -25,10 +25,9 @@ let verifyState = {};
 let currentStep = 1;
 let cropper = null; // Cropper.js instance for the currently selected file (Step 2)
 const CROP_OUTPUT_WIDTH = 350;
-const CROP_OUTPUT_HEIGHT = Math.round(350 * (170 / 140)); // matches the 140:170 guide-frame ratio
+const CROP_OUTPUT_HEIGHT = 350; // 1.5" x 1.5" ID photo -- square output
 
 $(document).ready(function () {
-
   // Open trigger uses delegation since these buttons come from a
   // DataTable's ajax-rendered rows (added to the DOM after load).
   $(document).on("click", ".verifyLOABtn", function () {
@@ -74,22 +73,32 @@ $(document).ready(function () {
 
   function updateLoaCodeValue() {
     const letters = $(".loa-letter-box")
-      .map(function () { return $(this).val(); })
+      .map(function () {
+        return $(this).val();
+      })
       .get()
       .join("");
     const digits = $(".loa-digit-box")
-      .map(function () { return $(this).val(); })
+      .map(function () {
+        return $(this).val();
+      })
       .get()
       .join("");
     $("#loaCodeInput").val(`${letters}-${digits}`);
   }
 
   function focusBox(group, index) {
-    $(`.loa-code-box[data-group="${group}"][data-index="${index}"]`).trigger("focus").select();
+    $(`.loa-code-box[data-group="${group}"][data-index="${index}"]`)
+      .trigger("focus")
+      .select();
   }
 
   $(document).on("input", ".loa-letter-box", function () {
-    let val = $(this).val().replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 1);
+    let val = $(this)
+      .val()
+      .replace(/[^a-zA-Z]/g, "")
+      .toUpperCase()
+      .slice(0, 1);
     $(this).val(val);
     updateLoaCodeValue();
 
@@ -104,7 +113,10 @@ $(document).ready(function () {
   });
 
   $(document).on("input", ".loa-digit-box", function () {
-    let val = $(this).val().replace(/[^0-9]/g, "").slice(0, 1);
+    let val = $(this)
+      .val()
+      .replace(/[^0-9]/g, "")
+      .slice(0, 1);
     $(this).val(val);
     updateLoaCodeValue();
 
@@ -215,7 +227,6 @@ $(document).ready(function () {
   $("#cropResetBtn").on("click", function () {
     if (cropper) cropper.reset();
   });
-
 });
 
 // ── Crop UI (Step 2) ────────────────────────────────────────────
@@ -228,7 +239,7 @@ function initCropper() {
 
   const image = document.getElementById("cropImage");
   cropper = new Cropper(image, {
-    aspectRatio: 140 / 170, // matches the photo guide frame
+    aspectRatio: 1, // 1.5" x 1.5" -- matches the square photo guide frame
     viewMode: 1,
     dragMode: "move",
     autoCropArea: 1,
@@ -408,7 +419,11 @@ async function handleStep2() {
       const croppedBlob = await getCroppedBlob();
 
       if (!croppedBlob) {
-        Swal.fire("Error", "Could not process the cropped image. Please try again.", "error");
+        Swal.fire(
+          "Error",
+          "Could not process the cropped image. Please try again.",
+          "error",
+        );
         return;
       }
 

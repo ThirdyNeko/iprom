@@ -14,7 +14,7 @@
   height: 3px; background: #2d68c4; border-radius: 2px;
 }
 .id-guide-frame {
-  width: 140px; height: 170px; border: 2px dashed #2d68c4; border-radius: 8px;
+  width: 150px; height: 150px; border: 2px dashed #2d68c4; border-radius: 8px;
   display: flex; align-items: center; justify-content: center; background: #f4f8ff;
 }
 .loa-code-box {
@@ -36,7 +36,7 @@
 .crop-outer {
   position: relative;
   width: 260px;
-  height: 316px; /* matches the 140:170 guide-frame aspect ratio */
+  height: 260px; /* 1.5" x 1.5" ID photo -- square aspect ratio */
   margin: 0 auto;
 }
 .crop-frame {
@@ -177,15 +177,18 @@
             <div class="col-md-5 text-center">
               <p class="fw-semibold mb-2">Photo Guide</p>
               <div class="id-guide-frame mx-auto mb-2">
-                <svg width="70" height="90" viewBox="0 0 70 90">
-                  <circle cx="35" cy="28" r="18" fill="#c8d8f2"/>
-                  <path d="M8 88 C8 60 62 60 62 88 Z" fill="#c8d8f2"/>
+                <svg width="90" height="90" viewBox="0 0 90 90">
+                  <circle cx="45" cy="34" r="20" fill="#c8d8f2"/>
+                  <path d="M12 88 C12 58 78 58 78 88 Z" fill="#c8d8f2"/>
                 </svg>
               </div>
               <ul class="text-start small text-muted ps-3 mb-0">
                 <li>Face clearly visible, no sunglasses or mask</li>
                 <li>Plain, well-lit background</li>
                 <li>Head and shoulders centered in frame</li>
+                <li>Please use white clothing and background</li>
+                <li>Make sure clothing is collared and professional</li>
+                <li>Make sure the image is not blurry</li>
                 <li>Upload JPEG, JPG, or PNG only</li>
               </ul>
             </div>
@@ -212,9 +215,9 @@
                     <div class="crop-frame">
                       <img id="cropImage" src="" alt="Crop preview">
                     </div>
-                    <svg class="crop-guide-overlay" viewBox="0 0 260 316" xmlns="http://www.w3.org/2000/svg">
-                      <ellipse cx="130" cy="118" rx="52" ry="66"/>
-                      <path d="M35 300 C35 215 225 215 225 300"/>
+                    <svg class="crop-guide-overlay" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
+                      <ellipse cx="130" cy="98" rx="58" ry="70"/>
+                      <path d="M25 250 C25 165 235 165 235 250"/>
                     </svg>
                   </div>
                   <div class="d-flex justify-content-center gap-2 mt-2">
