@@ -56,9 +56,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 11);
   });
 
-  // Biometric number: digits only, max 5
+  // Biometric number: digits only, max 7
   biometricNumberInput.addEventListener("input", function () {
-    this.value = this.value.replace(/\D/g, "").slice(0, 5);
+    this.value = this.value.replace(/\D/g, "").slice(0, 7);
   });
 
   // =========================
@@ -635,10 +635,10 @@ document.addEventListener("DOMContentLoaded", async function () {
           "warning",
         );
       }
-      if (!/^\d{5}$/.test(biometricNumber)) {
+      if (!/^\d{7}$/.test(biometricNumber)) {
         return Swal.fire(
           "Invalid Biometric Number",
-          "Biometric number must be exactly 5 digits.",
+          "Biometric number must be exactly 7 digits.",
           "warning",
         );
       }

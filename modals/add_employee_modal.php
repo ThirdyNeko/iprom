@@ -206,14 +206,14 @@ $categoryOptions = ['TV', 'AV', 'DA', 'WM'];
                     <!-- Biometric Number / Categories -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-3">
-                            <label class="form-label">Biometric Number</label>
+                            <label class="form-label">Employee ID</label>
                             <input
                                 type="text"
                                 name="biometric_number"
                                 id="biometricNumber"
                                 class="form-control"
-                                placeholder="e.g. 12345"
-                                maxlength="5"
+                                placeholder="e.g. 1234567"
+                                maxlength="7"
                                 inputmode="numeric"
                                 required
                             >
