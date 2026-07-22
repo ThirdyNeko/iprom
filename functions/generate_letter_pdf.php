@@ -91,32 +91,6 @@ $status = $data['status'] ?? '';
 // in the payload, not `id`.
 $promodiserId = $data['employee_id'] ?? '';
 
-if (trim($loaCode) !== '') {
-    $stmt = $pdo->prepare("
-        INSERT INTO employee_reason_history (
-            employee_id,
-            reason_for_update,
-            update_date,
-            remarks,
-            updated_by
-        )
-        VALUES (
-            :employee_id,
-            :reason,
-            GETDATE(),
-            :remarks,
-            :updated_by
-        )
-    ");
-
-    $stmt->execute([
-        'employee_id' => $promodiserId,
-        'reason'      => 'LOA Printed',
-        'remarks'     => null,
-        'updated_by'  => $issuedBy
-    ]);
-}
-
 // 🔥 Full set of branches this employee is assigned to (main branch + roving
 // branches), used below to correctly "swap" which branch is the record's own
 // branch vs. which are its roving branches, per multi-branch row.
