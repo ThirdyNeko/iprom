@@ -846,6 +846,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const checkData = await checkRes.json();
 
+        const blockedReasons = ["BLACKLISTED / AWOL / TERMINATED", "DECEASED"];
+
         // expected response shapes:
         // exact match:    { exists: true, source: "employee_info" | "blacklisted", ... }
         // maiden-name match: { exists: false, possible_match: true, source: "...", ... }
@@ -869,6 +871,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Possible maiden-name match (MARRIED + FEMALE cross-check)
         // =========================
         if (checkData && checkData.possible_match === true) {
+          // NEW: hard block before asking for confirmation
+          const crossReason = (checkData.reason_for_update || "").toUpperCase();
+
+          if (
+            checkData.source === "blacklisted" ||
+            blockedReasons.includes(crossReason)
+          ) {
+            return Swal.fire(
+              "Cannot Add Employee",
+              checkData.source === "blacklisted"
+                ? "This person is on the blacklist. Adding is not allowed."
+                : `This employee is ${crossReason}. Adding is not allowed.`,
+              "error",
+            );
+          }
           const result = await Swal.fire({
             icon: "question",
             title: "Possible Match Found",
@@ -892,6 +909,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const employeeId = checkData.employee_id;
             const id = checkData.id;
             const status = (checkData.status || "").toUpperCase();
+            const reason = (checkData.reason_for_update || "").toUpperCase(); // NEW
 
             if (!employeeId) {
               return Swal.fire(
@@ -949,7 +967,10 @@ document.addEventListener("DOMContentLoaded", async function () {
             );
           }
 
-          const blockedReasons = ["BLACKLISTED / AWOL / TERMINATED"];
+          const $blockedReasons = [
+            "BLACKLISTED / AWOL / TERMINATED",
+            "DECEASED",
+          ];
 
           // Hard block
           if (blockedReasons.includes(reason)) {
