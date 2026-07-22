@@ -145,7 +145,7 @@ $endRow   = $start + $length;
 $sql = "
 SELECT *
 FROM (
-    SELECT 
+    SELECT
         h.id,
         h.reason_for_update,
         h.update_date,
@@ -154,11 +154,18 @@ FROM (
         h.updated_by,
         i.first_name,
         i.last_name,
-        ROW_NUMBER() OVER (ORDER BY h.update_date DESC) AS rn
+        ROW_NUMBER() OVER (
+            PARTITION BY h.id
+            ORDER BY h.update_date DESC
+        ) AS dup_rn,
+        ROW_NUMBER() OVER (
+            ORDER BY h.update_date DESC, h.id DESC
+        ) AS rn
     $baseQuery
     $where
 ) t
-WHERE t.rn BETWEEN :startRow AND :endRow
+WHERE t.dup_rn = 1
+  AND t.rn BETWEEN :startRow AND :endRow
 ";
 
 $stmt = $pdo->prepare($sql);
