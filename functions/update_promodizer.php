@@ -187,6 +187,7 @@ $skipSlotValidation = in_array($reason_for_update, [
     'RESIGNED',
     'PULL-OUT / END OF CONTRACT',
     'BLACKLISTED / AWOL / TERMINATED',
+    'DECEASED',
     'CLERICAL ERROR',
     'UPDATE BIOMETRIC NUMBER',
 ]);
@@ -334,6 +335,7 @@ $inactiveReasons = [
     'CLERICAL ERROR',
     'PULL-OUT / END OF CONTRACT',
     'BLACKLISTED / AWOL / TERMINATED',
+    'DECEASED',
     'REMOVE BRANCH/BRAND',
 ];
 

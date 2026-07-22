@@ -252,6 +252,7 @@ function toggleBranchReasonOptions() {
     .trim()
     .toUpperCase();
   const isBlacklisted = storedReason === "BLACKLISTED / AWOL / TERMINATED";
+  const isDeceased = storedReason === "DECEASED";
 
   const addOpt = reasonSelect.querySelector('option[value="ADD BRANCH/BRAND"]');
   const removeOpt = reasonSelect.querySelector(
@@ -272,6 +273,7 @@ function toggleBranchReasonOptions() {
     "BLACKLISTED / AWOL / TERMINATED",
     "PULL-OUT / END OF CONTRACT",
     "RESIGNED",
+    "DECEASED",
   ]);
 
   reasonSelect.querySelectorAll("option").forEach((opt) => {
@@ -303,6 +305,14 @@ function toggleBranchReasonOptions() {
     });
   }
 
+  if (isDeceased) {
+    reasonSelect.querySelectorAll("option").forEach((opt) => {
+      if (opt.value === "") return; // placeholder stays untouched
+      opt.disabled = true;
+      opt.style.color = "#aaa";
+    });
+  }
+
   const selected = reasonSelect.querySelector(
     `option[value="${CSS.escape(reasonSelect.value)}"]`,
   );
@@ -319,6 +329,7 @@ function toggleReasonDates() {
 
   const isTerminationReason =
     reason === "RESIGNED" ||
+    reason === "DECEASED" ||
     reason === "PULL-OUT / END OF CONTRACT" ||
     reason === "BLACKLISTED / AWOL / TERMINATED" ||
     reason === "REMOVE BRANCH/BRAND";
@@ -357,6 +368,7 @@ if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
 
 const showDateSeparatedReasons = [
   "RESIGNED",
+  "DECEASED",
   "PULL-OUT / END OF CONTRACT",
   "BLACKLISTED / AWOL / TERMINATED",
   "MATERNITY LEAVE",
