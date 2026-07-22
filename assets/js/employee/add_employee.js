@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 11);
   });
 
-  // Biometric number: digits only, max 7
+  // Biometric number: digits only, max 7 (optional field)
   biometricNumberInput.addEventListener("input", function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 7);
   });
@@ -628,17 +628,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
       }
 
-      if (!biometricNumber) {
-        return Swal.fire(
-          "Missing Biometric Number",
-          "Please enter a biometric number.",
-          "warning",
-        );
-      }
-      if (!/^\d{7}$/.test(biometricNumber)) {
+      // Biometric Number validation: optional, but if provided must be exactly 7 digits
+      if (biometricNumber && !/^\d{7}$/.test(biometricNumber)) {
         return Swal.fire(
           "Invalid Biometric Number",
-          "Biometric number must be exactly 7 digits.",
+          "Biometric number must be exactly 7 digits, or left blank.",
           "warning",
         );
       }
@@ -1017,7 +1011,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         formData.set("agency", agency);
         formData.set("marital_status", maritalStatus);
         formData.set("contact_number", contactNumber);
-        formData.set("biometric_number", biometricNumber);
+
+        // Biometric number is optional — send NULL (omit key) when blank
+        if (biometricNumber) {
+          formData.set("biometric_number", biometricNumber);
+        } else {
+          formData.delete("biometric_number");
+        }
+
         formData.set("categories", categories); // "ALL" or "TV,DA,..."
 
         // Address: send both codes and human-readable names.

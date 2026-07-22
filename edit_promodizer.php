@@ -292,8 +292,8 @@ th {
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
-                        <label class="form-label">Biometric Number</label>
-                        <input type="text" id="editBiometricNumber" class="form-control" maxlength="5" inputmode="numeric" disabled>
+                        <label class="form-label">Biometric Number <small class="text-muted">(optional)</small></label>
+                        <input type="text" id="editBiometricNumber" class="form-control" maxlength="7" inputmode="numeric" placeholder="e.g. 1234567" disabled>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Designated Categories</label>

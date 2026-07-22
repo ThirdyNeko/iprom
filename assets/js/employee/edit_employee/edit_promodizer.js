@@ -1257,18 +1257,16 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     }
   }
   if (reason === "UPDATE BIOMETRIC NUMBER") {
-    if (!editBiometricNumber?.value) {
-      return Swal.fire({
-        icon: "warning",
-        title: "Missing Data",
-        text: "Please enter a Biometric Number.",
-      });
-    }
-    if (!/^\d{5}$/.test(editBiometricNumber.value)) {
+    // Optional field: only validate format if the user actually
+    // entered something. Blank is allowed.
+    if (
+      editBiometricNumber?.value &&
+      !/^\d{7}$/.test(editBiometricNumber.value)
+    ) {
       return Swal.fire({
         icon: "warning",
         title: "Invalid Biometric Number",
-        text: "Biometric number must be exactly 5 digits.",
+        text: "Biometric number must be exactly 7 digits, or left blank.",
       });
     }
   }
@@ -1348,7 +1346,11 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // NEW: personal / address fields
   formData.set("marital_status", editMaritalStatus?.value || "");
   formData.set("contact_number", editContactNumber?.value || "");
+
+  // Biometric number is optional — send empty string through as-is;
+  // update_promodizer.php should treat an empty value as NULL.
   formData.set("biometric_number", editBiometricNumber?.value || "");
+
   formData.set("province", editProvince?.value || "");
   formData.set("province_name", editProvinceName?.value || "");
   formData.set("municipality", editMunicipality?.value || "");
@@ -1532,8 +1534,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     editStatus.addEventListener("input", checkPrintBtnState);
   }
 
+  // Biometric number: digits only, max 7 (optional field)
   editBiometricNumber?.addEventListener("input", function () {
-    this.value = this.value.replace(/\D/g, "").slice(0, 5);
+    this.value = this.value.replace(/\D/g, "").slice(0, 7);
   });
 
   // NEW: address cascade change listeners

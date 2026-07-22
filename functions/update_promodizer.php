@@ -80,7 +80,12 @@ $agency         = $_POST['agency'] ?? null;
 // ✅ NEW: personal / address fields
 $marital_status     = $_POST['marital_status'] ?? null;
 $contact_number     = $_POST['contact_number'] ?? null;
-$biometric_number   = $_POST['biometric_number'] ?? null;
+
+// Biometric number is optional — normalize blank/whitespace to NULL
+// so it's never bound as an empty string.
+$biometric_number   = trim($_POST['biometric_number'] ?? '');
+$biometric_number   = ($biometric_number === '') ? null : $biometric_number;
+
 $province           = $_POST['province'] ?? null;
 $province_name      = $_POST['province_name'] ?? null;
 $municipality       = $_POST['municipality'] ?? null;
@@ -153,10 +158,12 @@ if ($reason_for_update === 'UPDATE BIOMETRIC NUMBER') {
         ]);
         exit;
     }
-    if (empty($biometric_number) || !preg_match('/^\d{5}$/', $biometric_number)) {
+    // Optional field: only validate format when a value is actually
+    // provided. A blank value clears the biometric number (NULL).
+    if ($biometric_number !== null && !preg_match('/^\d{7}$/', $biometric_number)) {
         echo json_encode([
             'status' => 'danger',
-            'message' => 'Biometric number must be exactly 5 digits.'
+            'message' => 'Biometric number must be exactly 7 digits, or left blank.'
         ]);
         exit;
     }
@@ -180,7 +187,8 @@ $skipSlotValidation = in_array($reason_for_update, [
     'RESIGNED',
     'PULL-OUT / END OF CONTRACT',
     'BLACKLISTED / AWOL / TERMINATED',
-    'CLERICAL ERROR'
+    'CLERICAL ERROR',
+    'UPDATE BIOMETRIC NUMBER',
 ]);
 
 $remarks = trim($_POST['remarks'] ?? '');
