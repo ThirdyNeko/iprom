@@ -60,7 +60,7 @@
                 <i class="bi bi-chevron-down ms-auto"></i>
             </a>
 
-            <div class="collapse <?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php', 'blacklisted.php']) ? 'show' : '' ?>"
+            <div class="collapse <?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php', 'blacklisted.php', 'dropdown.php']) ? 'show' : '' ?>"
                 id="settingsSubmenu">
 
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small ms-4">
@@ -84,6 +84,13 @@
                         <a href="brands.php"
                         class="nav-link <?= $current_page == 'brands.php' ? 'active' : '' ?>">
                             Brands
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="dropdown.php"
+                        class="nav-link <?= $current_page == 'dropdown.php' ? 'active' : '' ?>">
+                            Dropdown Options
                         </a>
                     </li>
                     <?php endif; ?>
