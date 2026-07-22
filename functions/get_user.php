@@ -12,7 +12,9 @@ if (!$username) {
 $stmt = $pdo->prepare("
     SELECT
         first_name,
+        middle_name,
         last_name,
+        suffix,
         position,
         branch,
         role,

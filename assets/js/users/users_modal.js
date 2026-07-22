@@ -202,7 +202,9 @@ $(document).on("click", ".view-user", function () {
       /* ── basic fields ── */
       $("#v_username").val(username);
       $("#v_first_name").val(data.first_name);
+      $("#v_middle_name").val(data.middle_name);
       $("#v_last_name").val(data.last_name);
+      $("#v_suffix").val(data.suffix);
       $("#v_created_at").val(formatMDY(data.created_at));
       $("#v_updated_at").val(formatMDY(data.updated_at));
       $("#v_position").val(data.position).prop("readonly", !canEdit);
