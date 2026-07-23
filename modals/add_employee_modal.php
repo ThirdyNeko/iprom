@@ -32,6 +32,15 @@ $branch_brand_pairs = $pdo->query("
     WHERE branch_name IS NOT NULL AND brand_name IS NOT NULL
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+// Suffix options (via stored procedure)
+try {
+    $stmt = $pdo->prepare("EXEC dbo.get_suffixes");
+    $stmt->execute();
+    $suffixes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $suffixes = [];
+}
+
 // Category options (brand categories e.g. TV, AV, DA, WM)
 // TODO: replace with a real query if these live in a table
 $categoryOptions = ['TV', 'AV', 'DA', 'WM'];
@@ -118,7 +127,12 @@ $categoryOptions = ['TV', 'AV', 'DA', 'WM'];
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Suffix <small class="text-muted">(optional)</small></label>
-                            <input type="text" name="suffix" class="form-control" style="text-transform: uppercase;">
+                            <select name="suffix" id="suffix" class="form-select">
+                                <option value="">NONE</option>
+                                <?php foreach ($suffixes as $s): ?>
+                                    <option value="<?= htmlspecialchars($s['suffix']) ?>"><?= htmlspecialchars($s['suffix']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
 

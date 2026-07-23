@@ -1,3 +1,13 @@
+<?php
+try {
+    $stmt = $pdo->prepare("EXEC dbo.get_suffixes");
+    $stmt->execute();
+    $bl_suffixes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $bl_suffixes = [];
+}
+?>
+
 <!-- Add Blacklisted Modal -->
 <style>
 /* =========================
@@ -62,7 +72,12 @@
 
             <div class="col-md-4">
               <label class="form-label">Suffix</label>
-              <input type="text" class="form-control" id="bl_suffix" style="text-transform: uppercase;">
+              <select class="form-select" id="bl_suffix">
+                <option value="">NONE</option>
+                <?php foreach ($bl_suffixes as $s): ?>
+                    <option value="<?= htmlspecialchars($s['suffix']) ?>"><?= htmlspecialchars($s['suffix']) ?></option>
+                <?php endforeach; ?>
+              </select>
             </div>
             <div class="col-md-4">
               <label class="form-label">Gender <span class="text-danger">*</span></label>

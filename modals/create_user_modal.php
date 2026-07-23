@@ -2,6 +2,7 @@
 
 $branches = [];
 $brands   = [];
+$suffixes = [];
 
 try {
 
@@ -24,6 +25,18 @@ try {
 
     $branches = [];
     $brands   = [];
+
+}
+
+try {
+
+    $stmt = $pdo->prepare("EXEC dbo.get_suffixes");
+    $stmt->execute();
+    $suffixes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+
+    $suffixes = [];
 
 }
 ?>
@@ -278,12 +291,14 @@ try {
                                 <div class="col-4">
                                     <div class="mb-3">
                                         <label class="form-label">Suffix</label>
-                                        <input type="text"
-                                               id="suffix"
-                                               name="suffix"
-                                               class="form-control text-uppercase"
-                                               style="text-transform: uppercase;"
-                                               placeholder="Jr., III">
+                                        <select id="suffix"
+                                                name="suffix"
+                                                class="form-select">
+                                            <option value="">NONE</option>
+                                            <?php foreach ($suffixes as $s): ?>
+                                                <option value="<?= htmlspecialchars($s['suffix']) ?>"><?= htmlspecialchars($s['suffix']) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
