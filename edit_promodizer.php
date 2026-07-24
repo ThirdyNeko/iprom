@@ -96,6 +96,10 @@ th {
     color: #212529;
 }
 
+#printPdfModal .modal-body {
+    padding: 1.25rem 1.5rem;
+}
+
 #printPdfModal .form-control:not([readonly]):not([disabled]) {
     background-color: #fffbdf !important;
     opacity: 1;
@@ -116,6 +120,35 @@ th {
 #printPdfModal .recipient-name-multi,
 #printPdfModal .recipient-position-multi {
     text-transform: uppercase;
+}
+
+#printPdfModal .recipient-search-btn {
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+#printPdfModal .input-group > .recipient-search-name {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#printPdfModal .recipient-search-status {
+    font-size: 12px;
+    min-height: 16px;
+    margin-top: 2px;
+}
+
+#printPdfModal .recipient-search-status.text-success {
+    color: #198754 !important;
+}
+
+#printPdfModal .recipient-search-status.text-danger {
+    color: #dc3545 !important;
+}
+
+#printPdfModal #multiRecipientFields > div[data-branch-code] {
+    margin-left: 0;
+    margin-right: 0;
 }
 
 #editReasonUpdate option:disabled {
@@ -446,11 +479,17 @@ th {
                 <div id="singleRecipientFields">
                     <div class="mb-3">
                         <label class="form-label">Recipient Full Name</label>
-                        <input type="text" id="recipientName" class="form-control">
+                        <div class="input-group">
+                            <input type="text" id="recipientName" class="form-control recipient-search-name">
+                            <button type="button" class="btn btn-outline-danger recipient-search-btn" id="searchRecipientBtn">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
+                        <div id="recipientSearchStatus" class="form-text recipient-search-status"></div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Position</label>
-                        <input type="text" id="recipientPosition" class="form-control">
+                        <input type="text" id="recipientPosition" class="form-control recipient-position" readonly placeholder="Auto-filled after search">
                     </div>
                 </div>
 

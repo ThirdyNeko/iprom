@@ -9,9 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   const multiRecipientFields = document.getElementById("multiRecipientFields");
 
-  // Defensive getter: never throws on a missing element — logs exactly
-  // which ID was missing so a DOM/markup mismatch is easy to spot instead
-  // of surfacing as a generic "Cannot read properties of null" crash.
   function val(id) {
     const el = document.getElementById(id);
     if (!el) {
@@ -58,6 +55,129 @@ document.addEventListener("DOMContentLoaded", () => {
     return branches;
   }
 
+  // ============================================================
+  // FORCE UPPERCASE ON THE ACTUAL VALUE (not just CSS display)
+  // CSS text-transform only changes what's rendered on screen —
+  // the underlying .value stays whatever case was typed. Since
+  // that .value is what gets sent to the search endpoint and
+  // (eventually) the PDF, we uppercase it in real time here.
+  // Preserves cursor position so typing doesn't jump around.
+  // ============================================================
+  function forceUppercase(input) {
+    input.addEventListener("input", () => {
+      const cursorPos = input.selectionStart;
+      input.value = input.value.toUpperCase();
+      input.setSelectionRange(cursorPos, cursorPos);
+    });
+  }
+
+  // ============================================================
+  // BRANCH MANAGER SEARCH
+  // Looks up role=branch_manager users scoped to a specific
+  // branch code, matching the typed full name against
+  // "first_name last_name [suffix]" server-side.
+  // ============================================================
+  async function searchBranchManager(branchCode, fullName) {
+    const response = await fetch("functions/search_branch_manager.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        branch_code: branchCode,
+        full_name: fullName,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Search request failed");
+    }
+
+    return response.json();
+  }
+
+  // Wires up search behavior for a single recipient "unit" — works
+  // for both the single-recipient fields and each multi-recipient
+  // block, since they share the same class-based structure.
+  //
+  // container: element holding the name/position/status/search-button
+  // getBranchCode: function returning the branch code to scope the search to
+  function wireRecipientSearch(container, getBranchCode) {
+    const nameInput = container.querySelector(".recipient-search-name, #recipientName");
+    const positionInput = container.querySelector(".recipient-position, #recipientPosition");
+    const searchBtn = container.querySelector(".recipient-search-btn, #searchRecipientBtn");
+    const statusEl = container.querySelector(".recipient-search-status, #recipientSearchStatus");
+
+    if (!nameInput || !positionInput || !searchBtn) {
+      console.error("pdf.js: recipient search block is missing expected fields.", container);
+      return;
+    }
+
+    // Uppercase the actual value as the user types, not just via CSS
+    forceUppercase(nameInput);
+
+    function setStatus(text, cls) {
+      if (!statusEl) return;
+      statusEl.textContent = text;
+      statusEl.className = "form-text recipient-search-status " + (cls || "");
+    }
+
+    function invalidate() {
+      container.dataset.verified = "false";
+      positionInput.value = "";
+      setStatus("", "");
+    }
+
+    // Any edit to the name invalidates a previous match — forces a
+    // fresh search before the recipient can be used to generate.
+    nameInput.addEventListener("input", invalidate);
+
+    container.dataset.verified = "false";
+
+    searchBtn.addEventListener("click", async () => {
+      const branchCode = getBranchCode();
+      const fullName = nameInput.value.trim();
+
+      if (!branchCode) {
+        setStatus("No branch selected for this recipient.", "text-danger");
+        return;
+      }
+      if (!fullName) {
+        setStatus("Enter a name first.", "text-danger");
+        return;
+      }
+
+      searchBtn.disabled = true;
+      const originalBtnHtml = searchBtn.innerHTML;
+      searchBtn.innerHTML = "Searching...";
+      setStatus("", "");
+
+      try {
+        const result = await searchBranchManager(branchCode, fullName);
+
+        if (!result.success) {
+          setStatus(result.message || "Search failed.", "text-danger");
+          container.dataset.verified = "false";
+          positionInput.value = "";
+        } else if (result.found) {
+          positionInput.value = (result.position || "").toUpperCase();
+          container.dataset.verified = "true";
+          setStatus("✓ Branch manager found.", "text-success");
+        } else {
+          container.dataset.verified = "false";
+          positionInput.value = "";
+          setStatus(result.message || "No matching branch manager found.", "text-danger");
+        }
+      } catch (err) {
+        console.error(err);
+        container.dataset.verified = "false";
+        positionInput.value = "";
+        setStatus("Search failed. Please try again.", "text-danger");
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = originalBtnHtml;
+      }
+    });
+  }
+
   function buildMultiRecipientFields(branches) {
     multiRecipientFields.innerHTML = "";
 
@@ -65,6 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const block = document.createElement("div");
       block.className = "border rounded p-3 mb-3";
       block.dataset.branchCode = branch.code;
+      block.dataset.verified = "false";
 
       block.innerHTML = `
         <div class="form-check mb-2">
@@ -73,32 +194,49 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <div class="mb-2">
           <label class="form-label">Recipient Full Name</label>
-          <input type="text" class="form-control recipient-name-multi">
+          <div class="input-group">
+            <input type="text" class="form-control recipient-name-multi recipient-search-name">
+            <button type="button" class="btn btn-outline-danger recipient-search-btn">
+              <i class="bi bi-search"></i> Search
+            </button>
+          </div>
+          <div class="form-text recipient-search-status"></div>
         </div>
         <div class="mb-2">
           <label class="form-label">Position</label>
-          <input type="text" class="form-control recipient-position-multi">
+          <input type="text" class="form-control recipient-position-multi recipient-position" readonly placeholder="Auto-filled after search">
         </div>
       `;
 
       multiRecipientFields.appendChild(block);
 
-      // Toggle the branch's inputs on/off with its checkbox
       const checkbox = block.querySelector(".recipient-include-multi");
-      const nameInput = block.querySelector(".recipient-name-multi");
-      const positionInput = block.querySelector(".recipient-position-multi");
+      const nameInput = block.querySelector(".recipient-search-name");
+      const positionInput = block.querySelector(".recipient-position");
+      const searchBtn = block.querySelector(".recipient-search-btn");
+
+      // Uppercase the actual value as the user types
+      forceUppercase(nameInput);
 
       function syncBlockState() {
         const included = checkbox.checked;
-        nameInput.disabled = !included;
-        positionInput.disabled = !included;
+        [nameInput, positionInput, searchBtn].forEach((el) => {
+          if (el) el.disabled = !included;
+        });
         block.classList.toggle("opacity-50", !included);
       }
 
       checkbox.addEventListener("change", syncBlockState);
       syncBlockState();
+
+      // Each block is scoped to its own branch code.
+      wireRecipientSearch(block, () => block.dataset.branchCode);
     });
   }
+
+  // Wire the single-recipient fields once at load. It's scoped to
+  // whatever the currently selected main branch is at search time.
+  wireRecipientSearch(singleRecipientFields, () => val("editBranch"));
 
   // =========================
   // OPEN MODAL
@@ -139,6 +277,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Reset single-recipient search state on every open, since the
+    // branch (and therefore valid managers) may have changed.
+    singleRecipientFields.dataset.verified = "false";
+    const singleStatus = document.getElementById("recipientSearchStatus");
+    if (singleStatus) {
+      singleStatus.textContent = "";
+      singleStatus.className = "form-text recipient-search-status";
+    }
+    const singlePosition = document.getElementById("recipientPosition");
+    if (singlePosition) singlePosition.value = "";
+
     // Toggle single vs. multi recipient UI based on sub_status
     if (isMultiBranch()) {
       buildMultiRecipientFields(getBranchList());
@@ -170,7 +319,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Build the recipients array (1 entry for single-branch, N for multi)
       let recipients = [];
 
       if (isMultiBranch()) {
@@ -179,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const blocks = Array.from(allBlocks).filter((block) => {
           const cb = block.querySelector(".recipient-include-multi");
-          return cb ? cb.checked : true; // fail-safe: include if checkbox missing
+          return cb ? cb.checked : true;
         });
 
         if (blocks.length === 0) {
@@ -215,11 +363,20 @@ document.addEventListener("DOMContentLoaded", () => {
           const recipientName = nameInput.value.trim().toUpperCase();
           const recipientPosition = positionInput.value.trim().toUpperCase();
 
-          if (!recipientName || !recipientPosition) {
+          if (!recipientName) {
             Swal.fire({
               icon: "warning",
               title: "Missing Required Fields",
-              text: `Please fill in Recipient Name and Position for ${branchName}.`,
+              text: `Please enter the recipient's full name for ${branchName}.`,
+            });
+            return;
+          }
+
+          if (block.dataset.verified !== "true" || !recipientPosition) {
+            Swal.fire({
+              icon: "warning",
+              title: "Branch Manager Not Verified",
+              text: `Please click Search and confirm a matching branch manager for ${branchName} before generating.`,
             });
             return;
           }
@@ -259,11 +416,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const recipientName = nameInput.value.trim().toUpperCase();
         const recipientPosition = positionInput.value.trim().toUpperCase();
 
-        if (!recipientName || !recipientPosition) {
+        if (!recipientName) {
           Swal.fire({
             icon: "warning",
             title: "Missing Required Fields",
-            text: "Please fill in Recipient Name and Position before generating PDF.",
+            text: "Please enter the recipient's full name before generating PDF.",
+          });
+          return;
+        }
+
+        if (singleRecipientFields.dataset.verified !== "true" || !recipientPosition) {
+          Swal.fire({
+            icon: "warning",
+            title: "Branch Manager Not Verified",
+            text: "Please click Search and confirm a matching branch manager before generating.",
           });
           return;
         }
@@ -329,7 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        // Generate every recipient's PDF first — no downloads triggered yet.
         const generatedFiles = [];
 
         for (const recipient of recipients) {
@@ -365,7 +530,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (generatedFiles.length === 1) {
-          // Only one file — safe to auto-download directly.
           const f = generatedFiles[0];
           const a = document.createElement("a");
           a.href = f.url;
@@ -377,11 +541,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           await finishAndRedirect();
         } else {
-          // Multiple files — browsers block automatic back-to-back
-          // downloads, so present a real download link per branch and
-          // let the user click each one individually. Each is a genuine
-          // <a download> element, so no auto-download blocking, and no
-          // zipping — every branch still gets its own separate PDF file.
           const linksHtml = generatedFiles
             .map(
               (f, i) => `
