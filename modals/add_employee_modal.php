@@ -41,9 +41,14 @@ try {
     $suffixes = [];
 }
 
-// Category options (brand categories e.g. TV, AV, DA, WM)
-// TODO: replace with a real query if these live in a table
-$categoryOptions = ['TV', 'AV', 'DA', 'WM'];
+// Category options (via stored procedure)
+try {
+    $stmt = $pdo->prepare("EXEC dbo.get_categories");
+    $stmt->execute();
+    $categoryOptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $categoryOptions = [];
+}
 ?>
 
 <style>
@@ -257,10 +262,10 @@ $categoryOptions = ['TV', 'AV', 'DA', 'WM'];
                                     <li>
                                         <div class="form-check">
                                             <input class="form-check-input category-item" type="checkbox"
-                                                id="cat_<?= htmlspecialchars($cat) ?>"
-                                                value="<?= htmlspecialchars($cat) ?>" disabled>
-                                            <label class="form-check-label" for="cat_<?= htmlspecialchars($cat) ?>">
-                                                <?= htmlspecialchars($cat) ?>
+                                                id="cat_<?= htmlspecialchars($cat['id']) ?>"
+                                                value="<?= htmlspecialchars($cat['categories']) ?>" disabled>
+                                            <label class="form-check-label" for="cat_<?= htmlspecialchars($cat['id']) ?>">
+                                                <?= htmlspecialchars($cat['categories']) ?>
                                             </label>
                                         </div>
                                     </li>
