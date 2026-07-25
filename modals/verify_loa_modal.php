@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<link rel="stylesheet" href="assets/css/cropper.min.css">
+<script src="assets/js/cropper.min.js"></script>
 
 <style>
 .verify-steps { border-bottom: 1px solid #dee2e6; padding-bottom: 8px; }

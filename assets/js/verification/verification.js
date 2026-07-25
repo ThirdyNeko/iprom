@@ -29,13 +29,21 @@ $(document).ready(function () {
       { data: "effectivity_date_display" },
       {
         data: null,
-        width: "180px",
+        width: "220px",
         className: "text-center px-1",
         orderable: false,
         render: function (data) {
-          const canVerify =
-            typeof CURRENT_USER_ROLE === "string" &&
-            CURRENT_USER_ROLE.toLowerCase() === "branch_manager";
+          const role =
+            typeof CURRENT_USER_ROLE === "string"
+              ? CURRENT_USER_ROLE.toLowerCase()
+              : "";
+
+          const canVerify = role === "branch_manager";
+          // Cancel LOA (hard delete, confirmed via LOA code entry) is
+          // restricted to admin / super_admin. This is UI convenience
+          // only -- functions/cancel_loa.php independently re-checks
+          // $_SESSION['role'] server-side before deleting anything.
+          const canCancel = role === "admin" || role === "super_admin";
 
           const verifyBtnHtml = canVerify
             ? `<button class="btn btn-success btn-sm px-2 py-1 verifyLOABtn"
@@ -43,6 +51,15 @@ $(document).ready(function () {
                 data-employee-id="${data.employee_id ?? ""}"
                 data-branch="${data.branch_code ?? ""}">
                 <i class="bi bi-patch-check me-1"></i>Verify
+              </button>`
+            : "";
+
+          const cancelBtnHtml = canCancel
+            ? `<button class="btn btn-outline-danger btn-sm px-2 py-1 cancelLOABtn"
+                data-loa-id="${data.loa_id}"
+                data-employee-id="${data.employee_id ?? ""}"
+                data-employee-name="${data.promodiser ?? ""}">
+                <i class="bi bi-x-circle me-1"></i>Cancel
               </button>`
             : "";
 
@@ -74,6 +91,7 @@ $(document).ready(function () {
               </button>
 
               ${verifyBtnHtml}
+              ${cancelBtnHtml}
             </div>
           `;
         },
@@ -154,5 +172,6 @@ $(document).ready(function () {
   });
 
   // Note: the "Verify" button click handler lives in assets/js/verify_loa.js
-  // so the verification modal logic stays in its own file.
+  // so the verification modal logic stays in its own file. Likewise, the
+  // "Cancel" button click handler lives in assets/js/verification/cancel_loa.js.
 });

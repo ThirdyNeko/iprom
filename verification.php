@@ -129,8 +129,9 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
 
 <script>
     // Session context for client-side UI gating (Verify button visibility, table filtering, etc).
-    // NOTE: this is UI convenience only — the actual verify endpoint (functions/verify_loa.php
-    // or equivalent) MUST independently re-check $_SESSION['role'] server-side. Never trust
+    // NOTE: this is UI convenience only — the actual verify/cancel endpoints
+    // (functions/verify_loa.php, functions/cancel_loa.php, etc) MUST
+    // independently re-check $_SESSION['role'] server-side. Never trust
     // this value alone to authorize a write.
     const CURRENT_USER_ROLE   = <?php echo json_encode($user_role); ?>;
     const CURRENT_USER_BRANCH = <?php echo json_encode($user_branch); ?>;
@@ -142,6 +143,7 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/verification/verification.js"></script>
 <script src="assets/js/verification/verify_loa.js"></script>
+<script src="assets/js/verification/cancel_loa.js"></script>
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -159,3 +161,4 @@ document.querySelectorAll(".clear-btn").forEach(btn => {
 
 <?php include 'modals/change_password_modal.php'; ?>
 <?php include 'modals/verify_loa_modal.php'; ?>
+<?php include 'modals/cancel_loa_modal.php'; ?>
