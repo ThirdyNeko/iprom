@@ -41,6 +41,8 @@ $sessionBranch   = $_SESSION['branch'] ?? '';
 $restrictedRoles = ['branch_manager', 'staff'];
 
 $branchWhere = "WHERE 1=1";
+$branchCodes = []; // kept in scope outside the if-block below so it can be
+                    // reused later to scope roving_branches per-row
 
 if (in_array($sessionRole, $restrictedRoles, true)) {
     $branchCodes = array_values(array_filter(array_map('trim', explode(',', $sessionBranch))));
@@ -51,21 +53,19 @@ if (in_array($sessionRole, $restrictedRoles, true)) {
     } else {
         $branchConditions = [];
         foreach ($branchCodes as $i => $code) {
-            // NOTE: SQL Server's PDO driver (sqlsrv/odbc) does not support
-            // reusing the same named parameter twice in one query the way
-            // MySQL/Postgres do -- each occurrence needs its own placeholder,
-            // even though both are bound to the same value, or you get
-            // "number of bound variables does not match number of tokens".
-            $keyA = ":branch{$i}a";
-            $keyB = ":branch{$i}b";
-            // Match the employee's home branch, or any of their roving
-            // branches (roving_branches is a comma-delimited string
-            // column, so pad both sides with commas to avoid a code
-            // like "B1" matching inside "B10").
-            $branchConditions[] = "(branch_code = {$keyA}
-                OR ',' + ISNULL(roving_branches, '') + ',' LIKE '%,' + {$keyB} + ',%')";
-            $branchParams[$keyA] = $code;
-            $branchParams[$keyB] = $code;
+            // Match on the LOA record's own home branch ONLY.
+            //
+            // letters_of_advice stores one row PER branch for a multi-branch
+            // employee (e.g. id 13: branch_code=TIGB, roving_branches=VIAC;
+            // id 14: branch_code=VIAC, roving_branches=TIGB, same employee).
+            // Matching on roving_branches too used to pull in row 14 for a
+            // TIGB-only manager just because "TIGB" appeared in its roving
+            // list -- effectively showing every branch's LOA record as soon
+            // as the manager's branch touched it anywhere. A manager should
+            // only see the record whose own branch_code is theirs.
+            $key = ":branch{$i}";
+            $branchConditions[] = "branch_code = {$key}";
+            $branchParams[$key] = $code;
         }
         $branchWhere .= " AND (" . implode(' OR ', $branchConditions) . ")";
     }
@@ -177,6 +177,16 @@ foreach ($data as &$row) {
     $row['roving_branches'] = !empty($row['roving_branches'])
         ? explode(',', $row['roving_branches'])
         : [];
+
+    // Branch managers / staff only get to see the roving branch(es) that
+    // are actually theirs — a roving employee assigned to BR01,BR02,BR05
+    // should not reveal BR02/BR05 to a manager who only manages BR01.
+    // Admin/super_admin (not in $restrictedRoles) still see the full list.
+    if (in_array($sessionRole, $restrictedRoles, true) && !empty($branchCodes)) {
+        $row['roving_branches'] = array_values(
+            array_intersect($row['roving_branches'], $branchCodes)
+        );
+    }
 
     $row['multi_brands'] = !empty($row['multi_brands'])
         ? explode(',', $row['multi_brands'])
