@@ -1,21 +1,34 @@
 // ─────────────────────────────────────────────────────────────
 // verify_loa.js
 // Handles the "Verify LOA" modal: LOA code check -> ID picture
-// check/upload -> status finalization (ACTIVE / QUEUED).
+// check/upload -> confirm preview -> status finalization
+// (ACTIVE / QUEUED).
+//
+// Flow is 4 steps:
+//   1. LOA Code
+//   2. ID Picture (existing/keep/overwrite or fresh upload + crop)
+//   3. Confirm (shows the picture that will be submitted; user
+//      must explicitly click "Confirm & Submit" -- Back returns
+//      to Step 2 without finalizing anything)
+//   4. Result (finalize_verification.php is only ever called once
+//      Step 3 is confirmed)
 //
 // Picture storage note: pictures are stored as binary data in
 // [IPROM_TEST].[dbo].[employee_pictures].[id_picture] (not on disk),
 // so the backend returns/accepts base64 data URIs (`picture_data`)
 // rather than file URLs.
 //
-// IMPORTANT: everything is wrapped in $(document).ready() below.
-// The modal markup (modals/verify_loa_modal.php) is included in the
-// page AFTER this <script> tag, so #verifyNextBtn etc. don't exist
-// yet at the moment this file first executes. Binding directly at
-// the top level (e.g. `$("#verifyNextBtn").on(...)`) would select
-// an empty jQuery set and silently attach nothing. Waiting for
-// document.ready guarantees the full page HTML — including the
-// included modal — has been parsed first.
+// IMPORTANT: ALL bindings for elements inside the modal partial
+// (modals/verify_loa_modal.php) use event delegation on
+// `document`, NOT direct selectors like $("#verifyNextBtn").
+// The modal HTML may not exist in the DOM yet at the moment this
+// script runs (or even at $(document).ready() time, if it's loaded
+// via a separate include/fetch that resolves later). A direct
+// $("#id").on(...) binds to whatever matches AT THAT INSTANT --
+// if the element isn't there yet, it binds to an empty set and
+// silently does nothing, forever. Delegated binding on `document`
+// re-resolves the selector every time the event bubbles up, so it
+// works no matter when the modal markup actually lands.
 //
 // Requires: jQuery, Bootstrap 5 bundle, SweetAlert2, and the
 // DataTable instance `table` from verification.js (for redraw).
@@ -33,12 +46,17 @@ $(document).ready(function () {
   $(document).on("click", ".verifyLOABtn", function () {
     const btn = $(this);
 
+    revokeConfirmPreviewUrl();
+
     verifyState = {
       employeeId: btn.data("employee-id"),
       loaId: btn.data("loa-id"),
       branchCode: btn.data("branch"),
       hasExistingPicture: false,
+      existingPictureData: null,
       overwrite: false,
+      pendingPreviewUrl: null, // objectURL for a freshly cropped picture, revoked on close/reopen
+      pendingSource: null, // "existing" | "new" -- what's about to be submitted on Confirm
     };
 
     // Reset modal UI
@@ -50,6 +68,9 @@ $(document).ready(function () {
     $("#existingPictureWrap").addClass("d-none");
     $("#uploadWrap").removeClass("d-none");
     $("#uploadPrompt").text("Upload ID Picture");
+    $("#verifyConfirmPicture").attr("src", "");
+    $("#verifyConfirmSourceLabel").text("");
+    $("#finalizeResult").empty();
     destroyCropper();
     hideLoading();
 
@@ -60,6 +81,15 @@ $(document).ready(function () {
     goToStep(1, { animate: false });
     new bootstrap.Modal(document.getElementById("verifyLOAModal")).show();
     $(".loa-code-box").first().trigger("focus");
+  });
+
+  // Clean up any pending object URL once the modal is fully hidden,
+  // so re-opening it (or opening it for a different row) never leaks
+  // memory or shows a stale picture. This one stays delegated too --
+  // the modal element itself might not exist at ready() time, so we
+  // can't call $("#verifyLOAModal").on(...) directly either.
+  $(document).on("hidden.bs.modal", "#verifyLOAModal", function () {
+    revokeConfirmPreviewUrl();
   });
 
   // ── LOA code boxes: 4 letters, dash, 6 digits ─────────────────
@@ -175,22 +205,27 @@ $(document).ready(function () {
     }
   });
 
-  $("#verifyBackBtn").on("click", function () {
+  // ── Footer nav ───────────────────────────────────────────────
+  // Delegated: #verifyBackBtn / #verifyNextBtn live inside the
+  // modal partial, which may not be in the DOM yet at ready() time.
+  $(document).on("click", "#verifyBackBtn", function () {
     if (currentStep > 1) goToStep(currentStep - 1);
   });
 
-  $("#verifyNextBtn").on("click", function () {
+  $(document).on("click", "#verifyNextBtn", function () {
     if (currentStep === 1) handleStep1();
     else if (currentStep === 2) handleStep2();
+    else if (currentStep === 3) handleConfirmStep();
   });
 
-  $("#keepExistingBtn").on("click", async function () {
+  // "Keep Existing" no longer finalizes directly -- it just stages
+  // the existing picture as what Confirm will submit.
+  $(document).on("click", "#keepExistingBtn", function () {
     verifyState.overwrite = false;
-    goToStep(3);
-    await finalizeVerification();
+    showConfirmStep({ source: "existing" });
   });
 
-  $("#overwriteBtn").on("click", function () {
+  $(document).on("click", "#overwriteBtn", function () {
     verifyState.overwrite = true;
     $("#uploadWrap").removeClass("d-none");
     $("#uploadPrompt").text(
@@ -198,7 +233,7 @@ $(document).ready(function () {
     );
   });
 
-  $("#idPictureInput").on("change", function () {
+  $(document).on("change", "#idPictureInput", function () {
     $("#pictureError").addClass("d-none");
     const file = this.files[0];
     if (!file) {
@@ -216,15 +251,15 @@ $(document).ready(function () {
     reader.readAsDataURL(file);
   });
 
-  $("#cropZoomInBtn").on("click", function () {
+  $(document).on("click", "#cropZoomInBtn", function () {
     if (cropper) cropper.zoom(0.1);
   });
 
-  $("#cropZoomOutBtn").on("click", function () {
+  $(document).on("click", "#cropZoomOutBtn", function () {
     if (cropper) cropper.zoom(-0.1);
   });
 
-  $("#cropResetBtn").on("click", function () {
+  $(document).on("click", "#cropResetBtn", function () {
     if (cropper) cropper.reset();
   });
 });
@@ -292,6 +327,7 @@ function hideLoading() {
 }
 
 // ── Step navigation with a short fade transition ───────────────
+// Steps: 1 LOA Code, 2 ID Picture, 3 Confirm, 4 Result.
 function goToStep(step, opts) {
   const animate = !opts || opts.animate !== false;
   const current = $(".verify-step").not(".d-none");
@@ -301,8 +337,10 @@ function goToStep(step, opts) {
 
   $(".step-item").removeClass("active");
   $(`.step-item[data-step="${step}"]`).addClass("active");
-  $("#verifyBackBtn").toggleClass("d-none", step === 1 || step === 3);
-  $("#verifyNextBtn").toggleClass("d-none", step === 3);
+
+  $("#verifyBackBtn").toggleClass("d-none", step === 1 || step === 4);
+  $("#verifyNextBtn").toggleClass("d-none", step === 4);
+  $("#verifyNextBtn").text(step === 3 ? "Confirm & Submit" : "Next");
 
   if (animate && current.length && current.attr("id") !== next.attr("id")) {
     current.addClass("verify-step-fade-out");
@@ -369,11 +407,15 @@ async function loadExistingPicture() {
     if (result.exists) {
       verifyState.hasExistingPicture = true;
       // result.picture_data is a base64 data URI (e.g. "data:image/jpeg;base64,...")
+      // Kept on verifyState so the Confirm step (Step 3) can preview it
+      // without another round trip if the user picks "Keep Existing".
+      verifyState.existingPictureData = result.picture_data;
       $("#existingPictureImg").attr("src", result.picture_data);
       $("#existingPictureWrap").removeClass("d-none");
       $("#uploadWrap").addClass("d-none");
     } else {
       verifyState.hasExistingPicture = false;
+      verifyState.existingPictureData = null;
       $("#existingPictureWrap").addClass("d-none");
       $("#uploadWrap").removeClass("d-none");
       $("#uploadPrompt").text("No picture on file yet — please upload one.");
@@ -382,6 +424,7 @@ async function loadExistingPicture() {
     console.error("Picture check failed:", err);
     // Fail safe: treat as no picture on file so the flow isn't blocked
     verifyState.hasExistingPicture = false;
+    verifyState.existingPictureData = null;
     $("#existingPictureWrap").addClass("d-none");
     $("#uploadWrap").removeClass("d-none");
   }
@@ -446,10 +489,16 @@ async function handleStep2() {
         );
         return;
       }
-    }
 
-    goToStep(3);
-    await finalizeVerification();
+      // Picture is uploaded and saved server-side at this point; go to
+      // Confirm with the just-cropped blob as the preview source.
+      showConfirmStep({ source: "new", blob: croppedBlob });
+    } else {
+      // No new file chosen and we weren't required to have one --
+      // this only happens if hasExistingPicture is true and overwrite
+      // was never toggled on (kept the existing picture implicitly).
+      showConfirmStep({ source: "existing" });
+    }
   } catch (err) {
     console.error("Picture upload failed:", err);
     Swal.fire(
@@ -462,7 +511,44 @@ async function handleStep2() {
   }
 }
 
-// ── STEP 3: Finalize — set status based on start_date ──────────
+// ── STEP 3: Confirm — show the picture that will be submitted ──
+// Nothing is finalized here. The user must click "Confirm & Submit"
+// (the footer Next button, relabeled by goToStep) to proceed, or
+// "Back" to return to Step 2 and pick/crop a different picture.
+function showConfirmStep(opts) {
+  revokeConfirmPreviewUrl();
+
+  let previewSrc;
+  if (opts.source === "new" && opts.blob) {
+    previewSrc = URL.createObjectURL(opts.blob);
+    verifyState.pendingPreviewUrl = previewSrc; // remembered so it can be revoked later
+    $("#verifyConfirmSourceLabel").text("Newly uploaded picture");
+  } else {
+    previewSrc = verifyState.existingPictureData;
+    $("#verifyConfirmSourceLabel").text(
+      "Existing picture on file (kept as-is)",
+    );
+  }
+
+  verifyState.pendingSource = opts.source;
+  $("#verifyConfirmPicture").attr("src", previewSrc || "");
+
+  goToStep(3);
+}
+
+function handleConfirmStep() {
+  goToStep(4);
+  finalizeVerification();
+}
+
+function revokeConfirmPreviewUrl() {
+  if (verifyState && verifyState.pendingPreviewUrl) {
+    URL.revokeObjectURL(verifyState.pendingPreviewUrl);
+    verifyState.pendingPreviewUrl = null;
+  }
+}
+
+// ── STEP 4: Finalize — set status based on start_date ───────────
 async function finalizeVerification() {
   showLoading("Finalizing verification...");
   $("#finalizeResult").html('<div class="spinner-border text-primary"></div>');
@@ -509,6 +595,7 @@ async function finalizeVerification() {
   } finally {
     hideLoading();
     destroyCropper(); // no longer needed once we're on the result step
+    revokeConfirmPreviewUrl(); // preview blob URL is no longer needed either
     // Whatever the outcome, the only way to close now is Okay.
     $("#verifyOkayBtn").removeClass("d-none").prop("disabled", false);
   }

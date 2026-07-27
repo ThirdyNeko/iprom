@@ -69,6 +69,23 @@
   stroke-dasharray: 6 5;
 }
 
+/* ── Confirm step (Step 3) ─────────────────────────────── */
+.confirm-picture-frame {
+  width: 180px;
+  height: 180px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+  margin: 0 auto;
+  background: #f8f9fa;
+}
+.confirm-picture-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* ── Step transition animation ─────────────────────────── */
 .verify-step {
   opacity: 1;
@@ -132,7 +149,8 @@
         <div class="d-flex justify-content-between mb-4 verify-steps">
           <div class="step-item active" data-step="1">1. LOA Code</div>
           <div class="step-item" data-step="2">2. ID Picture</div>
-          <div class="step-item" data-step="3">3. Result</div>
+          <div class="step-item" data-step="3">3. Confirm</div>
+          <div class="step-item" data-step="4">4. Result</div>
         </div>
 
         <!-- STEP 1: LOA CODE -->
@@ -237,8 +255,21 @@
           </div>
         </div>
 
-        <!-- STEP 3: RESULT -->
+        <!-- STEP 3: CONFIRM -->
         <div class="verify-step d-none" id="verifyStep3">
+          <p class="text-center fw-semibold mb-1">Confirm ID Picture</p>
+          <p class="text-center text-muted small mb-3">
+            Please double-check this is the correct picture before finalizing.
+            Once submitted, the employee's status will be updated.
+          </p>
+          <div class="confirm-picture-frame">
+            <img id="verifyConfirmPicture" src="" alt="Picture to submit">
+          </div>
+          <p class="text-center small text-muted mt-2 mb-0" id="verifyConfirmSourceLabel"></p>
+        </div>
+
+        <!-- STEP 4: RESULT -->
+        <div class="verify-step d-none" id="verifyStep4">
           <div class="text-center py-3" id="finalizeResult"></div>
         </div>
       </div>
