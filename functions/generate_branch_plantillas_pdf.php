@@ -267,7 +267,7 @@ $headers = [
     'Complete Since',
     "Complete\nPeriod"
 ];
-$widths  = [30, 30, 18, 18, 18, 26, 16, 26, 16];
+$widths  = [34, 34, 18, 18, 18, 22, 16, 22, 16];
 
 $pdf = new ReportPDF('P', 'mm', 'Letter'); // portrait: 216 x 279mm
 $pdf->Ln(10);
@@ -285,7 +285,8 @@ $pdf->SetFont('Arial', '', $fitSize);
 foreach ($combined as $row) {
     foreach ($row as $i => $val) {
         $text = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$i]);
-        $pdf->Cell($widths[$i], $rowH, $text, 1, 0, 'C');
+        $align = ($i === 1) ? 'L' : 'C';
+        $pdf->Cell($widths[$i], $rowH, $text, 1, 0, $align);
     }
     $pdf->Ln();
     $pdf->SetFont('Arial', '', $fitSize);

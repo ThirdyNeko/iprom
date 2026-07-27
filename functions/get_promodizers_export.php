@@ -1,6 +1,21 @@
 <?php
+session_start();
 require_once '../config/db.php';
 header('Content-Type: application/json');
+
+// =========================
+// AUTH CHECK
+// =========================
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(["error" => "Not authenticated"]);
+    exit;
+}
+
+// Same pattern as the rest of the app: a session branch means the
+// user (staff or branch_manager) is scoped to that branch only.
+// Empty/null session branch = full access (e.g. super_admin).
+$sessionBranch = $_SESSION['branch'] ?? null;
 
 $pdo = qa_db();
 
@@ -35,27 +50,37 @@ WHERE 1=1
 $params = [];
 
 /* =========================
-   FILTERS
+   SESSION BRANCH LOCK
+   If the session has a branch assigned, force the query to that
+   branch and ignore any branch/corpo/region/area params from the
+   client — same restriction staff already get elsewhere.
 ========================= */
+if (!empty($sessionBranch)) {
+    $sql .= " AND p.branch = :session_branch";
+    $params[':session_branch'] = $sessionBranch;
+} else {
+    /* =========================
+       FILTERS (only reachable when there's no session branch lock)
+    ========================= */
+    if (!empty($_GET['region'])) {
+        $sql .= " AND b.region = :region";
+        $params[':region'] = $_GET['region'];
+    }
 
-if (!empty($_GET['region'])) {
-    $sql .= " AND b.region = :region";
-    $params[':region'] = $_GET['region'];
-}
+    if (!empty($_GET['area'])) {
+        $sql .= " AND b.area = :area";
+        $params[':area'] = $_GET['area'];
+    }
 
-if (!empty($_GET['area'])) {
-    $sql .= " AND b.area = :area";
-    $params[':area'] = $_GET['area'];
-}
+    if (!empty($_GET['corpo'])) {
+        $sql .= " AND p.corpo = :corpo";
+        $params[':corpo'] = $_GET['corpo'];
+    }
 
-if (!empty($_GET['corpo'])) {
-    $sql .= " AND p.corpo = :corpo";
-    $params[':corpo'] = $_GET['corpo'];
-}
-
-if (!empty($_GET['branch'])) {
-    $sql .= " AND p.branch = :branch";
-    $params[':branch'] = $_GET['branch'];
+    if (!empty($_GET['branch'])) {
+        $sql .= " AND p.branch = :branch";
+        $params[':branch'] = $_GET['branch'];
+    }
 }
 
 if (!empty($_GET['brand'])) {
@@ -84,7 +109,7 @@ if (!empty($_GET['agency'])) {
 }
 
 /* =========================
-   SEARCH (IMPROVED)
+   SEARCH
 ========================= */
 if (!empty($_GET['search'])) {
     $sql .= " AND (
@@ -119,9 +144,6 @@ if (!empty($_GET['to_date'])) {
     $params[':to_date'] = $_GET['to_date'];
 }
 
-/* =========================
-   ASSIGNED BY (MISSING FIX)
-========================= */
 if (!empty($_GET['assigned_by'])) {
     $sql .= " AND p.last_assigned_by = :assigned_by";
     $params[':assigned_by'] = $_GET['assigned_by'];
@@ -138,9 +160,6 @@ foreach ($params as $k => $v) {
 $stmt->execute();
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-/* =========================
-   OUTPUT
-========================= */
 $result = [];
 
 foreach ($data as $p) {

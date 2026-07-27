@@ -135,9 +135,11 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                     <button id="exportExcel" class="btn btn-success">
                         <i class="bi bi-file-earmark-excel"></i> Export
                     </button>
+                    <?php if (($_SESSION['role'] ?? '') !== 'branch_manager'): ?>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
                         <i class="bi bi-plus-circle"></i> Add Employee
                     </button>
+                    <?php endif; ?>
                 </div>
             </div>
 
