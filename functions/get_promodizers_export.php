@@ -89,8 +89,20 @@ if (!empty($_GET['brand'])) {
 }
 
 if (!empty($_GET['status'])) {
-    $sql .= " AND p.status = :status";
-    $params[':status'] = $_GET['status'];
+    $statusValues = array_filter(array_map('trim', explode(',', $_GET['status'])));
+
+    if (count($statusValues) > 1) {
+        $placeholders = [];
+        foreach ($statusValues as $i => $val) {
+            $key = ":status$i";
+            $placeholders[] = $key;
+            $params[$key] = $val;
+        }
+        $sql .= " AND p.status IN (" . implode(',', $placeholders) . ")";
+    } else {
+        $sql .= " AND p.status = :status";
+        $params[':status'] = $statusValues[0];
+    }
 }
 
 if (!empty($_GET['employment_status'])) {
