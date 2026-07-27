@@ -1,6 +1,18 @@
 <?php
+session_start();
 require_once '../config/db.php';
 header('Content-Type: application/json');
+
+// =========================
+// AUTH CHECK
+// =========================
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(["error" => "Not authenticated"]);
+    exit;
+}
+
+$sessionBranch = $_SESSION['branch'] ?? null;
 
 $pdo = qa_db();
 
@@ -13,13 +25,25 @@ SELECT
     h.update_date,
     h.employee_id,
     h.original_employee_id,
-    LTRIM(RTRIM(ISNULL(e.first_name, '') + ' ' + ISNULL(e.last_name, ''))) AS employee_name
+    LTRIM(RTRIM(ISNULL(e.first_name, '') + ' ' + ISNULL(e.last_name, ''))) AS employee_name,
+    e.branch
 FROM employee_reason_history h
 LEFT JOIN employee_info e ON h.employee_id = e.employee_id
 WHERE 1=1
 ";
 
 $params = [];
+
+/* =========================
+   SESSION BRANCH LOCK
+   Same restriction as elsewhere: if the session has a branch,
+   the export is locked to logs whose employee belongs to that
+   branch, regardless of any client-side params.
+========================= */
+if (!empty($sessionBranch)) {
+    $sql .= " AND e.branch = :session_branch";
+    $params[':session_branch'] = $sessionBranch;
+}
 
 /* =========================
    FILTERS
@@ -61,7 +85,7 @@ if (!empty($_GET['to_date'])) {
 $sql .= " ORDER BY h.update_date DESC";
 
 $stmt = $pdo->prepare($sql);
-$stmt->execute($params); // ✅ cleaner than foreach bindValue
+$stmt->execute($params);
 
 $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
