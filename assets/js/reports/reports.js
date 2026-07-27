@@ -39,7 +39,6 @@ function generateReport(type) {
     }
     bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
     exportEmployeeReport(branchCode, branchLabel);
-    // in generateReport():
   } else if (type === "branch_plantillas") {
     const branch = document.getElementById("selectBranchPlantillas").value;
     const status = document.getElementById(
@@ -59,7 +58,7 @@ function generateReport(type) {
   }
 }
 
-// ─── Employee Report Export ───────────────────────────────────────────────────
+// ─── Employee Report Export (PDF) ─────────────────────────────────────────
 
 function exportEmployeeReport(branchCode, branchLabel) {
   const btn = document.getElementById("btnGenerateEmployee");
@@ -68,9 +67,10 @@ function exportEmployeeReport(branchCode, branchLabel) {
     '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
 
   const today = new Date();
-  const dateStr = formatDateDisplay(today); // e.g. "June 01, 2026"
-  const fileSuffix = formatDateFile(today); // e.g. "2026-06-01"
+  const fileSuffix = formatDateFile(today);
 
+  // Quick existence check first so we can show a friendly "no records"
+  // message instead of downloading a blank/error PDF.
   fetch(
     "functions/get_employee_report.php?" +
       new URLSearchParams({ branch: branchCode }),
@@ -87,88 +87,27 @@ function exportEmployeeReport(branchCode, branchLabel) {
         return;
       }
 
-      // ── Row 1: Header label (merged visually via empty cols) ──────────
-      const headerLabel = [
-        [`${branchLabel}`, "", "", "", ""],
-        [`As of ${dateStr}`, "", "", "", ""],
-      ];
-
-      // ── Row 2: Column headers ─────────────────────────────────────────
-      const colHeaders = [
-        "Brand",
-        "Last Name",
-        "First Name",
-        "Middle Name",
-        "Suffix",
-        "Employment Status",
-        "Sub-Status",
-        "Date Hired",
-      ];
-
-      // ── Data rows ─────────────────────────────────────────────────────
-      const dataRows = data.map((p) => [
-        p.brand ?? "",
-        p.last_name ?? "",
-        p.first_name ?? "",
-        p.middle_name ?? "",
-        p.suffix ?? "",
-        p.employment_status ?? "",
-        p.sub_status ?? "",
-        formatDate(p.date_hired),
-      ]);
-
-      const exportData = [...headerLabel, colHeaders, ...dataRows];
-
-      // ── Build worksheet ───────────────────────────────────────────────
-      const ws = XLSX.utils.aoa_to_sheet(exportData);
-
-      // Merge A1:E1 for the header label
-      ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }, // ← add this
-      ];
-
-      // Style A1 — bold, centered (SheetJS CE supports basic styles via cell object)
-      if (ws["A1"]) {
-        ws["A1"].s = {
-          font: { bold: true, sz: 12 },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
-      }
-
-      if (ws["A2"]) {
-        ws["A2"].s = {
-          font: { sz: 10, italic: true },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
-      }
-
-      // Style header row (row 2 = index 1)
-      colHeaders.forEach((_, ci) => {
-        const cellRef = XLSX.utils.encode_cell({ r: 2, c: ci });
-        if (ws[cellRef]) {
-          ws[cellRef].s = {
-            font: { bold: true, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "2D68C4" } },
-            alignment: { horizontal: "center" },
-          };
-        }
-      });
-
-      // Auto column widths (based on all rows including header label)
-      ws["!cols"] = colHeaders.map((_, ci) => {
-        let max = 10;
-        exportData.forEach((row) => {
-          const val = row[ci] ? row[ci].toString() : "";
-          max = Math.max(max, val.length);
+      return fetch(
+        "functions/generate_employee_report_pdf.php?" +
+          new URLSearchParams({
+            branch: branchCode,
+            branch_label: branchLabel,
+          }),
+      )
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to generate PDF");
+          return res.blob();
+        })
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${branchCode}_PROMO_LIST_${fileSuffix}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
         });
-        return { wch: max + 2 };
-      });
-
-      // ── Write file ────────────────────────────────────────────────────
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Employee Report");
-      XLSX.writeFile(wb, `${branchCode}_PROMO_LIST_${fileSuffix}.xlsx`);
     })
     .catch(() => {
       Swal.fire({
@@ -184,6 +123,8 @@ function exportEmployeeReport(branchCode, branchLabel) {
     });
 }
 
+// ─── Vacant & Incomplete Plantillas Export (PDF) ──────────────────────────
+
 function exportVacantPlantillas(brand, status = "all") {
   const btn = document.getElementById("btnGenerateVacantPlantillas");
   btn.disabled = true;
@@ -191,7 +132,6 @@ function exportVacantPlantillas(brand, status = "all") {
     '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
 
   const today = new Date();
-  const dateStr = formatDateDisplay(today);
   const fileSuffix = formatDateFile(today);
 
   Promise.all([
@@ -203,37 +143,10 @@ function exportVacantPlantillas(brand, status = "all") {
     ).then((r) => r.json()),
   ])
     .then(([vacantData, completeData]) => {
-      const vacantRows = vacantData.map((p) => [
-        p.brand ?? "",
-        p.branch ?? "",
-        p.required_count ?? "",
-        p.assigned_count ?? "",
-        vacantCount(p.required_count, p.assigned_count),
-        formatDate(p.timestamp) ?? "",
-        monthDaysSince(p.timestamp) ?? "",
-        "",
-        "",
-      ]);
+      const hasVacant = status !== "complete" && vacantData.length;
+      const hasComplete = status !== "vacant" && completeData.length;
 
-      const completeRows = completeData.map((p) => [
-        p.brand ?? "",
-        p.branch ?? "",
-        p.required_count ?? "",
-        p.assigned_count ?? "",
-        0, // vacant
-        "", // vacant since
-        "", // vacant period
-        formatDate(p.timestamp) ?? "",
-        monthDaysSince(p.timestamp) ?? "",
-      ]);
-
-      const combined = [
-        ...(status === "complete" ? [] : vacantRows),
-        ...(status === "vacant" ? [] : completeRows),
-      ].sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
-      //                 ^ brand (col 0)              ^ branch (col 1)
-
-      if (!combined.length) {
+      if (!hasVacant && !hasComplete) {
         Swal.fire({
           icon: "info",
           title: "No records found",
@@ -243,72 +156,24 @@ function exportVacantPlantillas(brand, status = "all") {
         return;
       }
 
-      const headerLabel = [
-        [`${brand}`, "", "", "", "", "", "", "", ""],
-        [`As of ${dateStr}`, "", "", "", "", "", "", "", ""],
-      ];
-
-      const colHeaders = [
-        "Brand",
-        "Branch",
-        "Plantilla",
-        "Deployed",
-        "Vacant",
-        "Vacant Since",
-        "Vacant Period",
-        "Complete Since",
-        "Complete Period",
-      ];
-
-      const exportData = [...headerLabel, colHeaders, ...combined];
-
-      const ws = XLSX.utils.aoa_to_sheet(exportData);
-
-      ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
-      ];
-
-      if (ws["A1"]) {
-        ws["A1"].s = {
-          font: { bold: true, sz: 12 },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
-      }
-
-      if (ws["A2"]) {
-        ws["A2"].s = {
-          font: { sz: 10, italic: true },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
-      }
-
-      colHeaders.forEach((_, ci) => {
-        const cellRef = XLSX.utils.encode_cell({ r: 2, c: ci });
-        if (ws[cellRef]) {
-          ws[cellRef].s = {
-            font: { bold: true, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "2D68C4" } },
-            alignment: { horizontal: "center" },
-          };
-        }
-      });
-
-      ws["!cols"] = colHeaders.map((_, ci) => {
-        let max = 10;
-        exportData.forEach((row) => {
-          const val = row[ci] ? row[ci].toString() : "";
-          max = Math.max(max, val.length);
+      return fetch(
+        "functions/generate_vacant_plantillas_pdf.php?" +
+          new URLSearchParams({ brand, status }),
+      )
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to generate PDF");
+          return res.blob();
+        })
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${brand}_${status.toUpperCase()}_PLANTILLAS_${fileSuffix}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
         });
-        return { wch: max + 2 };
-      });
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Vacant Plantillas Report");
-      XLSX.writeFile(
-        wb,
-        `${brand}_${status.toUpperCase()}_PLANTILLAS_${fileSuffix}.xlsx`,
-      );
     })
     .catch(() => {
       Swal.fire({
@@ -324,20 +189,21 @@ function exportVacantPlantillas(brand, status = "all") {
     });
 }
 
+// ─── Branch Plantilla Records Export (PDF) ────────────────────────────────
+
 function exportBranchPlantillas(branch, status = "all") {
   const btn = document.getElementById("btnGenerateBranchPlantillas");
   btn.disabled = true;
   btn.innerHTML =
     '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
 
-  const today = new Date();
-  const dateStr = formatDateDisplay(today);
-  const fileSuffix = formatDateFile(today);
-
   // Use the display label for the header, not the branch code
   const branchLabel =
     document.getElementById("selectBranchPlantillas").selectedOptions[0]
       ?.text ?? branch;
+
+  const today = new Date();
+  const fileSuffix = formatDateFile(today);
 
   Promise.all([
     fetch(
@@ -350,36 +216,10 @@ function exportBranchPlantillas(branch, status = "all") {
     ).then((r) => r.json()),
   ])
     .then(([vacantData, completeData]) => {
-      const vacantRows = vacantData.map((p) => [
-        p.branch ?? "",
-        p.brand ?? "",
-        p.required_count ?? "",
-        p.assigned_count ?? "",
-        vacantCount(p.required_count, p.assigned_count),
-        formatDate(p.timestamp) ?? "",
-        monthDaysSince(p.timestamp) ?? "",
-        "",
-        "",
-      ]);
+      const hasVacant = status !== "complete" && vacantData.length;
+      const hasComplete = status !== "vacant" && completeData.length;
 
-      const completeRows = completeData.map((p) => [
-        p.branch ?? "",
-        p.brand ?? "",
-        p.required_count ?? "",
-        p.assigned_count ?? "",
-        0,
-        "",
-        "",
-        formatDate(p.timestamp) ?? "",
-        monthDaysSince(p.timestamp) ?? "",
-      ]);
-
-      const combined = [
-        ...(status === "complete" ? [] : vacantRows),
-        ...(status === "vacant" ? [] : completeRows),
-      ].sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
-
-      if (!combined.length) {
+      if (!hasVacant && !hasComplete) {
         Swal.fire({
           icon: "info",
           title: "No records found",
@@ -389,72 +229,24 @@ function exportBranchPlantillas(branch, status = "all") {
         return;
       }
 
-      const headerLabel = [
-        [`${branchLabel}`, "", "", "", "", "", "", "", ""],
-        [`As of ${dateStr}`, "", "", "", "", "", "", "", ""],
-      ];
-
-      const colHeaders = [
-        "Branch",
-        "Brand",
-        "Plantilla",
-        "Deployed",
-        "Vacant",
-        "Vacant Since",
-        "Vacant Period",
-        "Complete Since",
-        "Complete Period",
-      ];
-
-      const exportData = [...headerLabel, colHeaders, ...combined];
-
-      const ws = XLSX.utils.aoa_to_sheet(exportData);
-
-      ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
-      ];
-
-      if (ws["A1"]) {
-        ws["A1"].s = {
-          font: { bold: true, sz: 12 },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
-      }
-
-      if (ws["A2"]) {
-        ws["A2"].s = {
-          font: { sz: 10, italic: true },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
-      }
-
-      colHeaders.forEach((_, ci) => {
-        const cellRef = XLSX.utils.encode_cell({ r: 2, c: ci });
-        if (ws[cellRef]) {
-          ws[cellRef].s = {
-            font: { bold: true, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "2D68C4" } },
-            alignment: { horizontal: "center" },
-          };
-        }
-      });
-
-      ws["!cols"] = colHeaders.map((_, ci) => {
-        let max = 10;
-        exportData.forEach((row) => {
-          const val = row[ci] ? row[ci].toString() : "";
-          max = Math.max(max, val.length);
+      return fetch(
+        "functions/generate_branch_plantillas_pdf.php?" +
+          new URLSearchParams({ branch, branch_label: branchLabel, status }),
+      )
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to generate PDF");
+          return res.blob();
+        })
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${branch}_${status.toUpperCase()}_PLANTILLAS_${fileSuffix}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
         });
-        return { wch: max + 2 };
-      });
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Branch Plantilla Report");
-      XLSX.writeFile(
-        wb,
-        `${branch}_${status.toUpperCase()}_PLANTILLAS_${fileSuffix}.xlsx`,
-      );
     })
     .catch(() => {
       Swal.fire({
@@ -470,40 +262,13 @@ function exportBranchPlantillas(branch, status = "all") {
     });
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers (kept in case used elsewhere in the app) ─────────────────────
 
 function buildFullName(first, middle, last, suffix) {
   return [first, middle, last, suffix]
     .map((p) => (p ?? "").trim())
     .filter(Boolean)
     .join(" ");
-}
-
-function vacantCount(required, assigned) {
-  const r = Number(required) || 0;
-  const a = Number(assigned) || 0;
-  return Math.max(0, r - a);
-}
-
-function monthDaysSince(timestamp) {
-  if (!timestamp) return "";
-  const then = new Date(timestamp);
-  const now = new Date();
-
-  let months =
-    (now.getFullYear() - then.getFullYear()) * 12 +
-    (now.getMonth() - then.getMonth());
-  let days = now.getDate() - then.getDate();
-
-  if (days < 0) {
-    months--;
-    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-    days += prevMonth.getDate();
-  }
-
-  if (months === 0) return `${days}d`;
-  if (days === 0) return `${months}mo`;
-  return `${months}mo ${days}d`;
 }
 
 function formatDate(value) {

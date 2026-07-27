@@ -1091,3 +1091,7 @@
 [2026-06-17 15:20:34] Error [2]: Undefined variable $contact_person in C:\xampp\htdocs\iprom\functions\save_agency.php on line 77
 [2026-06-17 16:54:48] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
 [2026-06-17 16:54:53] Error [2]: Undefined variable $real_client_ip in C:\xampp\htdocs\branch_logger\hooks\qa_bootstrap.php on line 311
+[2026-07-27 09:22:14] Error [2]: file_get_contents(http://localhost/iprom/functions/get_employee_report.php?branch=VIAC): Failed to open stream: HTTP request failed! in C:\xampp\htdocs\iprom\functions\generate_employee_report_pdf.php on line 48
+[2026-07-27 09:27:14] Error [2]: file_get_contents(http://localhost/iprom/functions/get_employee_report.php?branch=VIAC): Failed to open stream: HTTP request failed! in C:\xampp\htdocs\iprom\functions\generate_employee_report_pdf.php on line 48
+[2026-07-27 09:27:38] Error [2]: file_get_contents(http://localhost/iprom/functions/get_employee_report.php?branch=VIAC): Failed to open stream: HTTP request failed! in C:\xampp\htdocs\iprom\functions\generate_employee_report_pdf.php on line 48
+[2026-07-27 09:28:06] Error [2]: file_get_contents(http://localhost/iprom/functions/get_employee_report.php?branch=VIAC): Failed to open stream: HTTP request failed! in C:\xampp\htdocs\iprom\functions\generate_employee_report_pdf.php on line 48

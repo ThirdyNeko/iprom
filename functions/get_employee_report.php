@@ -29,8 +29,8 @@ $stmt = $pdo->prepare("
         ei.corpo,
         ei.assignment_date,
         ei.last_assigned_by
-    FROM [IPROM].[dbo].[employee_info] ei
-    LEFT JOIN [IPROM].[dbo].[branches] b
+    FROM employee_info ei
+    LEFT JOIN branches b
         ON ei.branch = b.branch_code
     WHERE ei.branch = :branch
       AND (ei.hidden = 0 OR ei.hidden IS NULL)
