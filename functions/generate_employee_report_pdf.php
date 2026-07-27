@@ -88,7 +88,7 @@ class ReportPDF extends FPDF {
     public $letterheadImage = '../assets/icons/LETTER HEAD GENERIC.jpg';
     public $imgW = 216;
     public $imgH = 279;
-    public $contentStartY = 28;
+    public $contentStartY = 35;
     public $reportTitle = '';
     public $reportSubtitle = '';
     public $colHeaders = [];
@@ -163,7 +163,7 @@ $dateStr    = date('F d, Y');
 $fileSuffix = date('Y-m-d');
 
 $headers = ['Brand', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Employment Status', 'Sub-Status', 'Date Hired'];
-$widths  = [20, 28, 26, 26, 14, 26, 26, 24]; // sums to 190mm, fits Letter portrait w/ ~13mm margins
+$widths  = [25, 28, 26, 26, 14, 26, 26, 24]; // sums to 190mm, fits Letter portrait w/ ~13mm margins
 
 $bodyRows = array_map(function ($r) {
     return [
@@ -179,11 +179,12 @@ $bodyRows = array_map(function ($r) {
 }, $rows);
 
 $pdf = new ReportPDF('P', 'mm', 'Letter');
+$pdf->Ln(20);
 $pdf->reportTitle    = fpdf_str($branchLabel);
 $pdf->reportSubtitle = fpdf_str('As of ' . $dateStr);
 $pdf->colHeaders     = array_map('fpdf_str', $headers);
 $pdf->colWidths      = $widths;
-$pdf->SetAutoPageBreak(true, 15); // auto page break re-calls Header() -> letterhead redrawn automatically
+$pdf->SetAutoPageBreak(true, 30); // auto page break re-calls Header() -> letterhead redrawn automatically
 $pdf->AddPage();
 
 $fitSize = computeFitFontSize($pdf, $bodyRows, $widths);

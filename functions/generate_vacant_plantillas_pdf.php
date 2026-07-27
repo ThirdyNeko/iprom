@@ -140,9 +140,9 @@ if (empty($combined)) {
 // letterhead + title + table column headers are guaranteed on every page.
 class ReportPDF extends FPDF {
     public $letterheadImage = '../assets/icons/LETTER HEAD GENERIC.jpg';
-    public $imgW = 279;
-    public $imgH = 216;
-    public $contentStartY = 22;
+    public $imgW = 216;
+    public $imgH = 279;
+    public $contentStartY = 35;
     public $reportTitle = '';
     public $reportSubtitle = '';
     public $colHeaders = [];
@@ -167,10 +167,54 @@ class ReportPDF extends FPDF {
             $this->SetFont('Arial', 'B', 7.5);
             $this->SetFillColor(45, 104, 196);
             $this->SetTextColor(255, 255, 255);
+
+            $lineHeight   = 3;
+            $headerHeight = 6; // Two lines × 3mm
+
+            $x = $this->GetX();
+            $y = $this->GetY();
+
             foreach ($this->colHeaders as $i => $h) {
-                $this->Cell($this->colWidths[$i], $this->headerRowH, $h, 1, 0, 'C', true);
+                $this->SetXY($x, $y);
+
+                // Center single-line headers vertically
+                if (strpos($h, "\n") === false) {
+                    $this->Cell(
+                        $this->colWidths[$i],
+                        $headerHeight,
+                        $h,
+                        1,
+                        0,
+                        'C',
+                        true
+                    );
+                } else {
+                    // Draw border/background
+                    $this->Cell(
+                        $this->colWidths[$i],
+                        $headerHeight,
+                        '',
+                        1,
+                        0,
+                        'C',
+                        true
+                    );
+
+                    // Print the two-line text over it
+                    $this->SetXY($x, $y);
+                    $this->MultiCell(
+                        $this->colWidths[$i],
+                        $lineHeight,
+                        $h,
+                        0,
+                        'C'
+                    );
+                }
+
+                $x += $this->colWidths[$i];
             }
-            $this->Ln();
+
+            $this->SetXY($this->lMargin, $y + $headerHeight);
             $this->SetTextColor(0, 0, 0);
         }
     }
@@ -211,15 +255,26 @@ function fitTextToWidth(FPDF $pdf, string $text, float $width, float $padding = 
 $dateStr    = date('F d, Y');
 $fileSuffix = date('Y-m-d');
 
-$headers = ['Brand', 'Branch', 'Plantilla', 'Deployed', 'Vacant', 'Vacant Since', 'Vacant Period', 'Complete Since', 'Complete Period'];
-$widths  = [30, 30, 20, 20, 18, 26, 26, 26, 26]; // sums to 222mm, fits landscape Letter w/ margins
+$headers = [
+    'Brand',
+    'Branch',
+    'Plantilla',
+    'Deployed',
+    'Vacant',
+    'Vacant Since',
+    "Vacant\nPeriod",
+    'Complete Since',
+    "Complete\nPeriod"
+];
+$widths  = [30, 30, 18, 18, 18, 26, 16, 26, 16]; // sums to 222mm, fits landscape Letter w/ margins
 
-$pdf = new ReportPDF('L', 'mm', 'Letter'); // landscape: 279 x 216mm
+$pdf = new ReportPDF('P', 'mm', 'Letter'); // portrait: 216 x 279mm
+$pdf->Ln(10);
 $pdf->reportTitle    = fpdf_str($brand);
 $pdf->reportSubtitle = fpdf_str('As of ' . $dateStr);
 $pdf->colHeaders     = array_map('fpdf_str', $headers);
 $pdf->colWidths      = $widths;
-$pdf->SetAutoPageBreak(true, 12); // auto page break re-calls Header() -> letterhead redrawn automatically
+$pdf->SetAutoPageBreak(true, 30); // auto page break re-calls Header() -> letterhead redrawn automatically
 $pdf->AddPage();
 
 $fitSize = computeFitFontSize($pdf, $combined, $widths);

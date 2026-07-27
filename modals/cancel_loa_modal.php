@@ -30,7 +30,7 @@
         </div>
 
         <p class="text-center mb-3 cancel-loa-warning">
-          This will <strong>permanently delete</strong> this LOA record. This action cannot be undone.
+          This will <strong>cancel</strong> this LOA verification. This action cannot be undone.
           <br>To confirm, enter the LOA code for <span id="cancelLoaEmployeeName" class="fw-semibold"></span> below.
         </p>
 
