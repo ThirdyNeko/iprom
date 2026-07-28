@@ -159,7 +159,8 @@ function fitTextToWidth(FPDF $pdf, string $text, float $width, float $padding = 
 }
 
 // ─── Build PDF ─────────────────────────────────────────────────────────────
-$dateStr    = date('F d, Y');
+$dateStr = date('l, F d, Y h:i A');
+
 $fileSuffix = date('Y-m-d');
 
 $headers = ['Brand', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Employment Status', 'Sub-Status', 'Date Hired'];
