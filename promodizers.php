@@ -359,6 +359,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
 <!-- JS -->
 <script>
 const branchMap = <?= json_encode($branchMap, JSON_UNESCAPED_UNICODE); ?>;
+const USER_ROLE = <?= json_encode($_SESSION['role'] ?? ''); ?>;
 </script>
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {

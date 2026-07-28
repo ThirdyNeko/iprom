@@ -329,35 +329,52 @@ document.getElementById("exportExcel").addEventListener("click", function () {
         if (!proceed.isConfirmed) return;
       }
 
-      let exportData = [
-        [
-          "First Name",
-          "Middle Name",
-          "Last Name",
-          "Suffix",
-          "Gender",
-          "Birthdate",
-          "Date Hired",
-          "Branch",
-          "Brand",
-          "Status",
-          "Employment Status",
-          "Sub-Status",
-          "Agency",
-          "Company",
-          "Assignment Date",
-          "Last Assigned By",
-        ],
+      const isBranchManager = USER_ROLE === "branch_manager";
+
+      // Build headers
+      const headers = [
+        "First Name",
+        "Middle Name",
+        "Last Name",
+        "Suffix",
+        "Gender",
       ];
 
+      if (!isBranchManager) {
+        headers.push("Birthdate");
+      }
+
+      headers.push(
+        "Date Hired",
+        "Branch",
+        "Brand",
+        "Status",
+        "Employment Status",
+        "Sub-Status",
+        "Agency",
+        "Company",
+        "Assignment Date",
+        "Last Assigned By",
+      );
+
+      let exportData = [headers];
+
+      // Build rows
       data.forEach((p) => {
-        exportData.push([
+        const row = [
           p.first_name,
           p.middle_name,
           p.last_name,
           p.suffix,
           p.gender,
-          formatDate(p.birthday),
+        ];
+
+        // Only include Birthdate for non-branch managers
+        if (!isBranchManager) {
+          row.push(formatDate(p.birthday));
+        }
+
+        row.push(
           formatDate(p.date_hired),
           p.branch,
           p.brand,
@@ -370,7 +387,9 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           (branchByName[p.branch]?.corpo || "").toUpperCase(),
           formatDate(p.assignment_date),
           p.last_assigned_by,
-        ]);
+        );
+
+        exportData.push(row);
       });
 
       const ws = XLSX.utils.aoa_to_sheet(exportData);
