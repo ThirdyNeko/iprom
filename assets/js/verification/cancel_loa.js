@@ -1,9 +1,11 @@
 // ─────────────────────────────────────────────────────────────
 // cancel_loa.js
 // Handles the "Cancel LOA" modal: admin/super_admin only (server
-// re-checks role — see functions/cancel_loa.php). Requires the
-// entered LOA code to match records before hard-deleting the
-// letters_of_advice row.
+// re-checks role — see functions/cancel_loa.php). Two steps:
+//   1. Entered LOA code must match records.
+//   2. A reason for cancellation is required and gets saved as
+//      remarks on the history log (see sp_cancel_loa).
+// Only after both are satisfied does the row get hard-deleted.
 //
 // Uses its own .cancel-letter-box/.cancel-digit-box classes (not
 // verify_loa.js's .loa-letter-box/.loa-digit-box) so the two
@@ -33,15 +35,56 @@ $(document).ready(function () {
       employeeName: btn.data("employee-name") || "",
     };
 
-    // Reset modal UI
+    // Reset modal UI back to step 1
     $(".cancel-letter-box, .cancel-digit-box").val("");
     $("#cancelLoaCodeInput").val("");
     $("#cancelLoaCodeError").addClass("d-none").text("");
-    $("#cancelLoaEmployeeName").text(cancelLoaState.employeeName);
+    $("#cancelLoaReasonInput").val("");
+    $("#cancelLoaReasonError").addClass("d-none").text("");
+    $("#cancelLoaEmployeeName, #cancelLoaEmployeeName2").text(
+      cancelLoaState.employeeName,
+    );
+    showCancelCodeStep();
     hideCancelLoading();
 
     new bootstrap.Modal(document.getElementById("cancelLOAModal")).show();
     $(".cancel-letter-box").first().trigger("focus");
+  });
+
+  // ── Step switching ────────────────────────────────────────────
+  function showCancelCodeStep() {
+    $("#cancelLoaReasonStep").addClass("d-none");
+    $("#cancelLoaCodeStep").removeClass("d-none");
+    $("#cancelLoaReasonFooter").addClass("d-none").removeClass("d-flex");
+    $("#cancelLoaCodeFooter").removeClass("d-none").addClass("d-flex");
+  }
+
+  function showCancelReasonStep() {
+    $("#cancelLoaCodeStep").addClass("d-none");
+    $("#cancelLoaReasonStep").removeClass("d-none");
+    $("#cancelLoaCodeFooter").addClass("d-none").removeClass("d-flex");
+    $("#cancelLoaReasonFooter").removeClass("d-none").addClass("d-flex");
+    $("#cancelLoaReasonInput").trigger("focus");
+  }
+
+  // Step 1 -> Step 2: require a well-formed code before moving on.
+  // (Actual match against records is still verified server-side on
+  // final submit — this is just format gating for UX.)
+  $("#cancelLoaNextBtn").on("click", function () {
+    const code = $("#cancelLoaCodeInput").val().trim();
+    if (!/^[A-Z]{4}-\d{6}$/.test(code)) {
+      $("#cancelLoaCodeError")
+        .removeClass("d-none")
+        .text("Please fill in all 10 characters of the LOA code.");
+      return;
+    }
+    $("#cancelLoaCodeError").addClass("d-none").text("");
+    showCancelReasonStep();
+  });
+
+  $("#cancelLoaBackBtn").on("click", function () {
+    showCancelCodeStep();
+    $(".cancel-letter-box").first().trigger("focus").select();
   });
 
   // ── LOA code boxes: 4 letters, dash, 6 digits ─────────────────
@@ -66,9 +109,7 @@ $(document).ready(function () {
   }
 
   function focusCancelBox(group, index) {
-    $(`.cancel-${group}-box[data-index="${index}"]`)
-      .trigger("focus")
-      .select();
+    $(`.cancel-${group}-box[data-index="${index}"]`).trigger("focus").select();
   }
 
   $(document).on("input", ".cancel-letter-box", function () {
@@ -104,52 +145,68 @@ $(document).ready(function () {
     }
   });
 
-  $(document).on("keydown", ".cancel-letter-box, .cancel-digit-box", function (e) {
-    if (e.key !== "Backspace" || $(this).val() !== "") return;
+  $(document).on(
+    "keydown",
+    ".cancel-letter-box, .cancel-digit-box",
+    function (e) {
+      if (e.key !== "Backspace" || $(this).val() !== "") return;
 
-    const group = $(this).data("group");
-    const index = parseInt($(this).data("index"), 10);
+      const group = $(this).data("group");
+      const index = parseInt($(this).data("index"), 10);
 
-    if (group === "digit" && index > 0) {
-      focusCancelBox("digit", index - 1);
-      $(`.cancel-digit-box[data-index="${index - 1}"]`).val("");
-    } else if (group === "digit" && index === 0) {
-      focusCancelBox("letter", 3);
-      $(`.cancel-letter-box[data-index="3"]`).val("");
-    } else if (group === "letter" && index > 0) {
-      focusCancelBox("letter", index - 1);
-      $(`.cancel-letter-box[data-index="${index - 1}"]`).val("");
-    }
-    updateCancelLoaCodeValue();
-  });
+      if (group === "digit" && index > 0) {
+        focusCancelBox("digit", index - 1);
+        $(`.cancel-digit-box[data-index="${index - 1}"]`).val("");
+      } else if (group === "digit" && index === 0) {
+        focusCancelBox("letter", 3);
+        $(`.cancel-letter-box[data-index="3"]`).val("");
+      } else if (group === "letter" && index > 0) {
+        focusCancelBox("letter", index - 1);
+        $(`.cancel-letter-box[data-index="${index - 1}"]`).val("");
+      }
+      updateCancelLoaCodeValue();
+    },
+  );
 
-  $(document).on("paste", ".cancel-letter-box, .cancel-digit-box", function (e) {
-    const pasted = (e.originalEvent.clipboardData || window.clipboardData)
-      .getData("text")
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "");
+  $(document).on(
+    "paste",
+    ".cancel-letter-box, .cancel-digit-box",
+    function (e) {
+      const pasted = (e.originalEvent.clipboardData || window.clipboardData)
+        .getData("text")
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "");
 
-    if (!pasted) return;
-    e.preventDefault();
+      if (!pasted) return;
+      e.preventDefault();
 
-    const letters = pasted.slice(0, 4).split("");
-    const digits = pasted.slice(4, 10).split("");
+      const letters = pasted.slice(0, 4).split("");
+      const digits = pasted.slice(4, 10).split("");
 
-    letters.forEach((ch, i) => {
-      if (/[A-Z]/.test(ch)) $(`.cancel-letter-box[data-index="${i}"]`).val(ch);
-    });
-    digits.forEach((ch, i) => {
-      if (/[0-9]/.test(ch)) $(`.cancel-digit-box[data-index="${i}"]`).val(ch);
-    });
+      letters.forEach((ch, i) => {
+        if (/[A-Z]/.test(ch))
+          $(`.cancel-letter-box[data-index="${i}"]`).val(ch);
+      });
+      digits.forEach((ch, i) => {
+        if (/[0-9]/.test(ch)) $(`.cancel-digit-box[data-index="${i}"]`).val(ch);
+      });
 
-    updateCancelLoaCodeValue();
+      updateCancelLoaCodeValue();
 
-    if (letters.length < 4) {
-      focusCancelBox("letter", letters.length);
-    } else if (digits.length < 6) {
-      focusCancelBox("digit", digits.length);
-    } else {
-      focusCancelBox("digit", 5);
+      if (letters.length < 4) {
+        focusCancelBox("letter", letters.length);
+      } else if (digits.length < 6) {
+        focusCancelBox("digit", digits.length);
+      } else {
+        focusCancelBox("digit", 5);
+      }
+    },
+  );
+
+  // Clear the reason error as soon as the user starts typing one.
+  $(document).on("input", "#cancelLoaReasonInput", function () {
+    if ($(this).val().trim()) {
+      $("#cancelLoaReasonError").addClass("d-none").text("");
     }
   });
 
@@ -162,21 +219,37 @@ $(document).ready(function () {
 function showCancelLoading(text) {
   $("#cancelLoaLoadingText").text(text || "Processing...");
   $("#cancelLoaLoadingOverlay").removeClass("d-none");
-  $("#cancelLOAModal").find("button, input").prop("disabled", true);
+  $("#cancelLOAModal").find("button, input, textarea").prop("disabled", true);
 }
 
 function hideCancelLoading() {
   $("#cancelLoaLoadingOverlay").addClass("d-none");
-  $("#cancelLOAModal").find("button, input").prop("disabled", false);
+  $("#cancelLOAModal").find("button, input, textarea").prop("disabled", false);
 }
 
 // ── Confirm + delete ────────────────────────────────────────
 async function handleCancelLoa() {
   const code = $("#cancelLoaCodeInput").val().trim();
+  const reason = $("#cancelLoaReasonInput").val().trim();
+
   if (!/^[A-Z]{4}-\d{6}$/.test(code)) {
+    // Shouldn't normally happen since step 1 already gated this,
+    // but re-check in case state got mutated between steps.
     $("#cancelLoaCodeError")
       .removeClass("d-none")
       .text("Please fill in all 10 characters of the LOA code.");
+    $("#cancelLoaCodeStep").removeClass("d-none");
+    $("#cancelLoaReasonStep").addClass("d-none");
+    $("#cancelLoaReasonFooter").addClass("d-none").removeClass("d-flex");
+    $("#cancelLoaCodeFooter").removeClass("d-none").addClass("d-flex");
+    return;
+  }
+
+  if (!reason) {
+    $("#cancelLoaReasonError")
+      .removeClass("d-none")
+      .text("A reason is required to cancel this LOA.");
+    $("#cancelLoaReasonInput").trigger("focus");
     return;
   }
 
@@ -189,18 +262,22 @@ async function handleCancelLoa() {
         employee_id: cancelLoaState.employeeId,
         loa_id: cancelLoaState.loaId,
         loa_code: code,
+        remarks: reason,
       }),
     });
     const result = await res.json();
 
     if (!result.success) {
-      $("#cancelLoaCodeError")
+      // Surface the error on whichever step is more likely the cause.
+      $("#cancelLoaReasonError")
         .removeClass("d-none")
-        .text(result.message || "LOA code does not match. Cancellation aborted.");
+        .text(result.message || "LOA cancellation could not be completed.");
       return;
     }
 
-    bootstrap.Modal.getInstance(document.getElementById("cancelLOAModal")).hide();
+    bootstrap.Modal.getInstance(
+      document.getElementById("cancelLOAModal"),
+    ).hide();
 
     Swal.fire({
       icon: "success",
@@ -218,7 +295,7 @@ async function handleCancelLoa() {
     }
   } catch (err) {
     console.error("LOA cancellation failed:", err);
-    $("#cancelLoaCodeError")
+    $("#cancelLoaReasonError")
       .removeClass("d-none")
       .text("Something went wrong. Please try again.");
   } finally {
