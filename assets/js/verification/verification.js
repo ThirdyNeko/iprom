@@ -88,7 +88,8 @@ $(document).ready(function () {
                 data-end-date="${data.end_date ?? ""}"
                 data-remarks="${data.remarks ?? ""}"
                 data-issued-by="${data.issued_by ?? ""}"
-                data-issued-position="${data.issued_position ?? ""}">
+                data-issued-position="${data.issued_position ?? ""}"
+                data-updated-at="${data.last_updated ?? ""}">
                 <i class="bi bi-printer me-1"></i>View LOA
               </button>
 
@@ -140,6 +141,11 @@ $(document).ready(function () {
       // on the record (from the DB), not the current viewer's session.
       issued_by: btn.data("issued-by"),
       issued_position: btn.data("issued-position"),
+      // "Last updated" timestamp for the PDF footer — sourced from the DB
+      // row (see fetch_loa.php). Empty on a brand-new LOA generated via
+      // pdf.js, which never populates this field; generate_letter_pdf.php
+      // falls back to the current time in that case.
+      updated_at: btn.data("updated-at"),
     };
 
     try {

@@ -114,6 +114,17 @@ $recordsFiltered = $countStmt->fetchColumn();
 // (e.g. stale/deleted references) -- it'll just show a blank/fallback
 // value instead of vanishing silently. A missing biometric_number is
 // meant to be visible/actionable (blocks Verify), not hidden.
+//
+// 🔥 FIX: joined against DE-DUPED subqueries (one row per branch_code /
+// employee_id) instead of the raw tables directly. If `branches` or
+// `employee_info` ever has more than one row sharing the same key (dupe
+// import, soft-deleted duplicate, historical/versioned rows, etc.), a
+// plain LEFT JOIN against the raw table fans a single letters_of_advice
+// row out into 2+ rows in the grid -- which looked like "the same branch
+// showing up twice" even though letters_of_advice itself had only one row.
+// ROW_NUMBER() + rn = 1 guarantees at most one match per loa row, so the
+// row count out of this query can never exceed the row count in
+// letters_of_advice.
 $sql = "
 SELECT *
 FROM (
@@ -159,10 +170,30 @@ FROM (
         -- shows who ACTUALLY issued it, not the current viewer.
         ISNULL(loa.issued_by, '')       AS issued_by,
         ISNULL(loa.issued_position, '') AS issued_position,
+        -- Last updated timestamp shown on the printed PDF. Falls back to
+        -- GETDATE() when updated_at is NULL (e.g. a record that was
+        -- inserted but never subsequently overwritten via the UPDATE path
+        -- in generate_letter_pdf.php).
+        ISNULL(loa.updated_at, GETDATE()) AS last_updated,
         ROW_NUMBER() OVER (ORDER BY $orderExpr $orderDir) AS rownum
     FROM letters_of_advice AS loa
-    LEFT JOIN branches AS b ON b.branch_code = loa.branch_code
-    LEFT JOIN employee_info AS emp ON emp.employee_id = loa.employee_id
+    LEFT JOIN (
+        -- De-duped: exactly one row per branch_code, in case `branches`
+        -- has more than one row sharing the same code. Without this,
+        -- a duplicate branch row fans out the LOA row into 2+ rows
+        -- in the grid that look like 'same branch shown twice'.
+        SELECT branch_code, branch,
+               ROW_NUMBER() OVER (PARTITION BY branch_code ORDER BY branch_code) AS rn
+        FROM branches
+    ) AS b ON b.branch_code = loa.branch_code AND b.rn = 1
+    LEFT JOIN (
+        -- Same de-dupe for employee_info -- if an employee_id ever has
+        -- more than one row, only one is joined so the LOA row count
+        -- stays 1:1 with letters_of_advice.
+        SELECT employee_id, biometric_number,
+               ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY employee_id) AS rn
+        FROM employee_info
+    ) AS emp ON emp.employee_id = loa.employee_id AND emp.rn = 1
     $where
 ) AS t
 WHERE t.rownum > :start
@@ -193,6 +224,12 @@ foreach ($data as &$row) {
     if (!empty($row['effectivity_date'])) {
         $row['effectivity_date_display'] = date('M d, Y', strtotime($row['effectivity_date']));
         // leave $row['effectivity_date'] as raw Y-m-d for generate_letter_pdf.php
+    }
+
+    // Keep last_updated as a raw parseable string for the print button's
+    // payload; generate_letter_pdf.php reformats it for the PDF footer.
+    if (!empty($row['last_updated'])) {
+        $row['last_updated'] = date('Y-m-d H:i:s', strtotime($row['last_updated']));
     }
 
     // Explode comma-delimited strings back into arrays for JSON

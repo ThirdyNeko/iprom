@@ -35,6 +35,17 @@ $employeeName = trim($firstName . ' ' . $middleName . ' ' . $lastName . ' ' . $s
 $issuedBy = $data['issued_by'] ?? $_SESSION['username'] ?? '';
 $issuedPosition = $data['issued_position'] ?? $_SESSION['position'] ?? '';
 
+// "Last updated" timestamp shown in the PDF footer.
+//   - Reprints (loa_table.js) pass this through from letters_of_advice.updated_at
+//     (already GETDATE()-defaulted at the SQL level in fetch_loa.php).
+//   - Brand-new LOAs (pdf.js) never send this field, since the record doesn't
+//     exist yet -- falls back to the current time here, same as the old
+//     hardcoded date('F d, Y h:i:s A') behavior.
+$updatedAt = $data['updated_at'] ?? '';
+$timestamp = !empty($updatedAt)
+    ? date('F d, Y h:i:s A', strtotime($updatedAt))
+    : date('F d, Y h:i:s A');
+
 // Other fields
 $branchCode = $data['branch'] ?? '';
 $branch = '';
@@ -140,31 +151,81 @@ function fpdf_str(string $s): string {
 }
 
 // ============================================================
-// Save to DB (only if not already recorded)
-// One row per employee + branch + effectivity date, so multi-branch
-// employees get a distinct saved record for each branch's LOA.
+// Save to DB — update in place if a record already exists for
+// this person (by name) + branch, otherwise insert a new row.
 //
-// NOTE: this INSERT only fires for brand-new LOAs. Reprints (from
-// loa_table.js) hit the $existing check below and skip straight to
-// PDF generation using the issued_by/issued_position already pulled
-// from the payload above — so a reprint never overwrites the original
-// issuer with whoever clicked "View LOA" this time.
+// Match key: first_name + middle_name + last_name + branch_code
+// (not employee_id/effectivity_date — regenerating an LOA for the
+// same person/branch now overwrites the prior record rather than
+// creating a parallel one).
+//
+// NOTE: reprints (loa_table.js) will also hit this UPDATE branch,
+// but since their payload's fields are sourced from this same DB
+// row to begin with, it's effectively a no-op rewrite — issued_by/
+// issued_position stay pinned to the original issuer either way.
 // ============================================================
 $existingStmt = $pdo->prepare("
     SELECT id
     FROM letters_of_advice
-    WHERE employee_id = :employee_id
+    WHERE first_name = :first_name
+      AND ISNULL(middle_name, '') = ISNULL(:middle_name, '')
+      AND last_name = :last_name
       AND branch_code = :branch_code
-      AND effectivity_date = :effectivity_date
 ");
 $existingStmt->execute([
-    'employee_id'      => $promodiserId,
-    'branch_code'      => $loaBranchCode,
-    'effectivity_date' => $effectivityDate,
+    'first_name'  => $firstName,
+    'middle_name' => $middleName,
+    'last_name'   => $lastName,
+    'branch_code' => $loaBranchCode,
 ]);
 $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$existing) {
+if ($existing) {
+    $updateStmt = $pdo->prepare("
+        UPDATE letters_of_advice
+        SET
+            recipient_name      = :recipient_name,
+            recipient_position  = :recipient_position,
+            employee_id         = :employee_id,
+            suffix              = :suffix,
+            roving_branches     = :roving_branches,
+            brand               = :brand,
+            multi_brands        = :multi_brands,
+            agency              = :agency,
+            employment_status   = :employment_status,
+            sub_status          = :sub_status,
+            status              = :status,
+            effectivity_date    = :effectivity_date,
+            end_date            = :end_date,
+            remarks             = :remarks,
+            issued_by           = :issued_by,
+            issued_position     = :issued_position,
+            loa_code            = :loa_code,
+            updated_at          = GETDATE()
+        WHERE id = :id
+    ");
+
+    $updateStmt->execute([
+        'recipient_name'     => $recipientName,
+        'recipient_position' => $recipientPosition,
+        'employee_id'        => $promodiserId,
+        'suffix'             => $suffix,
+        'roving_branches'    => !empty($rovingBranchesForRecord) ? implode(',', $rovingBranchesForRecord) : null,
+        'brand'              => $brand,
+        'multi_brands'       => !empty($multiBrands) ? implode(',', $multiBrands) : null,
+        'agency'             => $agency,
+        'employment_status'  => $employmentStatus,
+        'sub_status'         => $subStatus,
+        'status'             => $status,
+        'effectivity_date'   => $effectivityDate,
+        'end_date'           => $endDate,
+        'remarks'            => $remarks,
+        'issued_by'          => $issuedBy,
+        'issued_position'    => $issuedPosition,
+        'loa_code'           => $loaCode,
+        'id'                 => $existing['id'],
+    ]);
+} else {
     $insertStmt = $pdo->prepare("
         INSERT INTO letters_of_advice (
             recipient_name,
@@ -186,7 +247,8 @@ if (!$existing) {
             end_date,
             remarks,
             issued_by,
-            issued_position
+            issued_position,
+            loa_code
         ) VALUES (
             :recipient_name,
             :recipient_position,
@@ -207,7 +269,8 @@ if (!$existing) {
             :end_date,
             :remarks,
             :issued_by,
-            :issued_position
+            :issued_position,
+            :loa_code
         )
     ");
 
@@ -232,6 +295,7 @@ if (!$existing) {
         'remarks'            => $remarks,
         'issued_by'          => $issuedBy,
         'issued_position'    => $issuedPosition,
+        'loa_code'           => $loaCode,
     ]);
 }
 
@@ -366,6 +430,6 @@ $pdf->SetX(10);
 $pdf->SetFont('Arial', '', 11);
 $pdf->Cell($lineWidth, 6, fpdf_str($issuedPosition), 0, 0, 'L');
 $pdf->SetFont('Arial', '', 8);
-$pdf->Cell(0, 6, date('F d, Y h:i:s A'), 0, 1, 'R');
+$pdf->Cell(0, 6, $timestamp, 0, 1, 'R');
 
 $pdf->Output('I', 'letter_of_advice.pdf');

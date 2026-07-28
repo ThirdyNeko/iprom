@@ -1,10 +1,10 @@
 <?php
 // ─────────────────────────────────────────────────────────────
 // functions/verify_loa_code.php
-// Checks that the entered LOA code matches the given employee's
-// record in employee_info.
+// Checks that the entered LOA code matches a letters_of_advice
+// row belonging to the given employee.
 // Expects JSON POST: { employee_id, loa_code }
-// Returns: { success: bool, message?: string }
+// Returns: { success: bool, loa_id?: int, message?: string }
 // ─────────────────────────────────────────────────────────────
 
 session_start();
@@ -29,10 +29,11 @@ if ($employeeId === '' || $loaCode === '') {
 
 try {
     $stmt = $pdo->prepare("
-        SELECT COUNT(*) AS cnt
-        FROM employee_info
+        SELECT TOP 1 [id]
+        FROM letters_of_advice
         WHERE employee_id = :employee_id
           AND loa_code = :loa_code
+        ORDER BY created_at DESC
     ");
     $stmt->execute([
         ':employee_id' => $employeeId,
@@ -40,8 +41,11 @@ try {
     ]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($row && (int)$row['cnt'] > 0) {
-        echo json_encode(['success' => true]);
+    if ($row) {
+        echo json_encode([
+            'success' => true,
+            'loa_id'  => (int)$row['id'],
+        ]);
     } else {
         echo json_encode([
             'success' => false,

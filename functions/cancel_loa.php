@@ -5,10 +5,10 @@
 //   1. Re-validates the LOA code server-side (never trust the
 //      client-side Actions-button gate).
 //   2. Logs a CANCELLED entry to employee_reason_history, with
-//      the caller-supplied reason stored as remarks. A reason is
-//      required — this endpoint rejects the request without one,
-//      same as the SP itself would with a NULL/blank @remarks.
+//      the caller-supplied reason stored as remarks.
 //   3. Deletes the letters_of_advice row.
+//   4. Rotates employee_info.loa_code to a freshly generated code
+//      so the cancelled code can never be reused.
 // All inside one SP-managed transaction.
 //
 // Expects JSON POST body: { employee_id, loa_id, loa_code, remarks }
@@ -42,21 +42,42 @@ if (!$employeeId || !$loaId || !preg_match('/^[A-Z]{4}-\d{6}$/', $loaCode)) {
     exit;
 }
 
-// Reason for cancellation is mandatory -- reject before ever hitting
-// the SP rather than relying on it to silently accept a NULL.
 if ($remarks === '') {
     $response['message'] = 'A reason for cancellation is required.';
     echo json_encode($response);
     exit;
 }
 
-// Adjust to whatever session key actually holds the display name.
 $updatedBy = $_SESSION['username'] ?? $_SESSION['name'] ?? 'system';
+
+function generateAlphaNumericCode() {
+    $letters = '';
+    $letterChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for ($i = 0; $i < 4; $i++) {
+        $letters .= $letterChars[random_int(0, strlen($letterChars) - 1)];
+    }
+
+    $numbers = '';
+    for ($i = 0; $i < 6; $i++) {
+        $numbers .= random_int(0, 9);
+    }
+
+    return $letters . '-' . $numbers;
+}
 
 try {
     $pdo = qa_db();
 
-    $sql  = "{call cancel_loa(?, ?, ?, ?, ?, ?, ?)}";
+    // Generate a replacement code, guarding against the (extremely
+    // unlikely) case of a collision with an existing employee_info row.
+    $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM employee_info WHERE loa_code = :loa_code");
+    do {
+        $newLoaCode = generateAlphaNumericCode();
+        $checkStmt->execute([':loa_code' => $newLoaCode]);
+        $exists = (int)$checkStmt->fetchColumn() > 0;
+    } while ($exists);
+
+    $sql  = "{call cancel_loa(?, ?, ?, ?, ?, ?, ?, ?)}";
     $stmt = $pdo->prepare($sql);
 
     $outSuccess = null;
@@ -67,8 +88,9 @@ try {
     $stmt->bindParam(3, $loaCode, PDO::PARAM_STR);
     $stmt->bindParam(4, $remarks, PDO::PARAM_STR);
     $stmt->bindParam(5, $updatedBy, PDO::PARAM_STR);
-    $stmt->bindParam(6, $outSuccess, PDO::PARAM_BOOL | PDO::PARAM_INPUT_OUTPUT, 5);
-    $stmt->bindParam(7, $outMessage, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 500);
+    $stmt->bindParam(6, $newLoaCode, PDO::PARAM_STR);
+    $stmt->bindParam(7, $outSuccess, PDO::PARAM_BOOL | PDO::PARAM_INPUT_OUTPUT, 5);
+    $stmt->bindParam(8, $outMessage, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 500);
 
     $stmt->execute();
 

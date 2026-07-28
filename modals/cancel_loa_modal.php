@@ -103,7 +103,7 @@
         <!-- Step 2 footer -->
         <div id="cancelLoaReasonFooter" class="d-none justify-content-end gap-2 w-100">
           <button type="button" class="btn btn-outline-secondary" id="cancelLoaBackBtn">Back</button>
-          <button type="button" class="btn btn-danger" id="cancelLoaConfirmBtn">Delete LOA</button>
+          <button type="button" class="btn btn-danger" id="cancelLoaConfirmBtn">Cancel LOA</button>
         </div>
       </div>
     </div>
