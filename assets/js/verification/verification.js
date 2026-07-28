@@ -49,7 +49,8 @@ $(document).ready(function () {
             ? `<button class="btn btn-success btn-sm px-2 py-1 verifyLOABtn"
                 data-loa-id="${data.loa_id}"
                 data-employee-id="${data.employee_id ?? ""}"
-                data-branch="${data.branch_code ?? ""}">
+                data-branch="${data.branch_code ?? ""}"
+                data-biometric-number="${data.biometric_number ?? ""}">
                 <i class="bi bi-patch-check me-1"></i>Verify
               </button>`
             : "";
@@ -58,7 +59,8 @@ $(document).ready(function () {
             ? `<button class="btn btn-outline-danger btn-sm px-2 py-1 cancelLOABtn"
                 data-loa-id="${data.loa_id}"
                 data-employee-id="${data.employee_id ?? ""}"
-                data-employee-name="${data.promodiser ?? ""}">
+                data-employee-name="${data.promodiser ?? ""}"
+                data-employee-branch="${data.branch_name ?? data.branch_code ?? ""}">
                 <i class="bi bi-x-circle me-1"></i>Cancel
               </button>`
             : "";

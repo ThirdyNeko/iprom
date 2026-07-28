@@ -36,8 +36,11 @@
         <!-- ── Step 1: LOA code confirmation ─────────────────────── -->
         <div id="cancelLoaCodeStep">
           <p class="text-center mb-3 cancel-loa-warning">
-            This will <strong>cancel</strong> this LOA verification. This action cannot be undone.
-            <br>To confirm, enter the LOA code for <span id="cancelLoaEmployeeName" class="fw-semibold"></span> below.
+            You are about to <strong>cancel</strong> the Letter of Advice for
+            <span id="cancelLoaEmployeeName" class="fw-semibold"></span>
+            at <span id="cancelLoaEmployeeBranch" class="fw-semibold"></span>.
+            <br><strong class="text-danger">This action cannot be undone.</strong>
+            To confirm, enter the LOA code below.
           </p>
 
           <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap" id="cancelLoaCodeBoxes">
@@ -76,7 +79,8 @@
         <div id="cancelLoaReasonStep" class="d-none">
           <p class="text-center mb-3 cancel-loa-warning">
             Please provide a reason for cancelling this LOA. This will be recorded
-            in <span class="fw-semibold">&ldquo;<span id="cancelLoaEmployeeName2"></span>&rdquo;</span>'s history.
+            in <span class="fw-semibold">&ldquo;<span id="cancelLoaEmployeeName2"></span>&rdquo;</span>
+            (<span id="cancelLoaEmployeeBranch2" class="fw-semibold"></span>)'s history.
           </p>
 
           <label for="cancelLoaReasonInput" class="form-label fw-semibold">

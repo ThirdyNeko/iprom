@@ -23,7 +23,7 @@ $orderDir = ($_POST['order'][0]['dir'] ?? 'asc') === 'desc' ? 'DESC' : 'ASC';
 $orderColumn = $columns[$orderColumnIndex] ?? 'promodiser';
 
 $orderExpr = ($orderColumn === 'promodiser')
-    ? "LTRIM(RTRIM(first_name + ' ' + ISNULL(middle_name, '') + ' ' + last_name + ' ' + ISNULL(suffix, '')))"
+    ? "LTRIM(RTRIM(loa.first_name + ' ' + ISNULL(loa.middle_name, '') + ' ' + loa.last_name + ' ' + ISNULL(loa.suffix, '')))"
     : $orderColumn;
 
 $params       = [];   // full param set (branch + name search), used for the main/filtered query
@@ -40,6 +40,10 @@ $sessionRole     = strtolower(trim($_SESSION['role'] ?? ''));
 $sessionBranch   = $_SESSION['branch'] ?? '';
 $restrictedRoles = ['branch_manager', 'staff'];
 
+// NOTE: this WHERE is applied against the letters_of_advice table
+// (aliased below as `loa`), since we now join against `branches` and
+// `employee_info` too and more than one table could plausibly have a
+// `branch_code` / `employee_id` column.
 $branchWhere = "WHERE 1=1";
 $branchCodes = []; // kept in scope outside the if-block below so it can be
                     // reused later to scope roving_branches per-row
@@ -64,7 +68,7 @@ if (in_array($sessionRole, $restrictedRoles, true)) {
             // as the manager's branch touched it anywhere. A manager should
             // only see the record whose own branch_code is theirs.
             $key = ":branch{$i}";
-            $branchConditions[] = "branch_code = {$key}";
+            $branchConditions[] = "loa.branch_code = {$key}";
             $branchParams[$key] = $code;
         }
         $branchWhere .= " AND (" . implode(' OR ', $branchConditions) . ")";
@@ -78,12 +82,12 @@ $where = $branchWhere;
 
 if (!empty($name)) {
     $where .= " AND (
-        first_name        LIKE :name1 OR
-        last_name         LIKE :name2 OR
-        middle_name       LIKE :name3 OR
-        agency            LIKE :name4 OR
-        employment_status LIKE :name5 OR
-        sub_status        LIKE :name6
+        loa.first_name        LIKE :name1 OR
+        loa.last_name         LIKE :name2 OR
+        loa.middle_name       LIKE :name3 OR
+        loa.agency             LIKE :name4 OR
+        loa.employment_status  LIKE :name5 OR
+        loa.sub_status         LIKE :name6
     )";
     $params[':name1'] = "%$name%";
     $params[':name2'] = "%$name%";
@@ -96,56 +100,69 @@ if (!empty($name)) {
 // recordsTotal reflects what this user is allowed to see (branch-restricted,
 // no search filter) — not the whole table — so DataTables' "X of Y entries"
 // footer isn't misleading for restricted roles.
-$totalStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice $branchWhere");
+$totalStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice AS loa $branchWhere");
 $totalStmt->execute($branchParams);
 $recordsTotal = $totalStmt->fetchColumn();
 
-$countStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice $where");
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice AS loa $where");
 $countStmt->execute($params);
 $recordsFiltered = $countStmt->fetchColumn();
 
+// NOTE: both joins are LEFT JOINs so a LOA row never disappears from
+// the grid just because its branch_code doesn't resolve to a branches
+// row, or its employee_id doesn't resolve to an employee_info row
+// (e.g. stale/deleted references) -- it'll just show a blank/fallback
+// value instead of vanishing silently. A missing biometric_number is
+// meant to be visible/actionable (blocks Verify), not hidden.
 $sql = "
 SELECT *
 FROM (
     SELECT
-        id        AS loa_id,
-        employee_id,
+        loa.id        AS loa_id,
+        loa.employee_id,
         -- Display column
         LTRIM(RTRIM(
-            first_name + ' ' +
-            ISNULL(middle_name, '') + ' ' +
-            last_name + ' ' +
-            ISNULL(suffix, '')
+            loa.first_name + ' ' +
+            ISNULL(loa.middle_name, '') + ' ' +
+            loa.last_name + ' ' +
+            ISNULL(loa.suffix, '')
         )) AS promodiser,
         -- Individual name parts for PDF
-        first_name,
-        middle_name,
-        last_name,
-        ISNULL(suffix, '')      AS suffix,
+        loa.first_name,
+        loa.middle_name,
+        loa.last_name,
+        ISNULL(loa.suffix, '')      AS suffix,
         -- Recipient
-        recipient_name,
-        recipient_position,
+        loa.recipient_name,
+        loa.recipient_position,
         -- Branch / brand / agency
-        branch_code,
-        ISNULL(roving_branches, '') AS roving_branches,
-        brand,
-        ISNULL(multi_brands, '') AS multi_brands,
-        agency,
+        loa.branch_code,
+        b.branch AS branch_name,
+        ISNULL(loa.roving_branches, '') AS roving_branches,
+        loa.brand,
+        ISNULL(loa.multi_brands, '') AS multi_brands,
+        loa.agency,
+        -- Biometric number -- required before this LOA can be verified
+        -- (see verify_loa.js's .verifyLOABtn guard, and the corresponding
+        -- server-side check in finalize_verification).
+        emp.biometric_number,
         -- Status fields
-        employment_status,
-        sub_status,
-        status,
+        loa.employment_status,
+        loa.sub_status,
+        loa.status,
         -- Dates
-        effectivity_date,
-        end_date,
+        loa.effectivity_date,
+        loa.end_date,
         -- Remarks
-        ISNULL(remarks, '') AS remarks,
+        ISNULL(loa.remarks, '') AS remarks,
         -- Original issuer, used when reprinting (loa_table.js) so the PDF
         -- shows who ACTUALLY issued it, not the current viewer.
-        ISNULL(issued_by, '')       AS issued_by,
-        ISNULL(issued_position, '') AS issued_position,
+        ISNULL(loa.issued_by, '')       AS issued_by,
+        ISNULL(loa.issued_position, '') AS issued_position,
         ROW_NUMBER() OVER (ORDER BY $orderExpr $orderDir) AS rownum
-    FROM letters_of_advice
+    FROM letters_of_advice AS loa
+    LEFT JOIN branches AS b ON b.branch_code = loa.branch_code
+    LEFT JOIN employee_info AS emp ON emp.employee_id = loa.employee_id
     $where
 ) AS t
 WHERE t.rownum > :start
@@ -166,6 +183,11 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($data as &$row) {
     unset($row['rownum']);
+
+    // Fallback to the raw code if the branch row wasn't found (LEFT JOIN miss).
+    if (empty($row['branch_name'])) {
+        $row['branch_name'] = $row['branch_code'];
+    }
 
     // Format effectivity_date for display only; keep raw date for the PDF payload
     if (!empty($row['effectivity_date'])) {

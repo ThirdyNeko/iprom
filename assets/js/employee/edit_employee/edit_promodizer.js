@@ -57,6 +57,20 @@ function checkPrintBtnState() {
   const printBtn = document.getElementById("openPrintModalBtn");
   if (!printBtn) return;
 
+  // No biometric number on file -> LOA can't be printed at all, for
+  // any role. This takes priority over everything else below and
+  // hides the button entirely rather than just disabling it.
+  const biometricNumber = cleanValue(
+    document.getElementById("editBiometricNumber")?.value ||
+      window.currentEmployee?.biometric_number,
+  );
+  if (!biometricNumber) {
+    printBtn.disabled = true;
+    printBtn.style.display = "none";
+    return;
+  }
+  printBtn.style.display = "";
+
   // branch_manager can never print, full stop — takes priority over
   // isAdmin/canPrintLOA below.
   if (isBranchManagerRole()) {

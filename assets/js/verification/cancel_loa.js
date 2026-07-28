@@ -33,6 +33,7 @@ $(document).ready(function () {
       employeeId: btn.data("employee-id"),
       loaId: btn.data("loa-id"),
       employeeName: btn.data("employee-name") || "",
+      employeeBranch: btn.data("employee-branch") || "",
     };
 
     // Reset modal UI back to step 1
@@ -43,6 +44,9 @@ $(document).ready(function () {
     $("#cancelLoaReasonError").addClass("d-none").text("");
     $("#cancelLoaEmployeeName, #cancelLoaEmployeeName2").text(
       cancelLoaState.employeeName,
+    );
+    $("#cancelLoaEmployeeBranch, #cancelLoaEmployeeBranch2").text(
+      cancelLoaState.employeeBranch,
     );
     showCancelCodeStep();
     hideCancelLoading();

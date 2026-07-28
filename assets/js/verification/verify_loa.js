@@ -46,6 +46,22 @@ $(document).ready(function () {
   $(document).on("click", ".verifyLOABtn", function () {
     const btn = $(this);
 
+    // Biometric number is required before verification can proceed --
+    // block here so nothing (LOA code entry, picture upload, etc.) can
+    // even start without one on file. Note: this is a UX convenience
+    // only -- functions/finalize_verification.php must independently
+    // re-check this server-side before finalizing anything, the same
+    // way cancel_loa.php re-checks role server-side.
+    const biometricNumber = btn.data("biometric-number");
+    if (!biometricNumber) {
+      Swal.fire(
+        "Missing Biometric Number",
+        "This employee has no biometric number on file. Please add one before verifying this LOA.",
+        "warning",
+      );
+      return;
+    }
+
     revokeConfirmPreviewUrl();
 
     verifyState = {
