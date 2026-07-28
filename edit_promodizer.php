@@ -210,6 +210,8 @@ th {
                             <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
                             <option value="BLACKLISTED / AWOL / TERMINATED">BLACKLISTED / AWOL / TERMINATED</option>
                             <option value="CHANGE AGENCY">CHANGE AGENCY</option>
+                            <option value="CHANGE CATEGORIES">CHANGE CATEGORIES</option>
+                            <option value="CHANGE EMPLOYEE PICTURE">CHANGE EMPLOYEE PICTURE</option>
                             <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
                             <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
                             <option value="CLERICAL ERROR">CLERICAL ERROR</option>
