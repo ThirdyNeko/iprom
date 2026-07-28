@@ -237,7 +237,7 @@ try {
                             >
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-6">
                             <label class="form-label">Designated Categories</label>
                             <div class="dropdown">
                                 <button

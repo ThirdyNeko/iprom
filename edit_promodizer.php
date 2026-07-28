@@ -329,7 +329,7 @@ th {
                         <label class="form-label">Biometric Number <small class="text-muted">(optional)</small></label>
                         <input type="text" id="editBiometricNumber" class="form-control" maxlength="7" inputmode="numeric" placeholder="e.g. 1234567" disabled>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <label class="form-label">Designated Categories</label>
                         <input type="text" id="editCategories" class="form-control" readonly>
                     </div>
