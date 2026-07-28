@@ -13,13 +13,18 @@ $recipientPosition = $data['recipient_position'] ?? '';
 $recipientBranchName = $data['recipient_branch_name'] ?? '';
 $recipientBranchCode = $data['recipient_branch_code'] ?? '';
 $endDate = $data['end_date'] ?? '';
-$loaCode = $data['loa_code'] ?? '';
+// Only update the LOA code if it was actually provided.
+// This prevents existing LOA codes from being overwritten during
+// reprints or cancellation flows that don't send a loa_code.
+$hasLoaCode = array_key_exists('loa_code', $data);
+$loaCode = $hasLoaCode ? $data['loa_code'] : null;
 
 // Employee data
 $firstName = $data['first_name'] ?? '';
 $middleName = $data['middle_name'] ?? '';
 $lastName = $data['last_name'] ?? '';
 $suffix = $data['suffix'] ?? '';
+$biometricNumber = $data['biometric_number'] ?? '';
 
 // Build full employee name
 $employeeName = trim($firstName . ' ' . $middleName . ' ' . $lastName . ' ' . $suffix);
@@ -146,8 +151,9 @@ if (empty($endDate) && !empty($effectivityDate)) {
 }
 
 // Add this near the top with your other helpers
-function fpdf_str(string $s): string {
-    return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $s);
+function fpdf_str($s): string
+{
+    return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', (string)($s ?? ''));
 }
 
 // ============================================================
@@ -181,7 +187,7 @@ $existingStmt->execute([
 $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
 
 if ($existing) {
-    $updateStmt = $pdo->prepare("
+    $sql = "
         UPDATE letters_of_advice
         SET
             recipient_name      = :recipient_name,
@@ -200,12 +206,17 @@ if ($existing) {
             remarks             = :remarks,
             issued_by           = :issued_by,
             issued_position     = :issued_position,
-            loa_code            = :loa_code,
-            updated_at          = GETDATE()
-        WHERE id = :id
-    ");
+            updated_at          = GETDATE()";
 
-    $updateStmt->execute([
+    if ($hasLoaCode) {
+        $sql .= ",\n            loa_code = :loa_code";
+    }
+
+    $sql .= "\n        WHERE id = :id";
+
+    $updateStmt = $pdo->prepare($sql);
+
+    $params = [
         'recipient_name'     => $recipientName,
         'recipient_position' => $recipientPosition,
         'employee_id'        => $promodiserId,
@@ -222,9 +233,14 @@ if ($existing) {
         'remarks'            => $remarks,
         'issued_by'          => $issuedBy,
         'issued_position'    => $issuedPosition,
-        'loa_code'           => $loaCode,
         'id'                 => $existing['id'],
-    ]);
+    ];
+
+    if ($hasLoaCode) {
+        $params['loa_code'] = $loaCode;
+    }
+
+    $updateStmt->execute($params);
 } else {
     $insertStmt = $pdo->prepare("
         INSERT INTO letters_of_advice (
@@ -339,6 +355,9 @@ $pdf->Cell(0, 7, 'EMPLOYEE DETAILS', 0, 1);
 $pdf->SetFont('Arial', '', 11);
 
 // Rows
+$pdf->Cell(55, 7, 'Biometric Number', 1, 0);
+$pdf->Cell(0, 7, fpdf_str($biometricNumber), 1, 1);
+
 $pdf->Cell(55, 7, 'Employee Name', 1, 0);
 $pdf->Cell(0, 7, fpdf_str($employeeName), 1, 1);
 
@@ -393,7 +412,6 @@ if (trim($loaCode) !== '') {
     $pdf->Cell(190 - 15 - 90, 7, '', 0, 1);
 }
 
-$pdf->Ln(5);
 
 // Remarks WITHOUT label
 $pdf->MultiCell(0, 7, fpdf_str($remarks));

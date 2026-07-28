@@ -101,13 +101,24 @@ document.addEventListener("DOMContentLoaded", () => {
   // container: element holding the name/position/status/search-button
   // getBranchCode: function returning the branch code to scope the search to
   function wireRecipientSearch(container, getBranchCode) {
-    const nameInput = container.querySelector(".recipient-search-name, #recipientName");
-    const positionInput = container.querySelector(".recipient-position, #recipientPosition");
-    const searchBtn = container.querySelector(".recipient-search-btn, #searchRecipientBtn");
-    const statusEl = container.querySelector(".recipient-search-status, #recipientSearchStatus");
+    const nameInput = container.querySelector(
+      ".recipient-search-name, #recipientName",
+    );
+    const positionInput = container.querySelector(
+      ".recipient-position, #recipientPosition",
+    );
+    const searchBtn = container.querySelector(
+      ".recipient-search-btn, #searchRecipientBtn",
+    );
+    const statusEl = container.querySelector(
+      ".recipient-search-status, #recipientSearchStatus",
+    );
 
     if (!nameInput || !positionInput || !searchBtn) {
-      console.error("pdf.js: recipient search block is missing expected fields.", container);
+      console.error(
+        "pdf.js: recipient search block is missing expected fields.",
+        container,
+      );
       return;
     }
 
@@ -164,7 +175,10 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           container.dataset.verified = "false";
           positionInput.value = "";
-          setStatus(result.message || "No matching branch manager found.", "text-danger");
+          setStatus(
+            result.message || "No matching branch manager found.",
+            "text-danger",
+          );
         }
       } catch (err) {
         console.error(err);
@@ -425,7 +439,10 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        if (singleRecipientFields.dataset.verified !== "true" || !recipientPosition) {
+        if (
+          singleRecipientFields.dataset.verified !== "true" ||
+          !recipientPosition
+        ) {
           Swal.fire({
             icon: "warning",
             title: "Branch Manager Not Verified",
@@ -455,6 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         middle_name: val("editMiddleName"),
         last_name: val("editLastName"),
         suffix: val("editSuffix"),
+        biometric_number: val("editBiometricNumber"),
 
         branch: val("editBranch"),
 

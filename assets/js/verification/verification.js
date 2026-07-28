@@ -76,6 +76,7 @@ $(document).ready(function () {
                 data-middle-name="${data.middle_name ?? ""}"
                 data-last-name="${data.last_name ?? ""}"
                 data-suffix="${data.suffix ?? ""}"
+                data-biometric-number="${data.biometric_number ?? ""}"
                 data-branch="${data.branch_code ?? ""}"
                 data-roving-branches='${JSON.stringify(data.roving_branches ?? [])}'
                 data-brand="${data.brand ?? ""}"
@@ -126,6 +127,7 @@ $(document).ready(function () {
       middle_name: btn.data("middle-name"),
       last_name: btn.data("last-name"),
       suffix: btn.data("suffix"),
+      biometric_number: btn.data("biometric-number"),
       branch: btn.data("branch"),
       roving_branches: btn.data("roving-branches"), // already parsed array by jQuery
       brand: btn.data("brand"),
