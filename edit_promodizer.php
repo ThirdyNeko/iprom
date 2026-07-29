@@ -269,6 +269,15 @@ th {
                         <div id="editEmployeePictureBox">
                             <div class="no-picture-label">No Photo</div>
                         </div>
+                        <div class="mt-2 text-center">
+                            <button
+                                type="button"
+                                class="btn btn-warning btn-sm d-none"
+                                id="changeEmployeePictureBtn">
+                                <i class="bi bi-camera"></i>
+                                Change Picture
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-10">
                         <div class="row g-3">

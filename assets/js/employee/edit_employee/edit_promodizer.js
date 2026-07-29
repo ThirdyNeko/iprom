@@ -232,6 +232,7 @@ function updateEditCategoriesInputAndLabel() {
   if (editCatAll.checked) {
     editCategoriesInput.value = "ALL";
     editCategoriesBtn.textContent = "All";
+    editCategoriesBtn.classList.remove("is-invalid");
     return;
   }
 
@@ -244,9 +245,14 @@ function updateEditCategoriesInputAndLabel() {
     .map((cb) => cb.dataset.name);
 
   editCategoriesInput.value = checkedCodes.join(",");
-  editCategoriesBtn.textContent = checkedNames.length
-    ? checkedNames.join(", ")
-    : "All";
+
+  if (checkedNames.length) {
+    editCategoriesBtn.textContent = checkedNames.join(", ");
+    editCategoriesBtn.classList.remove("is-invalid");
+  } else {
+    editCategoriesBtn.textContent = "None selected";
+    editCategoriesBtn.classList.add("is-invalid");
+  }
 }
 
 // Populates the checkboxes from the employee's stored categories
@@ -1666,10 +1672,20 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   // NEW: Designated Categories dropdown wiring (mirrors add_employee.js)
   editCatAll?.addEventListener("change", function () {
-    editCatItems.forEach((cb) => {
-      cb.disabled = editCatAll.checked || Boolean(editCategoriesBtn?.disabled);
-      if (editCatAll.checked) cb.checked = true;
-    });
+    if (editCatAll.checked) {
+      // Selecting All checks everything
+      editCatItems.forEach((cb) => {
+        cb.checked = true;
+        cb.disabled = true;
+      });
+    } else {
+      // Unchecking All allows individual selection
+      editCatItems.forEach((cb) => {
+        cb.disabled = Boolean(editCategoriesBtn?.disabled);
+        cb.checked = false;
+      });
+    }
+
     updateEditCategoriesInputAndLabel();
   });
 
@@ -1683,10 +1699,14 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (allChecked) {
         editCatAll.checked = true;
         editCatItems.forEach((item) => (item.disabled = true));
+      } else {
+        editCatAll.checked = false;
       }
+
       if (noneChecked) {
         editCatAll.checked = false;
       }
+
       updateEditCategoriesInputAndLabel();
     });
   });

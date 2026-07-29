@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (catAll.checked) {
       categoriesInput.value = "ALL";
       categoriesBtn.textContent = "All";
+      categoriesBtn.classList.remove("is-invalid");
       return;
     }
 
@@ -82,16 +83,28 @@ document.addEventListener("DOMContentLoaded", async function () {
       .map((cb) => cb.dataset.name);
 
     categoriesInput.value = checkedCodes.join(",");
-    categoriesBtn.textContent = checkedNames.length
-      ? checkedNames.join(", ")
-      : "None selected";
+
+    if (checkedNames.length) {
+      categoriesBtn.textContent = checkedNames.join(", ");
+      categoriesBtn.classList.remove("is-invalid");
+    } else {
+      categoriesBtn.textContent = "None selected";
+      categoriesBtn.classList.add("is-invalid");
+    }
   }
 
   catAll.addEventListener("change", function () {
-    catItems.forEach((cb) => {
-      cb.disabled = catAll.checked;
-      if (catAll.checked) cb.checked = true;
-    });
+    if (catAll.checked) {
+      catItems.forEach((cb) => {
+        cb.checked = true;
+        cb.disabled = true;
+      });
+    } else {
+      catItems.forEach((cb) => {
+        cb.checked = false; // unchecking "All" clears all individual boxes
+        cb.disabled = false;
+      });
+    }
     updateCategoriesInputAndLabel();
   });
 
