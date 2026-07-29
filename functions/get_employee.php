@@ -100,6 +100,9 @@ if ($isBranchManager) {
         'birthday',
         'street',
         'barangay_name',
+        'province',
+        'municipality',
+        'barangay',
         'municipality_name',
         'province_name',
     ];
