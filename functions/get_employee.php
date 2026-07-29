@@ -22,6 +22,7 @@ $stmt->execute([':id' => $id]);
 $employee = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+$isBranchManager = (isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager');
 
 $canPrintLOA = $isAdmin && !empty($employee['print_loa']) && $employee['print_loa'] == 1;
 
@@ -75,14 +76,13 @@ if (!empty($employee['multi_brand_group_id'])) {
 // =========================
 $employee['roving_branches'] = $rovingBranches;
 $employee['multi_brands'] = $multiBrands;
-$employee['employee_id'] = $employee['employee_id'] ?? null; // ✅ ADD THIS
-$employee['loa_code'] = $employee['loa_code'] ?? null; // ✅ ADD THIS
+$employee['employee_id'] = $employee['employee_id'] ?? null;
+$employee['loa_code'] = $employee['loa_code'] ?? null;
 
-// ✅ NEW: personal / address fields (explicit fallback in case columns
-// were just added and older rows return them as missing keys instead of NULL)
+// personal / address fields (explicit fallback for newly added columns)
 $employee['marital_status']      = $employee['marital_status'] ?? null;
 $employee['contact_number']      = $employee['contact_number'] ?? null;
-$employee['biometric_number']      = $employee['biometric_number'] ?? null;
+$employee['biometric_number']    = $employee['biometric_number'] ?? null;
 $employee['categories']          = $employee['categories'] ?? null;
 $employee['province']            = $employee['province'] ?? null;
 $employee['province_name']       = $employee['province_name'] ?? null;
@@ -91,6 +91,25 @@ $employee['municipality_name']   = $employee['municipality_name'] ?? null;
 $employee['barangay']            = $employee['barangay'] ?? null;
 $employee['barangay_name']       = $employee['barangay_name'] ?? null;
 $employee['street']              = $employee['street'] ?? null;
+
+// =========================
+// MASK SENSITIVE FIELDS FOR BRANCH MANAGER
+// =========================
+if ($isBranchManager) {
+    $sensitiveFields = [
+        'birthday',
+        'street',
+        'barangay_name',
+        'municipality_name',
+        'province_name',
+    ];
+
+    foreach ($sensitiveFields as $field) {
+        if (!empty($employee[$field])) {
+            $employee[$field] = '********';
+        }
+    }
+}
 
 // =========================
 // RETURN JSON
