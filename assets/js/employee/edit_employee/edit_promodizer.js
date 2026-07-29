@@ -287,8 +287,13 @@ function toggleEmploymentDates() {
 
   const isRelieverOrSeasonal = status === "RELIEVER" || status === "SEASONAL";
   const isPermanent = status === "PERMANENT";
-  const isCorrectReason = reason === "CHANGE EMPLOYMENT STATUS";
-
+  const isCorrectReason = [
+    "CHANGE EMPLOYMENT STATUS",
+    "TRANSFER BRANCH",
+    "REASSIGN",
+    "CHANGE SUB STATUS",
+    "ADD BRANCH/BRAND",
+  ].includes(reason);
   const shouldShowStart = isRelieverOrSeasonal || isPermanent;
   const shouldShowEnd = isRelieverOrSeasonal;
 
@@ -433,6 +438,12 @@ function toggleReasonDates() {
   if (startDateInput) {
     const disableStart = !showStart || isTerminationReason;
     startDateInput.disabled = disableStart;
+    console.log("toggleEmploymentDates", {
+      reason,
+      status,
+      disableStart,
+      disabled: startDateInput.disabled,
+    });
     startDateInput.required = !disableStart;
   }
 
@@ -1658,6 +1669,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     reasonSelect.addEventListener("change", toggleDateSeparated);
     reasonSelect.addEventListener("change", toggleDateReturned);
     reasonSelect.addEventListener("change", toggleReasonDates);
+    reasonSelect.addEventListener("change", toggleEmploymentDates);
     reasonSelect.addEventListener("change", toggleTransferEditable);
     reasonSelect.addEventListener("change", toggleStatusesEditable);
     reasonSelect.addEventListener("change", toggleContactAddressEditable);
