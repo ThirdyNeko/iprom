@@ -380,16 +380,21 @@ th {
                                     <hr class="my-1">
                                 </li>
                                 <?php foreach ($categoryOptions as $cat): ?>
-                                <li>
-                                    <div class="form-check">
-                                        <input class="form-check-input edit-category-item" type="checkbox"
-                                            id="editCat_<?= htmlspecialchars($cat['id']) ?>"
-                                            value="<?= htmlspecialchars($cat['categories']) ?>" disabled>
-                                        <label class="form-check-label" for="editCat_<?= htmlspecialchars($cat['id']) ?>">
-                                            <?= htmlspecialchars($cat['categories']) ?>
-                                        </label>
-                                    </div>
-                                </li>
+                                    <li>
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input edit-category-item"
+                                                type="checkbox"
+                                                id="editCat_<?= htmlspecialchars($cat['id']) ?>"
+                                                value="<?= htmlspecialchars($cat['category_code']) ?>"
+                                                data-name="<?= htmlspecialchars($cat['categories']) ?>"
+                                                disabled
+                                            >
+                                            <label class="form-check-label" for="editCat_<?= htmlspecialchars($cat['id']) ?>">
+                                                <?= htmlspecialchars($cat['categories']) ?>
+                                            </label>
+                                        </div>
+                                    </li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>

@@ -261,9 +261,12 @@ try {
                                     <?php foreach ($categoryOptions as $cat): ?>
                                     <li>
                                         <div class="form-check">
-                                            <input class="form-check-input category-item" type="checkbox"
+                                            <input class="form-check-input category-item"
+                                                type="checkbox"
                                                 id="cat_<?= htmlspecialchars($cat['id']) ?>"
-                                                value="<?= htmlspecialchars($cat['categories']) ?>" disabled>
+                                                value="<?= htmlspecialchars($cat['category_code']) ?>"
+                                                data-name="<?= htmlspecialchars($cat['categories']) ?>"
+                                                disabled>
                                             <label class="form-check-label" for="cat_<?= htmlspecialchars($cat['id']) ?>">
                                                 <?= htmlspecialchars($cat['categories']) ?>
                                             </label>

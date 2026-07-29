@@ -235,14 +235,18 @@ function updateEditCategoriesInputAndLabel() {
     return;
   }
 
-  const checked = Array.from(editCatItems)
+  const checkedCodes = Array.from(editCatItems)
     .filter((cb) => cb.checked)
     .map((cb) => cb.value);
 
-  editCategoriesInput.value = checked.join(",");
-  editCategoriesBtn.textContent = checked.length
-    ? checked.join(", ")
-    : "None selected";
+  const checkedNames = Array.from(editCatItems)
+    .filter((cb) => cb.checked)
+    .map((cb) => cb.dataset.name);
+
+  editCategoriesInput.value = checkedCodes.join(",");
+  editCategoriesBtn.textContent = checkedNames.length
+    ? checkedNames.join(", ")
+    : "All";
 }
 
 // Populates the checkboxes from the employee's stored categories
@@ -252,17 +256,17 @@ function populateEditCategoriesFromValue(value) {
   if (!editCatAll) return;
 
   const cleaned = cleanValue(value).toUpperCase();
+
   const isAll = !cleaned || cleaned === "ALL";
-  const parts = isAll
-    ? []
-    : cleaned
-        .split(",")
-        .map((c) => c.trim())
-        .filter(Boolean);
+
+  const selectedCodes = isAll ? [] : cleaned.split(",").map((v) => v.trim());
 
   editCatAll.checked = isAll;
+
   editCatItems.forEach((cb) => {
-    cb.checked = isAll ? true : parts.includes(cb.value);
+    cb.checked = isAll ? true : selectedCodes.includes(cb.value);
+    cb.disabled =
+      !editCategoriesBtn || editCategoriesBtn.disabled || editCatAll.checked;
   });
 
   updateEditCategoriesInputAndLabel();

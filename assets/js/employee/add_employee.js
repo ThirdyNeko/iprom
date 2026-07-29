@@ -71,13 +71,19 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    const checked = Array.from(catItems)
+    // Codes that will be submitted
+    const checkedCodes = Array.from(catItems)
       .filter((cb) => cb.checked)
       .map((cb) => cb.value);
 
-    categoriesInput.value = checked.join(",");
-    categoriesBtn.textContent = checked.length
-      ? checked.join(", ")
+    // Human-readable names that will be displayed
+    const checkedNames = Array.from(catItems)
+      .filter((cb) => cb.checked)
+      .map((cb) => cb.dataset.name);
+
+    categoriesInput.value = checkedCodes.join(",");
+    categoriesBtn.textContent = checkedNames.length
+      ? checkedNames.join(", ")
       : "None selected";
   }
 
