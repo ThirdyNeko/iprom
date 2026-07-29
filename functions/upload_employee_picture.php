@@ -64,7 +64,7 @@ try {
     // Check whether a row already exists for this employee_id
     $check = $pdo->prepare("
         SELECT [id]
-        FROM [IPROM_TEST].[dbo].[employee_pictures]
+        FROM employee_pictures
         WHERE [employee_id] = :employee_id
     ");
     $check->execute([':employee_id' => $employeeId]);
@@ -73,7 +73,7 @@ try {
     if ($existingRow) {
         // Row exists (whether id_picture was empty or being overwritten) -> UPDATE
         $upd = $pdo->prepare("
-            UPDATE [IPROM_TEST].[dbo].[employee_pictures]
+            UPDATE employee_pictures
             SET [id_picture] = :id_picture
             WHERE [employee_id] = :employee_id
         ");
@@ -87,7 +87,7 @@ try {
     } else {
         // No row yet for this employee_id -> INSERT
         $ins = $pdo->prepare("
-            INSERT INTO [IPROM_TEST].[dbo].[employee_pictures] ([employee_id], [id_picture])
+            INSERT INTO employee_pictures ([employee_id], [id_picture])
             VALUES (:employee_id, :id_picture)
         ");
         $ins->bindParam(':employee_id', $employeeId);

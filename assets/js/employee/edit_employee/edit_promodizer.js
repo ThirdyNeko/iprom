@@ -219,6 +219,7 @@ const editCategoriesInput = document.getElementById("editCategoriesInput");
 const editCategoriesBtn = document.getElementById("editCategoriesDropdownBtn");
 const editCatAll = document.getElementById("editCatAll");
 const editCatItems = document.querySelectorAll(".edit-category-item");
+const changePictureBtn = document.getElementById("changeEmployeePictureBtn");
 
 // =========================
 // DESIGNATED CATEGORIES (CHANGE CATEGORIES)
@@ -550,6 +551,13 @@ function toggleContactAddressEditable() {
   editCatItems.forEach((cb) => {
     cb.disabled = !enableCategories || Boolean(editCatAll?.checked);
   });
+}
+
+function togglePictureButton() {
+  if (!changePictureBtn || !reasonSelect) return;
+  const reason = (reasonSelect.value || "").toUpperCase();
+  const enable = reason === "CHANGE EMPLOYEE PICTURE" && !isBranchManagerRole();
+  changePictureBtn.classList.toggle("d-none", !enable);
 }
 
 function toggleTransferEditable() {
@@ -1268,6 +1276,7 @@ async function loadEmployeePage(id) {
     toggleContactAddressEditable();
     toggleAddButtons();
     toggleBranchReasonOptions();
+    togglePictureButton(); // ADD THIS
 
     // Must run last: several of the toggle*() calls above explicitly
     // re-enable specific fields depending on the selected reason, so
@@ -1653,6 +1662,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     reasonSelect.addEventListener("change", toggleStatusesEditable);
     reasonSelect.addEventListener("change", toggleContactAddressEditable);
     reasonSelect.addEventListener("change", toggleAddButtons);
+    reasonSelect.addEventListener("change", togglePictureButton); // ADD THIS
   }
 
   if (employmentStatusSelect) {

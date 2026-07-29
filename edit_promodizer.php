@@ -265,19 +265,17 @@ th {
 
                 <!-- Picture + Names -->
                 <div class="row g-3 mb-3">
-                    <div class="col-md-2 d-flex align-items-start">
+                    <div class="col-md-2 d-flex flex-column align-items-center">
                         <div id="editEmployeePictureBox">
                             <div class="no-picture-label">No Photo</div>
                         </div>
-                        <div class="mt-2 text-center">
-                            <button
-                                type="button"
-                                class="btn btn-warning btn-sm d-none"
-                                id="changeEmployeePictureBtn">
-                                <i class="bi bi-camera"></i>
-                                Change Picture
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm mt-2 d-none"
+                            id="changeEmployeePictureBtn">
+                            <i class="bi bi-camera"></i>
+                            Change Picture
+                        </button>
                     </div>
                     <div class="col-md-10">
                         <div class="row g-3">
@@ -599,8 +597,10 @@ th {
 <script src="assets/js/employee/edit_employee/history.js"></script>
 <script src="assets/js/employee/edit_employee/edit_promodizer.js"></script>
 <script src="assets/js/employee/edit_employee/pdf.js"></script>
-
 <script src="assets/js/employee/edit_employee/edit_promodizer_modal.js"></script>
+<script src="assets/js/employee/edit_employee/change_picture.js"></script>
 
 
+<?php include 'modals/verify_loa_modal.php'; ?>
+<?php include 'modals/change_picture_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
