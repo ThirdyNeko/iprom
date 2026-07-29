@@ -94,6 +94,12 @@ $barangay           = $_POST['barangay'] ?? null;
 $barangay_name      = $_POST['barangay_name'] ?? null;
 $street             = $_POST['street'] ?? null;
 
+// ✅ NEW: Designated Categories ("ALL" or comma list e.g. "TV,DA")
+// Normalize blank/whitespace to NULL so it's never bound as an
+// empty string (mirrors biometric_number handling above).
+$categories = trim($_POST['categories'] ?? '');
+$categories = ($categories === '') ? null : strtoupper($categories);
+
 // =========================
 // LOA CODE GENERATION
 // Format: EMP-YYYYMMDD-XXXX-123456
@@ -123,7 +129,7 @@ if ($reason_for_update === 'ADD BRANCH/BRAND' && empty($raw_start_date)) {
     exit;
 }
 
-// ✅ NEW: personal / address validation (defense-in-depth; JS already checks this)
+// ✅ NEW: personal / address / categories validation (defense-in-depth; JS already checks this)
 if ($reason_for_update === 'UPDATE MARITAL STATUS' && empty($marital_status)) {
     echo json_encode([
         'status' => 'danger',
@@ -180,6 +186,14 @@ if (
     exit;
 }
 
+if ($reason_for_update === 'CHANGE CATEGORIES' && empty($categories)) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Please select at least one category, or leave All checked.'
+    ]);
+    exit;
+}
+
 $skipSlotValidation = in_array($reason_for_update, [
     'REMOVE BRANCH/BRAND',
     'ADD BRANCH/BRAND',
@@ -190,6 +204,7 @@ $skipSlotValidation = in_array($reason_for_update, [
     'DECEASED',
     'CLERICAL ERROR',
     'UPDATE BIOMETRIC NUMBER',
+    'CHANGE CATEGORIES',
 ]);
 
 $remarks = trim($_POST['remarks'] ?? '');
@@ -605,6 +620,13 @@ try {
     $currentBranch = $base['branch'];
     $currentBrand  = $base['brand'];
 
+    // NEW: CHANGE CATEGORIES sends a fresh categories value; every
+    // other reason must leave the employee's existing categories
+    // untouched rather than overwriting it with NULL.
+    $categoriesParam = ($reason_for_update === 'CHANGE CATEGORIES')
+        ? $categories
+        : $base['categories'];
+
     // =========================
     // UPDATE ORIGINAL ONLY HERE
     // =========================
@@ -666,6 +688,7 @@ try {
             @marital_status = :marital_status,
             @contact_number = :contact_number,
             @biometric_number = :biometric_number,
+            @categories = :categories,
             @province = :province,
             @province_name = :province_name,
             @municipality = :municipality,
@@ -705,6 +728,7 @@ try {
         ':marital_status' => $marital_status,
         ':contact_number' => $contact_number,
         ':biometric_number' => $biometric_number,
+        ':categories' => $categoriesParam,
         ':province' => $province,
         ':province_name' => $province_name,
         ':municipality' => $municipality,
@@ -821,6 +845,7 @@ try {
                 marital_status,
                 contact_number,
                 biometric_number,
+                categories,
                 province,
                 province_name,
                 municipality,
@@ -864,6 +889,7 @@ try {
                 :marital_status,
                 :contact_number,
                 :biometric_number,
+                :categories,
                 :province,
                 :province_name,
                 :municipality,
@@ -945,6 +971,7 @@ try {
                     ':marital_status' => $base['marital_status'],
                     ':contact_number' => $base['contact_number'],
                     ':biometric_number' => $biometric_number,
+                    ':categories' => $base['categories'],
                     ':province' => $base['province'],
                     ':province_name' => $base['province_name'],
                     ':municipality' => $base['municipality'],
@@ -1038,6 +1065,7 @@ try {
                     ':marital_status' => $base['marital_status'],
                     ':contact_number' => $base['contact_number'],
                     ':biometric_number' => $biometric_number,
+                    ':categories' => $base['categories'],
                     ':province' => $base['province'],
                     ':province_name' => $base['province_name'],
                     ':municipality' => $base['municipality'],
@@ -1137,6 +1165,7 @@ try {
                         ':marital_status' => $base['marital_status'],
                         ':contact_number' => $base['contact_number'],
                         ':biometric_number' => $biometric_number,
+                        ':categories' => $base['categories'],
                         ':province' => $base['province'],
                         ':province_name' => $base['province_name'],
                         ':municipality' => $base['municipality'],

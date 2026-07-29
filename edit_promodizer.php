@@ -13,6 +13,15 @@ if (!$employeeId) {
     header('Location: promodizers.php');
     exit;
 }
+
+// Category options (for CHANGE CATEGORIES reason)
+try {
+    $stmt = $pdo->prepare("EXEC dbo.get_categories");
+    $stmt->execute();
+    $categoryOptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $categoryOptions = [];
+}
 ?>
 
 <style>
@@ -180,6 +189,23 @@ th {
     text-align: center;
     padding: 4px;
 }
+
+/* Designated Categories dropdown (CHANGE CATEGORIES) */
+#editPromodizerPage #editCategoriesDropdownBtn:not(:disabled) {
+    background-color: #fffbdf !important;
+    opacity: 1;
+}
+
+#editPromodizerPage #editCategoriesDropdownBtn:disabled {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+#editPromodizerPage #editCategoriesMenu {
+    max-height: 220px;
+    overflow-y: auto;
+}
 </style>
 
 <div class="content">
@@ -333,7 +359,41 @@ th {
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Designated Categories</label>
-                        <input type="text" id="editCategories" class="form-control" readonly>
+                        <div class="dropdown">
+                            <button
+                                type="button"
+                                class="form-select text-start"
+                                id="editCategoriesDropdownBtn"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside"
+                                aria-expanded="false"
+                                disabled
+                            >
+                                All
+                            </button>
+                            <ul class="dropdown-menu p-2" id="editCategoriesMenu" style="min-width: 100%;">
+                                <li>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editCatAll" checked disabled>
+                                        <label class="form-check-label fw-bold" for="editCatAll">All</label>
+                                    </div>
+                                    <hr class="my-1">
+                                </li>
+                                <?php foreach ($categoryOptions as $cat): ?>
+                                <li>
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-category-item" type="checkbox"
+                                            id="editCat_<?= htmlspecialchars($cat['id']) ?>"
+                                            value="<?= htmlspecialchars($cat['categories']) ?>" disabled>
+                                        <label class="form-check-label" for="editCat_<?= htmlspecialchars($cat['id']) ?>">
+                                            <?= htmlspecialchars($cat['categories']) ?>
+                                        </label>
+                                    </div>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                        <input type="hidden" id="editCategoriesInput" value="ALL">
                     </div>
                 </div>
 

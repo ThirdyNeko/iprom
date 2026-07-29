@@ -20,7 +20,11 @@ function cleanValue(value) {
 }
 
 // Formats the stored categories value ("ALL" or "TV,DA,...") into a
-// friendlier display string for the read-only field.
+// friendlier display string. Kept for reference/reuse elsewhere,
+// though the edit page's categories field now uses the checkbox
+// dropdown (see updateEditCategoriesInputAndLabel /
+// populateEditCategoriesFromValue below) instead of a plain display
+// string.
 function formatCategoriesDisplay(value) {
   const cleaned = cleanValue(value);
   if (!cleaned) return "";
@@ -111,9 +115,11 @@ function isStaffRole() {
 function lockPageForBranchManager() {
   if (!pageEl) return;
 
-  pageEl.querySelectorAll("input, select, textarea").forEach((el) => {
-    el.disabled = true;
-  });
+  pageEl
+    .querySelectorAll("input, select, textarea, button.form-select")
+    .forEach((el) => {
+      el.disabled = true;
+    });
 
   pageEl
     .querySelectorAll(
@@ -200,7 +206,6 @@ const editDateHired = document.getElementById("editDateHired");
 const editMaritalStatus = document.getElementById("editMaritalStatus");
 const editContactNumber = document.getElementById("editContactNumber");
 const editBiometricNumber = document.getElementById("editBiometricNumber");
-const editCategories = document.getElementById("editCategories");
 const editProvince = document.getElementById("editProvince");
 const editProvinceName = document.getElementById("editProvinceName");
 const editMunicipality = document.getElementById("editMunicipality");
@@ -208,6 +213,60 @@ const editMunicipalityName = document.getElementById("editMunicipalityName");
 const editBarangay = document.getElementById("editBarangay");
 const editBarangayName = document.getElementById("editBarangayName");
 const editStreet = document.getElementById("editStreet");
+
+// NEW: Designated Categories dropdown (CHANGE CATEGORIES reason)
+const editCategoriesInput = document.getElementById("editCategoriesInput");
+const editCategoriesBtn = document.getElementById("editCategoriesDropdownBtn");
+const editCatAll = document.getElementById("editCatAll");
+const editCatItems = document.querySelectorAll(".edit-category-item");
+
+// =========================
+// DESIGNATED CATEGORIES (CHANGE CATEGORIES)
+// =========================
+
+// Syncs the hidden input + dropdown button label from the current
+// checkbox state. Mirrors add_employee.js's categories logic.
+function updateEditCategoriesInputAndLabel() {
+  if (!editCategoriesInput || !editCategoriesBtn || !editCatAll) return;
+
+  if (editCatAll.checked) {
+    editCategoriesInput.value = "ALL";
+    editCategoriesBtn.textContent = "All";
+    return;
+  }
+
+  const checked = Array.from(editCatItems)
+    .filter((cb) => cb.checked)
+    .map((cb) => cb.value);
+
+  editCategoriesInput.value = checked.join(",");
+  editCategoriesBtn.textContent = checked.length
+    ? checked.join(", ")
+    : "None selected";
+}
+
+// Populates the checkboxes from the employee's stored categories
+// value ("ALL" or a comma list like "TV,DA"). Called from
+// loadEmployeePage() once the record is fetched.
+function populateEditCategoriesFromValue(value) {
+  if (!editCatAll) return;
+
+  const cleaned = cleanValue(value).toUpperCase();
+  const isAll = !cleaned || cleaned === "ALL";
+  const parts = isAll
+    ? []
+    : cleaned
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
+
+  editCatAll.checked = isAll;
+  editCatItems.forEach((cb) => {
+    cb.checked = isAll ? true : parts.includes(cb.value);
+  });
+
+  updateEditCategoriesInputAndLabel();
+}
 
 function toggleEmploymentDates() {
   if (!employmentStatusSelect || !reasonSelect) return;
@@ -444,7 +503,7 @@ function toggleStatusesEditable() {
 }
 
 // =========================
-// NEW: gate personal info / address fields by reason
+// NEW: gate personal info / address / categories fields by reason
 // =========================
 function toggleContactAddressEditable() {
   if (!reasonSelect) return;
@@ -454,6 +513,7 @@ function toggleContactAddressEditable() {
   const enableContactNumber = reason === "UPDATE CONTACT NUMBER";
   const enableAddress = reason === "UPDATE ADDRESS";
   const enableBiometricNumber = reason === "UPDATE BIOMETRIC NUMBER";
+  const enableCategories = reason === "CHANGE CATEGORIES";
 
   if (editMaritalStatus) editMaritalStatus.disabled = !enableMaritalStatus;
   if (editContactNumber) editContactNumber.disabled = !enableContactNumber;
@@ -471,6 +531,15 @@ function toggleContactAddressEditable() {
   if (editBarangay) {
     editBarangay.disabled = !enableAddress || !editMunicipality?.value;
   }
+
+  // NEW: Designated Categories — dropdown button + "All" checkbox
+  // follow the reason directly; individual category checkboxes stay
+  // locked whenever "All" is checked (mirrors add_employee.js).
+  if (editCategoriesBtn) editCategoriesBtn.disabled = !enableCategories;
+  if (editCatAll) editCatAll.disabled = !enableCategories;
+  editCatItems.forEach((cb) => {
+    cb.disabled = !enableCategories || Boolean(editCatAll?.checked);
+  });
 }
 
 function toggleTransferEditable() {
@@ -800,7 +869,6 @@ function resetEditPage() {
 
   // NEW: reset personal / address fields
   if (editContactNumber) editContactNumber.value = "";
-  if (editCategories) editCategories.value = "";
   if (editStreet) editStreet.value = "";
   if (editProvinceName) editProvinceName.value = "";
   if (editMunicipalityName) editMunicipalityName.value = "";
@@ -814,6 +882,21 @@ function resetEditPage() {
     editBarangay.innerHTML =
       '<option value="" disabled selected>-- Select Barangay --</option>';
     editBarangay.disabled = true;
+  }
+
+  // NEW: reset Designated Categories back to "All", locked
+  if (editCatAll) {
+    editCatAll.checked = true;
+    editCatAll.disabled = true;
+  }
+  editCatItems.forEach((cb) => {
+    cb.checked = false;
+    cb.disabled = true;
+  });
+  if (editCategoriesInput) editCategoriesInput.value = "ALL";
+  if (editCategoriesBtn) {
+    editCategoriesBtn.textContent = "All";
+    editCategoriesBtn.disabled = true;
   }
 
   // Reset picture box back to placeholder until the real employee_id
@@ -1033,16 +1116,18 @@ async function loadEmployeePage(id) {
     if (el("editLastAssignedBy"))
       el("editLastAssignedBy").value = cleanValue(employee.last_assigned_by);
 
-    // NEW: marital status / contact number / categories / street (direct fields)
+    // NEW: marital status / contact number / street (direct fields)
     if (editMaritalStatus)
       editMaritalStatus.value = cleanValue(employee.marital_status) || "";
     if (editContactNumber)
       editContactNumber.value = cleanValue(employee.contact_number);
     if (editBiometricNumber)
       editBiometricNumber.value = cleanValue(employee.biometric_number);
-    if (editCategories)
-      editCategories.value = formatCategoriesDisplay(employee.categories);
     if (editStreet) editStreet.value = cleanValue(employee.street);
+
+    // NEW: Designated Categories — populate checkbox state from the
+    // employee's stored value ("ALL" or a comma list).
+    populateEditCategoriesFromValue(employee.categories);
 
     // NEW: address cascade — populate province, then load matching
     // municipality/barangay lists and pre-select the saved codes
@@ -1258,7 +1343,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   if (reason === "ADD BRANCH/BRAND" && !startDate.value)
     return Swal.fire({ icon: "warning", title: "Effectivity Date Required" });
 
-  // NEW: marital status / contact number / address validation
+  // NEW: marital status / contact number / address / categories validation
   if (reason === "UPDATE MARITAL STATUS" && !editMaritalStatus?.value) {
     return Swal.fire({
       icon: "warning",
@@ -1307,6 +1392,13 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
       icon: "warning",
       title: "Missing Address",
       text: "Please complete Province, Municipality, Barangay, and Street.",
+    });
+  }
+  if (reason === "CHANGE CATEGORIES" && !editCategoriesInput?.value) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Missing Data",
+      text: "Please select at least one category, or leave All checked.",
     });
   }
 
@@ -1384,6 +1476,9 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   formData.set("barangay", editBarangay?.value || "");
   formData.set("barangay_name", editBarangayName?.value || "");
   formData.set("street", editStreet?.value || "");
+
+  // NEW: Designated Categories — "ALL" or comma list e.g. "TV,DA"
+  formData.set("categories", editCategoriesInput?.value || "");
 
   rovingBranches.forEach((b) => formData.append("roving_branches[]", b));
   multiBrands.forEach((b) => formData.append("multi_brands[]", b));
@@ -1563,6 +1658,33 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Biometric number: digits only, max 7 (optional field)
   editBiometricNumber?.addEventListener("input", function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 7);
+  });
+
+  // NEW: Designated Categories dropdown wiring (mirrors add_employee.js)
+  editCatAll?.addEventListener("change", function () {
+    editCatItems.forEach((cb) => {
+      cb.disabled = editCatAll.checked || Boolean(editCategoriesBtn?.disabled);
+      if (editCatAll.checked) cb.checked = true;
+    });
+    updateEditCategoriesInputAndLabel();
+  });
+
+  editCatItems.forEach((cb) => {
+    cb.addEventListener("change", function () {
+      const allChecked = Array.from(editCatItems).every((item) => item.checked);
+      const noneChecked = Array.from(editCatItems).every(
+        (item) => !item.checked,
+      );
+
+      if (allChecked) {
+        editCatAll.checked = true;
+        editCatItems.forEach((item) => (item.disabled = true));
+      }
+      if (noneChecked) {
+        editCatAll.checked = false;
+      }
+      updateEditCategoriesInputAndLabel();
+    });
   });
 
   // NEW: address cascade change listeners
