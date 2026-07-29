@@ -245,6 +245,7 @@ if (!$isAllowed) {
                                 class="table table-bordered table-hover align-middle">
                                 <thead>
                                     <tr>
+                                        <th>Category Code</th>
                                         <th>Category</th>
                                         <th>Actions</th>
                                     </tr>
@@ -311,8 +312,20 @@ if (!$isAllowed) {
                     <input type="hidden" id="categoryId">
 
                     <div class="mb-3">
+                        <label class="form-label">Category Code</label>
+                        <input type="text"
+                            id="categoryCode"
+                            class="form-control text-uppercase"
+                            maxlength="20"
+                            required>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Category</label>
-                        <input type="text" id="categoryName" class="form-control text-uppercase" required>
+                        <input type="text"
+                            id="categoryName"
+                            class="form-control text-uppercase"
+                            required>
                     </div>
                 </div>
 

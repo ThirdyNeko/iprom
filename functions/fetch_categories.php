@@ -36,10 +36,14 @@ $offset = $start + 1;
 $end    = $start + $length;
 
 $dataSql = "
-    SELECT id, categories
+    SELECT
+        id,
+        category_code,
+        categories
     FROM (
         SELECT
             id,
+            category_code,
             categories,
             ROW_NUMBER() OVER (ORDER BY categories ASC) AS rn
         FROM categories

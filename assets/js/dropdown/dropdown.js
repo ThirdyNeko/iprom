@@ -70,6 +70,7 @@ $(document).ready(function () {
     },
 
     columns: [
+      { data: "category_code" },
       { data: "categories" },
 
       // ACTIONS
@@ -79,19 +80,22 @@ $(document).ready(function () {
         className: "text-center",
         render: function (data, type, row) {
           return `
-            <div class="action-btns">
-              <button class="btn btn-outline-primary btn-sm edit-category-btn"
-                      data-id="${row.id}"
-                      data-category="${row.categories}">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-outline-danger btn-sm delete-category-btn"
-                      data-id="${row.id}"
-                      data-category="${row.categories}">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          `;
+          <div class="action-btns">
+            <button class="btn btn-outline-primary btn-sm edit-category-btn"
+                    data-id="${row.id}"
+                    data-code="${row.category_code}"
+                    data-category="${row.categories}">
+              <i class="bi bi-pencil"></i>
+            </button>
+
+            <button class="btn btn-outline-danger btn-sm delete-category-btn"
+                    data-id="${row.id}"
+                    data-code="${row.category_code}"
+                    data-category="${row.categories}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        `;
         },
       },
     ],
@@ -99,6 +103,15 @@ $(document).ready(function () {
 
   $("#filterCategory").on("input", function () {
     categoriesTable.draw();
+  });
+
+  // =========================
+  // ADD CATEGORY
+  // =========================
+  $('[data-bs-target="#categoryModal"]').on("click", function () {
+    $("#categoryId").val("");
+    $("#categoryCode").val("").prop("readonly", false);
+    $("#categoryName").val("");
   });
 
   // =========================
@@ -111,15 +124,19 @@ $(document).ready(function () {
 
   $("#categoryModal").on("hidden.bs.modal", function () {
     $("#categoryId").val("");
+    $("#categoryCode").val("").prop("readonly", false);
     $("#categoryName").val("");
   });
-
   // =========================
   // FORCE UPPERCASE
   // =========================
-  $(document).on("input", "#suffixName, #categoryName", function () {
-    this.value = this.value.toUpperCase();
-  });
+  $(document).on(
+    "input",
+    "#suffixName, #categoryName, #categoryCode",
+    function () {
+      this.value = this.value.toUpperCase();
+    },
+  );
 
   // =========================
   // OPEN EDIT MODAL (SUFFIX)
@@ -139,9 +156,11 @@ $(document).ready(function () {
   // =========================
   $(document).on("click", ".edit-category-btn", function () {
     const id = $(this).data("id");
+    const code = $(this).data("code");
     const category = $(this).data("category");
 
     $("#categoryId").val(id);
+    $("#categoryCode").val(code).prop("readonly", true);
     $("#categoryName").val(category);
 
     $("#categoryModal").modal("show");
@@ -236,8 +255,18 @@ $(document).ready(function () {
     e.preventDefault();
 
     const id = $("#categoryId").val();
+    const categoryCode = $("#categoryCode").val()?.trim().toUpperCase() || "";
     const category = $("#categoryName").val()?.trim().toUpperCase() || "";
     const isEdit = id && id !== "";
+
+    if (!categoryCode) {
+      Swal.fire({
+        icon: "warning",
+        title: "Required",
+        text: "Category code is required.",
+      });
+      return;
+    }
 
     if (!category) {
       Swal.fire({
@@ -258,16 +287,20 @@ $(document).ready(function () {
       confirmButtonText: "Yes",
     }).then((result) => {
       if (!result.isConfirmed) return;
-      submitCategory(id, category, isEdit);
+      submitCategory(id, categoryCode, category, isEdit);
     });
   });
 
-  function submitCategory(id, category, isEdit) {
+  function submitCategory(id, categoryCode, category, isEdit) {
     $.ajax({
       url: "functions/save_category.php",
       type: "POST",
       dataType: "json",
-      data: { id, category },
+      data: {
+        id,
+        category_code: categoryCode,
+        category,
+      },
 
       beforeSend: function () {
         Swal.fire({
