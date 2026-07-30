@@ -55,6 +55,21 @@ function generateReport(type) {
     }
     bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
     exportBranchPlantillas(branch, status);
+  } else if (type === "missing_biometric") {
+    const branch = document.getElementById(
+      "selectBranchMissingBiometric",
+    ).value;
+    if (!branch) {
+      Swal.fire({
+        icon: "warning",
+        title: "No option selected",
+        text: "Please select a branch or 'All Branches' to generate this report.",
+        confirmButtonColor: "#2d68c4",
+      });
+      return;
+    }
+    bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
+    exportMissingBiometric(branch);
   }
 }
 
@@ -247,6 +262,62 @@ function exportBranchPlantillas(branch, status = "all") {
           a.remove();
           window.URL.revokeObjectURL(url);
         });
+    })
+    .catch(() => {
+      Swal.fire({
+        icon: "error",
+        title: "Export failed",
+        text: "Something went wrong while fetching the data.",
+        confirmButtonColor: "#2d68c4",
+      });
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.innerHTML = "Generate Report";
+    });
+}
+
+// ─── Missing Biometric Number Export (Excel) ──────────────────────────────
+
+function exportMissingBiometric(branch) {
+  const btn = document.getElementById("btnGenerateMissingBiometric");
+  btn.disabled = true;
+  btn.innerHTML =
+    '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
+
+  const today = new Date();
+  const fileSuffix = formatDateFile(today);
+
+  fetch(
+    "functions/get_missing_biometric.php?" + new URLSearchParams({ branch }),
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.length) {
+        Swal.fire({
+          icon: "info",
+          title: "No records found",
+          html: "No employees with a missing biometric number were found.",
+          confirmButtonColor: "#2d68c4",
+        });
+        return;
+      }
+
+      const rows = data.map((emp) => ({
+        "ID": emp.id,
+        "First Name": emp.first_name ?? "",
+        "Last Name": emp.last_name ?? "",
+        "Biometric Number": "", // intentionally blank — these are the missing ones
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [{ wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 18 }];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Missing Biometric");
+
+      const label = branch === "ALL" ? "ALL_BRANCHES" : branch;
+      XLSX.writeFile(wb, `${label}_MISSING_BIOMETRIC_${fileSuffix}.xlsx`);
     })
     .catch(() => {
       Swal.fire({
