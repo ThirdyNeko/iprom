@@ -294,19 +294,16 @@ function toggleEmploymentDates() {
     "CHANGE SUB STATUS",
     "ADD BRANCH/BRAND",
   ].includes(reason);
-  const shouldShowStart = isRelieverOrSeasonal || isPermanent;
+
+  // NOTE: only touch endDate here. startDate visibility/enable state
+  // is fully owned by toggleReasonDates now — this function used to
+  // also drive startDateRow/startDateInput based purely on
+  // employment_status, which clobbered toggleReasonDates' decision
+  // for reasons like TRANSFER BRANCH whenever employment_status
+  // wasn't RELIEVER/SEASONAL/PERMANENT.
   const shouldShowEnd = isRelieverOrSeasonal;
 
-  if (startDateRow) startDateRow.style.display = shouldShowStart ? "" : "none";
   if (endDateRow) endDateRow.style.display = shouldShowEnd ? "" : "none";
-
-  const shouldEnableStart =
-    (isRelieverOrSeasonal || isPermanent) && isCorrectReason;
-  if (startDateInput) {
-    startDateInput.disabled = !shouldEnableStart;
-    startDateInput.required = shouldEnableStart;
-    if (!shouldShowStart) startDateInput.value = "";
-  }
 
   const shouldEnableEnd = isRelieverOrSeasonal && isCorrectReason;
   if (endDateInput) {
@@ -461,6 +458,14 @@ if (!reasonSelect || !dateSeparatedInput || !dateReturnedInput) {
   console.error("Page elements not found. Check edit_promodizer.php markup.");
 }
 
+// FIX: added "TRANSFER BRANCH". updateHeaders() in
+// edit_promodizer_modal.js shows the .date-separated-group (relabeled
+// "Effectivity Date") for TRANSFER BRANCH and hides .date-start-group,
+// so editDateSeparated is the field the user actually sees/types into
+// for this reason — but this list (which drives whether that input is
+// enabled/required) didn't include it, so the visible field stayed
+// permanently disabled no matter what toggleReasonDates/
+// toggleEmploymentDates did to editStartDate.
 const showDateSeparatedReasons = [
   "RESIGNED",
   "DECEASED",
@@ -469,6 +474,7 @@ const showDateSeparatedReasons = [
   "MATERNITY LEAVE",
   "EMERGENCY LEAVE",
   "REMOVE BRANCH/BRAND",
+  "TRANSFER BRANCH",
 ];
 
 function toggleDateSeparated() {
@@ -1484,7 +1490,17 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     "date_last_updated",
     document.getElementById("editDateLastUpdated").value,
   );
-  formData.set("start_date", startDateInput.value);
+  // FIX: for TRANSFER BRANCH, the date the user actually fills in is
+  // editDateSeparated (labeled "Effectivity Date" by updateHeaders()
+  // in edit_promodizer_modal.js — this reason hides the
+  // date-start-group and shows date-separated-group instead). The
+  // backend's update_promodizer.php validates start_date though, so
+  // without this, startDateInput.value is sent empty and the backend
+  // rejects the save with "Start date is required for changing" even
+  // when the user did fill in the effectivity date.
+  const startDateValue =
+    reason === "TRANSFER BRANCH" ? dateSeparated.value : startDateInput.value;
+  formData.set("start_date", startDateValue);
   formData.set("end_date", endDateInput.value);
   formData.set("remarks", document.getElementById("editRemarks").value);
   formData.set("branch", branch);
