@@ -435,12 +435,6 @@ function toggleReasonDates() {
   if (startDateInput) {
     const disableStart = !showStart || isTerminationReason;
     startDateInput.disabled = disableStart;
-    console.log("toggleEmploymentDates", {
-      reason,
-      status,
-      disableStart,
-      disabled: startDateInput.disabled,
-    });
     startDateInput.required = !disableStart;
   }
 
