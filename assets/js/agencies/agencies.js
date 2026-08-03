@@ -1,3 +1,28 @@
+// =========================
+// SHARED AJAX ERROR PARSER
+// (global — used both inside and outside the document.ready closure)
+// =========================
+function getAjaxErrorMessage(xhr) {
+  // Case 1: server sent JSON with a message field (dataType: "json" already parsed it)
+  if (xhr.responseJSON && xhr.responseJSON.message) {
+    return xhr.responseJSON.message;
+  }
+
+  // Case 2: body is JSON text but wasn't auto-parsed
+  if (xhr.responseText) {
+    try {
+      const parsed = JSON.parse(xhr.responseText);
+      if (parsed.message) return parsed.message;
+    } catch (e) {
+      // Case 3: raw PHP error/warning/HTML dump — strip tags, trim length
+      const text = xhr.responseText.replace(/<[^>]*>/g, "").trim();
+      if (text) return text.substring(0, 500);
+    }
+  }
+
+  return `Something went wrong (HTTP ${xhr.status || "unknown"}).`;
+}
+
 $(document).ready(function () {
   let originalAgencyValues = null;
 
@@ -454,13 +479,13 @@ $(document).ready(function () {
         }
       },
 
-      error: function () {
+      error: function (xhr) {
         Swal.close();
 
         Swal.fire({
           icon: "error",
           title: "Server Error",
-          text: "Something went wrong.",
+          text: getAjaxErrorMessage(xhr),
         });
       },
     });
@@ -545,9 +570,13 @@ $(document).on("change", ".agency-status-switch", function () {
           }
         },
 
-        error: function () {
+        error: function (xhr) {
           toggle.prop("checked", !toggle.is(":checked"));
-          Swal.fire({ icon: "error", title: "Server Error" });
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: getAjaxErrorMessage(xhr),
+          });
         },
 
         complete: function () {
@@ -556,12 +585,12 @@ $(document).on("change", ".agency-status-switch", function () {
       });
     },
 
-    error: function () {
+    error: function (xhr) {
       toggle.prop("checked", !toggle.is(":checked"));
       Swal.fire({
         icon: "error",
         title: "Server Error",
-        text: "Failed to validate agency employees.",
+        text: getAjaxErrorMessage(xhr),
       });
 
       toggle.prop("disabled", false);

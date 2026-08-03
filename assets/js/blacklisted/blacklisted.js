@@ -1,4 +1,23 @@
 $(function () {
+  // For $.ajax() failures — xhr is jQuery's jqXHR object
+  function getAjaxErrorMessage(xhr) {
+    if (xhr.responseJSON && xhr.responseJSON.message) {
+      return xhr.responseJSON.message;
+    }
+
+    if (xhr.responseText) {
+      try {
+        const parsed = JSON.parse(xhr.responseText);
+        if (parsed.message) return parsed.message;
+      } catch (e) {
+        const text = xhr.responseText.replace(/<[^>]*>/g, "").trim();
+        if (text) return text.substring(0, 500);
+      }
+    }
+
+    return `Something went wrong (HTTP ${xhr.status || "unknown"}).`;
+  }
+
   function initBlacklistedTable(tableSelector, filterInputId, category) {
     const table = $(tableSelector).DataTable({
       processing: true,
@@ -13,6 +32,16 @@ $(function () {
         data: function (d) {
           d.search.value = $("#" + filterInputId).val();
           d.category = category;
+        },
+        // DataTables' own default failure behavior is a generic "Ajax error"
+        // popup with no detail. Override it so the real server message shows.
+        error: function (xhr) {
+          $(tableSelector + "_processing").hide();
+          Swal.fire({
+            icon: "error",
+            title: "Failed to Load Records",
+            text: getAjaxErrorMessage(xhr),
+          });
         },
       },
       columns: [
@@ -86,8 +115,8 @@ $(function () {
             Swal.fire("Error", res.message || "Sync failed.", "error");
           }
         })
-        .fail(function () {
-          Swal.fire("Error", "Something went wrong during sync.", "error");
+        .fail(function (xhr) {
+          Swal.fire("Error", getAjaxErrorMessage(xhr), "error");
         });
     });
   });

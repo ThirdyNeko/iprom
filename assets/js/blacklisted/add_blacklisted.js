@@ -1,4 +1,48 @@
 $(document).ready(function () {
+  // =========================
+  // SHARED ERROR HELPERS
+  // =========================
+
+  // For $.ajax() failures — xhr is jQuery's jqXHR object
+  function getAjaxErrorMessage(xhr) {
+    if (xhr.responseJSON && xhr.responseJSON.message) {
+      return xhr.responseJSON.message;
+    }
+
+    if (xhr.responseText) {
+      try {
+        const parsed = JSON.parse(xhr.responseText);
+        if (parsed.message) return parsed.message;
+      } catch (e) {
+        const text = xhr.responseText.replace(/<[^>]*>/g, "").trim();
+        if (text) return text.substring(0, 500);
+      }
+    }
+
+    return `Something went wrong (HTTP ${xhr.status || "unknown"}).`;
+  }
+
+  // For fetch() failures — Response doesn't reject on HTTP errors, so
+  // callers must check res.ok themselves before using this.
+  async function getFetchErrorMessage(res) {
+    try {
+      const data = await res.clone().json();
+      if (data && data.message) return data.message;
+    } catch (e) {
+      // not JSON, fall through
+    }
+
+    try {
+      const text = await res.text();
+      const stripped = text.replace(/<[^>]*>/g, "").trim();
+      if (stripped) return stripped.substring(0, 500);
+    } catch (e) {
+      // ignore
+    }
+
+    return `Something went wrong (HTTP ${res.status}).`;
+  }
+
   // ---- Branch / Brand data (same source as the Add Employee modal) ----
   // [{branch_code, branch_name, brand_name, required_count, assigned_count}]
   let branchBrandPairs = [];
@@ -9,10 +53,23 @@ $(document).ready(function () {
   async function loadBranchBrandPairs() {
     try {
       const res = await fetch("functions/get_available_branches_brands.php");
+
+      if (!res.ok) {
+        throw new Error(await getFetchErrorMessage(res));
+      }
+
       branchBrandPairs = await res.json();
     } catch (err) {
       console.error("Failed to fetch branch-brand data", err);
       branchBrandPairs = [];
+
+      Swal.fire({
+        icon: "error",
+        title: "Couldn't Load Branches",
+        text:
+          err.message ||
+          "Failed to load branch/brand data. The dropdowns below may be empty.",
+      });
     }
   }
 
@@ -156,8 +213,8 @@ $(document).ready(function () {
           Swal.fire("Error", res.message || "Failed to add record.", "error");
         }
       })
-      .fail(function () {
-        Swal.fire("Error", "Something went wrong while saving.", "error");
+      .fail(function (xhr) {
+        Swal.fire("Error", getAjaxErrorMessage(xhr), "error");
       })
       .always(function () {
         $("#saveBlacklistedBtn").prop("disabled", false).text("Save");
@@ -229,13 +286,9 @@ $(document).ready(function () {
           // If cancelled: do nothing — modal stays open, no reload, user can edit fields.
         });
       })
-      .fail(function () {
+      .fail(function (xhr) {
         $("#saveBlacklistedBtn").prop("disabled", false).text("Save");
-        Swal.fire(
-          "Error",
-          "Something went wrong while checking for a match.",
-          "error",
-        );
+        Swal.fire("Error", getAjaxErrorMessage(xhr), "error");
       });
   });
 });

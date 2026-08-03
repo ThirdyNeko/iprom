@@ -3,6 +3,48 @@ let currentAssigned = 0;
 let currentQueued = 0;
 
 // =========================
+// SHARED FETCH ERROR HELPERS
+// =========================
+
+// Pulls the most useful message out of a failed fetch Response.
+async function getFetchErrorMessage(res) {
+  // Try JSON body first (e.g. { status:"error", message:"..." })
+  try {
+    const data = await res.clone().json();
+    if (data && data.message) return data.message;
+  } catch (e) {
+    // not JSON, fall through
+  }
+
+  // Fall back to raw text (PHP warning/HTML error page), stripped & trimmed
+  try {
+    const text = await res.text();
+    const stripped = text.replace(/<[^>]*>/g, "").trim();
+    if (stripped) return stripped.substring(0, 500);
+  } catch (e) {
+    // ignore
+  }
+
+  return `Something went wrong (HTTP ${res.status}).`;
+}
+
+// Prevents error text (which may echo raw server output) from being
+// interpreted as HTML when injected into the page.
+function escapeHtml(str) {
+  return String(str).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c],
+  );
+}
+
+// =========================
 // STATUS BADGE
 // =========================
 function getStatusBadge(required, assigned) {
@@ -58,10 +100,14 @@ async function openAssignmentModal(branch, brand) {
       }),
     });
 
+    if (!res.ok) {
+      throw new Error(await getFetchErrorMessage(res));
+    }
+
     const result = await res.json();
 
     if (!result || result.status !== "success") {
-      throw new Error("Invalid response");
+      throw new Error(result?.message || "Invalid response");
     }
 
     const data = result.data;
@@ -103,7 +149,9 @@ async function openAssignmentModal(branch, brand) {
     assignmentModalDisabled = true;
 
     $("#modalAssignedList").html(
-      '<div class="alert alert-danger mb-0">Failed to load data.</div>',
+      `<div class="alert alert-danger mb-0">${escapeHtml(
+        err.message || "Failed to load data.",
+      )}</div>`,
     );
   }
 }
@@ -225,6 +273,10 @@ if (saveRequiredBtn) {
         }),
       });
 
+      if (!res.ok) {
+        throw new Error(await getFetchErrorMessage(res));
+      }
+
       const result = await res.json();
 
       // Server disagrees that zero was confirmed — surface the warning
@@ -256,7 +308,7 @@ if (saveRequiredBtn) {
     } catch (err) {
       console.error(err);
 
-      Swal.fire("Error", "Server error occurred.", "error");
+      Swal.fire("Error", err.message || "Server error occurred.", "error");
     }
   });
 }

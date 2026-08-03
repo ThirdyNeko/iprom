@@ -1,3 +1,29 @@
+// =========================
+// SHARED FETCH ERROR HELPERS
+// =========================
+
+// Pulls the most useful message out of a failed fetch Response.
+async function getFetchErrorMessage(res) {
+  // Try JSON body first (e.g. { success:false, message:"..." })
+  try {
+    const data = await res.clone().json();
+    if (data && data.message) return data.message;
+  } catch (e) {
+    // not JSON, fall through
+  }
+
+  // Fall back to raw text (PHP warning/HTML error page), stripped & trimmed
+  try {
+    const text = await res.text();
+    const stripped = text.replace(/<[^>]*>/g, "").trim();
+    if (stripped) return stripped.substring(0, 500);
+  } catch (e) {
+    // ignore
+  }
+
+  return `Something went wrong (HTTP ${res.status}).`;
+}
+
 const branchSelect = document.getElementById("branchSelect");
 const brandSelect = document.getElementById("brandSelect");
 const form = document.getElementById("addPlantillaForm");
@@ -16,6 +42,11 @@ branchSelect.addEventListener("change", async () => {
     const res = await fetch(
       `functions/get_available_brands.php?branch=${encodeURIComponent(branch)}`,
     );
+
+    if (!res.ok) {
+      throw new Error(await getFetchErrorMessage(res));
+    }
+
     const data = await res.json();
 
     brandSelect.innerHTML = '<option value="">Select Brand</option>';
@@ -32,7 +63,12 @@ branchSelect.addEventListener("change", async () => {
     });
   } catch (err) {
     console.error(err);
-    brandSelect.innerHTML = '<option value="">Error loading brands</option>';
+    // Option text is set via textContent below, so raw error text is safe here.
+    const errOption = document.createElement("option");
+    errOption.value = "";
+    errOption.textContent = err.message || "Error loading brands";
+    brandSelect.innerHTML = "";
+    brandSelect.appendChild(errOption);
   }
 });
 
@@ -73,6 +109,11 @@ form.addEventListener("submit", async (e) => {
       method: "POST",
       body: formData,
     });
+
+    if (!submitRes.ok) {
+      throw new Error(await getFetchErrorMessage(submitRes));
+    }
+
     const submitData = await submitRes.json();
 
     if (submitData.success) {
@@ -99,7 +140,7 @@ form.addEventListener("submit", async (e) => {
     Swal.fire({
       icon: "error",
       title: "Unexpected Error",
-      text: "An unexpected error occurred. Please try again.",
+      text: err.message || "An unexpected error occurred. Please try again.",
     });
   } finally {
     btn.disabled = false;
