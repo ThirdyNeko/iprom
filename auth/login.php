@@ -5,21 +5,62 @@ include '../config/db.php';
 $error = '';
 $pdo = qa_db();
 
+// fetch branches for the dropdown
+$branches = [];
+try {
+    $branchStmt = $pdo->query("
+        SELECT branch, branch_code
+        FROM dbo.branches
+        ORDER BY branch
+    ");
+    $branches = $branchStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    file_put_contents(__DIR__ . '/../error_log.txt', "[" . date("Y-m-d H:i:s") . "] Branch fetch error: " . $e->getMessage() . PHP_EOL, FILE_APPEND);
+}
+
+// preserve the selected branch across a failed submit
+$branchSelect = trim($_POST['branch_select'] ?? '');
+$branchLabel = '';
+if ($branchSelect === 'HEAD_OFFICE') {
+    $branchLabel = 'Head Office';
+} elseif ($branchSelect !== '') {
+    foreach ($branches as $b) {
+        if ($b['branch_code'] === $branchSelect) {
+            $branchLabel = $b['branch'];
+            break;
+        }
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
-    $password  = trim($_POST['password'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
-    if ($username === '' || $password === '') {
-        $error = "Please enter both username and password.";
+    if ($username === '' || $password === '' || $branchSelect === '') {
+        $error = "Please select a branch and enter both username and password.";
     } else {
 
-        $stmt = $pdo->prepare("
-            EXEC get_user_by_username @username = :username
-        ");
-
-        $stmt->execute([
-            ':username' => $username
-        ]);
+        if ($branchSelect === 'HEAD_OFFICE') {
+            $stmt = $pdo->prepare("
+                SELECT * FROM users
+                WHERE username = :username
+                  AND role IN ('staff', 'admin', 'super_admin', 'supervisor')
+            ");
+            $stmt->execute([
+                ':username' => $username
+            ]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT * FROM users
+                WHERE username = :username
+                  AND role = 'branch_manager'
+                  AND branch = :branch
+            ");
+            $stmt->execute([
+                ':username' => $username,
+                ':branch'   => $branchSelect
+            ]);
+        }
 
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -126,7 +167,7 @@ body {
 }
 
 /* INPUT */
-.form-control {
+.form-control, .form-select {
     background: #f9fafb;
     border: 1px solid #d1d5db;
     color: #111827;
@@ -135,7 +176,7 @@ body {
 }
 
 /* INPUT FOCUS */
-.form-control:focus {
+.form-control:focus, .form-select:focus {
     background: #fff;
     border-color: #2563eb;
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
@@ -189,6 +230,35 @@ body {
     color: #854d0e;
     border-radius: 8px;
 }
+
+/* CUSTOM BRANCH DROPDOWN */
+.dropdown-toggle-custom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+.dropdown-toggle-custom::after {
+    margin-left: auto;
+}
+
+.branch-dropdown-menu {
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 0.25rem 0;
+}
+
+.branch-dropdown-menu .dropdown-item {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.branch-dropdown-menu .dropdown-item:active,
+.branch-dropdown-menu .dropdown-item.active {
+    background-color: #2563eb;
+    color: #fff;
+}
 </style>
 </head>
 <body>
@@ -209,13 +279,47 @@ body {
         </div>
     <?php endif; ?>
 
-    <form method="POST">
+    <form method="POST" id="loginForm">
+        <div class="mb-4">
+            <div class="dropdown">
+                <button
+                    class="form-select form-select-lg text-start dropdown-toggle-custom"
+                    type="button"
+                    id="branchDropdownBtn"
+                    data-bs-toggle="dropdown"
+                    data-bs-display="static"
+                    aria-expanded="false">
+                    <span id="branchDropdownLabel" class="<?= $branchSelect === '' ? 'text-muted' : '' ?>">
+                        <?= $branchSelect !== '' ? htmlspecialchars($branchLabel) : 'Select Branch' ?>
+                    </span>
+                    <i class="bi bi-chevron-down text-secondary"></i>
+                </button>
+                <ul class="dropdown-menu w-100 branch-dropdown-menu" aria-labelledby="branchDropdownBtn">
+                    <li class="px-2 pb-2">
+                        <input type="text" id="branchSearchInput" class="form-control form-control-sm" placeholder="Search branch...">
+                    </li>
+                    <li><a class="dropdown-item branch-option <?= $branchSelect === 'HEAD_OFFICE' ? 'active' : '' ?>" href="#" data-value="HEAD_OFFICE">HEAD OFFICE</a></li>
+                    <?php foreach ($branches as $b): ?>
+                        <li>
+                            <a class="dropdown-item branch-option <?= $branchSelect === $b['branch_code'] ? 'active' : '' ?>"
+                               href="#"
+                               data-value="<?= htmlspecialchars($b['branch_code']) ?>">
+                                <?= htmlspecialchars($b['branch']) ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+                <input type="hidden" name="branch_select" id="branch_select" value="<?= htmlspecialchars($branchSelect) ?>">
+            </div>
+        </div>
+
         <div class="mb-4">
             <input type="text"
                 name="username"
                 id="username"
                 class="form-control form-control-lg text-center uppercase-input"
                 placeholder="Enter Username"
+                value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
                 required>
         </div>
 
@@ -266,6 +370,72 @@ togglePassword.addEventListener('click', () => {
     passwordInput.type = type;
     icon.classList.toggle('bi-eye-slash');
     icon.classList.toggle('bi-eye');
+});
+
+// Force the branch dropdown to always open downward, never flip above
+const branchDropdownEl = document.getElementById('branchDropdownBtn');
+const branchDropdown = new bootstrap.Dropdown(branchDropdownEl, {
+    popperConfig: (defaultConfig) => ({
+        ...defaultConfig,
+        modifiers: [
+            ...defaultConfig.modifiers.filter(m => m.name !== 'flip'),
+            { name: 'flip', enabled: false }
+        ]
+    })
+});
+
+document.querySelectorAll('.branch-option').forEach(option => {
+    option.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        document.querySelectorAll('.branch-option').forEach(o => o.classList.remove('active'));
+        this.classList.add('active');
+
+        const value = this.dataset.value;
+        const label = this.textContent.trim();
+
+        document.getElementById('branch_select').value = value;
+        const labelEl = document.getElementById('branchDropdownLabel');
+        labelEl.textContent = label;
+        labelEl.classList.remove('text-muted');
+
+        branchDropdown.hide();
+    });
+});
+
+// filter branch options as the user types
+const branchSearchInput = document.getElementById('branchSearchInput');
+branchSearchInput.addEventListener('input', function () {
+    const term = this.value.trim().toLowerCase();
+    document.querySelectorAll('.branch-option').forEach(option => {
+        const li = option.closest('li');
+        const matches = option.textContent.toLowerCase().includes(term);
+        li.style.display = matches ? '' : 'none';
+    });
+});
+
+// keep the search box open and usable — stop clicks inside it from closing the dropdown
+branchSearchInput.addEventListener('click', function (e) {
+    e.stopPropagation();
+});
+
+// autofocus the search box when the dropdown opens, and reset filter/focus on close
+branchDropdownEl.addEventListener('shown.bs.dropdown', function () {
+    branchSearchInput.value = '';
+    document.querySelectorAll('.branch-option').forEach(option => {
+        option.closest('li').style.display = '';
+    });
+    branchSearchInput.focus();
+});
+
+// Guard: hidden input can't use native "required" validation UI,
+// so check on submit and block if no branch was picked
+document.getElementById('loginForm').addEventListener('submit', function (e) {
+    const branchVal = document.getElementById('branch_select').value;
+    if (!branchVal) {
+        e.preventDefault();
+        alert('Please select a branch.');
+    }
 });
 </script>
 

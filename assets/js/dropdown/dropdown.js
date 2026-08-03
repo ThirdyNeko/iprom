@@ -1,4 +1,23 @@
 $(document).ready(function () {
+  // For $.ajax() failures — xhr is jQuery's jqXHR object
+  function getAjaxErrorMessage(xhr) {
+    if (xhr.responseJSON && xhr.responseJSON.message) {
+      return xhr.responseJSON.message;
+    }
+
+    if (xhr.responseText) {
+      try {
+        const parsed = JSON.parse(xhr.responseText);
+        if (parsed.message) return parsed.message;
+      } catch (e) {
+        const text = xhr.responseText.replace(/<[^>]*>/g, "").trim();
+        if (text) return text.substring(0, 500);
+      }
+    }
+
+    return `Something went wrong (HTTP ${xhr.status || "unknown"}).`;
+  }
+
   // =========================
   // SUFFIX DATATABLE
   // =========================
@@ -15,6 +34,14 @@ $(document).ready(function () {
       type: "POST",
       data: function (d) {
         d.name = $("#filterSuffix").val();
+      },
+      error: function (xhr) {
+        $("#suffixTable_processing").hide();
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Load Suffixes",
+          text: getAjaxErrorMessage(xhr),
+        });
       },
     },
 
@@ -66,6 +93,14 @@ $(document).ready(function () {
       type: "POST",
       data: function (d) {
         d.name = $("#filterCategory").val();
+      },
+      error: function (xhr) {
+        $("#categoriesTable_processing").hide();
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Load Categories",
+          text: getAjaxErrorMessage(xhr),
+        });
       },
     },
 
@@ -237,12 +272,12 @@ $(document).ready(function () {
         }
       },
 
-      error: function () {
+      error: function (xhr) {
         Swal.close();
         Swal.fire({
           icon: "error",
           title: "Server Error",
-          text: "Something went wrong.",
+          text: getAjaxErrorMessage(xhr),
         });
       },
     });
@@ -333,12 +368,12 @@ $(document).ready(function () {
         }
       },
 
-      error: function () {
+      error: function (xhr) {
         Swal.close();
         Swal.fire({
           icon: "error",
           title: "Server Error",
-          text: "Something went wrong.",
+          text: getAjaxErrorMessage(xhr),
         });
       },
     });
@@ -386,8 +421,12 @@ $(document).ready(function () {
           }
         },
 
-        error: function () {
-          Swal.fire({ icon: "error", title: "Server Error" });
+        error: function (xhr) {
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: getAjaxErrorMessage(xhr),
+          });
         },
       });
     });
@@ -435,8 +474,12 @@ $(document).ready(function () {
           }
         },
 
-        error: function () {
-          Swal.fire({ icon: "error", title: "Server Error" });
+        error: function (xhr) {
+          Swal.fire({
+            icon: "error",
+            title: "Server Error",
+            text: getAjaxErrorMessage(xhr),
+          });
         },
       });
     });

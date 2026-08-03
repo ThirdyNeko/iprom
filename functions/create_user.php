@@ -18,8 +18,9 @@ $pdo = qa_db();
 
 try {
 
-    $username   = strtoupper(trim($_POST['username'] ?? ''));
-    $role       = $_POST['role'] ?? null;
+    $username    = strtoupper(trim($_POST['username'] ?? ''));
+    $middle_name = strtoupper(trim($_POST['middle_name'] ?? ''));
+    $role        = $_POST['role'] ?? null;
 
     $branches = $_POST['branches'] ?? [];
     $branch   = !empty($branches) ? implode(',', $branches) : null;
@@ -41,14 +42,17 @@ try {
         exit;
     }
 
-    // duplicate check
+    // duplicate check — same username is allowed if middle_name differs;
+    // inactive users are excluded from the check entirely
     $check = $pdo->prepare("
         SELECT COUNT(*) 
         FROM users 
         WHERE username = ?
+          AND middle_name = ?
+          AND status != 'INACTIVE'
     ");
 
-    $check->execute([$username]);
+    $check->execute([$username, $middle_name]);
 
     if ($check->fetchColumn() > 0) {
 
@@ -75,6 +79,7 @@ try {
             branch,
             brand,
             first_name,
+            middle_name,
             last_name,
             position,
             department,
@@ -88,6 +93,7 @@ try {
             :branch,
             :brand,
             :first_name,
+            :middle_name,
             :last_name,
             :position,
             :department,
@@ -97,16 +103,17 @@ try {
     ");
 
     $stmt->execute([
-        ':username'   => $username,
-        ':password'   => $hashedPassword,
-        ':role'       => $role,
-        ':branch'     => $branch,
-        ':brand'      => $brand,
-        ':first_name' => $first_name,
-        ':last_name'  => $last_name,
-        ':position'   => $position,
-        ':department' => $department,
-        ':status'     => $status
+        ':username'    => $username,
+        ':password'    => $hashedPassword,
+        ':role'        => $role,
+        ':branch'      => $branch,
+        ':brand'       => $brand,
+        ':first_name'  => $first_name,
+        ':middle_name' => $middle_name,
+        ':last_name'   => $last_name,
+        ':position'    => $position,
+        ':department'  => $department,
+        ':status'      => $status
     ]);
 
     echo json_encode([

@@ -29,13 +29,14 @@ if ($newPassword !== $confirmPassword) {
 }
 
 try {
-    // ✅ Use username from session
+    // ✅ Look up by user_id (unique, unambiguous)
     $stmt = $pdo->prepare("
-        EXEC get_user_by_username @username = :username
+        SELECT * FROM users
+        WHERE id = :id
     ");
 
     $stmt->execute([
-        ':username' => $_SESSION['username']
+        ':id' => $_SESSION['user_id']
     ]);
 
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -54,29 +55,17 @@ try {
     // Hash new password
     $newHashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 
-    // ✅ Update using stored procedure
+    // ✅ Update by id, not username
     $update = $pdo->prepare("
-        EXEC update_user_password 
-            @username = :username,
-            @password = :password
+        UPDATE users
+        SET password = :password,
+            first_login = 0
+        WHERE id = :id
     ");
 
     $update->execute([
-        ':username' => $_SESSION['username'],
-        ':password' => $newHashedPassword
-    ]);
-
-    // =========================
-    // 🔥 FIX: update first_login
-    // =========================
-    $stmt2 = $pdo->prepare("
-        UPDATE users
-        SET first_login = 0
-        WHERE username = :username
-    ");
-
-    $stmt2->execute([
-        ':username' => $_SESSION['username']
+        ':password' => $newHashedPassword,
+        ':id'       => $_SESSION['user_id']
     ]);
 
     // update session so UI updates immediately
