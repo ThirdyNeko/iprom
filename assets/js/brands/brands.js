@@ -182,7 +182,7 @@ $(document).ready(function () {
         Swal.fire({
           icon: "error",
           title: "Server Error",
-          text: getAjaxErrorMessage(xhr),
+          text: getAjaxErrorMessage(xhr) + "Contact MIS for assistance.",
         });
       },
     });
@@ -253,7 +253,7 @@ $(document).on("change", ".brand-status-switch", function () {
         Swal.fire({
           icon: "error",
           title: "Server Error",
-          text: getAjaxErrorMessage(xhr),
+          text: getAjaxErrorMessage(xhr) + "Contact MIS for assistance.",
         });
       },
 
