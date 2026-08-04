@@ -1402,12 +1402,12 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     // entered something. Blank is allowed.
     if (
       editBiometricNumber?.value &&
-      !/^\d{7}$/.test(editBiometricNumber.value)
+      !/^\d{8}$/.test(editBiometricNumber.value)
     ) {
       return Swal.fire({
         icon: "warning",
         title: "Invalid Biometric Number",
-        text: "Biometric number must be exactly 7 digits, or left blank.",
+        text: "Biometric number must be exactly 8 digits, or left blank.",
       });
     }
   }
@@ -1697,9 +1697,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     editStatus.addEventListener("input", checkPrintBtnState);
   }
 
-  // Biometric number: digits only, max 7 (optional field)
+  // Biometric number: digits only, max 8 (optional field)
   editBiometricNumber?.addEventListener("input", function () {
-    this.value = this.value.replace(/\D/g, "").slice(0, 7);
+    this.value = this.value.replace(/\D/g, "").slice(0, 8);
   });
 
   // NEW: Designated Categories dropdown wiring (mirrors add_employee.js)

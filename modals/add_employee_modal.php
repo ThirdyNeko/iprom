@@ -231,8 +231,8 @@ try {
                                 name="biometric_number"
                                 id="biometricNumber"
                                 class="form-control"
-                                placeholder="e.g. 1234567"
-                                maxlength="7"
+                                placeholder="e.g. 12345678"
+                                maxlength="8"
                                 inputmode="numeric"
                             >
                         </div>

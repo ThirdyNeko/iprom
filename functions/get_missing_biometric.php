@@ -11,7 +11,8 @@ $sessionBranches = !empty($_SESSION['branch']) ? explode(',', $_SESSION['branch'
 
 $sql = "SELECT employee_id AS id, first_name, last_name, biometric_number
         FROM employee_info
-        WHERE (biometric_number IS NULL OR biometric_number = '')";
+        WHERE (biometric_number IS NULL OR biometric_number = '') AND status = 'ACTIVE'";
+        
 
 $params = [];
 

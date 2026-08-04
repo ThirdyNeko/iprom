@@ -166,10 +166,10 @@ if ($reason_for_update === 'UPDATE BIOMETRIC NUMBER') {
     }
     // Optional field: only validate format when a value is actually
     // provided. A blank value clears the biometric number (NULL).
-    if ($biometric_number !== null && !preg_match('/^\d{7}$/', $biometric_number)) {
+    if ($biometric_number !== null && !preg_match('/^\d{8}$/', $biometric_number)) {
         echo json_encode([
             'status' => 'danger',
-            'message' => 'Biometric number must be exactly 7 digits, or left blank.'
+            'message' => 'Biometric number must be exactly 8 digits, or left blank.'
         ]);
         exit;
     }

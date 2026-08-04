@@ -1098,3 +1098,10 @@
 [2026-07-28 15:23:47] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
 [2026-07-28 15:23:52] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
 [2026-07-28 15:24:12] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-04 10:41:22] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-04 10:55:24] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-04 10:56:46] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-04 10:57:00] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-04 11:37:31] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-04 11:40:26] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-04 11:40:40] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
