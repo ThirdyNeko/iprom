@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 SELECT * FROM users
                 WHERE username = :username
                   AND role IN ('staff', 'admin', 'super_admin', 'supervisor')
+                  AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
             ");
             $stmt->execute([
                 ':username' => $username
@@ -55,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE username = :username
                   AND role = 'branch_manager'
                   AND branch = :branch
+                  AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
             ");
             $stmt->execute([
                 ':username' => $username,
@@ -62,54 +64,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
         }
 
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // 🔐 Always check user first
-        if ($user && password_verify($password, $user['password'])) {
+        // 🔐 Match against ALL rows for this username/branch — not just the first one
+        // returned. Two employees can legitimately share a name+branch, and each
+        // must only ever match their own password, never whichever row the query
+        // happened to return first (no ORDER BY = non-deterministic on ties).
+        $user = null;
+        foreach ($rows as $row) {
+            if (password_verify($password, $row['password'])) {
+                $user = $row;
+                break;
+            }
+        }
 
-            // ❌ Prevent inactive users from logging in
-            if (strtoupper(trim($user['status'] ?? '')) === 'INACTIVE') {
-                $error = "Your account is inactive. Please contact the administrator.";
+        if ($user) {
 
+            // 🚧 Check maintenance mode
+            $maintenanceFile = __DIR__ . '/../maintenance.flag';
+            $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
+            $blockedByMaintenance = false;
+            $maintenanceMessage = 'The system is currently under maintenance. Please try again later.';
+
+            if (file_exists($maintenanceFile)) {
+                $flagData = json_decode(file_get_contents($maintenanceFile), true);
+                if (!empty($flagData['message'])) {
+                    $maintenanceMessage = $flagData['message'];
+                }
+
+                if ($user['role'] !== 'super_admin' && !in_array($user['username'], $allowedUsernames)) {
+                    $blockedByMaintenance = true;
+                }
+            }
+
+            if ($blockedByMaintenance) {
+                $error = $maintenanceMessage;
             } else {
 
-                // 🚧 Check maintenance mode
-                $maintenanceFile = __DIR__ . '/../maintenance.flag';
-                $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
-                $blockedByMaintenance = false;
-                $maintenanceMessage = 'The system is currently under maintenance. Please try again later.';
+                // 🔥 Regenerate session ID (VERY IMPORTANT)
+                session_regenerate_id(true);
 
-                if (file_exists($maintenanceFile)) {
-                    $flagData = json_decode(file_get_contents($maintenanceFile), true);
-                    if (!empty($flagData['message'])) {
-                        $maintenanceMessage = $flagData['message'];
-                    }
+                $_SESSION['user_id']     = $user['id'];
+                $_SESSION['username']    = $user['username'];
+                $_SESSION['role']        = $user['role'];
+                $_SESSION['branch']      = $user['branch'] ?? null;
+                $_SESSION['brand']       = $user['brand'] ?? null;
+                $_SESSION['position']    = $user['position'] ?? null;
+                $_SESSION['department']  = $user['department'] ?? null;
+                $_SESSION['status']      = $user['status'] ?? null;
+                $_SESSION['first_login'] = $user['first_login'] ?? null;
 
-                    if ($user['role'] !== 'super_admin' && !in_array($user['username'], $allowedUsernames)) {
-                        $blockedByMaintenance = true;
-                    }
-                }
-
-                if ($blockedByMaintenance) {
-                    $error = $maintenanceMessage;
-                } else {
-
-                    // 🔥 Regenerate session ID (VERY IMPORTANT)
-                    session_regenerate_id(true);
-
-                    $_SESSION['user_id']     = $user['id'];
-                    $_SESSION['username']    = $user['username'];
-                    $_SESSION['role']        = $user['role'];
-                    $_SESSION['branch']      = $user['branch'] ?? null;
-                    $_SESSION['brand']       = $user['brand'] ?? null;
-                    $_SESSION['position']    = $user['position'] ?? null;
-                    $_SESSION['department']  = $user['department'] ?? null;
-                    $_SESSION['status']      = $user['status'] ?? null;
-                    $_SESSION['first_login'] = $user['first_login'] ?? null;
-
-                    header("Location: ../index.php");
-                    exit;
-                }
+                header("Location: ../index.php");
+                exit;
             }
 
         } else {

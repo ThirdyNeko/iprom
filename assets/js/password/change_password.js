@@ -12,11 +12,57 @@ document.querySelectorAll(".toggle-password").forEach((span) => {
   });
 });
 
+// 🔒 Live password strength feedback
+function checkPasswordStrength(pw) {
+  const checks = {
+    length: pw.length >= 12,
+    upper: /[A-Z]/.test(pw),
+    lower: /[a-z]/.test(pw),
+    number: /[0-9]/.test(pw),
+    special: /[^A-Za-z0-9]/.test(pw),
+  };
+  return Object.entries(checks)
+    .filter(([, ok]) => !ok)
+    .map(([key]) => key);
+}
+
+const newPasswordInput = document.getElementById("new_password");
+const strengthFeedback = document.getElementById("passwordStrengthFeedback");
+
+if (newPasswordInput && strengthFeedback) {
+  newPasswordInput.addEventListener("input", function () {
+    const failed = checkPasswordStrength(this.value);
+    const labels = {
+      length: "12+ characters",
+      upper: "uppercase letter",
+      lower: "lowercase letter",
+      number: "number",
+      special: "special character",
+    };
+    strengthFeedback.textContent = failed.length
+      ? "Missing: " + failed.map((f) => labels[f]).join(", ")
+      : "Strong password ✓";
+    strengthFeedback.style.color = failed.length ? "#dc2626" : "#16a34a";
+  });
+}
+
 // AJAX form submission with SweetAlert
 document
   .getElementById("changePasswordForm")
   .addEventListener("submit", function (e) {
     e.preventDefault();
+
+    // 🔒 Block submit client-side if strength requirements aren't met
+    const newPwValue = this.querySelector('[name="new_password"]').value;
+    if (checkPasswordStrength(newPwValue).length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Weak Password",
+        text: "Please meet all password requirements before submitting.",
+      });
+      return;
+    }
+
     const formData = new FormData(this);
     const submitBtn = this.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
@@ -31,7 +77,7 @@ document
           confirmButtonText: "OK",
         }).then(() => {
           if (data.status === "success") {
-            location.reload(); // 🔥 refresh after success
+            location.reload();
           }
         });
 

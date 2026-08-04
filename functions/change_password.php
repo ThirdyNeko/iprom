@@ -28,6 +28,44 @@ if ($newPassword !== $confirmPassword) {
     exit;
 }
 
+// 🔒 Enforce password strength
+function validatePasswordStrength(string $password, string $username = ''): array {
+    $errors = [];
+
+    if (strlen($password) < 12) {
+        $errors[] = "at least 12 characters";
+    }
+    if (!preg_match('/[A-Z]/', $password)) {
+        $errors[] = "an uppercase letter";
+    }
+    if (!preg_match('/[a-z]/', $password)) {
+        $errors[] = "a lowercase letter";
+    }
+    if (!preg_match('/[0-9]/', $password)) {
+        $errors[] = "a number";
+    }
+    if (!preg_match('/[^A-Za-z0-9]/', $password)) {
+        $errors[] = "a special character";
+    }
+    if ($username !== '' && stripos($password, $username) !== false) {
+        $errors[] = "not contain your username";
+    }
+    if (preg_match('/^(.)\1+$/', $password) || preg_match('/^(0123456789|12345678|abcdefgh|password)/i', $password)) {
+        $errors[] = "not be a common/predictable pattern";
+    }
+
+    return $errors;
+}
+
+$strengthErrors = validatePasswordStrength($newPassword, $_SESSION['username'] ?? '');
+if (!empty($strengthErrors)) {
+    echo json_encode([
+        'status'  => 'danger',
+        'message' => 'Password must have ' . implode(', ', $strengthErrors) . '.'
+    ]);
+    exit;
+}
+
 try {
     // ✅ Look up by user_id (unique, unambiguous)
     $stmt = $pdo->prepare("
@@ -49,6 +87,12 @@ try {
     // Verify current password
     if (!password_verify($currentPassword, $user['password'])) {
         echo json_encode(['status' => 'danger', 'message' => 'Current password is incorrect.']);
+        exit;
+    }
+
+    // 🔒 Don't allow reusing the same password
+    if (password_verify($newPassword, $user['password'])) {
+        echo json_encode(['status' => 'danger', 'message' => 'New password must be different from your current password.']);
         exit;
     }
 
