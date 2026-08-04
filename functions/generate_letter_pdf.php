@@ -58,7 +58,7 @@ $branch = '';
 if (!empty($branchCode)) {
     $stmt = $pdo->prepare("
         SELECT branch
-        FROM IPROM.dbo.branches
+        FROM branches
         WHERE branch_code = :code
     ");
 
@@ -76,7 +76,7 @@ if (!empty($rovingBranches) && is_array($rovingBranches)) {
 
     $stmt = $pdo->prepare("
         SELECT branch
-        FROM IPROM.dbo.branches
+        FROM branches
         WHERE branch_code = :code
     ");
 
@@ -133,7 +133,7 @@ if (!empty($promodiserId)) {
     // not employee_info.id (the INT primary key).
     $stmt = $pdo->prepare("
         SELECT remarks
-        FROM IPROM.dbo.employee_info
+        FROM employee_info
         WHERE employee_id = :employee_id
     ");
 
@@ -395,7 +395,7 @@ $pdf->Cell(90, 7, 'CONTRACTUAL', 0, 0);
 $label = 'LOA Code: ';
 $value = fpdf_str($loaCode);
 
-if (trim($loaCode) !== '') {
+if (trim($value) !== '') {
     $labelWidth = $pdf->GetStringWidth($label);
     $valueWidth = $pdf->GetStringWidth($value);
 
@@ -414,6 +414,7 @@ if (trim($loaCode) !== '') {
 
 
 // Remarks WITHOUT label
+$pdf->SetFont('Arial', '', 11);
 $pdf->MultiCell(0, 7, fpdf_str($remarks));
 
 $pdf->Ln(5);
