@@ -55,7 +55,7 @@ $isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || isset($_
 $branchMap = [];
 $bmStmt = $pdo->query("
     SELECT branch_code, branch, area, region, corpo
-    FROM IPROM.dbo.branches
+    FROM branches
     WHERE status = 1
 ");
 while ($row = $bmStmt->fetch(PDO::FETCH_ASSOC)) {
