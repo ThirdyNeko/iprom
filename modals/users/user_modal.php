@@ -87,6 +87,7 @@
             </div>
 
             <div class="modal-body">
+                <input type="hidden" id="v_id">
                 <input type="hidden" id="v_username">
 
                 <div class="row g-3">

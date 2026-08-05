@@ -1105,3 +1105,91 @@
 [2026-08-04 11:37:31] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
 [2026-08-04 11:40:26] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
 [2026-08-04 11:40:40] Error [8192]: trim(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\functions\generate_letter_pdf.php on line 398
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 329
+[2026-08-05 15:47:20] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:47:20] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 333
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:50:10] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:50:10] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:12] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:12] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 323
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
+[2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335

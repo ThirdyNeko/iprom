@@ -5,20 +5,20 @@ include '../auth/require_login.php';
 
 header('Content-Type: application/json');
 
-$username = trim($_POST['username'] ?? '');
+$id       = trim($_POST['id'] ?? '');
 $branches = trim($_POST['branches'] ?? '');
 
-if (!$username) {
-    echo json_encode(['success' => false, 'message' => 'No username provided.']);
+if (!$id) {
+    echo json_encode(['success' => false, 'message' => 'No id provided.']);
     exit;
 }
 
 try {
     $pdo = qa_db();
-    $stmt = $pdo->prepare("UPDATE users SET branch = :branch, updated_at = GETDATE() WHERE username = :username");
+    $stmt = $pdo->prepare("UPDATE users SET branch = :branch, updated_at = GETDATE() WHERE id = :id");
     $stmt->execute([
-        ':branch'   => $branches,   // empty string clears all
-        ':username' => $username,
+        ':branch' => $branches,   // empty string clears all
+        ':id'     => $id,
     ]);
 
     echo json_encode(['success' => true]);

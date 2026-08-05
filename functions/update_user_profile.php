@@ -11,24 +11,24 @@ if (!in_array($_SESSION['role'] ?? '', $allowed)) {
     exit;
 }
 
-$username = trim($_POST['username'] ?? '');
+$id       = trim($_POST['id'] ?? '');
 $position = trim($_POST['position'] ?? '');
 $role     = trim($_POST['role'] ?? '');
 
 $validRoles = ['staff', 'supervisor', 'admin', 'super_admin'];
 
-if (!$username || !$position || !in_array($role, $validRoles)) {
+if (!$id || !$position || !in_array($role, $validRoles)) {
     echo json_encode(['success' => false, 'message' => 'Invalid input.']);
     exit;
 }
 
 try {
     $pdo = qa_db();
-    $stmt = $pdo->prepare("UPDATE users SET position = :position, role = :role, updated_at = GETDATE() WHERE username = :username");
+    $stmt = $pdo->prepare("UPDATE users SET position = :position, role = :role, updated_at = GETDATE() WHERE id = :id");
     $stmt->execute([
         ':position' => $position,
         ':role'     => $role,
-        ':username' => $username,
+        ':id'       => $id,
     ]);
 
     echo json_encode(['success' => true]);

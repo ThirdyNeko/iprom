@@ -28,7 +28,7 @@ $users = $pdo
     ->query("EXEC get_users @role = NULL")
     ->fetchAll(PDO::FETCH_ASSOC);
 
-// NOTE: assumes get_users returns a `branch` column (comma-delimited
+// NOTE: assumes get_users returns `id` and `branch` columns (comma-delimited
 // branch codes) same as the rest of the app relies on elsewhere.
 // Branch Managers only ever have a single code in that field.
 
@@ -230,6 +230,7 @@ $roleLabels = [
                                                     <div class="form-check form-switch m-0">
                                                         <input class="form-check-input user-status-switch"
                                                                type="checkbox"
+                                                               data-id="<?= htmlspecialchars($u['id']) ?>"
                                                                data-username="<?= htmlspecialchars($u['username']) ?>"
                                                                <?= $isActive ? 'checked' : '' ?>>
                                                     </div>
@@ -237,11 +238,11 @@ $roleLabels = [
                                             </td>
                                             <td>
                                                 <button class="btn btn-sm btn-success view-user"
-                                                        data-username="<?= htmlspecialchars($u['username']) ?>">
+                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
                                                     Update
                                                 </button>
                                                 <button class="btn btn-sm btn-primary view-user view-user-readonly"
-                                                        data-username="<?= htmlspecialchars($u['username']) ?>">
+                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
                                                     View
                                                 </button>
                                             </td>
@@ -319,6 +320,7 @@ $roleLabels = [
                                                     <div class="form-check form-switch m-0">
                                                         <input class="form-check-input user-status-switch"
                                                                type="checkbox"
+                                                               data-id="<?= htmlspecialchars($u['id']) ?>"
                                                                data-username="<?= htmlspecialchars($u['username']) ?>"
                                                                <?= $isActive ? 'checked' : '' ?>>
                                                     </div>
@@ -326,11 +328,11 @@ $roleLabels = [
                                             </td>
                                             <td>
                                                 <button class="btn btn-sm btn-success view-user"
-                                                        data-username="<?= htmlspecialchars($u['username']) ?>">
+                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
                                                     Update
                                                 </button>
                                                 <button class="btn btn-sm btn-primary view-user view-user-readonly"
-                                                        data-username="<?= htmlspecialchars($u['username']) ?>">
+                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
                                                     View
                                                 </button>
                                             </td>

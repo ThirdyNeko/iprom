@@ -65,6 +65,7 @@ $(document).ready(function () {
 ─────────────────────────────────────────── */
 $(document).on("change", ".user-status-switch", function () {
   const toggle = $(this);
+  const id = toggle.data("id");
   const username = toggle.data("username");
   const newStatus = toggle.is(":checked") ? "ACTIVE" : "INACTIVE";
   const isEnable = newStatus === "ACTIVE";
@@ -88,7 +89,7 @@ $(document).on("change", ".user-status-switch", function () {
     $.ajax({
       url: "functions/update_user_status.php",
       type: "POST",
-      data: { username, status: newStatus },
+      data: { id, status: newStatus },
       dataType: "json",
       success: function (res) {
         if (res.success) {

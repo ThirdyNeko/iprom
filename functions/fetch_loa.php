@@ -40,6 +40,12 @@ $sessionRole     = strtolower(trim($_SESSION['role'] ?? ''));
 $sessionBranch   = $_SESSION['branch'] ?? '';
 $restrictedRoles = ['branch_manager', 'staff'];
 
+// LOA code is sensitive (used to verify a promodiser's identity at the
+// branch during the Verify flow) — only admin/super_admin should ever
+// receive it in the JSON payload. Masked server-side further down so it's
+// stripped from the AJAX response itself, not just hidden in the UI.
+$canViewLoaCode = in_array($sessionRole, ['admin', 'super_admin'], true);
+
 // NOTE: this WHERE is applied against the letters_of_advice table
 // (aliased below as `loa`), since we now join against `branches` and
 // `employee_info` too and more than one table could plausibly have a
@@ -157,6 +163,11 @@ FROM (
         -- (see verify_loa.js's .verifyLOABtn guard, and the corresponding
         -- server-side check in finalize_verification).
         emp.biometric_number,
+        -- LOA code -- sensitive; masked in the PHP output loop below for
+        -- anyone who isn't admin/super_admin. Still selected here so the
+        -- masking decision stays centralized in one place (PHP), not
+        -- duplicated across every query that might need this table.
+        loa.loa_code,
         -- Status fields
         loa.employment_status,
         loa.sub_status,
@@ -214,6 +225,15 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($data as &$row) {
     unset($row['rownum']);
+
+    // LOA code is sensitive (used to verify a promodiser's identity at the
+    // branch) — only admin/super_admin should ever receive it. Stripped
+    // here so it's absent from the AJAX response entirely for
+    // branch_manager/staff, not just hidden in the UI (devtools/network
+    // tab would otherwise still expose it).
+    if (!$canViewLoaCode) {
+        unset($row['loa_code']);
+    }
 
     // Fallback to the raw code if the branch row wasn't found (LEFT JOIN miss).
     if (empty($row['branch_name'])) {

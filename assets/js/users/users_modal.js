@@ -171,15 +171,21 @@ function formatMDY(dateStr) {
    VIEW USER
 ─────────────────────────────────────────── */
 $(document).on("click", ".view-user", function () {
-  const username = $(this).data("username");
+  const id = $(this).data("id");
   const isReadonly = $(this).hasClass("view-user-readonly");
 
   $.ajax({
     url: "functions/get_user.php",
     type: "POST",
-    data: { username },
+    data: { id },
     dataType: "json",
     success: function (data) {
+      if (data.error) {
+        Swal.fire("Error", data.error, "error");
+        return;
+      }
+
+      const username = data.username;
       const role = (data.role || "").trim().toLowerCase();
       const allowsBranchSelection = branchSelectionAllowed(role);
       const canEdit = isReadonly ? false : isPrivileged();
@@ -200,6 +206,7 @@ $(document).on("click", ".view-user", function () {
       };
 
       /* ── basic fields ── */
+      $("#v_id").val(data.id);
       $("#v_username").val(username);
       $("#v_first_name").val(data.first_name);
       $("#v_middle_name").val(data.middle_name);
@@ -298,6 +305,9 @@ $(document).on("click", ".view-user", function () {
       setTimeout(updateBranchCounter, 0);
       $modal.modal("show");
     },
+    error: function () {
+      Swal.fire("Error", "Failed to load user.", "error");
+    },
   });
 });
 
@@ -306,6 +316,7 @@ $(document).on("click", ".view-user", function () {
 ─────────────────────────────────────────── */
 $(document).on("click", "#saveChangesBtn", function () {
   const $modal = $("#userViewModal");
+  const id = $("#v_id").val();
   const username = $("#v_username").val();
   const position = $("#v_position").val().trim();
   const role = $("#v_role").val();
@@ -360,7 +371,7 @@ $(document).on("click", "#saveChangesBtn", function () {
         $.ajax({
           url: "functions/update_user_profile.php",
           type: "POST",
-          data: { username, position, role },
+          data: { id, username, position, role },
           dataType: "json",
         }),
       );
@@ -371,7 +382,7 @@ $(document).on("click", "#saveChangesBtn", function () {
         $.ajax({
           url: "functions/update_user_branches.php",
           type: "POST",
-          data: { username, branches: [...current].join(",") },
+          data: { id, username, branches: [...current].join(",") },
           dataType: "json",
         }),
       );
@@ -398,6 +409,7 @@ $(document).on("click", "#saveChangesBtn", function () {
 $(document).on("click", "#resetPasswordBtn", function () {
   if (!isPrivileged()) return;
 
+  const id = $("#v_id").val();
   const username = $("#v_username").val();
   const newPassword = "Password123";
 
@@ -415,7 +427,7 @@ $(document).on("click", "#resetPasswordBtn", function () {
     $.ajax({
       url: "functions/reset_user_password.php",
       type: "POST",
-      data: { username, password: newPassword },
+      data: { id, username, password: newPassword },
       dataType: "json",
       success: function (res) {
         if (res.success) {

@@ -76,7 +76,7 @@ function checkPrintBtnState() {
   printBtn.style.display = "";
 
   // branch_manager can never print, full stop — takes priority over
-  // isAdmin/canPrintLOA below.
+  // canPrintLOA below.
   if (isBranchManagerRole()) {
     printBtn.disabled = true;
     return;
@@ -87,12 +87,9 @@ function checkPrintBtnState() {
     return;
   }
 
-  const rawCanPrintLOA = window.canPrintLOA;
-  const isAdmin = ["admin", "super_admin"].includes(window.userRole || "");
-  const canPrintLOA = Number(rawCanPrintLOA || 0) === 1;
+  const canPrintLOA = Number(window.canPrintLOA || 0) === 1;
 
-  const allowed = isAdmin || canPrintLOA;
-  printBtn.disabled = !allowed || status === "INACTIVE";
+  printBtn.disabled = !canPrintLOA || status === "INACTIVE";
 }
 
 // =========================

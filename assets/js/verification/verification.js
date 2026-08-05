@@ -84,6 +84,13 @@ $(document).ready(function () {
           // $_SESSION['role'] server-side before deleting anything.
           const canCancel = role === "admin" || role === "super_admin";
 
+          // LOA code is only ever present in `data` when fetch_loa.php
+          // decided to include it (admin/super_admin) -- it's stripped
+          // server-side for everyone else. This role check is just belt
+          // and suspenders / keeps the render logic self-explanatory;
+          // the actual security boundary is in fetch_loa.php.
+          const canViewLoaCode = role === "admin" || role === "super_admin";
+
           const verifyBtnHtml = canVerify
             ? `<button class="btn btn-success btn-sm px-2 py-1 verifyLOABtn"
                 data-loa-id="${data.loa_id}"
@@ -104,37 +111,48 @@ $(document).ready(function () {
               </button>`
             : "";
 
-          return `
-            <div class="action-btns d-flex justify-content-center gap-1">
-              <button class="btn btn-primary btn-sm px-2 py-1 printLOABtn"
-                data-loa-id="${data.loa_id}"
-                data-employee-id="${data.employee_id ?? ""}"
-                data-recipient-name="${data.recipient_name ?? ""}"
-                data-recipient-position="${data.recipient_position ?? ""}"
-                data-first-name="${data.first_name ?? ""}"
-                data-middle-name="${data.middle_name ?? ""}"
-                data-last-name="${data.last_name ?? ""}"
-                data-suffix="${data.suffix ?? ""}"
-                data-biometric-number="${data.biometric_number ?? ""}"
-                data-branch="${data.branch_code ?? ""}"
-                data-roving-branches='${JSON.stringify(data.roving_branches ?? [])}'
-                data-brand="${data.brand ?? ""}"
-                data-multi-brands='${JSON.stringify(data.multi_brands ?? [])}'
-                data-agency="${data.agency ?? ""}"
-                data-employment-status="${data.employment_status ?? ""}"
-                data-sub-status="${data.sub_status ?? ""}"
-                data-status="${data.status ?? ""}"
-                data-effectivity-date="${data.effectivity_date ?? ""}"
-                data-end-date="${data.end_date ?? ""}"
-                data-remarks="${data.remarks ?? ""}"
-                data-issued-by="${data.issued_by ?? ""}"
-                data-issued-position="${data.issued_position ?? ""}"
-                data-updated-at="${data.last_updated ?? ""}">
-                <i class="bi bi-printer me-1"></i>View LOA
-              </button>
+          // Small inline display of the LOA code, admin/super_admin only.
+          // Sits above the action buttons rather than as its own column
+          // so non-admin roles don't get a visibly empty column.
+          const loaCodeHtml =
+            canViewLoaCode && data.loa_code
+              ? `<div class="small text-muted mb-1">LOA Code: ${data.loa_code}</div>`
+              : "";
 
-              ${verifyBtnHtml}
-              ${cancelBtnHtml}
+          return `
+            <div class="text-center">
+              ${loaCodeHtml}
+              <div class="action-btns d-flex justify-content-center gap-1">
+                <button class="btn btn-primary btn-sm px-2 py-1 printLOABtn"
+                  data-loa-id="${data.loa_id}"
+                  data-employee-id="${data.employee_id ?? ""}"
+                  data-recipient-name="${data.recipient_name ?? ""}"
+                  data-recipient-position="${data.recipient_position ?? ""}"
+                  data-first-name="${data.first_name ?? ""}"
+                  data-middle-name="${data.middle_name ?? ""}"
+                  data-last-name="${data.last_name ?? ""}"
+                  data-suffix="${data.suffix ?? ""}"
+                  data-biometric-number="${data.biometric_number ?? ""}"
+                  data-branch="${data.branch_code ?? ""}"
+                  data-roving-branches='${JSON.stringify(data.roving_branches ?? [])}'
+                  data-brand="${data.brand ?? ""}"
+                  data-multi-brands='${JSON.stringify(data.multi_brands ?? [])}'
+                  data-agency="${data.agency ?? ""}"
+                  data-employment-status="${data.employment_status ?? ""}"
+                  data-sub-status="${data.sub_status ?? ""}"
+                  data-status="${data.status ?? ""}"
+                  data-effectivity-date="${data.effectivity_date ?? ""}"
+                  data-end-date="${data.end_date ?? ""}"
+                  data-remarks="${data.remarks ?? ""}"
+                  data-issued-by="${data.issued_by ?? ""}"
+                  data-issued-position="${data.issued_position ?? ""}"
+                  data-updated-at="${data.last_updated ?? ""}">
+                  <i class="bi bi-printer me-1"></i>View LOA
+                </button>
+
+                ${verifyBtnHtml}
+                ${cancelBtnHtml}
+              </div>
             </div>
           `;
         },

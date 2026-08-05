@@ -2,15 +2,17 @@
 include '../config/db.php';
 $pdo = qa_db();
 
-$username = $_POST['username'] ?? null;
+$id = $_POST['id'] ?? null;
 
-if (!$username) {
-    echo json_encode(['error' => 'Missing username']);
+if (!$id) {
+    echo json_encode(['error' => 'Missing id']);
     exit;
 }
 
 $stmt = $pdo->prepare("
     SELECT
+        id,
+        username,
         first_name,
         middle_name,
         last_name,
@@ -22,11 +24,16 @@ $stmt = $pdo->prepare("
         created_at,
         updated_at
     FROM users
-    WHERE username = ?
+    WHERE id = ?
 ");
 
-$stmt->execute([$username]);
+$stmt->execute([$id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$user) {
+    echo json_encode(['error' => 'User not found']);
+    exit;
+}
 
 // All branches (for the full checkbox list)
 $allBranchesStmt = $pdo->query("SELECT branch_code, branch FROM branches ORDER BY branch");
