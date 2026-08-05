@@ -112,6 +112,7 @@ $pdo = qa_db();
                                 <th>Region</th>
                                 <th>Area</th>
                                 <th>Status</th>
+                                <th>Deployed</th>
                             </tr>
                         </thead>
                         <tbody></tbody>

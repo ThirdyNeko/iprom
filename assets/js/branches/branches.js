@@ -88,6 +88,37 @@ $(document).ready(function () {
     `;
         },
       },
+
+      // DEPLOYED + SWITCH IN SAME COLUMN
+      {
+        data: null,
+        width: "120px",
+        className: "text-center",
+        render: function (data, type, row) {
+          const isDeployed = Number(row.deployed) === 1;
+
+          const checked = isDeployed ? "checked" : "";
+
+          return `
+      <div class="d-flex align-items-center justify-content-center gap-1">
+
+        <span class="badge ${isDeployed ? "bg-primary" : "bg-secondary"}">
+          ${isDeployed ? "Deployed" : "Not Deployed"}
+        </span>
+
+        <div class="form-check form-switch m-0">
+          <input
+            class="form-check-input branch-deployed-switch"
+            type="checkbox"
+            data-code="${row.branch_code}"
+            ${checked}
+          >
+        </div>
+
+      </div>
+    `;
+        },
+      },
     ],
   });
 
@@ -152,6 +183,9 @@ $(document).ready(function () {
   });
 });
 
+// =========================
+// STATUS TOGGLE
+// =========================
 $(document).on("change", ".branch-status-switch", function () {
   const toggle = $(this);
   const code = toggle.data("code");
@@ -257,6 +291,74 @@ $(document).on("change", ".branch-status-switch", function () {
         text: getAjaxErrorMessage(xhr) + "Contact MIS for assistance.",
       });
 
+      toggle.prop("disabled", false);
+    },
+  });
+});
+
+// =========================
+// DEPLOYED TOGGLE
+// =========================
+$(document).on("change", ".branch-deployed-switch", function () {
+  const toggle = $(this);
+  const code = toggle.data("code");
+  const deployed = toggle.is(":checked") ? 1 : 0;
+
+  toggle.prop("disabled", true);
+
+  $.ajax({
+    url: "functions/update_branch_deployed.php",
+    type: "POST",
+    dataType: "json",
+    data: {
+      branch_code: code,
+      deployed: deployed,
+    },
+
+    success: function (res) {
+      if (res.success) {
+        const row = table.row(toggle.closest("tr"));
+
+        if (row) {
+          const rowData = row.data();
+
+          row
+            .data({
+              ...rowData,
+              deployed: deployed,
+            })
+            .invalidate();
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Updated",
+          text: `Deployment status changed to ${deployed === 1 ? "DEPLOYED" : "NOT DEPLOYED"}`,
+          timer: 1200,
+          showConfirmButton: false,
+        });
+      } else {
+        toggle.prop("checked", !toggle.is(":checked"));
+
+        Swal.fire({
+          icon: "error",
+          title: "Update Failed",
+          text: res.message || "Something went wrong.",
+        });
+      }
+    },
+
+    error: function (xhr) {
+      toggle.prop("checked", !toggle.is(":checked"));
+
+      Swal.fire({
+        icon: "error",
+        title: "Server Error",
+        text: getAjaxErrorMessage(xhr) + "Contact MIS for assistance.",
+      });
+    },
+
+    complete: function () {
       toggle.prop("disabled", false);
     },
   });

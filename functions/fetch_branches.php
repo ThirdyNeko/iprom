@@ -14,7 +14,8 @@ $columns = [
     1 => 'corpo',
     2 => 'region',
     3 => 'area',
-    4 => 'status'
+    4 => 'status',
+    5 => 'deployed'
 ];
 
 $orderColumnIndex = $_POST['order'][0]['column'] ?? 0;
@@ -57,6 +58,7 @@ FROM (
         region,
         area,
         status,
+        deployed,
         branch_code,
         ROW_NUMBER() OVER (ORDER BY $orderColumn $orderDir) AS rownum
     FROM branches
@@ -80,6 +82,7 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($data as &$row) {
     $row['status'] = ($row['status'] == 1) ? 'Active' : 'Inactive';
+    $row['deployed'] = (int)$row['deployed']; // keep as 0/1 for JS toggle check
     unset($row['rownum']);
 }
 

@@ -31,7 +31,7 @@ try {
 
     // check if exists
     $checkStmt = $pdo->prepare("
-        SELECT branch, region, corpo, area
+        SELECT branch, region, corpo, area, status, deployed
         FROM branches 
         WHERE branch_code = :code
     ");
@@ -42,7 +42,9 @@ try {
         SET branch = :branch,
             region = :region,
             corpo  = :corpo,
-            area   = :area
+            area   = :area,
+            status = :status,
+            deployed = :deployed
         WHERE branch_code = :code
     ");
 
@@ -54,7 +56,8 @@ try {
             region,
             corpo,
             area,
-            status
+            status,
+            deployed
         )
         VALUES (
             :code,
@@ -62,7 +65,8 @@ try {
             :region,
             :corpo,
             :area,
-            1
+            1,
+            0
         )
     ");
 
