@@ -79,6 +79,12 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
     .clear-btn:hover {
         color: #333;
     }
+
+    /* Bulk verify column stays compact regardless of visibility state */
+    #LOAtable th.bulk-verify-col,
+    #LOAtable td.bulk-verify-col {
+        width: 40px;
+    }
 </style>
 
 <div class="content">
@@ -86,6 +92,12 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold mb-0">For Branch Verification</h4>
+
+            <?php if (in_array(strtolower($user_role), ['admin', 'super_admin'])): ?>
+                <button type="button" id="toggleBulkVerifyBtn" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-check2-square me-1"></i>Bulk Verify
+                </button>
+            <?php endif; ?>
         </div>
 
         <div class="card shadow-sm">
@@ -106,10 +118,25 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
                 </div>
             </div>
             <div class="card-body">
+
+                <!-- Bulk verify action bar (hidden until Bulk Verify is toggled on) -->
+                <div id="bulkVerifyBar" class="d-none align-items-center gap-2 mb-2">
+                    <span id="bulkVerifySelectedCount" class="text-muted small">0 selected</span>
+                    <button type="button" id="bulkVerifyConfirmBtn" class="btn btn-success btn-sm" disabled>
+                        <i class="bi bi-patch-check me-1"></i>Verify Selected
+                    </button>
+                    <button type="button" id="bulkVerifyCancelBtn" class="btn btn-outline-secondary btn-sm">
+                        Cancel
+                    </button>
+                </div>
+
                 <div class="table-responsive">
                     <table id="LOAtable" class="table table-striped table-hover align-middle text-center">
                         <thead class="table-primary">
                             <tr>
+                                <th class="bulk-verify-col">
+                                    <input type="checkbox" id="bulkVerifySelectAll" class="form-check-input">
+                                </th>
                                 <th>Promodiser</th>
                                 <th>Agency</th>
                                 <th>Employment Status</th>
@@ -129,9 +156,9 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
 
 <script>
     // Session context for client-side UI gating (Verify button visibility, table filtering, etc).
-    // NOTE: this is UI convenience only — the actual verify/cancel endpoints
-    // (functions/verify_loa.php, functions/cancel_loa.php, etc) MUST
-    // independently re-check $_SESSION['role'] server-side. Never trust
+    // NOTE: this is UI convenience only — the actual verify/cancel/bulk-verify endpoints
+    // (functions/verify_loa.php, functions/cancel_loa.php, functions/bulk_verify_loa.php, etc)
+    // MUST independently re-check $_SESSION['role'] server-side. Never trust
     // this value alone to authorize a write.
     const CURRENT_USER_ROLE   = <?php echo json_encode($user_role); ?>;
     const CURRENT_USER_BRANCH = <?php echo json_encode($user_branch); ?>;

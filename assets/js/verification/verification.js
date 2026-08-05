@@ -1,3 +1,14 @@
+let bulkVerifyMode = false;
+// Keyed by loa_id (string) -> { employeeId, branchCode }. finalize_verification's
+// SP needs employee_id + branch_code alongside loa_id, so a Set of bare ids
+// isn't enough -- carry the row's data through instead of re-fetching it.
+let bulkVerifySelected = new Map();
+
+function updateBulkVerifyBar() {
+  $("#bulkVerifySelectedCount").text(`${bulkVerifySelected.size} selected`);
+  $("#bulkVerifyConfirmBtn").prop("disabled", bulkVerifySelected.size === 0);
+}
+
 $(document).ready(function () {
   table = $("#LOAtable").DataTable({
     processing: true,
@@ -22,6 +33,34 @@ $(document).ready(function () {
     },
 
     columns: [
+      // ── Bulk verify checkbox column ──────────────────────────────
+      // Hidden by default (toggled via #toggleBulkVerifyBtn). Only
+      // rendered for admin / super_admin — mirrors the same role gate
+      // used for the per-row Verify button below.
+      {
+        data: null,
+        orderable: false,
+        visible: false, // controlled purely via table.column(0).visible() -- don't also fight it with a CSS d-none class
+        className: "text-center bulk-verify-col",
+        render: function (data) {
+          const role =
+            typeof CURRENT_USER_ROLE === "string"
+              ? CURRENT_USER_ROLE.toLowerCase()
+              : "";
+          const canBulkVerify = role === "admin" || role === "super_admin";
+          if (!canBulkVerify) return "";
+
+          const checked = bulkVerifySelected.has(String(data.loa_id))
+            ? "checked"
+            : "";
+          return `<input type="checkbox" class="form-check-input bulkVerifyCheckbox"
+                    data-loa-id="${data.loa_id}"
+                    data-employee-id="${data.employee_id ?? ""}"
+                    data-branch="${data.branch_code ?? ""}"
+                    data-effectivity-date="${data.effectivity_date ?? ""}"
+                    ${checked}>`;
+        },
+      },
       { data: "promodiser" },
       { data: "agency" },
       { data: "employment_status" },
@@ -184,4 +223,164 @@ $(document).ready(function () {
   // Note: the "Verify" button click handler lives in assets/js/verify_loa.js
   // so the verification modal logic stays in its own file. Likewise, the
   // "Cancel" button click handler lives in assets/js/verification/cancel_loa.js.
+
+  // ── Bulk verify: toggle mode on/off ───────────────────────────────
+  $("#toggleBulkVerifyBtn").on("click", function () {
+    bulkVerifyMode = !bulkVerifyMode;
+    bulkVerifySelected.clear();
+    updateBulkVerifyBar();
+
+    $("#bulkVerifyBar")
+      .toggleClass("d-none", !bulkVerifyMode)
+      .toggleClass("d-flex", bulkVerifyMode);
+    $(this)
+      .toggleClass("btn-outline-primary", !bulkVerifyMode)
+      .toggleClass("btn-primary", bulkVerifyMode);
+
+    // visible() alone re-shows/hides the column's cells -- it's the only
+    // mechanism controlling this column now (see the column def above).
+    // Do NOT follow this with table.draw() -- this table is serverSide:true,
+    // so draw() always fires a fresh ajax request to fetch_loa.php on every
+    // single toggle, even though no data actually changed.
+    table.column(0).visible(bulkVerifyMode);
+
+    // Selections were just cleared above -- make sure the master checkbox
+    // doesn't show a stale checked/indeterminate state from a previous
+    // bulk-verify session. Runs AFTER visible() so this targets whatever
+    // #bulkVerifySelectAll node exists post-toggle, not a stale reference.
+    $("#bulkVerifySelectAll")
+      .prop("checked", false)
+      .prop("indeterminate", false);
+  });
+
+  $("#bulkVerifyCancelBtn").on("click", function () {
+    bulkVerifyMode = false;
+    bulkVerifySelected.clear();
+    updateBulkVerifyBar();
+
+    $("#bulkVerifyBar").removeClass("d-flex").addClass("d-none");
+    $("#toggleBulkVerifyBtn")
+      .removeClass("btn-primary")
+      .addClass("btn-outline-primary");
+
+    table.column(0).visible(false);
+    $("#bulkVerifySelectAll")
+      .prop("checked", false)
+      .prop("indeterminate", false);
+  });
+
+  // Row checkbox toggling — selection is kept in bulkVerifySelected so it
+  // survives pagination/redraw (DataTables destroys/rebuilds row DOM nodes).
+  $("#LOAtable tbody").on("change", ".bulkVerifyCheckbox", function () {
+    const loaId = String($(this).data("loa-id"));
+    if (this.checked) {
+      bulkVerifySelected.set(loaId, {
+        employeeId: $(this).data("employee-id"),
+        branchCode: $(this).data("branch"),
+      });
+    } else {
+      bulkVerifySelected.delete(loaId);
+    }
+    updateBulkVerifyBar();
+    syncSelectAllCheckboxState();
+  });
+
+  // Select all — applies to checkboxes currently rendered (i.e. current
+  // page only, since this is server-side paging). Delegated (not a direct
+  // $("#bulkVerifySelectAll").on(...) bind) because the column now starts
+  // as visible:false, which means DataTables actually destroys and
+  // recreates the <th> for this column each time it's toggled -- a direct
+  // binding would attach to the original node and go dead the moment that
+  // node gets replaced. Delegating from #LOAtable (which itself is never
+  // replaced) re-resolves the selector on every event instead.
+  $("#LOAtable").on("change", "#bulkVerifySelectAll", function () {
+    const checked = this.checked;
+    $("#LOAtable tbody .bulkVerifyCheckbox").each(function () {
+      $(this).prop("checked", checked).trigger("change");
+    });
+  });
+
+  // Keeps the master checkbox honest against what's actually selected on
+  // the current page: checked only if every visible row is checked,
+  // indeterminate if some (but not all) are, unchecked otherwise. Also
+  // re-run on every DataTables redraw (page change, filter, etc.) since a
+  // fresh set of rows -- with their own checked/unchecked state -- just
+  // replaced the old ones.
+  function syncSelectAllCheckboxState() {
+    const $rowBoxes = $("#LOAtable tbody .bulkVerifyCheckbox");
+    const total = $rowBoxes.length;
+    const checkedCount = $rowBoxes.filter(":checked").length;
+
+    $("#bulkVerifySelectAll")
+      .prop("checked", total > 0 && checkedCount === total)
+      .prop("indeterminate", checkedCount > 0 && checkedCount < total);
+  }
+
+  table.on("draw.dt", function () {
+    if (bulkVerifyMode) syncSelectAllCheckboxState();
+  });
+
+  // ── Bulk verify: submit selected LOAs ─────────────────────────────
+  $("#bulkVerifyConfirmBtn").on("click", async function () {
+    if (bulkVerifySelected.size === 0) return;
+
+    const confirmResult = await Swal.fire({
+      title: `Verify ${bulkVerifySelected.size} promodiser(s)?`,
+      text: "This skips LOA code entry and ID picture upload. Employees will be set ACTIVE, or QUEUED if their effectivity date hasn't started yet.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, verify",
+      confirmButtonColor: "#198754",
+    });
+    if (!confirmResult.isConfirmed) return;
+
+    const btn = $(this);
+    btn
+      .prop("disabled", true)
+      .html('<i class="bi bi-hourglass-split me-1"></i>Verifying...');
+
+    try {
+      const items = Array.from(bulkVerifySelected.entries()).map(
+        ([loaId, info]) => ({
+          loa_id: loaId,
+          employee_id: info.employeeId,
+          branch_code: info.branchCode,
+        }),
+      );
+
+      const response = await fetch("functions/bulk_verify_loa.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || `Server error: ${response.status}`);
+      }
+
+      Swal.fire(
+        "Done",
+        `${result.verified_count} verified successfully` +
+          (result.failed_count ? `, ${result.failed_count} failed.` : "."),
+        "success",
+      );
+
+      bulkVerifySelected.clear();
+      updateBulkVerifyBar();
+      table.draw(false);
+    } catch (err) {
+      console.error("Bulk verify failed:", err);
+      Swal.fire(
+        "Error",
+        err.message || "Bulk verification failed. Please try again.",
+        "error",
+      );
+    } finally {
+      btn
+        .prop("disabled", false)
+        .html('<i class="bi bi-patch-check me-1"></i>Verify Selected');
+    }
+  });
 });
