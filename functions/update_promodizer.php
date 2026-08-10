@@ -204,7 +204,12 @@ $skipSlotValidation = in_array($reason_for_update, [
     'DECEASED',
     'CLERICAL ERROR',
     'UPDATE BIOMETRIC NUMBER',
+    'MARITAL STATUS',
+    'UPDATE CONTACT NUMBER',
+    'UPDATE ADDRESS',
     'CHANGE CATEGORIES',
+    'EMERGENCY LEAVE',
+    'MATERNITY LEAVE',
 ]);
 
 $remarks = trim($_POST['remarks'] ?? '');
