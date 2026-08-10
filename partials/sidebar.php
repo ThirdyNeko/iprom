@@ -69,18 +69,18 @@
                 <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small ms-4">
 
                     <li>
-                        <a href="branches.php"
-                        class="nav-link <?= $current_page == 'branches.php' ? 'active' : '' ?>">
-                            Branches
-                        </a>
-                    </li>
-
-                    <li>
                         <a href="agencies.php"
                         class="nav-link <?= $current_page == 'agencies.php' ? 'active' : '' ?>">
                             Agencies
                         </a>
                     </li>
+
+                    <li>
+                        <a href="branches.php"
+                        class="nav-link <?= $current_page == 'branches.php' ? 'active' : '' ?>">
+                            Branches
+                        </a>
+                    </li>                    
 
                     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
                     <li>
