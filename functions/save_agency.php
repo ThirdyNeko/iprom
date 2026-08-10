@@ -13,6 +13,7 @@ $id = $_POST['id'] ?? null;
 $agency = trim($_POST['agency'] ?? '');
 $person = trim($_POST['contact_person'] ?? '');
 $email = trim($_POST['email'] ?? '');
+$brand = trim($_POST['brand'] ?? '');
 
 // ARRAYS
 $numbers = $_POST['contact_numbers'] ?? [];
@@ -41,6 +42,14 @@ if ($person === '') {
     echo json_encode([
         'success' => false,
         'message' => 'Contact person is required.'
+    ]);
+    exit;
+}
+
+if ($brand === '') {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Brand is required.'
     ]);
     exit;
 }
@@ -99,9 +108,10 @@ if (empty($id)) {
             contact_number,
             tel_number,
             email,
+            brand,
             status
         )
-        VALUES (?, ?, ?, ?, ?, 1)
+        VALUES (?, ?, ?, ?, ?, ?, 1)
     ");
 
     $stmt->execute([
@@ -109,7 +119,8 @@ if (empty($id)) {
         $person,
         $number,
         $tel,
-        $email
+        $email,
+        $brand
     ]);
 
 } else {
@@ -124,7 +135,8 @@ if (empty($id)) {
             contact_person = ?,
             contact_number = ?,
             tel_number = ?,
-            email = ?
+            email = ?,
+            brand = ?
         WHERE id = ?
     ");
 
@@ -134,6 +146,7 @@ if (empty($id)) {
         $number,
         $tel,
         $email,
+        $brand,
         $id
     ]);
 }

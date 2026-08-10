@@ -57,6 +57,7 @@ $sql = "
         SELECT 
             id,
             agencies,
+            brand,
             contact_person,
             contact_number,
             tel_number,

@@ -58,7 +58,8 @@ $pdo = qa_db();
 
 #agencyTable td:nth-child(1),
 #agencyTable td:nth-child(2),
-#agencyTable td:nth-child(5){
+#agencyTable td:nth-child(3),
+#agencyTable td:nth-child(6){
     text-align: left;
 }
 
@@ -174,6 +175,7 @@ $pdo = qa_db();
                         <thead>
                             <tr>
                                 <th>Agency</th>
+                                <th>Brand</th>
                                 <th>Contact Person</th>
                                 <th>Mobile #</th>
                                 <th>Telephone #</th>
@@ -225,6 +227,14 @@ $pdo = qa_db();
                             id="agencyName"
                             class="form-control text-uppercase"
                             required>
+                    </div>
+
+                    <!-- Brand -->
+                    <div class="mb-3">
+                        <label class="form-label">Brand</label>
+                        <select id="brand" class="form-select" required>
+                            <option value="" disabled selected>Select Brand</option>
+                        </select>
                     </div>
 
                     <!-- Contact Person -->

@@ -156,6 +156,23 @@ function fpdf_str($s): string
     return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', (string)($s ?? ''));
 }
 
+// Shrinks the font (down to $minSize) until $text fits within $maxWidth,
+// so long Branch/Brand values (multi-branch/multi-brand strings) stay on
+// one line instead of wrapping the row height via MultiCell.
+// Returns the font size that was ultimately set.
+function fpdf_fit_font(FPDF $pdf, string $text, float $maxWidth, int $maxSize = 11, int $minSize = 6, string $font = 'Arial', string $style = ''): int
+{
+    $size = $maxSize;
+    $pdf->SetFont($font, $style, $size);
+
+    while ($size > $minSize && $pdf->GetStringWidth($text) > $maxWidth) {
+        $size--;
+        $pdf->SetFont($font, $style, $size);
+    }
+
+    return $size;
+}
+
 // ============================================================
 // Save to DB — update in place if a record already exists for
 // this person (by name) + branch, otherwise insert a new row.
@@ -361,12 +378,26 @@ $pdf->Cell(0, 7, fpdf_str($biometricNumber), 1, 1);
 $pdf->Cell(55, 7, 'Employee Name', 1, 0);
 $pdf->Cell(0, 7, fpdf_str($employeeName), 1, 1);
 
+// Branch — value font shrinks (down to 6pt) so a long roving-branch
+// list stays on one line instead of wrapping the row.
+$pdf->SetFont('Arial', '', 11);
 $pdf->Cell(55, 7, 'Branch', 1, 0);
-$pdf->Cell(0, 7, fpdf_str($branchDisplay), 1, 1);
 
+$branchText = fpdf_str($branchDisplay);
+$branchValueWidth = $pdf->GetPageWidth() - $pdf->GetRightMargin() - $pdf->GetX() - 2; // -2mm inner padding
+fpdf_fit_font($pdf, $branchText, $branchValueWidth);
+$pdf->Cell(0, 7, $branchText, 1, 1);
+
+// Brand — same auto-fit treatment for long multi-brand lists.
+$pdf->SetFont('Arial', '', 11);
 $pdf->Cell(55, 7, 'Brand', 1, 0);
-$pdf->Cell(0, 7, fpdf_str($brandDisplay), 1, 1);
 
+$brandText = fpdf_str($brandDisplay);
+$brandValueWidth = $pdf->GetPageWidth() - $pdf->GetRightMargin() - $pdf->GetX() - 2; // -2mm inner padding
+fpdf_fit_font($pdf, $brandText, $brandValueWidth);
+$pdf->Cell(0, 7, $brandText, 1, 1);
+
+$pdf->SetFont('Arial', '', 11);
 $pdf->Cell(55, 7, 'Agency', 1, 0);
 $pdf->Cell(0, 7, fpdf_str($agency), 1, 1);
 

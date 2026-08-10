@@ -25,6 +25,45 @@ function getAjaxErrorMessage(xhr) {
 
 $(document).ready(function () {
   let originalAgencyValues = null;
+  let brandsLoaded = false;
+
+  // =========================
+  // LOAD BRANDS (once, cached in the <select>)
+  // =========================
+  function loadBrands(callback) {
+    if (brandsLoaded) {
+      if (typeof callback === "function") callback();
+      return;
+    }
+
+    $.ajax({
+      url: "functions/get_brands.php",
+      type: "GET",
+      dataType: "json",
+
+      success: function (brands) {
+        const $brand = $("#brand");
+
+        $brand.find("option:not(:first)").remove();
+
+        (brands || []).forEach(function (b) {
+          $brand.append(`<option value="${b}">${b}</option>`);
+        });
+
+        brandsLoaded = true;
+
+        if (typeof callback === "function") callback();
+      },
+
+      error: function (xhr) {
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: getAjaxErrorMessage(xhr) + " Contact MIS for assistance.",
+        });
+      },
+    });
+  }
 
   // =========================
   // DATATABLE
@@ -47,6 +86,7 @@ $(document).ready(function () {
 
     columns: [
       { data: "agencies" },
+      { data: "brand" },
       { data: "contact_person" },
       { data: "contact_number" },
       { data: "tel_number" },
@@ -93,6 +133,7 @@ $(document).ready(function () {
               <button class="btn btn-warning btn-sm px-2 py-1 editAgencyBtn"
                 data-id="${data.id}"
                 data-name="${data.agencies}"
+                data-brand="${data.brand ?? ""}"
                 data-person="${data.contact_person}"
                 data-number="${data.contact_number}"
                 data-tel="${data.tel_number}"
@@ -110,144 +151,157 @@ $(document).ready(function () {
     table.draw();
   });
 
+  // Preload brands as soon as the page is ready so the dropdown is
+  // instant when either modal opens.
+  loadBrands();
+
   // =========================
   // OPEN ADD MODAL
   // =========================
   $(document).on("click", ".addAgencyBtn", function () {
-    $("#agencyId").val("");
+    loadBrands(function () {
+      $("#agencyId").val("");
 
-    $("#agencyName").val("").trigger("input");
-    $("#contactPerson").val("").trigger("input");
-    $("#email").val("");
+      $("#agencyName").val("").trigger("input");
+      $("#brand").val("");
+      $("#contactPerson").val("").trigger("input");
+      $("#email").val("");
 
-    // RESET MOBILES
-    $("#mobileContainer").html(`
-      <div class="input-group mb-2">
-        <input type="text"
-               name="contact_numbers[]"
-               class="form-control mobile-input"
-               placeholder="09XX XXX XXXX"
-               maxlength="13">
-      </div>
-    `);
+      // RESET MOBILES
+      $("#mobileContainer").html(`
+        <div class="input-group mb-2">
+          <input type="text"
+                 name="contact_numbers[]"
+                 class="form-control mobile-input"
+                 placeholder="09XX XXX XXXX"
+                 maxlength="13">
+        </div>
+      `);
 
-    // RESET TELEPHONES
-    $("#telephoneContainer").html(`
-      <div class="input-group mb-2">
-        <input type="text"
-               name="tel_numbers[]"
-               class="form-control telephone-input"
-               placeholder="(XXX) XXX-XX-XX"
-               maxlength="15">
-      </div>
-    `);
+      // RESET TELEPHONES
+      $("#telephoneContainer").html(`
+        <div class="input-group mb-2">
+          <input type="text"
+                 name="tel_numbers[]"
+                 class="form-control telephone-input"
+                 placeholder="(XXX) XXX-XX-XX"
+                 maxlength="15">
+        </div>
+      `);
 
-    $(".modal-title").text("Add Agency");
+      $(".modal-title").text("Add Agency");
 
-    $("#saveAgencyBtn")
-      .text("Add Agency")
-      .removeClass("btn-warning")
-      .addClass("btn-primary")
-      .prop("disabled", false);
+      $("#saveAgencyBtn")
+        .text("Add Agency")
+        .removeClass("btn-warning")
+        .addClass("btn-primary")
+        .prop("disabled", false);
 
-    $("#agencyModal").modal("show");
+      $("#agencyModal").modal("show");
+    });
   });
 
   // =========================
   // EDIT
   // =========================
   $(document).on("click", ".editAgencyBtn", function () {
-    $("#agencyId").val($(this).data("id"));
-    $("#agencyName").val($(this).data("name"));
-    $("#contactPerson").val($(this).data("person"));
-    $("#email").val($(this).data("email"));
+    const $btn = $(this);
 
-    // =========================
-    // MOBILE NUMBERS
-    // =========================
-    let mobileNumbers = ($(this).data("number") || "").split("|");
+    loadBrands(function () {
+      $("#agencyId").val($btn.data("id"));
+      $("#agencyName").val($btn.data("name"));
+      $("#brand").val($btn.data("brand"));
+      $("#contactPerson").val($btn.data("person"));
+      $("#email").val($btn.data("email"));
 
-    $("#mobileContainer").html("");
+      // =========================
+      // MOBILE NUMBERS
+      // =========================
+      let mobileNumbers = ($btn.data("number") || "").split("|");
 
-    mobileNumbers.forEach((num, index) => {
-      $("#mobileContainer").append(`
-        <div class="input-group mb-2">
-          <input type="text"
-                 name="contact_numbers[]"
-                 class="form-control mobile-input"
-                 value="${num.trim()}"
-                 placeholder="09XX XXX XXXX"
-                 maxlength="13">
+      $("#mobileContainer").html("");
 
-          ${
-            index > 0
-              ? `
-            <button type="button"
-                    class="btn btn-outline-danger remove-mobile">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          `
-              : ""
-          }
-        </div>
-      `);
+      mobileNumbers.forEach((num, index) => {
+        $("#mobileContainer").append(`
+          <div class="input-group mb-2">
+            <input type="text"
+                   name="contact_numbers[]"
+                   class="form-control mobile-input"
+                   value="${num.trim()}"
+                   placeholder="09XX XXX XXXX"
+                   maxlength="13">
+
+            ${
+              index > 0
+                ? `
+              <button type="button"
+                      class="btn btn-outline-danger remove-mobile">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            `
+                : ""
+            }
+          </div>
+        `);
+      });
+
+      // =========================
+      // TELEPHONE NUMBERS
+      // =========================
+      let telNumbers = ($btn.data("tel") || "").split("|");
+
+      $("#telephoneContainer").html("");
+
+      telNumbers.forEach((num, index) => {
+        $("#telephoneContainer").append(`
+          <div class="input-group mb-2">
+            <input type="text"
+                   name="tel_numbers[]"
+                   class="form-control telephone-input"
+                   value="${num.trim()}"
+                   placeholder="(XXX) XXX-XX-XX"
+                   maxlength="15">
+
+            ${
+              index > 0
+                ? `
+              <button type="button"
+                      class="btn btn-outline-danger remove-telephone">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            `
+                : ""
+            }
+          </div>
+        `);
+      });
+
+      $(".modal-title").text("Update Agency");
+
+      $("#saveAgencyBtn")
+        .text("Save Changes")
+        .removeClass("btn-primary")
+        .addClass("btn-warning")
+        .prop("disabled", true);
+
+      // Store originals for change detection
+      originalAgencyValues = {
+        name: $btn.data("name") || "",
+        brand: $btn.data("brand") || "",
+        person: $btn.data("person") || "",
+        email: $btn.data("email") || "",
+        mobiles: ($btn.data("number") || "")
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        tels: ($btn.data("tel") || "")
+          .split("|")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      };
+
+      $("#agencyModal").modal("show");
     });
-
-    // =========================
-    // TELEPHONE NUMBERS
-    // =========================
-    let telNumbers = ($(this).data("tel") || "").split("|");
-
-    $("#telephoneContainer").html("");
-
-    telNumbers.forEach((num, index) => {
-      $("#telephoneContainer").append(`
-        <div class="input-group mb-2">
-          <input type="text"
-                 name="tel_numbers[]"
-                 class="form-control telephone-input"
-                 value="${num.trim()}"
-                 placeholder="(XXX) XXX-XX-XX"
-                 maxlength="15">
-
-          ${
-            index > 0
-              ? `
-            <button type="button"
-                    class="btn btn-outline-danger remove-telephone">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          `
-              : ""
-          }
-        </div>
-      `);
-    });
-
-    $(".modal-title").text("Update Agency");
-
-    $("#saveAgencyBtn")
-      .text("Save Changes")
-      .removeClass("btn-primary")
-      .addClass("btn-warning")
-      .prop("disabled", true);
-
-    // Store originals for change detection
-    originalAgencyValues = {
-      name: $(this).data("name") || "",
-      person: $(this).data("person") || "",
-      email: $(this).data("email") || "",
-      mobiles: ($(this).data("number") || "")
-        .split("|")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      tels: ($(this).data("tel") || "")
-        .split("|")
-        .map((s) => s.trim())
-        .filter(Boolean),
-    };
-
-    $("#agencyModal").modal("show");
   });
 
   // =========================
@@ -257,6 +311,7 @@ $(document).ready(function () {
     $("#agencyId").val("");
 
     $("#agencyName").val("");
+    $("#brand").val("");
     $("#contactPerson").val("");
     $("#email").val("");
 
@@ -304,6 +359,7 @@ $(document).ready(function () {
   function getAgencyFormValues() {
     return {
       name: $("#agencyName").val().trim().toUpperCase(),
+      brand: $("#brand").val() || "",
       person: $("#contactPerson").val().trim().toUpperCase(),
       email: $("#email").val().trim(),
       mobiles: $("input[name='contact_numbers[]']")
@@ -328,6 +384,7 @@ $(document).ready(function () {
 
     const changed =
       current.name !== originalAgencyValues.name ||
+      current.brand !== originalAgencyValues.brand ||
       current.person !== originalAgencyValues.person ||
       current.email !== originalAgencyValues.email ||
       current.mobiles.join("|") !== originalAgencyValues.mobiles.join("|") ||
@@ -338,6 +395,11 @@ $(document).ready(function () {
 
   // Bind to text fields
   $(document).on("input", "#agencyName, #contactPerson, #email", function () {
+    checkAgencyChanges();
+  });
+
+  // Bind to brand select
+  $(document).on("change", "#brand", function () {
     checkAgencyChanges();
   });
 
@@ -371,6 +433,7 @@ $(document).ready(function () {
     const id = $("#agencyId").val();
 
     const agency = $("#agencyName").val()?.trim().toUpperCase() || "";
+    const brand = $("#brand").val() || "";
     const contact_person =
       $("#contactPerson").val()?.trim().toUpperCase() || "";
     const contact_numbers = $("input[name='contact_numbers[]']")
@@ -390,7 +453,13 @@ $(document).ready(function () {
 
     const isEdit = id && id !== "";
 
-    if (!agency || !contact_person || contact_numbers.length === 0 || !email) {
+    if (
+      !agency ||
+      !brand ||
+      !contact_person ||
+      contact_numbers.length === 0 ||
+      !email
+    ) {
       Swal.fire({
         icon: "warning",
         title: "Required",
@@ -413,6 +482,7 @@ $(document).ready(function () {
       submitAgency(
         id,
         agency,
+        brand,
         contact_person,
         contact_numbers,
         tel_numbers,
@@ -428,6 +498,7 @@ $(document).ready(function () {
   function submitAgency(
     id,
     agency,
+    brand,
     contact_person,
     contact_numbers,
     tel_numbers,
@@ -441,6 +512,7 @@ $(document).ready(function () {
       data: {
         id,
         agency,
+        brand,
         contact_person,
         contact_numbers,
         tel_numbers,
