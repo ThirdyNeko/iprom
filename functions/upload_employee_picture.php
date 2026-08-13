@@ -2,7 +2,7 @@
 // ─────────────────────────────────────────────────────────────
 // functions/upload_employee_picture.php
 // Converts the uploaded image to binary and stores it directly in
-// [IPROM_TEST].[dbo].[employee_pictures].[id_picture] (VARBINARY column).
+// [IPROM_2].[dbo].[employee_pictures].[id_picture] (VARBINARY column).
 // No files are written to disk.
 // Expects multipart POST: employee_id, overwrite (0|1), picture (file)
 // Returns: { success: bool, message?: string, picture_data?: string }

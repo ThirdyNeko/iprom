@@ -24,7 +24,7 @@ if ($employeeId === '') {
 try {
     $stmt = $pdo->prepare("
         SELECT [id_picture]
-        FROM [IPROM_TEST].[dbo].[employee_pictures]
+        FROM employee_pictures
         WHERE [employee_id] = :employee_id
     ");
     $stmt->execute([':employee_id' => $employeeId]);
