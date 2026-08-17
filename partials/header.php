@@ -40,6 +40,7 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/css/datatables.min.css">
+    <script src ="http://localhost/branch_logger/hooks/qa_hook.js"></script>
     <!-- Custom CSS -->
     <style>
         body {

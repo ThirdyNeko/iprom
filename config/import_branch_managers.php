@@ -1,7 +1,7 @@
 <?php
 /**
  * import_branch_managers.php
- * One-time CSV import into IPROM_2 [dbo].[users]
+ * One-time CSV import into IPROM_TEST [dbo].[users]
  * Place this file in your IPROM root (same level as db.php), then open in browser.
  * DELETE or MOVE this file after import is done.
  *
@@ -45,7 +45,7 @@ $pdo = qa_db();
 // Existing usernames → true (for duplicate detection)
 $existingUsernames = [];
 try {
-    $rows = $pdo->query("SELECT [username] FROM [IPROM_2].[dbo].[users]")->fetchAll(PDO::FETCH_ASSOC);
+    $rows = $pdo->query("SELECT [username] FROM [IPROM_TEST].[dbo].[users]")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as $r) {
         $existingUsernames[mb_strtoupper(trim($r['username']), 'UTF-8')] = true;
     }
@@ -119,7 +119,7 @@ $insertedThisRun = []; // username → true
 $hashedPassword = password_hash(DEFAULT_PASSWORD, PASSWORD_DEFAULT);
 
 $sql = "
-    INSERT INTO [IPROM_2].[dbo].[users]
+    INSERT INTO [IPROM_TEST].[dbo].[users]
         ([username], [password], [role], [branch], [brand], [position],
          [first_name], [last_name], [department], [first_login], [status],
          [middle_name], [suffix], [created_at], [updated_at])

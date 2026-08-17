@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="../assets/bootstrap-icons/font/bootstrap-icons.min.css">
-
+    <script src ="http://localhost/branch_logger/hooks/qa_hook.js"></script>
     <style>
         body {
             height: 100vh;
