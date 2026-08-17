@@ -41,85 +41,99 @@ $branches = $pdo->query("
 ")->fetchAll(PDO::FETCH_ASSOC);
 
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
-             ->fetchAll(PDO::FETCH_COLUMN);
+    ->fetchAll(PDO::FETCH_COLUMN);
 
 $regions = $pdo->query("SELECT DISTINCT region FROM branches ORDER BY region")
-             ->fetchAll(PDO::FETCH_COLUMN);
+    ->fetchAll(PDO::FETCH_COLUMN);
 
 $areas = $pdo->query("SELECT DISTINCT area FROM branches ORDER BY area")
-             ->fetchAll(PDO::FETCH_COLUMN);
+    ->fetchAll(PDO::FETCH_COLUMN);
 
 $corpos = $pdo->query("SELECT DISTINCT corpo FROM branches ORDER BY corpo")
-             ->fetchAll(PDO::FETCH_COLUMN);
+    ->fetchAll(PDO::FETCH_COLUMN);
 
 $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencies")
-             ->fetchAll(PDO::FETCH_COLUMN);
+    ->fetchAll(PDO::FETCH_COLUMN);
 ?>
 
 <div class="content">
     <style>
-    .clickable-row {
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-    #promodizerTable.table-hover tbody tr:hover > td {
-        background-color: #e6f0ff !important;
-    }
-    #promodizerTable th,
-    #promodizerTable td {
-        text-align: center;
-        vertical-align: middle;
-    }
-    #promodizerTable td:first-child {
-        text-align: left !important;
-    }
-    #promodizerTable tbody tr td[colspan] {
-        text-align: center !important;
-    }
-    #promodizerTable th,
-    #promodizerTable td {
-        border-right: 1px solid #dee2e6;
-    }
-    #promodizerTable th:first-child,
-    #promodizerTable td:first-child {
-        border-left: 1px solid #dee2e6;
-    }
-    .card-body .col {
-        min-width: 150px;
-    }
-    .card-body .row.g-2 .col {
-        min-width: 160px;
-    }
-    .filter-control {
-        height: 32px !important;
-        font-size: 14px;
-    }
-    #promodizerTable th {
-        background-color: #2d68c4;
-        color: white;
-    }
-    .clear-input {
-        position: relative;
-    }
-    .clear-input input {
-        padding-right: 28px;
-    }
-    .clear-btn {
-        position: absolute;
-        right: 6px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: none;
-        background: transparent;
-        font-size: 18px;
-        line-height: 1;
-        color: #999;
-        cursor: pointer;
-        padding: 0;
-    }
-    .clear-btn:hover {
-        color: #333;
-    }
+        .clickable-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #promodizerTable.table-hover tbody tr:hover>td {
+            background-color: #e6f0ff !important;
+        }
+
+        #promodizerTable th,
+        #promodizerTable td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        #promodizerTable td:first-child {
+            text-align: left !important;
+        }
+
+        #promodizerTable tbody tr td[colspan] {
+            text-align: center !important;
+        }
+
+        #promodizerTable th,
+        #promodizerTable td {
+            border-right: 1px solid #dee2e6;
+        }
+
+        #promodizerTable th:first-child,
+        #promodizerTable td:first-child {
+            border-left: 1px solid #dee2e6;
+        }
+
+        .card-body .col {
+            min-width: 150px;
+        }
+
+        .card-body .row.g-2 .col {
+            min-width: 160px;
+        }
+
+        .filter-control {
+            height: 32px !important;
+            font-size: 14px;
+        }
+
+        #promodizerTable th {
+            background-color: #2d68c4;
+            color: white;
+        }
+
+        .clear-input {
+            position: relative;
+        }
+
+        .clear-input input {
+            padding-right: 28px;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            font-size: 18px;
+            line-height: 1;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .clear-btn:hover {
+            color: #333;
+        }
     </style>
     <div class="container-fluid">
         <div class="row mb-3 align-items-center">
@@ -135,10 +149,10 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                     <button id="exportExcel" class="btn btn-success">
                         <i class="bi bi-file-earmark-excel"></i> Export
                     </button>
-                    <?php if (($_SESSION['role'] ?? '') !== 'branch_manager'): ?>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
-                        <i class="bi bi-plus-circle"></i> Add Employee
-                    </button>
+                    <?php if (!in_array($_SESSION['role'] ?? '', ['branch_manager', 'assistant_admin'])): ?>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                            <i class="bi bi-plus-circle"></i> Add Employee
+                        </button>
                     <?php endif; ?>
                 </div>
             </div>
@@ -195,8 +209,8 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <label class="form-label">Branch</label>
                                     <select id="filterBranch" class="form-select filter-control">
                                         <option value="">All</option>
-                                        <?php 
-                                        foreach($branches as $b): 
+                                        <?php
+                                        foreach ($branches as $b):
                                             if (!empty($sessionBranches) && !in_array($b['branch_code'], $sessionBranches)) continue;
                                         ?>
                                             <option value="<?= htmlspecialchars($b['branch_code']) ?>">
@@ -211,7 +225,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <label class="form-label">Brand</label>
                                     <select id="filterBrand" class="form-select filter-control">
                                         <option value="">All</option>
-                                        <?php foreach($brands as $b): ?>
+                                        <?php foreach ($brands as $b): ?>
                                             <option value="<?= $b ?>"><?= $b ?></option>
                                         <?php endforeach; ?>
                                     </select>
@@ -267,7 +281,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <label class="form-label">Region</label>
                                     <select id="filterRegion" class="form-select filter-control">
                                         <option value="">All</option>
-                                        <?php foreach($regions as $r): ?>
+                                        <?php foreach ($regions as $r): ?>
                                             <option value="<?= $r ?>"><?= $r ?></option>
                                         <?php endforeach; ?>
                                     </select>
@@ -277,7 +291,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <label class="form-label">Area</label>
                                     <select id="filterArea" class="form-select filter-control">
                                         <option value="">All</option>
-                                        <?php foreach($areas as $a): ?>
+                                        <?php foreach ($areas as $a): ?>
                                             <option value="<?= $a ?>"><?= $a ?></option>
                                         <?php endforeach; ?>
                                     </select>
@@ -287,7 +301,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <label class="form-label">Company</label>
                                     <select id="filterCompany" class="form-select filter-control">
                                         <option value="">All</option>
-                                        <?php foreach($corpos as $c): ?>
+                                        <?php foreach ($corpos as $c): ?>
                                             <option value="<?= htmlspecialchars($c) ?>">
                                                 <?= strtoupper(htmlspecialchars($c)) ?>
                                             </option>
@@ -299,7 +313,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     <label class="form-label">Agency</label>
                                     <select id="filterAgency" class="form-select filter-control">
                                         <option value="">All</option>
-                                        <?php foreach($agencies as $ag): ?>
+                                        <?php foreach ($agencies as $ag): ?>
                                             <option value="<?= $ag ?>"><?= $ag ?></option>
                                         <?php endforeach; ?>
                                     </select>
@@ -358,18 +372,18 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
 
 <!-- JS -->
 <script>
-const branchMap = <?= json_encode($branchMap, JSON_UNESCAPED_UNICODE); ?>;
-const USER_ROLE = <?= json_encode($_SESSION['role'] ?? ''); ?>;
+    const branchMap = <?= json_encode($branchMap, JSON_UNESCAPED_UNICODE); ?>;
+    const USER_ROLE = <?= json_encode($_SESSION['role'] ?? ''); ?>;
 </script>
 <script>
-document.querySelectorAll(".clear-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const targetId = btn.getAttribute("data-target");
-        const input = document.getElementById(targetId);
-        input.value = "";
-        input.dispatchEvent(new Event("input"));
+    document.querySelectorAll(".clear-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const targetId = btn.getAttribute("data-target");
+            const input = document.getElementById(targetId);
+            input.value = "";
+            input.dispatchEvent(new Event("input"));
+        });
     });
-});
 </script>
 <script src="assets/js/jquery-4.0.0.min.js"></script>
 <script src="assets/js/datatables.min.js"></script>
@@ -379,4 +393,5 @@ document.querySelectorAll(".clear-btn").forEach(btn => {
 <?php include 'modals/add_employee_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>
 </body>
+
 </html>

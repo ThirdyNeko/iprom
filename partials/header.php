@@ -30,6 +30,7 @@ if (isset($_SESSION['user_id'])) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>iProm</title>
@@ -39,131 +40,130 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/bootstrap-icons/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="assets/css/datatables.min.css">
-    <script src ="http://localhost/branch_logger/hooks/qa_hook.js"></script>
     <!-- Custom CSS -->
     <style>
-body {
-    overflow-x: hidden;
-    background: #f8fafc;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-}
+        body {
+            overflow-x: hidden;
+            background: #f8fafc;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        }
 
-/* LOGO */
-.sidebar-logo {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
-}
+        /* LOGO */
+        .sidebar-logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
 
-/* SIDEBAR */
-.sidebar {
-    width: 240px;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: #c7dcff; 
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem 1rem;
-    transition: all 0.25s ease;
-    border-right: 1px solid #dbeafe;
-}
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #c7dcff;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem 1rem;
+            transition: all 0.25s ease;
+            border-right: 1px solid #dbeafe;
+        }
 
-/* TITLE */
-.sidebar h5 {
-    font-size: 35px;
-    font-weight: 600;
-    color: #1e3a8a;
-    letter-spacing: 0.3px;
-}
+        /* TITLE */
+        .sidebar h5 {
+            font-size: 35px;
+            font-weight: 600;
+            color: #1e3a8a;
+            letter-spacing: 0.3px;
+        }
 
-/* LINKS */
-.sidebar a {
-    color: #1f2937;
-    text-decoration: none;
-}
+        /* LINKS */
+        .sidebar a {
+            color: #1f2937;
+            text-decoration: none;
+        }
 
-/* NAV ITEMS */
-.sidebar .nav-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    font-size: 15px;
-    font-weight: 500;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-}
+        /* NAV ITEMS */
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
 
-/* ICONS */
-.sidebar .nav-link i {
-    font-size: 16px;
-    color: inherit;
-}
+        /* ICONS */
+        .sidebar .nav-link i {
+            font-size: 16px;
+            color: inherit;
+        }
 
-/* HOVER */
-.sidebar .nav-link:hover {
-    background: rgba(37, 99, 235, 0.15);
-    color: #1e3a8a;
-    transform: translateX(2px);
-}
+        /* HOVER */
+        .sidebar .nav-link:hover {
+            background: rgba(37, 99, 235, 0.15);
+            color: #1e3a8a;
+            transform: translateX(2px);
+        }
 
-/* ACTIVE */
-.sidebar .nav-link.active {
-    background: #2563eb;
-    color: #fff;
-}
+        /* ACTIVE */
+        .sidebar .nav-link.active {
+            background: #2563eb;
+            color: #fff;
+        }
 
-/* ACTIVE ICON */
-.sidebar .nav-link.active i {
-    color: #fff;
-}
+        /* ACTIVE ICON */
+        .sidebar .nav-link.active i {
+            color: #fff;
+        }
 
-/* CONTENT */
-.content {
-    margin-left: 240px;
-    padding: 24px;
-    transition: all 0.25s ease;
-}
+        /* CONTENT */
+        .content {
+            margin-left: 240px;
+            padding: 24px;
+            transition: all 0.25s ease;
+        }
 
-/* HEADER */
-.header {
-    height: 60px;
-    margin-left: 240px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    transition: all 0.25s ease;
-}
+        /* HEADER */
+        .header {
+            height: 60px;
+            margin-left: 240px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.25s ease;
+        }
 
-/* BUTTON */
-.header .btn {
-    border-radius: 8px;
-}
+        /* BUTTON */
+        .header .btn {
+            border-radius: 8px;
+        }
 
-/* BOTTOM USER SECTION */
-.sidebar .border-top {
-    border-color: #d1d5db !important;
-}
+        /* BOTTOM USER SECTION */
+        .sidebar .border-top {
+            border-color: #d1d5db !important;
+        }
 
-.sidebar .sidebar-text {
-    color: #334155;
-}
+        .sidebar .sidebar-text {
+            color: #334155;
+        }
 
-/* LOGOUT BUTTON */
-.sidebar .btn-danger {
-    border-radius: 10px;
-    transition: all 0.2s ease;
-}
+        /* LOGOUT BUTTON */
+        .sidebar .btn-danger {
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
 
-.sidebar .btn-danger:hover {
-    background-color: #b91c1c;
-    transform: translateX(2px);
-    color: #fff;
-}
+        .sidebar .btn-danger:hover {
+            background-color: #b91c1c;
+            transform: translateX(2px);
+            color: #fff;
+        }
 
-/* COLLAPSED MODE */
-/* .collapsed .sidebar {
+        /* COLLAPSED MODE */
+        /* .collapsed .sidebar {
     width: 70px;
 }
 
@@ -172,225 +172,235 @@ body {
     margin-left: 70px;
 } */
 
-/* HIDE TEXT */
-/* .collapsed .sidebar span,
+        /* HIDE TEXT */
+        /* .collapsed .sidebar span,
 .collapsed .sidebar-text,
 .collapsed .sidebar h5 {
     display: none;
 } */
 
-.sidebar .btn-danger:hover .sidebar-text {
-    color: #fff !important;
-}
+        .sidebar .btn-danger:hover .sidebar-text {
+            color: #fff !important;
+        }
 
-.sidebar .sidebar-text {
-    transition: color 0.2s ease;
-}
+        .sidebar .sidebar-text {
+            transition: color 0.2s ease;
+        }
 
-/* CENTER ICONS */
-/* .collapsed .sidebar .nav-link {
+        /* CENTER ICONS */
+        /* .collapsed .sidebar .nav-link {
     justify-content: center;
 } */
 
-/* CENTER LOGO */
-/* .collapsed .sidebar-logo {
+        /* CENTER LOGO */
+        /* .collapsed .sidebar-logo {
     margin: 0 auto;
     display: block;
 } */
 
-/* CENTER BOTTOM */
-/* .collapsed .btn,
+        /* CENTER BOTTOM */
+        /* .collapsed .btn,
 .collapsed .d-flex.align-items-center.gap-2 {
     justify-content: center !important;
 } */
 
-/* ── MAINTENANCE MODE BUTTON ───────────────────────── */
-.maintenance-btn {
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
+        /* ── MAINTENANCE MODE BUTTON ───────────────────────── */
+        .maintenance-btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
 
-.maintenance-off {
-    background: rgba(100, 116, 139, 0.12);
-    color: #64748b;
-}
+        .maintenance-off {
+            background: rgba(100, 116, 139, 0.12);
+            color: #64748b;
+        }
 
-.maintenance-off:hover {
-    background: rgba(100, 116, 139, 0.22);
-    color: #334155;
-    transform: translateX(2px);
-}
+        .maintenance-off:hover {
+            background: rgba(100, 116, 139, 0.22);
+            color: #334155;
+            transform: translateX(2px);
+        }
 
-.maintenance-on {
-    background: rgba(234, 179, 8, 0.12);
-    color: #ca8a04;
-    animation: pulse-maintenance 2s infinite;
-}
+        .maintenance-on {
+            background: rgba(234, 179, 8, 0.12);
+            color: #ca8a04;
+            animation: pulse-maintenance 2s infinite;
+        }
 
-.maintenance-on:hover {
-    background: rgba(234, 179, 8, 0.22);
-    color: #a16207;
-    transform: translateX(2px);
-}
+        .maintenance-on:hover {
+            background: rgba(234, 179, 8, 0.22);
+            color: #a16207;
+            transform: translateX(2px);
+        }
 
-@keyframes pulse-maintenance {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.0); }
-    50%       { box-shadow: 0 0 0 5px rgba(234, 179, 8, 0.25); }
-}
+        @keyframes pulse-maintenance {
 
-/* Hide badge text when sidebar is collapsed */
-/* .collapsed .maintenance-btn .badge {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.0);
+            }
+
+            50% {
+                box-shadow: 0 0 0 5px rgba(234, 179, 8, 0.25);
+            }
+        }
+
+        /* Hide badge text when sidebar is collapsed */
+        /* .collapsed .maintenance-btn .badge {
     display: none;
 } */
-</style>
+    </style>
 </head>
+
 <body>
 
-<!-- Header -->
-<nav class="navbar navbar-light bg-light border-bottom header px-3">
-</nav>
+    <!-- Header -->
+    <nav class="navbar navbar-light bg-light border-bottom header px-3">
+    </nav>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const body = document.body;
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
 
-    // Get stored sidebar state
-    const collapsed = localStorage.getItem('sidebarCollapsed');
+            // Get stored sidebar state
+            const collapsed = localStorage.getItem('sidebarCollapsed');
 
-    if (collapsed === '1') {
-        // User previously collapsed sidebar → restore collapsed
-        body.classList.add('collapsed');
-    } else if (collapsed === '0' || collapsed === null) {
-        // Default to expanded
-        body.classList.remove('collapsed');
-        // Optional: explicitly store 0 if first login
-        localStorage.setItem('sidebarCollapsed', '0');
-    }
+            if (collapsed === '1') {
+                // User previously collapsed sidebar → restore collapsed
+                body.classList.add('collapsed');
+            } else if (collapsed === '0' || collapsed === null) {
+                // Default to expanded
+                body.classList.remove('collapsed');
+                // Optional: explicitly store 0 if first login
+                localStorage.setItem('sidebarCollapsed', '0');
+            }
 
-    // Attach toggle event
-    const toggleBtn = document.querySelector('.btn-outline-secondary');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            body.classList.toggle('collapsed');
+            // Attach toggle event
+            const toggleBtn = document.querySelector('.btn-outline-secondary');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    body.classList.toggle('collapsed');
 
-            // Save new state
-            localStorage.setItem(
-                'sidebarCollapsed',
-                body.classList.contains('collapsed') ? '1' : '0'
-            );
+                    // Save new state
+                    localStorage.setItem(
+                        'sidebarCollapsed',
+                        body.classList.contains('collapsed') ? '1' : '0'
+                    );
+                });
+            }
         });
-    }
-});
-</script>
+    </script>
 
-<script>
-(function () {
-    const PING_INTERVAL  = 30_000;
-    const IDLE_THRESHOLD = 5_000;
+    <script>
+        (function() {
+            const PING_INTERVAL = 30_000;
+            const IDLE_THRESHOLD = 5_000;
 
-    let lastPing  = 0;
-    let idleTimer = null;
+            let lastPing = 0;
+            let idleTimer = null;
 
-    function ping() {
-        const now = Date.now();
-        if (now - lastPing < PING_INTERVAL) return;
-        lastPing = now;
+            function ping() {
+                const now = Date.now();
+                if (now - lastPing < PING_INTERVAL) return;
+                lastPing = now;
 
-        fetch('/iprom/auth/ping.php', { method: 'POST' })
-            .then(res => {
-                if (res.status === 401) {
-                    window.location.href = '/iprom/auth/login.php';
-                }
-            })
-            .catch(() => {});
-    }
+                fetch('/iprom/auth/ping.php', {
+                        method: 'POST'
+                    })
+                    .then(res => {
+                        if (res.status === 401) {
+                            window.location.href = '/iprom/auth/login.php';
+                        }
+                    })
+                    .catch(() => {});
+            }
 
-    function onActivity() {
-        ping();
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => { /* idle — pings stop */ }, IDLE_THRESHOLD);
-    }
+            function onActivity() {
+                ping();
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(() => {
+                    /* idle — pings stop */
+                }, IDLE_THRESHOLD);
+            }
 
-    document.addEventListener('mousemove',  onActivity);
-    document.addEventListener('keydown',    onActivity);
-    document.addEventListener('touchstart', onActivity);
-})();
-</script>
+            document.addEventListener('mousemove', onActivity);
+            document.addEventListener('keydown', onActivity);
+            document.addEventListener('touchstart', onActivity);
+        })();
+    </script>
 
-<!-- ── MAINTENANCE COUNTDOWN ─────────────────────────── -->
-<script>
-(function () {
-    const isSuperAdmin = <?= json_encode(($_SESSION['role'] ?? '') === 'super_admin') ?>;
-    const isExempt     = <?= json_encode(in_array($_SESSION['username'] ?? '', ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'])) ?>;
+    <!-- ── MAINTENANCE COUNTDOWN ─────────────────────────── -->
+    <script>
+        (function() {
+            const isSuperAdmin = <?= json_encode(($_SESSION['role'] ?? '') === 'super_admin') ?>;
+            const isExempt = <?= json_encode(in_array($_SESSION['username'] ?? '', ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'])) ?>;
 
-    let swalShown         = false;
-    let countdownInterval = null;
+            let swalShown = false;
+            let countdownInterval = null;
 
-    function checkMaintenance() {
-        fetch('/iprom/get_maintenance_status.php')
-            .then(r => r.json())
-            .then(data => {
-                const wrap  = document.getElementById('maintenance-countdown-wrap');
-                const el    = document.getElementById('maintenance-countdown');
-                const label = document.querySelector('#maintenance-countdown-wrap .sidebar-text');
+            function checkMaintenance() {
+                fetch('/iprom/get_maintenance_status.php')
+                    .then(r => r.json())
+                    .then(data => {
+                        const wrap = document.getElementById('maintenance-countdown-wrap');
+                        const el = document.getElementById('maintenance-countdown');
+                        const label = document.querySelector('#maintenance-countdown-wrap .sidebar-text');
 
-                if (!data.active) {
-                    if (wrap) wrap.style.display = 'none';
-                    if (countdownInterval) clearInterval(countdownInterval);
-                    swalShown = false;
-                    return;
-                }
+                        if (!data.active) {
+                            if (wrap) wrap.style.display = 'none';
+                            if (countdownInterval) clearInterval(countdownInterval);
+                            swalShown = false;
+                            return;
+                        }
 
-                // ── Show Swal once — only for users who will be kicked ──
-                if (!swalShown && !isSuperAdmin && !isExempt) {
-                    swalShown = true;
-                    Swal.fire({
-                        title: '⚠️ System Maintenance',
-                        text: data.message,
-                        icon: 'warning',
-                        iconColor: '#f59e0b',
-                        confirmButtonText: 'I understand',
-                        confirmButtonColor: '#f59e0b',
-                        allowOutsideClick: false,
-                    });
-                }
+                        // ── Show Swal once — only for users who will be kicked ──
+                        if (!swalShown && !isSuperAdmin && !isExempt) {
+                            swalShown = true;
+                            Swal.fire({
+                                title: '⚠️ System Maintenance',
+                                text: data.message,
+                                icon: 'warning',
+                                iconColor: '#f59e0b',
+                                confirmButtonText: 'I understand',
+                                confirmButtonColor: '#f59e0b',
+                                allowOutsideClick: false,
+                            });
+                        }
 
-                // ── Show countdown for everyone ─────────────────────────
-                if (wrap) wrap.style.display = 'block';
+                        // ── Show countdown for everyone ─────────────────────────
+                        if (wrap) wrap.style.display = 'block';
 
-                if (label) {
-                    label.textContent = (isSuperAdmin || isExempt)
-                        ? 'Maintenance starts in'
-                        : 'Logging out in';
-                }
+                        if (label) {
+                            label.textContent = (isSuperAdmin || isExempt) ?
+                                'Maintenance starts in' :
+                                'Logging out in';
+                        }
 
-                if (countdownInterval) clearInterval(countdownInterval);
+                        if (countdownInterval) clearInterval(countdownInterval);
 
-                let secondsLeft = data.seconds_remaining;
+                        let secondsLeft = data.seconds_remaining;
 
-                function tick() {
-                    if (secondsLeft < 0) {
-                        clearInterval(countdownInterval);
-                        if (el) el.textContent = '00:00';
-                        return;
-                    }
-                    const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
-                    const s = (secondsLeft % 60).toString().padStart(2, '0');
-                    if (el) el.textContent = `${m}:${s}`;
-                    if (el) el.style.color  = secondsLeft <= 60 ? '#dc2626' : '#ca8a04';
-                    secondsLeft--;
-                }
+                        function tick() {
+                            if (secondsLeft < 0) {
+                                clearInterval(countdownInterval);
+                                if (el) el.textContent = '00:00';
+                                return;
+                            }
+                            const m = Math.floor(secondsLeft / 60).toString().padStart(2, '0');
+                            const s = (secondsLeft % 60).toString().padStart(2, '0');
+                            if (el) el.textContent = `${m}:${s}`;
+                            if (el) el.style.color = secondsLeft <= 60 ? '#dc2626' : '#ca8a04';
+                            secondsLeft--;
+                        }
 
-                tick();
-                countdownInterval = setInterval(tick, 1000);
-            })
-            .catch(() => {});
-    }
+                        tick();
+                        countdownInterval = setInterval(tick, 1000);
+                    })
+                    .catch(() => {});
+            }
 
-    document.addEventListener('DOMContentLoaded', checkMaintenance);
-    setInterval(checkMaintenance, 30_000);
-})();
-</script>
-
-
+            document.addEventListener('DOMContentLoaded', checkMaintenance);
+            setInterval(checkMaintenance, 30_000);
+        })();
+    </script>
