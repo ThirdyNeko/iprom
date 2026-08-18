@@ -380,11 +380,14 @@ $pdf->Cell(0, 7, fpdf_str($employeeName), 1, 1);
 
 // Branch — value font shrinks (down to 6pt) so a long roving-branch
 // list stays on one line instead of wrapping the row.
+// NOTE: FPDF has no GetRightMargin() getter — this file never calls
+// SetMargins()/SetRightMargin(), so the constructor default of 10mm
+// is used directly here instead.
 $pdf->SetFont('Arial', '', 11);
 $pdf->Cell(55, 7, 'Branch', 1, 0);
 
 $branchText = fpdf_str($branchDisplay);
-$branchValueWidth = $pdf->GetPageWidth() - $pdf->GetRightMargin() - $pdf->GetX() - 2; // -2mm inner padding
+$branchValueWidth = $pdf->GetPageWidth() - 10 - $pdf->GetX() - 2; // 10mm = default right margin; -2mm inner padding
 fpdf_fit_font($pdf, $branchText, $branchValueWidth);
 $pdf->Cell(0, 7, $branchText, 1, 1);
 
@@ -393,7 +396,7 @@ $pdf->SetFont('Arial', '', 11);
 $pdf->Cell(55, 7, 'Brand', 1, 0);
 
 $brandText = fpdf_str($brandDisplay);
-$brandValueWidth = $pdf->GetPageWidth() - $pdf->GetRightMargin() - $pdf->GetX() - 2; // -2mm inner padding
+$brandValueWidth = $pdf->GetPageWidth() - 10 - $pdf->GetX() - 2; // 10mm = default right margin; -2mm inner padding
 fpdf_fit_font($pdf, $brandText, $brandValueWidth);
 $pdf->Cell(0, 7, $brandText, 1, 1);
 
