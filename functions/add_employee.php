@@ -361,12 +361,7 @@ try {
     // =========================
     // ROVING BRANCH INSERTS
     // =========================
-
-    $today = date('Y-m-d');
     $hidden = false;
-    if (!empty($start_date)) {
-        $hidden = strtotime($start_date) > strtotime($today);
-    }
 
     foreach ($roving_branches as $rBranch) {
 
