@@ -42,6 +42,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   const multiBrandField = document.getElementById("multiBrandField");
   const multiBrandContainer = document.getElementById("multiBrandContainer");
 
+  // Start date input (fullness now depends on this)
+  const startDateInputEl = form.querySelector('input[name="start_date"]');
+
   noMiddleName.addEventListener("change", function () {
     if (this.checked) {
       middleNameInput.value = "";
@@ -132,9 +135,43 @@ document.addEventListener("DOMContentLoaded", async function () {
   let branchBrandPairs = [];
   try {
     const res = await fetch("functions/get_available_branches_brands.php");
-    branchBrandPairs = await res.json(); // [{branch_name, brand_name, required_count, assigned_count}]
+    branchBrandPairs = await res.json(); // [{branch_code, branch_name, brand_name, required_count, assigned_count, queued_count, resigned_count, latest_resigned_date}]
   } catch (err) {
     console.error("Failed to fetch branch-brand data", err);
+  }
+
+  // =========================
+  // Slot fullness helper (mirrors backend validateAssignmentSlot logic)
+  // =========================
+  // If the pair's latest resignation happened before the new hire's
+  // start date, that resigned headcount is treated as freed up and
+  // subtracted from assigned_count before checking capacity.
+  function isComboFull(combo, startDate) {
+    if (!combo) return true;
+
+    let assigned = Number(combo.assigned_count) || 0;
+    const queued = Number(combo.queued_count) || 0;
+    const required = Number(combo.required_count) || 0;
+    const resigned = Number(combo.resigned_count) || 0;
+    const latestResignedDate = combo.latest_resigned_date;
+
+    if (
+      resigned > 0 &&
+      startDate &&
+      latestResignedDate &&
+      latestResignedDate < startDate
+    ) {
+      assigned -= resigned;
+      if (assigned < 0) assigned = 0;
+    }
+
+    return assigned + queued >= required;
+  }
+
+  function getCurrentStartDate() {
+    return startDateInputEl && startDateInputEl.value
+      ? startDateInputEl.value
+      : null;
   }
 
   // =========================
@@ -366,9 +403,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Populate main branch select with availability
   // =========================
   function populateBranchSelect() {
+    const startDate = getCurrentStartDate();
     const uniqueBranches = [
       ...new Set(branchBrandPairs.map((p) => p.branch_code)),
     ];
+
+    const currentValue = mainBranchSelect.value;
 
     mainBranchSelect.innerHTML =
       '<option value="" disabled selected>-- Select Branch --</option>';
@@ -383,7 +423,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       const allFull = branchBrandPairs
         .filter((p) => p.branch_code === code)
-        .every((p) => p.assigned_count >= p.required_count);
+        .every((p) => isComboFull(p, startDate));
 
       if (allFull) {
         opt.disabled = true;
@@ -392,31 +432,53 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       mainBranchSelect.appendChild(opt);
     });
+
+    // restore previous selection if it's still a valid, non-disabled option
+    if (currentValue) {
+      mainBranchSelect.value = currentValue;
+      const selectedOpt =
+        mainBranchSelect.options[mainBranchSelect.selectedIndex];
+      if (!selectedOpt || selectedOpt.disabled) {
+        mainBranchSelect.value = "";
+      }
+    }
   }
 
   // =========================
   // Populate brand select based on branch
   // =========================
   function updateBrandSelect(selectBranch, selectBrand) {
+    const startDate = getCurrentStartDate();
     const branch = selectBranch.value;
+    const currentValue = selectBrand.value;
+
     selectBrand.innerHTML =
       '<option value="" disabled selected>-- Select Brand --</option>';
     branchBrandPairs
       .filter((p) => p.branch_code === branch)
       .forEach((p) => {
         const opt = new Option(p.brand_name, p.brand_name);
-        if (p.assigned_count >= p.required_count) {
+        if (isComboFull(p, startDate)) {
           opt.disabled = true;
           opt.text += " (Full)";
         }
         selectBrand.appendChild(opt);
       });
+
+    if (currentValue) {
+      selectBrand.value = currentValue;
+      const selectedOpt = selectBrand.options[selectBrand.selectedIndex];
+      if (!selectedOpt || selectedOpt.disabled) {
+        selectBrand.value = "";
+      }
+    }
   }
 
   // =========================
   // Populate roving selects
   // =========================
   function populateRovingSelect(select) {
+    const startDate = getCurrentStartDate();
     const currentBranch = mainBranchSelect.value;
 
     const selectedBranches = Array.from(
@@ -450,7 +512,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       const allFull = branchBrandPairs
         .filter((p) => p.branch_code === code)
-        .every((p) => p.assigned_count >= p.required_count);
+        .every((p) => isComboFull(p, startDate));
 
       if (allFull) {
         opt.disabled = true;
@@ -471,8 +533,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   function populateMultiBrandSelect(select, selectedBranch, excludedBrand) {
+    const startDate = getCurrentStartDate();
     const branch = selectedBranch || mainBranchSelect.value;
     const brandToExclude = excludedBrand || mainBrandSelect.value;
+    const currentValue = select.value;
 
     select.innerHTML =
       '<option value="" disabled selected>-- Select Brand --</option>';
@@ -487,13 +551,21 @@ document.addEventListener("DOMContentLoaded", async function () {
 
       const opt = new Option(p.brand_name, p.brand_name);
 
-      if (p.assigned_count >= p.required_count) {
+      if (isComboFull(p, startDate)) {
         opt.disabled = true;
         opt.text += " (Full)";
       }
 
       select.appendChild(opt);
     });
+
+    if (currentValue) {
+      select.value = currentValue;
+      const selectedOpt = select.options[select.selectedIndex];
+      if (!selectedOpt || selectedOpt.disabled) {
+        select.value = "";
+      }
+    }
   }
 
   mainBranchSelect.addEventListener("change", () => {
@@ -524,6 +596,43 @@ document.addEventListener("DOMContentLoaded", async function () {
         populateMultiBrandSelect(sel, branch, brand);
       });
     });
+  });
+
+  // =========================
+  // Re-evaluate fullness whenever start date changes
+  // =========================
+  // A resigned slot only frees up once the resignation predates the new
+  // hire's start date, so changing the date can flip options between
+  // full/available — refresh every dependent dropdown.
+  //
+  // Delegated on the form (rather than bound directly to
+  // startDateInputEl) so it fires reliably regardless of when/how the
+  // start_date input is attached, and covers both native date-picker
+  // selection ("change") and manual typing ("input").
+  function refreshAvailabilityForStartDate() {
+    populateBranchSelect();
+    updateBrandSelect(mainBranchSelect, mainBrandSelect);
+
+    const branch = mainBranchSelect.value;
+    const brand = mainBrandSelect.value;
+
+    document.querySelectorAll(".roving-select").forEach((sel) => {
+      populateRovingSelect(sel);
+    });
+    document.querySelectorAll(".multi-brand-select").forEach((sel) => {
+      populateMultiBrandSelect(sel, branch, brand);
+    });
+  }
+
+  form.addEventListener("change", (e) => {
+    if (e.target && e.target.name === "start_date") {
+      refreshAvailabilityForStartDate();
+    }
+  });
+  form.addEventListener("input", (e) => {
+    if (e.target && e.target.name === "start_date") {
+      refreshAvailabilityForStartDate();
+    }
   });
 
   // Initial populate
@@ -733,20 +842,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
       }
 
-      const dateHiredValue = dateHiredInput.value;
-
-      if (dateHiredValue) {
-        const today = new Date().toISOString().split("T")[0];
-
-        if (dateHiredValue > today) {
-          return Swal.fire(
-            "Invalid Date Hired",
-            "Date hired cannot be in the future.",
-            "error",
-          );
-        }
-      }
-
       // Gather all branches (main + roving)
       let branchesToCheck = branch ? [branch] : [];
       if (sub === "MULTI BRANCH") {
@@ -793,7 +888,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           const combo = branchBrandPairs.find(
             (p) => p.branch_code === branch && p.brand_name === b,
           );
-          if (!combo || combo.assigned_count >= combo.required_count) {
+          if (!combo || isComboFull(combo, startDate)) {
             return Swal.fire(
               "Cannot Save",
               `Invalid: ${branch} & ${b}`,
@@ -808,7 +903,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const combo = branchBrandPairs.find(
           (p) => p.branch_code === b && p.brand_name === brand,
         );
-        if (!combo || combo.assigned_count >= combo.required_count) {
+        if (!combo || isComboFull(combo, startDate)) {
           return Swal.fire(
             "Cannot Save",
             `Branch & Brand Invalid: ${b} & ${brand}. Choose another.`,

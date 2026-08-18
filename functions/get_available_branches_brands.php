@@ -16,7 +16,9 @@ $sql = "
         a.brand_name,
         a.required_count,
         SUM(CASE WHEN e.status IN ('ACTIVE', 'PENDING', 'QUEUED') THEN 1 ELSE 0 END) AS assigned_count,
-        SUM(CASE WHEN e.status IN ('PENDING', 'QUEUED') THEN 1 ELSE 0 END) AS queued_count
+        SUM(CASE WHEN e.status IN ('PENDING', 'QUEUED') THEN 1 ELSE 0 END) AS queued_count,
+        a.resigned_count,
+        a.latest_resigned_date
     FROM assignment a
     LEFT JOIN IPROM.dbo.branches b
         ON b.branch_code = a.branch_name
@@ -29,7 +31,9 @@ $sql = "
         b.branch,
         b.corpo,
         a.brand_name,
-        a.required_count
+        a.required_count,
+        a.resigned_count,
+        a.latest_resigned_date
     ORDER BY
         b.branch,
         a.brand_name

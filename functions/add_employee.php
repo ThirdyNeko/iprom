@@ -103,7 +103,7 @@ $multi_brands = array_unique(array_filter($multi_brands, fn($b) => $b !== $brand
 // =========================
 $multi_brand_group_id = null;
 
-function validateAssignmentSlot($pdo, $branch, $brand) {
+function validateAssignmentSlot($pdo, $branch, $brand, $start_date = null) {
 
     if (!$branch || !$brand) {
         return [
@@ -113,7 +113,7 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
     }
 
     $stmt = $pdo->prepare("
-        SELECT required_count, assigned_count, queued_count
+        SELECT required_count, assigned_count, queued_count, resigned_count, latest_resigned_date
         FROM assignment
         WHERE branch_name = ?
         AND brand_name = ?
@@ -131,8 +131,22 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
         ];
     }
 
+    $assigned_count       = (int)$row['assigned_count'];
+    $resigned_count       = (int)$row['resigned_count'];
+    $latest_resigned_date = $row['latest_resigned_date'];
+
+    // ✅ If the latest resignation on record happened before the new
+    // hire's start date, that slot is already freed up — subtract it
+    // from assigned_count before checking capacity.
+    if ($resigned_count > 0 && $start_date && $latest_resigned_date && $latest_resigned_date < $start_date) {
+        $assigned_count -= $resigned_count;
+        if ($assigned_count < 0) {
+            $assigned_count = 0;
+        }
+    }
+
     // slot full
-    if ((int)$row['assigned_count'] + (int)$row['queued_count'] >= (int)$row['required_count']) {
+    if ($assigned_count + (int)$row['queued_count'] >= (int)$row['required_count']) {
         return [
             'valid' => false,
             'message' => "Slot is already full for {$branch} - {$brand}."
@@ -147,14 +161,6 @@ function validateAssignmentSlot($pdo, $branch, $brand) {
 
 if ($sub_status === 'MULTI BRAND' || $sub_status === 'HYBRID') {
     $multi_brand_group_id = 'MBR-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
-}
-
-if ($date_hired && $date_hired > date('Y-m-d')) {
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Date hired cannot be in the future.'
-    ]);
-    exit;
 }
 
 if ($birthday && $birthday > date('Y-m-d')) {
@@ -175,7 +181,8 @@ if ($branch && $brand) {
     $validation = validateAssignmentSlot(
         $pdo,
         $branch,
-        $brand
+        $brand,
+        $start_date
     );
 
     if (!$validation['valid']) {
@@ -195,7 +202,8 @@ foreach ($roving_branches as $rBranch) {
     $validation = validateAssignmentSlot(
         $pdo,
         $rBranch,
-        $brand
+        $brand,
+        $start_date
     );
 
     if (!$validation['valid']) {
@@ -215,7 +223,8 @@ foreach ($multi_brands as $mBrand) {
     $validation = validateAssignmentSlot(
         $pdo,
         $branch,
-        $mBrand
+        $mBrand,
+        $start_date
     );
 
     if (!$validation['valid']) {
@@ -242,7 +251,8 @@ if (
             $validation = validateAssignmentSlot(
                 $pdo,
                 $rBranch,
-                $mBrand
+                $mBrand,
+                $start_date
             );
 
             if (!$validation['valid']) {
