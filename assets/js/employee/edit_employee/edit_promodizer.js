@@ -1306,6 +1306,169 @@ async function loadEmployeePage(id) {
 }
 
 // =========================
+// NEW: SPOUSE INFO COLLECTION (UPDATE MARITAL STATUS -> MARRIED, female employee)
+// Only spouse_last_name is ever sent to the backend. First/Middle/
+// Suffix/Birthdate are collected purely for on-screen confirmation
+// and are discarded after the modals close.
+// =========================
+
+// Age-check helper: returns true if birthdate (YYYY-MM-DD string)
+// represents someone who is at least 18 years old today.
+function isAtLeast18(birthdateStr) {
+  if (!birthdateStr) return false;
+  const bd = new Date(birthdateStr);
+  if (isNaN(bd.getTime())) return false;
+
+  const today = new Date();
+  let age = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) {
+    age--;
+  }
+  return age >= 18;
+}
+
+// Returns { proceed: boolean, spouseLastName: string|null }
+async function collectSpouseInfoIfNeeded(reason) {
+  if (reason !== "UPDATE MARITAL STATUS") {
+    return { proceed: true, spouseLastName: null };
+  }
+
+  const selectedMaritalStatus = (editMaritalStatus?.value || "").toUpperCase();
+  const employeeGender = (window.currentEmployee?.gender || "")
+    .trim()
+    .toUpperCase();
+
+  const isMarried = selectedMaritalStatus === "MARRIED";
+  const isFemale = employeeGender === "FEMALE";
+
+  if (!isMarried || !isFemale) {
+    return { proceed: true, spouseLastName: null };
+  }
+
+  // STEP 1: Spouse name fields
+  const nameStep = await Swal.fire({
+    title: "Spouse Information",
+    html: `
+    <input id="swalSpouseFirstName"
+           class="swal2-input text-uppercase"
+           placeholder="Spouse First Name"
+           autocomplete="off"
+           style="text-transform: uppercase;">
+
+    <input id="swalSpouseMiddleName"
+           class="swal2-input text-uppercase"
+           placeholder="Spouse Middle Name (optional)"
+           autocomplete="off"
+           style="text-transform: uppercase;">
+
+    <input id="swalSpouseLastName"
+           class="swal2-input text-uppercase"
+           placeholder="Spouse Last Name"
+           autocomplete="off"
+           style="text-transform: uppercase;">
+
+    <input id="swalSpouseSuffix"
+           class="swal2-input text-uppercase"
+           placeholder="Spouse Suffix (optional)"
+           autocomplete="off"
+           style="text-transform: uppercase;">
+  `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: "Next",
+    allowOutsideClick: false,
+
+    didOpen: () => {
+      document.getElementById("swalSpouseFirstName")?.focus();
+    },
+
+    preConfirm: () => {
+      const firstName = (
+        document.getElementById("swalSpouseFirstName")?.value || ""
+      )
+        .trim()
+        .toUpperCase();
+
+      const middleName = (
+        document.getElementById("swalSpouseMiddleName")?.value || ""
+      )
+        .trim()
+        .toUpperCase();
+
+      const lastName = (
+        document.getElementById("swalSpouseLastName")?.value || ""
+      )
+        .trim()
+        .toUpperCase();
+
+      const suffix = (document.getElementById("swalSpouseSuffix")?.value || "")
+        .trim()
+        .toUpperCase();
+
+      if (!firstName) {
+        Swal.showValidationMessage("Spouse First Name is required");
+        return false;
+      }
+
+      if (!lastName) {
+        Swal.showValidationMessage("Spouse Last Name is required");
+        return false;
+      }
+
+      return {
+        firstName,
+        middleName,
+        lastName,
+        suffix,
+      };
+    },
+  });
+
+  if (!nameStep.isConfirmed) {
+    return { proceed: false, spouseLastName: null };
+  }
+
+  const spouseLastName = nameStep.value.lastName;
+
+  // STEP 2: Spouse birthdate, must be 18+
+  const maxDateStr = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    return d.toISOString().split("T")[0];
+  })();
+
+  const birthdateStep = await Swal.fire({
+    title: "Spouse Birthdate",
+    html: `<input type="date" id="swalSpouseBirthdate" class="swal2-input" max="${maxDateStr}">`,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: "Confirm",
+    allowOutsideClick: false,
+    preConfirm: () => {
+      const birthdate = document.getElementById("swalSpouseBirthdate")?.value;
+
+      if (!birthdate) {
+        Swal.showValidationMessage("Spouse Birthdate is required");
+        return false;
+      }
+      if (!isAtLeast18(birthdate)) {
+        Swal.showValidationMessage("Spouse must be at least 18 years old");
+        return false;
+      }
+
+      return birthdate;
+    },
+  });
+
+  if (!birthdateStep.isConfirmed) {
+    return { proceed: false, spouseLastName: null };
+  }
+
+  return { proceed: true, spouseLastName };
+}
+
+// =========================
 // SAVE BUTTON
 // =========================
 document.getElementById("saveBtn").addEventListener("click", async () => {
@@ -1316,6 +1479,8 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const reason = (
     document.getElementById("editReasonUpdate").value || ""
   ).toUpperCase();
+
+  let spouseLastName = null;
 
   const requiresAssignmentCheck =
     reason === "TRANSFER BRANCH" || reason === "REASSIGN";
@@ -1380,6 +1545,17 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
       text: "Please select a Marital Status.",
     });
   }
+
+  // NEW: married + female employee -> collect spouse info via two
+  // sequential SweetAlert2 steps. Only the spouse's last name is
+  // kept (see collectSpouseInfoIfNeeded) — everything else is
+  // discarded once the modals close and never sent to the backend.
+  {
+    const spouseInfo = await collectSpouseInfoIfNeeded(reason);
+    if (!spouseInfo.proceed) return; // user cancelled a step — abort save
+    spouseLastName = spouseInfo.spouseLastName;
+  }
+
   if (reason === "UPDATE CONTACT NUMBER") {
     if (!editContactNumber?.value) {
       return Swal.fire({
@@ -1503,6 +1679,13 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // NEW: personal / address fields
   formData.set("marital_status", editMaritalStatus?.value || "");
   formData.set("contact_number", editContactNumber?.value || "");
+
+  // NEW: only the spouse's last name is ever sent — first/middle
+  // name, suffix, and birthdate captured in the modals above are
+  // intentionally not included in the request.
+  if (spouseLastName) {
+    formData.set("spouse_last_name", spouseLastName);
+  }
 
   // Biometric number is optional — send empty string through as-is;
   // update_promodizer.php should treat an empty value as NULL.

@@ -310,7 +310,7 @@ try {
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Date Hired</label>
-                            <input type="date" name="date_hired" class="form-control" max="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="date_hired" class="form-control" required>
                         </div>
                     </div>
 

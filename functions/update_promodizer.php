@@ -51,9 +51,12 @@ if (!$id) {
 
 // =========================
 // FETCH CURRENT VALUES (IMPORTANT FIX)
+// NEW: also fetch gender here — needed server-side to independently
+// verify whether the MARRIED + FEMALE spouse-last-name requirement
+// actually applies, instead of trusting the client's gating.
 // =========================
 $stmt = $pdo->prepare("
-    SELECT roving_group_id, multi_brand_group_id
+    SELECT roving_group_id, multi_brand_group_id, gender
     FROM employee_info
     WHERE id = ?
 ");
@@ -64,6 +67,8 @@ if (!$current) {
     echo json_encode(['status' => 'danger', 'message' => 'Employee not found']);
     exit;
 }
+
+$employee_gender = strtoupper(trim($current['gender'] ?? ''));
 
 // =========================
 // ALWAYS CONTROLLED
@@ -100,6 +105,13 @@ $street             = $_POST['street'] ?? null;
 $categories = trim($_POST['categories'] ?? '');
 $categories = ($categories === '') ? null : strtoupper($categories);
 
+// ✅ NEW: Spouse Last Name — only field the client ever sends from
+// the spouse-info SweetAlert flow (first name/middle name/suffix/
+// birthdate are collected client-side purely for confirmation and
+// are never posted here). Normalize blank/whitespace to NULL.
+$spouse_last_name = trim($_POST['spouse_last_name'] ?? '');
+$spouse_last_name = ($spouse_last_name === '') ? null : $spouse_last_name;
+
 // =========================
 // LOA CODE GENERATION
 // Format: EMP-YYYYMMDD-XXXX-123456
@@ -134,6 +146,26 @@ if ($reason_for_update === 'UPDATE MARITAL STATUS' && empty($marital_status)) {
     echo json_encode([
         'status' => 'danger',
         'message' => 'Marital Status is required'
+    ]);
+    exit;
+}
+
+// ✅ NEW: Spouse Last Name is required, server-independently, when
+// the reason is UPDATE MARITAL STATUS, the submitted marital status
+// is MARRIED, and the employee's actual DB gender is FEMALE. This is
+// re-derived here rather than trusting a client-side flag, since the
+// JS gating (isMarried && isFemale) could otherwise be bypassed by
+// posting directly to this endpoint.
+$requiresSpouseLastName = (
+    $reason_for_update === 'UPDATE MARITAL STATUS' &&
+    strtoupper(trim($marital_status ?? '')) === 'MARRIED' &&
+    $employee_gender === 'FEMALE'
+);
+
+if ($requiresSpouseLastName && empty($spouse_last_name)) {
+    echo json_encode([
+        'status' => 'danger',
+        'message' => 'Spouse Last Name is required.'
     ]);
     exit;
 }
@@ -632,6 +664,15 @@ try {
         ? $categories
         : $base['categories'];
 
+    // NEW: only overwrite spouse_last_name when this save actually
+    // supplied one (i.e. the UPDATE MARITAL STATUS -> MARRIED +
+    // FEMALE flow ran and the modal was completed). Every other
+    // reason must leave whatever is already stored untouched rather
+    // than wiping it with NULL.
+    $spouseLastNameParam = ($spouse_last_name !== null)
+        ? $spouse_last_name
+        : ($base['spouse_last_name'] ?? null);
+
     // =========================
     // UPDATE ORIGINAL ONLY HERE
     // =========================
@@ -668,6 +709,10 @@ try {
         array_diff($existingBrands ?? [], [$currentBrand])
     );
 
+    // NEW: added @spouse_last_name parameter. This requires
+    // update_employee to accept a matching @spouse_last_name
+    // parameter and an employee_info.spouse_last_name column — add
+    // both if they don't already exist.
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
@@ -694,6 +739,7 @@ try {
             @contact_number = :contact_number,
             @biometric_number = :biometric_number,
             @categories = :categories,
+            @spouse_last_name = :spouse_last_name,
             @province = :province,
             @province_name = :province_name,
             @municipality = :municipality,
@@ -734,6 +780,7 @@ try {
         ':contact_number' => $contact_number,
         ':biometric_number' => $biometric_number,
         ':categories' => $categoriesParam,
+        ':spouse_last_name' => $spouseLastNameParam,
         ':province' => $province,
         ':province_name' => $province_name,
         ':municipality' => $municipality,
@@ -815,6 +862,9 @@ try {
 
         // =========================
         // INSERT TEMPLATE (reuse both loops)
+        // NEW: added spouse_last_name column so duplicated rows
+        // (multi-branch/brand/hybrid) carry the same spouse info as
+        // the base record rather than losing it.
         // =========================
         $stmtInsert = $pdo->prepare("
             INSERT INTO employee_info (
