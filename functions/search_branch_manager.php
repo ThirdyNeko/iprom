@@ -48,6 +48,7 @@ try {
                     ELSE ''
                 END
           ))) = LOWER(LTRIM(RTRIM(:full_name)))";
+          AND [status] = 'ACTIVE'";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([

@@ -419,7 +419,7 @@ $pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($endDate))), 1, 1);
 $pdf->Ln(2);
 
 $pdf->SetFont('Arial', 'I', 10);
-$pdf->Write(6, '       This document was generated automatically by the system; no signature is required.');
+$pdf->Write(6, 'This document was generated automatically by the system; no signature is required.');
 
 $pdf->Ln(7);
 
