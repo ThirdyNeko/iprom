@@ -47,7 +47,7 @@ try {
                     THEN ' ' + LTRIM(RTRIM([suffix]))
                     ELSE ''
                 END
-          ))) = LOWER(LTRIM(RTRIM(:full_name)))";
+          ))) = LOWER(LTRIM(RTRIM(:full_name)))
           AND [status] = 'ACTIVE'";
 
     $stmt = $pdo->prepare($sql);
