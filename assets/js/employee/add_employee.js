@@ -775,10 +775,10 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
 
       // Address validation
-      if (!provinceCode || !municipalityCode || !barangayCode || !street) {
+      if (!provinceCode || !municipalityCode || !barangayCode) {
         return Swal.fire(
           "Missing Address",
-          "Please complete Province, Municipality, Barangay, and Street.",
+          "Please complete Province, Municipality, and Barangay.",
           "warning",
         );
       }

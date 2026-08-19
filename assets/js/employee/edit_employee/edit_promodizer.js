@@ -1588,15 +1588,12 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   }
   if (
     reason === "UPDATE ADDRESS" &&
-    (!editProvince?.value ||
-      !editMunicipality?.value ||
-      !editBarangay?.value ||
-      !editStreet?.value)
+    (!editProvince?.value || !editMunicipality?.value || !editBarangay?.value)
   ) {
     return Swal.fire({
       icon: "warning",
       title: "Missing Address",
-      text: "Please complete Province, Municipality, Barangay, and Street.",
+      text: "Please complete Province, Municipality, and Barangay.",
     });
   }
   if (reason === "CHANGE CATEGORIES" && !editCategoriesInput?.value) {

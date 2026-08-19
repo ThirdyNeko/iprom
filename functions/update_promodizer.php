@@ -209,11 +209,11 @@ if ($reason_for_update === 'UPDATE BIOMETRIC NUMBER') {
 
 if (
     $reason_for_update === 'UPDATE ADDRESS' &&
-    (empty($province) || empty($municipality) || empty($barangay) || empty($street))
+    (empty($province) || empty($municipality) || empty($barangay))
 ) {
     echo json_encode([
         'status' => 'danger',
-        'message' => 'Please complete Province, Municipality, Barangay, and Street.'
+        'message' => 'Please complete Province, Municipality, and Barangay.'
     ]);
     exit;
 }
