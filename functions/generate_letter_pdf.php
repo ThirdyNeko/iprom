@@ -416,7 +416,12 @@ $pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($effectivityDate))), 1, 1);
 $pdf->Cell(55, 7, 'To End', 1, 0);
 $pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($endDate))), 1, 1);
 
-$pdf->Ln(4);
+$pdf->Ln(2);
+
+$pdf->SetFont('Arial', 'I', 10);
+$pdf->Write(6, '       This document was generated automatically by the system; no signature is required.');
+
+$pdf->Ln(7);
 
 // Status on the left
 $pdf->SetFont('Arial', '', 10);
@@ -473,7 +478,7 @@ $lineWidth = 50;
 
 $pdf->SetFont('Arial', '', 11);
 $pdf->Write(6, 'Issued by:');
-$pdf->Ln(15);
+$pdf->Ln(10);
 // Username (centered within underline width)
 $pdf->SetX(10);
 $pdf->SetFont('Arial', 'B', 11);
