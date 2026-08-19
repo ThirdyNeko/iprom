@@ -20,7 +20,7 @@ $sql = "
         a.resigned_count,
         a.latest_resigned_date
     FROM assignment a
-    LEFT JOIN IPROM.dbo.branches b
+    LEFT JOIN branches b
         ON b.branch_code = a.branch_name
     LEFT JOIN employee_info e
         ON e.branch = a.branch_name
