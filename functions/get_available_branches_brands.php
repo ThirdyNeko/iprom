@@ -15,7 +15,7 @@ $sql = "
         b.corpo,
         a.brand_name,
         a.required_count,
-        SUM(CASE WHEN e.status IN ('ACTIVE', 'PENDING', 'QUEUED') THEN 1 ELSE 0 END) AS assigned_count,
+        SUM(CASE WHEN e.status IN ('ACTIVE') THEN 1 ELSE 0 END) AS assigned_count,
         SUM(CASE WHEN e.status IN ('PENDING', 'QUEUED') THEN 1 ELSE 0 END) AS queued_count,
         a.resigned_count,
         a.latest_resigned_date
