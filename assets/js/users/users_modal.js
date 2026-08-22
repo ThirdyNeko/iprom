@@ -62,6 +62,24 @@ function isPrivileged(requiredRole) {
 }
 
 /* ───────────────────────────────────────────
+   USERNAME GENERATION  (mirrors backend logic)
+   "first last" lowercase, space-separated
+─────────────────────────────────────────── */
+function generateUsername(first, last) {
+  return [first, last]
+    .map((v) => (v || "").trim())
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase();
+}
+
+function syncUsernamePreview() {
+  const first = $("#v_first_name").val();
+  const last = $("#v_last_name").val();
+  $("#v_username").val(generateUsername(first, last));
+}
+
+/* ───────────────────────────────────────────
    CHANGE DETECTION HELPER
 ─────────────────────────────────────────── */
 function refreshSaveBtn() {
@@ -81,10 +99,19 @@ function refreshSaveBtn() {
 
   const origPos = $modal.data("originalPosition");
   const origRole = $modal.data("originalRole");
+  const origFirst = $modal.data("originalFirstName");
+  const origMiddle = $modal.data("originalMiddleName");
+  const origLast = $modal.data("originalLastName");
+  const origSuffix = $modal.data("originalSuffix");
+
   const profileChanged =
     origPos !== undefined &&
     ($("#v_position").val().trim() !== origPos ||
-      $("#v_role").val() !== origRole);
+      $("#v_role").val() !== origRole ||
+      $("#v_first_name").val().trim() !== origFirst ||
+      $("#v_middle_name").val().trim() !== origMiddle ||
+      $("#v_last_name").val().trim() !== origLast ||
+      $("#v_suffix").val().trim() !== origSuffix);
 
   $("#saveChangesBtn").prop("disabled", !branchChanged && !profileChanged);
 }
@@ -156,6 +183,16 @@ $(document).on("input change", "#v_position, #v_role", function () {
   refreshSaveBtn();
 });
 
+// live username preview while typing first/last name (WHILE typing)
+$(document).on("input", "#v_first_name, #v_last_name", function () {
+  syncUsernamePreview();
+  refreshSaveBtn();
+});
+
+$(document).on("input", "#v_middle_name, #v_suffix", function () {
+  refreshSaveBtn();
+});
+
 /* ───────────────────────────────────────────
    UTILITIES
 ─────────────────────────────────────────── */
@@ -208,10 +245,12 @@ $(document).on("click", ".view-user", function () {
       /* ── basic fields ── */
       $("#v_id").val(data.id);
       $("#v_username").val(username);
-      $("#v_first_name").val(data.first_name);
-      $("#v_middle_name").val(data.middle_name);
-      $("#v_last_name").val(data.last_name);
-      $("#v_suffix").val(data.suffix);
+
+      $("#v_first_name").val(data.first_name).prop("readonly", !canEdit);
+      $("#v_middle_name").val(data.middle_name).prop("readonly", !canEdit);
+      $("#v_last_name").val(data.last_name).prop("readonly", !canEdit);
+      $("#v_suffix").val(data.suffix).prop("readonly", !canEdit);
+
       $("#v_created_at").val(formatMDY(data.created_at));
       $("#v_updated_at").val(formatMDY(data.updated_at));
       $("#v_position").val(data.position).prop("readonly", !canEdit);
@@ -300,6 +339,10 @@ $(document).on("click", ".view-user", function () {
       $modal.data("originalBranches", new Set(normalizedAssigned));
       $modal.data("originalPosition", (data.position || "").trim());
       $modal.data("originalRole", data.role);
+      $modal.data("originalFirstName", (data.first_name || "").trim());
+      $modal.data("originalMiddleName", (data.middle_name || "").trim());
+      $modal.data("originalLastName", (data.last_name || "").trim());
+      $modal.data("originalSuffix", (data.suffix || "").trim());
       $("#saveChangesBtn").prop("disabled", true);
 
       setTimeout(updateBranchCounter, 0);
@@ -317,9 +360,13 @@ $(document).on("click", ".view-user", function () {
 $(document).on("click", "#saveChangesBtn", function () {
   const $modal = $("#userViewModal");
   const id = $("#v_id").val();
-  const username = $("#v_username").val();
   const position = $("#v_position").val().trim();
   const role = $("#v_role").val();
+  const firstName = $("#v_first_name").val().trim();
+  const middleName = $("#v_middle_name").val().trim();
+  const lastName = $("#v_last_name").val().trim();
+  const suffix = $("#v_suffix").val().trim();
+  const username = generateUsername(firstName, lastName);
 
   const origBranches = $modal.data("originalBranches");
   const current = new Set(
@@ -345,15 +392,34 @@ $(document).on("click", "#saveChangesBtn", function () {
 
   const origPos = $modal.data("originalPosition");
   const origRole = $modal.data("originalRole");
+  const origFirst = $modal.data("originalFirstName");
+  const origMiddle = $modal.data("originalMiddleName");
+  const origLast = $modal.data("originalLastName");
+  const origSuffix = $modal.data("originalSuffix");
+
   const profileChanged =
     origPos !== undefined &&
     isPrivileged() &&
-    (position !== origPos || role !== origRole);
+    (position !== origPos ||
+      role !== origRole ||
+      firstName !== origFirst ||
+      middleName !== origMiddle ||
+      lastName !== origLast ||
+      suffix !== origSuffix);
 
   if (!branchChanged && !profileChanged) return;
 
   if (profileChanged && !position) {
     Swal.fire("Validation", "Position cannot be empty.", "warning");
+    return;
+  }
+
+  if (profileChanged && (!firstName || !lastName)) {
+    Swal.fire(
+      "Validation",
+      "First name and last name cannot be empty.",
+      "warning",
+    );
     return;
   }
 
@@ -371,7 +437,15 @@ $(document).on("click", "#saveChangesBtn", function () {
         $.ajax({
           url: "functions/update_user_profile.php",
           type: "POST",
-          data: { id, username, position, role },
+          data: {
+            id,
+            position,
+            role,
+            first_name: firstName,
+            middle_name: middleName,
+            last_name: lastName,
+            suffix,
+          },
           dataType: "json",
         }),
       );

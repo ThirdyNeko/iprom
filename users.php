@@ -33,8 +33,8 @@ $users = $pdo
 // Branch Managers only ever have a single code in that field.
 
 $visibleRoles = match($_SESSION['role']) {
-    'super_admin' => ['admin', 'supervisor', 'staff', 'branch_manager'],
-    'admin'       => ['supervisor', 'staff', 'branch_manager'],
+    'super_admin' => ['admin', 'supervisor', 'staff', 'branch_manager', 'assistant_admin'],
+    'admin'       => ['supervisor', 'staff', 'branch_manager', 'assistant_admin'],
     'supervisor'  => ['staff', 'branch_manager'],
     default       => []
 };
@@ -83,6 +83,7 @@ $roleLabels = [
     'staff'          => 'STAFF',
     'supervisor'     => 'SUPERVISOR',
     'branch_manager' => 'BRANCH MANAGER',
+    'assistant_admin'  => 'ASSISTANT ADMIN',
 ];
 ?>
 
