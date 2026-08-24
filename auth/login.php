@@ -11,7 +11,7 @@ try {
     $branchStmt = $pdo->query("
         SELECT branch, branch_code
         FROM dbo.branches
-        WHERE UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
+        WHERE UPPER(LTRIM(RTRIM(deployed))) = 1
         ORDER BY branch
     ");
     $branches = $branchStmt->fetchAll(PDO::FETCH_ASSOC);
