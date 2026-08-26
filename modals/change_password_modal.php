@@ -28,6 +28,13 @@
                             <i class="bi bi-eye-slash"></i>
                         </span>
                     </div>
+                    <ul id="passwordChecklist" class="list-unstyled small mt-2 mb-0">
+                        <li data-check="length"><i class="bi bi-x-circle text-danger"></i> At least 12 characters</li>
+                        <li data-check="upper"><i class="bi bi-x-circle text-danger"></i> One uppercase letter</li>
+                        <li data-check="lower"><i class="bi bi-x-circle text-danger"></i> One lowercase letter</li>
+                        <li data-check="number"><i class="bi bi-x-circle text-danger"></i> One number</li>
+                        <li data-check="special"><i class="bi bi-x-circle text-danger"></i> One special character</li>
+                    </ul>
                 </div>
 
                 <div class="mb-3">
@@ -72,6 +79,29 @@ document.addEventListener("DOMContentLoaded", function () {
     modalEl.addEventListener('hide.bs.modal', function (e) {
       e.preventDefault();
     });
+  }
+});
+
+document.getElementById('new_password').addEventListener('input', function () {
+  const pw = this.value;
+
+  const checks = {
+    length: pw.length >= 12,
+    upper: /[A-Z]/.test(pw),
+    lower: /[a-z]/.test(pw),
+    number: /[0-9]/.test(pw),
+    special: /[^A-Za-z0-9]/.test(pw),
+  };
+
+  for (const [key, passed] of Object.entries(checks)) {
+    const li = document.querySelector(`#passwordChecklist li[data-check="${key}"]`);
+    const icon = li.querySelector('i');
+
+    if (passed) {
+      icon.className = 'bi bi-check-circle text-success';
+    } else {
+      icon.className = 'bi bi-x-circle text-danger';
+    }
   }
 });
 </script>

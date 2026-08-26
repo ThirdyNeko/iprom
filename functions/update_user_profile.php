@@ -30,6 +30,13 @@ if (!$id || !$position || !$firstName || !$lastName || !in_array($role, $validRo
 // never trusted from the client. Format: "FIRST LAST" uppercase.
 $username = strtoupper(trim($firstName . ' ' . $lastName));
 
+$defaultPassword = 'Password123';
+
+$hashedPassword = password_hash(
+    $defaultPassword,
+    PASSWORD_DEFAULT
+);
+
 try {
     $pdo = qa_db();
     $stmt = $pdo->prepare("
@@ -41,7 +48,9 @@ try {
             last_name   = :last_name,
             suffix      = :suffix,
             username    = :username,
-            updated_at  = GETDATE()
+            updated_at  = GETDATE(),
+            password    = :password,
+            first_login  = 1
         WHERE id = :id
     ");
     $stmt->execute([
@@ -53,6 +62,7 @@ try {
         ':suffix'      => $suffix,
         ':username'    => $username,
         ':id'          => $id,
+        ':password'    => $hashedPassword,
     ]);
 
     echo json_encode(['success' => true]);
