@@ -428,7 +428,8 @@ if ($isInactiveReason) {
     $start = strtotime($start_date);
     $end   = strtotime($end_date);
 
-    $hidden = ($start > $today); // future start = hidden
+    $status = ($start > $today) ? 'QUEUED' : 'ACTIVE';
+    $hidden = false; // no longer hidden — future-dated ones just show as QUEUED
 
 } else if (
     in_array(strtoupper(trim($sub_status)), ['MULTI BRANCH', 'MULTI BRAND', 'HYBRID', 'STATIONARY']) &&
@@ -437,8 +438,8 @@ if ($isInactiveReason) {
 
     $start = strtotime($start_date);
 
-
-    $hidden = ($start > $today); // future start = hidden
+    $status = ($start > $today) ? 'QUEUED' : 'ACTIVE';
+    $hidden = false; // no longer hidden — future-dated ones just show as QUEUED
 }
 
 if ($reason_for_update === 'MATERNITY LEAVE' && $date_of_return) {

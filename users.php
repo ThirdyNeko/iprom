@@ -155,7 +155,7 @@ $roleLabels = [
         <ul class="nav nav-tabs" id="usersTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button" role="tab" aria-controls="users-pane" aria-selected="true">
-                    Head Office
+                    HR
                 </button>
             </li>
             <li class="nav-item" role="presentation">
