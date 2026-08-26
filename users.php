@@ -5,110 +5,53 @@ $current_page = basename($_SERVER['PHP_SELF']);
 include 'config/db.php';
 include 'auth/require_login.php';
 
-// 🔒 ADMIN ONLY
+// 🔒 Anyone who can manage HR/Branch users OR audit users
 if (
     !isset($_SESSION['role']) ||
-    ($_SESSION['role'] !== 'super_admin' &&
-     $_SESSION['role'] !== 'admin' &&
-     $_SESSION['role'] !== 'supervisor')
+    !in_array($_SESSION['role'], ['super_admin', 'admin', 'supervisor', 'audit_manager', 'audit_supervisor'])
 ) {
     header("Location: index.php");
     exit;
 }
 
+$canSeeHR    = in_array($_SESSION['role'], ['super_admin', 'admin', 'supervisor']);
+$canSeeAudit = in_array($_SESSION['role'], ['super_admin', 'audit_manager', 'audit_supervisor']);
+
+// audit_manager / audit_supervisor have no HR access, so Audit is their landing tab
+$defaultTab = $canSeeHR ? 'hr' : 'audit';
+
 include 'partials/header.php';
 include 'partials/sidebar.php';
-
-$pdo = qa_db();
-
-/* =========================
-   FETCH USERS
-========================= */
-$users = $pdo
-    ->query("EXEC get_users @role = NULL")
-    ->fetchAll(PDO::FETCH_ASSOC);
-
-// NOTE: assumes get_users returns `id` and `branch` columns (comma-delimited
-// branch codes) same as the rest of the app relies on elsewhere.
-// Branch Managers only ever have a single code in that field.
-
-$visibleRoles = match($_SESSION['role']) {
-    'super_admin' => ['admin', 'supervisor', 'staff', 'branch_manager', 'assistant_admin'],
-    'admin'       => ['supervisor', 'staff', 'branch_manager', 'assistant_admin'],
-    'supervisor'  => ['staff', 'branch_manager'],
-    default       => []
-};
-
-$hiddenUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
-$excludeUsernames = in_array($_SESSION['role'], ['admin', 'supervisor'])
-    ? $hiddenUsernames
-    : [];
-
-$users = array_filter($users, fn($u) =>
-    in_array($u['role'], $visibleRoles) &&
-    !in_array($u['username'], $excludeUsernames)
-);
-
-/* =========================
-   SPLIT: USERS vs BRANCH MANAGERS
-========================= */
-$regularUsers   = array_filter($users, fn($u) => $u['role'] !== 'branch_manager');
-$branchManagers = array_filter($users, fn($u) => $u['role'] === 'branch_manager');
-
-/* =========================
-   BRANCH CODE -> NAME MAP
-   (needed to display the single branch for Branch Managers)
-========================= */
-$branchNameMap = [];
-try {
-    $stmt = $pdo->prepare("EXEC dbo.get_branches_brands @branch = NULL");
-    $stmt->execute();
-    $branchRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($branchRows as $b) {
-        $branchNameMap[$b['branch_code']] = $b['branch'];
-    }
-} catch (PDOException $e) {
-    $branchNameMap = [];
-}
-
-function bm_branch_name(array $u, array $map): string {
-    if (empty($u['branch'])) return '-';
-    $code = trim(explode(',', $u['branch'])[0]);
-    return $map[$code] ?? $code;
-}
-
-$roleLabels = [
-    'admin'          => 'ADMIN',
-    'super_admin'    => 'SUPER ADMIN',
-    'staff'          => 'STAFF',
-    'supervisor'     => 'SUPERVISOR',
-    'branch_manager' => 'BRANCH MANAGER',
-    'assistant_admin'  => 'ASSISTANT ADMIN',
-];
 ?>
 
 <style>
     #usersTable th,
     #usersTable td,
     #usersTableBM th,
-    #usersTableBM td {
+    #usersTableBM td,
+    #usersTableAudit th,
+    #usersTableAudit td {
         text-align: center;
         vertical-align: middle;
         border-right: 1px solid #dee2e6;
     }
     #usersTable th,
-    #usersTableBM th {
+    #usersTableBM th,
+    #usersTableAudit th {
         background-color: #2d68c4;
         color: white;
     }
     #usersTable th:first-child,
     #usersTable td:first-child,
     #usersTableBM th:first-child,
-    #usersTableBM td:first-child {
+    #usersTableBM td:first-child,
+    #usersTableAudit th:first-child,
+    #usersTableAudit td:first-child {
         border-left: 1px solid #dee2e6;
     }
     #usersTable.table-hover tbody tr:hover > td,
-    #usersTableBM.table-hover tbody tr:hover > td {
+    #usersTableBM.table-hover tbody tr:hover > td,
+    #usersTableAudit.table-hover tbody tr:hover > td {
         background-color: #e6f0ff !important;
     }
     .filter-control {
@@ -153,8 +96,9 @@ $roleLabels = [
         </div>
 
         <ul class="nav nav-tabs" id="usersTabs" role="tablist">
+            <?php if ($canSeeHR): ?>
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button" role="tab" aria-controls="users-pane" aria-selected="true">
+                <button class="nav-link <?= $defaultTab === 'hr' ? 'active' : '' ?>" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button" role="tab" aria-controls="users-pane" aria-selected="<?= $defaultTab === 'hr' ? 'true' : 'false' ?>">
                     HR
                 </button>
             </li>
@@ -163,12 +107,21 @@ $roleLabels = [
                     Branch
                 </button>
             </li>
+            <?php endif; ?>
+            <?php if ($canSeeAudit): ?>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link <?= $defaultTab === 'audit' ? 'active' : '' ?>" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-pane" type="button" role="tab" aria-controls="audit-pane" aria-selected="<?= $defaultTab === 'audit' ? 'true' : 'false' ?>">
+                    Audit
+                </button>
+            </li>
+            <?php endif; ?>
         </ul>
 
         <div class="tab-content border border-top-0 rounded-bottom shadow-sm" id="usersTabsContent">
 
+            <?php if ($canSeeHR): ?>
             <!-- USERS TAB -->
-            <div class="tab-pane fade show active p-0" id="users-pane" role="tabpanel" aria-labelledby="users-tab">
+            <div class="tab-pane fade <?= $defaultTab === 'hr' ? 'show active' : '' ?> p-0" id="users-pane" role="tabpanel" aria-labelledby="users-tab">
                 <div class="card border-0">
                     <div class="card-body pb-0 d-flex justify-content-end">
                         <button class="btn btn-sm btn-success"
@@ -216,39 +169,7 @@ $roleLabels = [
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($regularUsers as $u):
-                                        $isActive = strtolower($u['status']) === 'active';
-                                    ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($u['username']) ?></td>
-                                            <td><?= $roleLabels[$u['role']] ?? htmlspecialchars($u['role']) ?></td>
-                                            <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
-                                            <td data-search="<?= $isActive ? 'active' : 'inactive' ?>">
-                                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                                    <span class="badge <?= $isActive ? 'bg-success' : 'bg-secondary' ?>">
-                                                        <?= $isActive ? 'Active' : 'Inactive' ?>
-                                                    </span>
-                                                    <div class="form-check form-switch m-0">
-                                                        <input class="form-check-input user-status-switch"
-                                                               type="checkbox"
-                                                               data-id="<?= htmlspecialchars($u['id']) ?>"
-                                                               data-username="<?= htmlspecialchars($u['username']) ?>"
-                                                               <?= $isActive ? 'checked' : '' ?>>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-success view-user"
-                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
-                                                    Update
-                                                </button>
-                                                <button class="btn btn-sm btn-primary view-user view-user-readonly"
-                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
-                                                    View
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
+                                    <!-- populated via DataTables serverSide ajax -->
                                 </tbody>
                             </table>
                         </div>
@@ -306,45 +227,73 @@ $roleLabels = [
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($branchManagers as $u):
-                                        $isActive = strtolower($u['status']) === 'active';
-                                    ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($u['username']) ?></td>
-                                            <td><?= htmlspecialchars(bm_branch_name($u, $branchNameMap)) ?></td>
-                                            <td><?= htmlspecialchars($u['position'] ?? '-') ?></td>
-                                            <td data-search="<?= $isActive ? 'active' : 'inactive' ?>">
-                                                <div class="d-flex align-items-center justify-content-center gap-2">
-                                                    <span class="badge <?= $isActive ? 'bg-success' : 'bg-secondary' ?>">
-                                                        <?= $isActive ? 'Active' : 'Inactive' ?>
-                                                    </span>
-                                                    <div class="form-check form-switch m-0">
-                                                        <input class="form-check-input user-status-switch"
-                                                               type="checkbox"
-                                                               data-id="<?= htmlspecialchars($u['id']) ?>"
-                                                               data-username="<?= htmlspecialchars($u['username']) ?>"
-                                                               <?= $isActive ? 'checked' : '' ?>>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-success view-user"
-                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
-                                                    Update
-                                                </button>
-                                                <button class="btn btn-sm btn-primary view-user view-user-readonly"
-                                                        data-id="<?= htmlspecialchars($u['id']) ?>">
-                                                    View
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
+                                    <!-- populated via DataTables serverSide ajax -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
+
+            <?php if ($canSeeAudit): ?>
+            <!-- AUDIT TAB -->
+            <div class="tab-pane fade <?= $defaultTab === 'audit' ? 'show active' : '' ?> p-0" id="audit-pane" role="tabpanel" aria-labelledby="audit-tab">
+                <div class="card border-0">
+                    <div class="card-body pb-0 d-flex justify-content-end">
+                        <button class="btn btn-sm btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#createUserModal">
+                            <i class="bi bi-plus-lg"></i> Add Audit User
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label class="form-label">Username</label>
+                                <div class="clear-input">
+                                    <input type="text" id="filterUsernameAudit" class="form-control filter-control" placeholder="Search...">
+                                    <button class="clear-btn">&times;</button>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select id="filterStatusAudit" class="form-select filter-control">
+                                    <option value="">All</option>
+                                    <option value="active">ACTIVE</option>
+                                    <option value="inactive">INACTIVE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Position</label>
+                                <div class="clear-input">
+                                    <input type="text" id="filterPositionAudit" class="form-control filter-control" placeholder="Search...">
+                                    <button class="clear-btn">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="table-responsive">
+                            <table id="usersTableAudit" class="table table-striped table-hover align-middle text-center">
+                                <thead class="table-primary text-center">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- populated via DataTables serverSide ajax -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
 
         </div>
 
