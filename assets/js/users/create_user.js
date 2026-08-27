@@ -116,16 +116,39 @@ $(document).on(
    Opened via a trigger with data-preset-role="branch_manager" —
    locks the role, hides the dropdown, and lets roles.js configure
    the branch picker for that role automatically.
+
+   ROLE SCOPE (e.g. "Add User" vs "Add Audit User")
+   Opened via a trigger with data-role-scope="hr" | "audit" —
+   filters the role dropdown down to just that scope's options
+   (options without a data-scope default to "hr"). Falls back to
+   "hr" if the trigger has no data-role-scope at all, so any button
+   that predates this feature keeps working unmodified.
 ─────────────────────────────────────────── */
 document
   .getElementById("createUserModal")
   ?.addEventListener("show.bs.modal", function (e) {
     const trigger = e.relatedTarget;
     const presetRole = trigger?.dataset?.presetRole || "";
+    const roleScope = trigger?.dataset?.roleScope || "hr";
 
     const roleSelect = document.getElementById("createRoleSelect");
     const selectGroup = document.getElementById("roleSelectGroup");
     const displayGroup = document.getElementById("roleDisplayGroup");
+
+    roleSelect.querySelectorAll("option[value]").forEach((opt) => {
+      if (!opt.value) return; // keep the "Select Role" placeholder untouched
+
+      // branch_manager is never manually selectable from the dropdown —
+      // it's only ever set programmatically via presetRole. Leave its
+      // permanent `hidden` attribute alone regardless of scope, otherwise
+      // switching to the HR scope would un-hide it in "Add User".
+      if (opt.value === "branch_manager") return;
+
+      const scope = opt.dataset.scope || "hr";
+      const matches = scope === roleScope;
+      opt.hidden = !matches;
+      opt.disabled = !matches;
+    });
 
     if (presetRole) {
       roleSelect.value = presetRole;
@@ -139,7 +162,8 @@ document
       displayGroup.style.display = "none";
     }
 
-    // re-run role-dependent UI (branch picker enable/disable, single-select label)
+    // re-run role-dependent UI (branch picker enable/disable, single-select label,
+    // and — for audit roles — hiding the branch section entirely)
     if (typeof updateFieldsByRole === "function") updateFieldsByRole();
   });
 

@@ -39,6 +39,16 @@ try {
     $suffixes = [];
 
 }
+
+// Which audit roles this session is allowed to create, mirroring the
+// visibility chain used for the users list (super_admin sees all,
+// audit_manager can create below itself, audit_supervisor only audit_staff).
+$creatableAuditRoles = match ($_SESSION['role'] ?? '') {
+    'super_admin'      => ['audit_manager', 'audit_supervisor', 'audit_staff'],
+    'audit_manager'    => ['audit_supervisor', 'audit_staff'],
+    'audit_supervisor' => ['audit_staff'],
+    default            => [],
+};
 ?>
 
 <style>
@@ -162,20 +172,32 @@ try {
                                     </option>
 
                                     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
-                                    <option value="admin">ADMIN</option>
+                                    <option value="admin" data-scope="hr">ADMIN</option>
                                     <?php endif; ?>
 
                                     <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin')): ?>
-                                    <option value="supervisor">SUPERVISOR</option>
+                                    <option value="supervisor" data-scope="hr">SUPERVISOR</option>
                                     <?php endif; ?>
 
-                                    <option value="staff">STAFF</option>
+                                    <option value="staff" data-scope="hr">STAFF</option>
 
                                     <!-- Not user-selectable — only ever set programmatically
                                          when the modal opens via data-preset-role="branch_manager".
                                          Must exist as a real <option>, otherwise select.value
                                          assignment silently fails and falls back to "". -->
-                                    <option value="branch_manager" hidden>BRANCH MANAGER</option>
+                                    <option value="branch_manager" data-scope="hr" hidden>BRANCH MANAGER</option>
+
+                                    <?php if (in_array('audit_manager', $creatableAuditRoles)): ?>
+                                    <option value="audit_manager" data-scope="audit">AUDIT MANAGER</option>
+                                    <?php endif; ?>
+
+                                    <?php if (in_array('audit_supervisor', $creatableAuditRoles)): ?>
+                                    <option value="audit_supervisor" data-scope="audit">AUDIT SUPERVISOR</option>
+                                    <?php endif; ?>
+
+                                    <?php if (in_array('audit_staff', $creatableAuditRoles)): ?>
+                                    <option value="audit_staff" data-scope="audit">AUDIT STAFF</option>
+                                    <?php endif; ?>
 
                                 </select>
 
@@ -197,8 +219,9 @@ try {
 
                             </div>
 
-                            <!-- BRANCH -->
-                            <div class="mb-3">
+                            <!-- BRANCH — wrapper id lets roles.js hide this whole section
+                                 for audit roles, which don't take a branch assignment. -->
+                            <div class="mb-3" id="branchSectionWrapper">
 
                                 <label class="form-label mb-0" id="branchSectionLabel">
                                     Branches

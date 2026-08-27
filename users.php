@@ -126,7 +126,8 @@ include 'partials/sidebar.php';
                     <div class="card-body pb-0 d-flex justify-content-end">
                         <button class="btn btn-sm btn-success"
                                 data-bs-toggle="modal"
-                                data-bs-target="#createUserModal">
+                                data-bs-target="#createUserModal"
+                                data-role-scope="hr">
                             <i class="bi bi-plus-lg"></i> Add User
                         </button>
                     </div>
@@ -243,7 +244,8 @@ include 'partials/sidebar.php';
                     <div class="card-body pb-0 d-flex justify-content-end">
                         <button class="btn btn-sm btn-success"
                                 data-bs-toggle="modal"
-                                data-bs-target="#createUserModal">
+                                data-bs-target="#createUserModal"
+                                data-role-scope="audit">
                             <i class="bi bi-plus-lg"></i> Add Audit User
                         </button>
                     </div>
