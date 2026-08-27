@@ -23,7 +23,7 @@ $sql = "SELECT
             bl.gender,
             bl.birthday,
             bl.marital_status,
-            br.branch AS branch,
+            COALESCE(br.branch, bl.branch) AS branch,
             bl.brand,
             bl.employment_status,
             bl.end_date,

@@ -81,11 +81,25 @@ $(document).ready(function () {
 
     $branch.html('<option value="" disabled selected>Select Branch</option>');
 
-    uniqueBranches.forEach((code) => {
-      const displayName =
+    // Build the full option list, then sort together so HEAD OFFICE /
+    // TECHNOFLEX appear in alphabetical order alongside real branches
+    // (Direct Hire only — these have no brand pairs of their own).
+    let options = uniqueBranches.map((code) => ({
+      value: code,
+      label:
         branchBrandPairs.find((p) => p.branch_code === code)?.branch_name ||
-        code;
-      $branch.append(`<option value="${code}">${displayName}</option>`);
+        code,
+    }));
+
+    if (currentCategory === "direct_hire") {
+      options.push({ value: "HEAD OFFICE", label: "HEAD OFFICE" });
+      options.push({ value: "TECHNOFLEX", label: "TECHNOFLEX" });
+    }
+
+    options.sort((a, b) => a.label.localeCompare(b.label));
+
+    options.forEach((opt) => {
+      $branch.append(`<option value="${opt.value}">${opt.label}</option>`);
     });
   }
 
