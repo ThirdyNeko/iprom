@@ -1,4 +1,17 @@
 /* ───────────────────────────────────────────
+   AUDIT ROLES
+─────────────────────────────────────────── */
+const VIEW_MODAL_AUDIT_ROLES = ["audit_manager", "audit_supervisor", "audit_staff"];
+
+function isAuditRole(role) {
+  return VIEW_MODAL_AUDIT_ROLES.includes((role || "").trim().toLowerCase());
+}
+
+function setBranchSectionVisible(visible) {
+  $("#v_branchSectionWrapper").toggle(!!visible);
+}
+
+/* ───────────────────────────────────────────
    BRANCH HELPERS
 ─────────────────────────────────────────── */
 function sortBranches() {
@@ -58,7 +71,13 @@ function isPrivileged(requiredRole) {
     return role === requiredRole.trim().toLowerCase();
   }
 
-  return role === "admin" || role === "super_admin";
+  // "edit-capable" tiers: HR admins/super_admin, plus their audit-side
+  // counterparts (audit_manager/audit_supervisor) editing within their
+  // own scope. Actual authorization is still enforced server-side by
+  // get_user.php / update_user_profile.php / update_user_branches.php.
+  return ["admin", "super_admin", "audit_manager", "audit_supervisor"].includes(
+    role,
+  );
 }
 
 /* ───────────────────────────────────────────
@@ -122,6 +141,9 @@ function refreshSaveBtn() {
 $(document).on("change", "#v_role", function () {
   const role = $(this).val();
   const allowed = branchSelectionAllowed(role);
+
+  // audit roles never take a branch assignment — hide the section outright
+  setBranchSectionVisible(!isAuditRole(role));
 
   $("#branchSearch").prop("disabled", !allowed).val("");
   $("#userViewModal .branch-item").show();
@@ -224,9 +246,15 @@ $(document).on("click", ".view-user", function () {
 
       const username = data.username;
       const role = (data.role || "").trim().toLowerCase();
+      const isAuditUser = isAuditRole(role);
       const allowsBranchSelection = branchSelectionAllowed(role);
       const canEdit = isReadonly ? false : isPrivileged();
       const isSuperAdmin = isReadonly ? false : isPrivileged("super_admin");
+      const sessionRole = (
+        typeof SESSION_ROLE !== "undefined" ? SESSION_ROLE : ""
+      )
+        .trim()
+        .toLowerCase();
 
       const assigned = data.branch
         ? data.branch.split(",").map((c) => c.trim())
@@ -240,6 +268,9 @@ $(document).on("click", ".view-user", function () {
         staff: "STAFF",
         supervisor: "SUPERVISOR",
         branch_manager: "BRANCH",
+        audit_manager: "AUDIT MANAGER",
+        audit_supervisor: "AUDIT SUPERVISOR",
+        audit_staff: "AUDIT STAFF",
       };
 
       /* ── basic fields ── */
@@ -255,9 +286,47 @@ $(document).on("click", ".view-user", function () {
       $("#v_updated_at").val(formatMDY(data.updated_at));
       $("#v_position").val(data.position).prop("readonly", !canEdit);
 
+      /* ── branch section visibility (audit roles never show it) ── */
+      setBranchSectionVisible(!isAuditUser);
+
       /* ── role ── */
       if (canEdit) {
-        if (isSuperAdmin) {
+        if (isAuditUser) {
+          if (isSuperAdmin) {
+            $("#v_role_wrapper").html(
+              `<select id="v_role" class="form-control">
+                 <option value="audit_staff">AUDIT STAFF</option>
+                 <option value="audit_supervisor">AUDIT SUPERVISOR</option>
+                 <option value="audit_manager">AUDIT MANAGER</option>
+               </select>`,
+            );
+            $("#v_role").val(data.role);
+          } else {
+            // audit_manager can move someone between audit_supervisor/audit_staff;
+            // audit_supervisor can only keep/set audit_staff
+            const assignableAuditRoles =
+              sessionRole === "audit_manager"
+                ? ["audit_staff", "audit_supervisor"]
+                : ["audit_staff"];
+
+            if (assignableAuditRoles.includes(data.role)) {
+              const options = assignableAuditRoles
+                .map((r) => `<option value="${r}">${roleLabels[r]}</option>`)
+                .join("");
+              $("#v_role_wrapper").html(
+                `<select id="v_role" class="form-control">${options}</select>`,
+              );
+              $("#v_role").val(data.role);
+            } else {
+              // outside this editor's assignable range — show read-only
+              // rather than a select that can't represent the current value
+              $("#v_role_wrapper").html(
+                `<input type="text" id="v_role" class="form-control" readonly>`,
+              );
+              $("#v_role").val(roleLabels[data.role] ?? data.role);
+            }
+          }
+        } else if (isSuperAdmin) {
           $("#v_role_wrapper").html(
             `<select id="v_role" class="form-control">
                <option value="staff">STAFF</option>

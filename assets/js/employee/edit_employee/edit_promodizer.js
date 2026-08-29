@@ -96,9 +96,13 @@ function checkPrintBtnState() {
 // ROLE HELPERS
 // =========================
 function isBranchManagerRole() {
-  return ["branch_manager", "assistant_admin"].includes(
-    (window.userRole || "").toLowerCase(),
-  );
+  return [
+    "branch_manager",
+    "assistant_admin",
+    "audit_manager",
+    "audit_supervisor",
+    "audit_staff",
+  ].includes((window.userRole || "").toLowerCase());
 }
 
 function isStaffRole() {

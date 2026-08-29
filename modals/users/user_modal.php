@@ -102,7 +102,9 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
+                        <!-- BRANCH — wrapper id lets users_modal.js hide this whole
+                             section for audit roles, which don't take a branch. -->
+                        <div class="mb-3" id="v_branchSectionWrapper">
 
                             <label class="form-label mb-0">Branches</label>
                             <small id="branchCounter" class="text-muted">Selected: 0</small>

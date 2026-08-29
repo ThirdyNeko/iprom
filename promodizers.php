@@ -149,7 +149,7 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                     <button id="exportExcel" class="btn btn-success">
                         <i class="bi bi-file-earmark-excel"></i> Export
                     </button>
-                    <?php if (!in_array($_SESSION['role'] ?? '', ['branch_manager', 'assistant_admin'])): ?>
+                    <?php if (!in_array($_SESSION['role'] ?? '', ['branch_manager', 'assistant_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'])): ?>
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
                             <i class="bi bi-plus-circle"></i> Add Employee
                         </button>

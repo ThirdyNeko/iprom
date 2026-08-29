@@ -45,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("
                 SELECT * FROM users
                 WHERE username = :username
-                  AND role IN ('staff', 'admin', 'super_admin', 'supervisor', 'assistant_admin')
-                  AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
+                AND role IN ('staff', 'admin', 'super_admin', 'supervisor', 'assistant_admin', 'audit_manager', 'audit_supervisor', 'audit_staff')
+                AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
             ");
             $stmt->execute([
                 ':username' => $username
