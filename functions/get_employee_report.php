@@ -28,13 +28,15 @@ $stmt = $pdo->prepare("
         ei.agency,
         ei.corpo,
         ei.assignment_date,
+        ei.end_date,
+        ei.date_separated,
         ei.last_assigned_by
     FROM employee_info ei
     LEFT JOIN branches b
         ON ei.branch = b.branch_code
     WHERE ei.branch = :branch
       AND (ei.hidden = 0 OR ei.hidden IS NULL)
-      AND (ei.status = 'Active' OR ei.status = 'Probationary')
+      AND (ei.status = 'Active')
     ORDER BY ei.brand, ei.last_name, ei.first_name
 ");
 

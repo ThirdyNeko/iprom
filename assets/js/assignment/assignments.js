@@ -127,6 +127,13 @@ $(document).ready(function () {
       document.getElementById("assignmentModal"),
     ).show();
 
+    // Roles that shouldn't manage assignments don't get Edit / Add buttons.
+    // Reuses canManageAssignments() from assignment.js (loaded on this page).
+    const canManage =
+      typeof canManageAssignments === "function"
+        ? canManageAssignments()
+        : true;
+
     fetch("functions/get_assigned_promodizers.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -152,9 +159,13 @@ $(document).ready(function () {
             html += `
             <li class="list-group-item d-flex justify-content-between align-items-center">
               ${emp.first_name} ${emp.last_name}
-              <button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
-                Edit
-              </button>
+              ${
+                canManage
+                  ? `<button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
+                      Edit
+                    </button>`
+                  : ""
+              }
             </li>
           `;
           });
@@ -165,7 +176,7 @@ $(document).ready(function () {
         const assignedCount = res.data.length;
 
         // room check now accounts for queued applicants too
-        if (assignedCount + queued < required) {
+        if (canManage && assignedCount + queued < required) {
           html += `
           <div class="mt-2 text-left">
             <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">

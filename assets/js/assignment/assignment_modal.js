@@ -3,6 +3,24 @@ let currentAssigned = 0;
 let currentQueued = 0;
 
 // =========================
+// ROLE-BASED UI RESTRICTIONS
+// =========================
+// Roles that should not see Edit / Add Promodiser actions in the modal.
+const RESTRICTED_ROLES = [
+  "branch_manager",
+  "audit_manager",
+  "audit_supervisor",
+  "audit_staff",
+];
+
+// Assumes the current user's role is exposed to JS from the session,
+// e.g. `const userRole = "<?php echo $_SESSION['role']; ?>";` on the page.
+// Rename this reference if your existing convention differs.
+function canManageAssignments() {
+  return !RESTRICTED_ROLES.includes(window.userRole);
+}
+
+// =========================
 // SHARED FETCH ERROR HELPERS
 // =========================
 
@@ -161,6 +179,7 @@ async function openAssignmentModal(branch, brand) {
 // =========================
 function renderAssignedList(employees, required, assigned, queued = 0) {
   let html = "";
+  const canManage = canManageAssignments();
 
   if (!employees.length) {
     html = '<small class="text-muted">No employee assigned</small>';
@@ -171,9 +190,13 @@ function renderAssignedList(employees, required, assigned, queued = 0) {
       html += `
         <li class="list-group-item d-flex justify-content-between align-items-center py-1">
           <span>${emp.first_name} ${emp.last_name}</span>
-          <button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
-            Edit
-          </button>
+          ${
+            canManage
+              ? `<button class="btn btn-sm btn-primary edit-btn" data-id="${emp.id}">
+                  Edit
+                </button>`
+              : ""
+          }
         </li>
       `;
     });
@@ -183,7 +206,8 @@ function renderAssignedList(employees, required, assigned, queued = 0) {
 
   // "Add Promodiser" only makes sense if there's still room after
   // accounting for employees already queued toward this slot count
-  if (assigned + queued < required) {
+  // (and only for roles allowed to manage assignments)
+  if (canManage && assigned + queued < required) {
     html += `
     <div class="mt-2 text-left">
       <button type="button" class="btn btn-sm btn-primary add-promodizer-btn">

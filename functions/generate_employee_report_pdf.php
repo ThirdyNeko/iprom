@@ -42,6 +42,26 @@ function formatDatePdf($value) {
     return date('m/d/Y', $ts);
 }
 
+function formatFullName($last, $first, $middle, $suffix): string {
+    $name = trim($last) . ', ' . trim($first);
+    if (!empty(trim($suffix))) {
+        $name .= ' ' . trim($suffix);
+    }
+    if (!empty(trim($middle))) {
+        $name .= ' ' . strtoupper(substr(trim($middle), 0, 1)) . '.';
+    }
+    return $name;
+}
+
+function firstNonEmpty(...$values): string {
+    foreach ($values as $v) {
+        if (!empty(trim((string)$v))) {
+            return $v;
+        }
+    }
+    return '';
+}
+
 /**
  * Calls an existing JSON endpoint on this same server, forwarding the
  * current session cookie so role/branch-based filtering in that endpoint
@@ -94,6 +114,7 @@ class ReportPDF extends FPDF {
     public $colHeaders = [];
     public $colWidths = [];
     public $headerRowH = 6;
+    public $tableX = 0; // left X where the (centered) table starts; set before AddPage()
 
     function Header() {
         $this->Image($this->letterheadImage, 0, 0, $this->imgW, $this->imgH);
@@ -113,6 +134,7 @@ class ReportPDF extends FPDF {
             $this->SetFont('Arial', 'B', 7.5);
             $this->SetFillColor(45, 104, 196);
             $this->SetTextColor(255, 255, 255);
+            $this->SetX($this->tableX);
             foreach ($this->colHeaders as $i => $h) {
                 $this->Cell($this->colWidths[$i], $this->headerRowH, $h, 1, 0, 'C', true);
             }
@@ -163,39 +185,51 @@ $dateStr = date('l, F d, Y h:i A');
 
 $fileSuffix = date('Y-m-d');
 
-$headers = ['Brand', 'Last Name', 'First Name', 'Middle Name', 'Suffix', 'Employment Status', 'Sub-Status', 'Date Hired'];
-$widths  = [25, 28, 26, 26, 14, 26, 26, 24]; // sums to 190mm, fits Letter portrait w/ ~13mm margins
+$headers = ['Brand', 'Name', 'Gender', 'Employment Status', 'Sub-Status', 'End Date'];
+$widths  = [25, 50, 15, 27, 26, 20]; // sums to 163mm — narrower than the page, so we center it
 
 $bodyRows = array_map(function ($r) {
     return [
         $r['brand'] ?? '',
-        $r['last_name'] ?? '',
-        $r['first_name'] ?? '',
-        $r['middle_name'] ?? '',
-        $r['suffix'] ?? '',
+        formatFullName(
+            $r['last_name'] ?? '',
+            $r['first_name'] ?? '',
+            $r['middle_name'] ?? '',
+            $r['suffix'] ?? ''
+        ),
+        strtoupper(substr(trim($r['gender'] ?? ''), 0, 1)),
         $r['employment_status'] ?? '',
         $r['sub_status'] ?? '',
-        formatDatePdf($r['date_hired'] ?? ''),
+        formatDatePdf(firstNonEmpty($r['end_date'] ?? '', $r['date_separated'] ?? '')),
     ];
 }, $rows);
 
 $pdf = new ReportPDF('P', 'mm', 'Letter');
 $pdf->Ln(20);
-$pdf->reportTitle    = fpdf_str($branchLabel);
+$pdf->reportTitle    = fpdf_str('PROMODISER LIST OF ' . $branchLabel);
 $pdf->reportSubtitle = fpdf_str('As of ' . $dateStr);
 $pdf->colHeaders     = array_map('fpdf_str', $headers);
 $pdf->colWidths      = $widths;
+
+// Center the table horizontally: total table width vs. full page width.
+// tableX is used both in Header() (for the header row) and in the body
+// loop below (for each data row), so header and body columns line up.
+$tableWidth   = array_sum($widths);
+$pdf->tableX  = ($pdf->GetPageWidth() - $tableWidth) / 2;
+
 $pdf->SetAutoPageBreak(true, 30); // auto page break re-calls Header() -> letterhead redrawn automatically
 $pdf->AddPage();
 
 $fitSize = computeFitFontSize($pdf, $bodyRows, $widths);
-$rowH = 5; // compact row height
+$rowH = 7; // compact row height
 
 $pdf->SetFont('Arial', '', $fitSize);
 foreach ($bodyRows as $row) {
+    $pdf->SetX($pdf->tableX);
     foreach ($row as $i => $val) {
         $text = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$i]);
-        $pdf->Cell($widths[$i], $rowH, $text, 1, 0, 'C');
+        $align = ($i === 1) ? 'L' : 'C';
+        $pdf->Cell($widths[$i], $rowH, $text, 1, 0, $align);
     }
     $pdf->Ln();
     // AutoPageBreak may have fired mid-row-loop and called Header(), which
