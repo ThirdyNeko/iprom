@@ -121,6 +121,15 @@
             <?php endif; ?>
         <?php endif; ?>
 
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'super_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'])): ?>
+            <li>
+                <a href="blacklist_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'blacklist_request.php' ? 'active' : '' ?>">
+                    <i class="bi bi-person-slash"></i>
+                    <span>Blacklist Requests</span>
+                </a>
+            </li>
+        <?php endif; ?>
+
         <!-- Reports — admin tier + the whole audit team -->
         <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'assistant_admin', 'super_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'])): ?>
             <li>
