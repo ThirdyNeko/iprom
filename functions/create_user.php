@@ -6,7 +6,9 @@ header('Content-Type: application/json');
 
 if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'super_admin' &&
      $_SESSION['role'] !== 'admin' &&
-     $_SESSION['role'] !== 'supervisor')) {
+     $_SESSION['role'] !== 'supervisor' &&
+     $_SESSION['role'] !== 'audit_manager' &&
+     $_SESSION['role'] !== 'audit_supervisor')) {
     echo json_encode([
         'status' => 'error',
         'message' => 'Unauthorized'

@@ -48,7 +48,7 @@
             </li>
         <?php endif; ?>
 
-        <!-- ✅ ADMIN ONLY: Users -->
+        <!-- ✅ ADMIN ONLY: Settings / Merge -->
         <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'assistant_admin') || ($_SESSION['role'] === 'super_admin')): ?>
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center gap-2 <?= in_array($current_page, ['branches.php', 'agencies.php', 'brands.php']) ? '' : 'collapsed' ?>"
@@ -119,7 +119,10 @@
                     </a>
                 </li>
             <?php endif; ?>
+        <?php endif; ?>
 
+        <!-- Reports — admin tier + the whole audit team -->
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'assistant_admin', 'super_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'])): ?>
             <li>
                 <a href="reports.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'reports.php' ? 'active' : '' ?>">
                     <i class="bi bi-clipboard-data"></i>
@@ -128,7 +131,8 @@
             </li>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin') || ($_SESSION['role'] === 'supervisor')): ?>
+        <!-- Users — HR admin tier + audit_manager/audit_supervisor (mirrors users.php's own access gate) -->
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin', 'supervisor', 'audit_manager', 'audit_supervisor'])): ?>
 
             <li>
                 <a href="users.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'users.php' ? 'active' : '' ?>">
