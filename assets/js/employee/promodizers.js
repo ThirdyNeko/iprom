@@ -69,6 +69,9 @@ $(document).ready(function () {
         d.assigned_by = $("#filterAssignedBy").val();
         d.from_date = $("#filterFrom").val();
         d.to_date = $("#filterTo").val();
+        d.date_hired_from = $("#filterHiredFrom").val();
+        d.date_hired_to = $("#filterHiredTo").val();
+        d.category = $("#filterCategories").val();
         d.corpo = $("#filterCompany").val();
         d.agency = $("#filterAgency").val();
         d.region = $("#filterRegion").val();
@@ -169,7 +172,8 @@ $(document).ready(function () {
   $(
     "#filterBranch, #filterBrand, #filterEmploymentStatus, " +
       "#filterSubStatus, #filterCompany, #filterAgency, " +
-      "#filterArea, #filterRegion, #filterFrom, #filterTo",
+      "#filterArea, #filterRegion, #filterFrom, #filterTo, " +
+      "#filterHiredFrom, #filterHiredTo, #filterCategories",
   ).on("change", reloadTable);
 
   // =========================
@@ -220,6 +224,9 @@ const FILTER_IDS = [
   "filterAssignedBy",
   "filterFrom",
   "filterTo",
+  "filterHiredFrom",
+  "filterHiredTo",
+  "filterCategories",
   "filterCompany",
   "filterAgency",
   "filterRegion",
@@ -293,12 +300,15 @@ document.getElementById("exportExcel").addEventListener("click", function () {
     employment_status: $("#filterEmploymentStatus").val(),
     sub_status: $("#filterSubStatus").val(),
     agency: $("#filterAgency").val(),
+    category: $("#filterCategories").val(),
     assigned_by: $("#filterAssignedBy").val(),
     region: $("#filterRegion").val(),
     area: $("#filterArea").val(),
     search: $("#filterName").val(),
     from_date: $("#filterFrom").val(),
     to_date: $("#filterTo").val(),
+    date_hired_from: $("#filterHiredFrom").val(),
+    date_hired_to: $("#filterHiredTo").val(),
   };
 
   fetch("functions/get_promodizers_export.php?" + new URLSearchParams(filters))

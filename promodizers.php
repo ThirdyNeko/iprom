@@ -54,6 +54,15 @@ $corpos = $pdo->query("SELECT DISTINCT corpo FROM branches ORDER BY corpo")
 
 $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencies")
     ->fetchAll(PDO::FETCH_COLUMN);
+
+// employee_info.categories stores a comma-separated list of category_code
+// values (e.g. "AV,AC"). dbo.categories is the lookup table: category_code
+// is the stored code, categories is the display name shown in the dropdown.
+$categories = $pdo->query("
+    SELECT category_code, categories
+    FROM dbo.categories
+    ORDER BY categories
+")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="content">
@@ -266,6 +275,19 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     </select>
                                 </div>
 
+                                <!-- CATEGORIES -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Categories</label>
+                                    <select id="filterCategories" class="form-select filter-control">
+                                        <option value="">All</option>
+                                        <?php foreach ($categories as $cat): ?>
+                                            <option value="<?= htmlspecialchars($cat['category_code']) ?>">
+                                                <?= htmlspecialchars($cat['categories']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
                                 <!-- ASSIGNED BY -->
                                 <div class="col-md-4">
                                     <label class="form-label">Assigned By</label>
@@ -319,16 +341,35 @@ $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencie
                                     </select>
                                 </div>
 
-                                <!-- FROM -->
+                                <!-- force a new row: Region/Area/Company/Agency don't
+                                     always add up to exactly 12, so the date fields
+                                     below could otherwise land in leftover space -->
+                                <div class="w-100"></div>
+
+                                <!-- ASSIGNMENT DATE FROM -->
                                 <div class="col-md-6">
-                                    <label class="form-label">From</label>
+                                    <label class="form-label">Assignment Date From</label>
                                     <input type="date" id="filterFrom" class="form-control filter-control">
                                 </div>
 
-                                <!-- TO -->
+                                <!-- ASSIGNMENT DATE TO -->
                                 <div class="col-md-6">
-                                    <label class="form-label">To</label>
+                                    <label class="form-label">Assignment Date To</label>
                                     <input type="date" id="filterTo" class="form-control filter-control">
+                                </div>
+
+                                <div class="w-100"></div>
+
+                                <!-- DATE HIRED FROM -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Date Hired From</label>
+                                    <input type="date" id="filterHiredFrom" class="form-control filter-control">
+                                </div>
+
+                                <!-- DATE HIRED TO -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Date Hired To</label>
+                                    <input type="date" id="filterHiredTo" class="form-control filter-control">
                                 </div>
 
                             </div>

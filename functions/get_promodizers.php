@@ -30,11 +30,14 @@ $filters = [
     ':assigned_by'       => nullIfEmpty($_GET['assigned_by']       ?? ''),
     ':from_date'         => nullIfEmpty($_GET['from_date']         ?? ''),
     ':to_date'           => nullIfEmpty($_GET['to_date']           ?? ''),
+    ':date_hired_from'   => nullIfEmpty($_GET['date_hired_from']   ?? ''),
+    ':date_hired_to'     => nullIfEmpty($_GET['date_hired_to']     ?? ''),
     ':employment_status' => nullIfEmpty($_GET['employment_status'] ?? ''),
     ':sub_status'        => nullIfEmpty($_GET['sub_status']        ?? ''),
     ':search'            => nullIfEmpty($_GET['name_search']       ?? ''),
     ':corpo'             => null, // always null — filtered in PHP via branchMap
     ':agency'            => nullIfEmpty($_GET['agency']            ?? ''),
+    ':category'          => nullIfEmpty($_GET['category']          ?? ''),
 ];
 
 // PHP-side filters (SP has no usable params for these)
@@ -72,11 +75,14 @@ $stmt = $pdo->prepare("EXEC get_promodizers
     @assigned_by       = :assigned_by,
     @from_date         = :from_date,
     @to_date           = :to_date,
+    @date_hired_from   = :date_hired_from,
+    @date_hired_to     = :date_hired_to,
     @employment_status = :employment_status,
     @sub_status        = :sub_status,
     @search            = :search,
     @corpo             = :corpo,
-    @agency            = :agency
+    @agency            = :agency,
+    @category          = :category
 ");
 
 foreach ($filters as $key => $value) {
