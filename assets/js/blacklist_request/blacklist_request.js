@@ -334,7 +334,7 @@ $(function () {
         $empSelect.append('<option value="">Select promodiser...</option>');
         results.forEach((emp) => {
           $empSelect.append(
-            `<option value="${emp.employee_id}">${emp.first_name} ${emp.last_name} (${emp.employee_id})</option>`,
+            `<option value="${emp.employee_id}">${emp.first_name} ${emp.last_name}</option>`,
           );
         });
         $empSelect.prop("disabled", false);

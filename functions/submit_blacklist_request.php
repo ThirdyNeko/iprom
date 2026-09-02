@@ -48,7 +48,7 @@ foreach ($required as $field) {
 }
 
 try {
-    $stmt = $pdo->prepare("{CALL add_blacklist_request(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+    $stmt = $pdo->prepare("{CALL add_blacklist_request(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
     $stmt->execute([
         $input['first_name'],
         nullIfEmpty($input['middle_name'] ?? null),
@@ -64,6 +64,7 @@ try {
         nullIfEmpty($input['remarks'] ?? null),
         $input['employee_id'],
         $user_fullname,
+        $user_role
     ]);
 
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
