@@ -1,4 +1,8 @@
 $(function () {
+  // ---------------------------------------------------------------
+  // Shared helpers
+  // ---------------------------------------------------------------
+
   // For $.ajax() failures — xhr is jQuery's jqXHR object
   function getAjaxErrorMessage(xhr) {
     if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -18,6 +22,10 @@ $(function () {
     return `Something went wrong (HTTP ${xhr.status || "unknown"}).`;
   }
 
+  // ---------------------------------------------------------------
+  // DataTable init — server-side processing for the Blacklisted
+  // tables (Promodiser / Direct Hire), one instance per category.
+  // ---------------------------------------------------------------
   function initBlacklistedTable(tableSelector, filterInputId, category) {
     const table = $(tableSelector).DataTable({
       processing: true,
@@ -60,10 +68,12 @@ $(function () {
       },
     });
 
-    let searchTimeout;
+    // Custom search box -> DataTable's server-side ajax, re-fetched on a
+    // debounce so we're not hitting the server on every keystroke.
+    let searchDebounce;
     $("#" + filterInputId).on("input", function () {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(() => table.ajax.reload(), 400);
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => table.ajax.reload(), 400);
     });
 
     return table;
@@ -81,6 +91,9 @@ $(function () {
     "direct_hire",
   );
 
+  // ---------------------------------------------------------------
+  // Sync from Employees
+  // ---------------------------------------------------------------
   $("#syncBlacklistBtn").on("click", function () {
     Swal.fire({
       title: "Sync Blacklisted Records?",

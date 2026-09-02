@@ -37,19 +37,24 @@ $(document).on(
         const d = res.data;
         const isDirectHire = d.brand === "DIRECT HIRE";
 
-        $("#vb_first_name").val(fillOrDash(d.first_name));
-        $("#vb_middle_name").val(fillOrDash(d.middle_name));
-        $("#vb_last_name").val(fillOrDash(d.last_name));
-        $("#vb_suffix").val(fillOrDash(d.suffix));
-        $("#vb_gender").val(fillOrDash(d.gender));
-        $("#vb_birthday").val(d.birthday ? parseSqlDate(d.birthday) : "—");
-        $("#vb_marital_status").val(fillOrDash(d.marital_status));
-        $("#vb_branch").val(fillOrDash(d.branch));
-        $("#vb_brand").val(fillOrDash(d.brand));
-        $("#vb_region").val(fillOrDash(d.region));
-        $("#vb_employment_status").val(fillOrDash(d.employment_status));
-        $("#vb_end_date").val(d.end_date ? parseSqlDate(d.end_date) : "—");
-        $("#vb_remarks").val(fillOrDash(d.remarks));
+        $("#vb_first_name").text(fillOrDash(d.first_name));
+        $("#vb_middle_name").text(fillOrDash(d.middle_name));
+        $("#vb_last_name").text(fillOrDash(d.last_name));
+        $("#vb_suffix").text(fillOrDash(d.suffix));
+        $("#vb_gender").text(fillOrDash(d.gender));
+        $("#vb_birthday").text(d.birthday ? parseSqlDate(d.birthday) : "—");
+        $("#vb_marital_status").text(fillOrDash(d.marital_status));
+        $("#vb_branch").text(fillOrDash(d.branch));
+        $("#vb_brand").text(fillOrDash(d.brand));
+        $("#vb_region").text(fillOrDash(d.region));
+        $("#vb_employment_status").text(fillOrDash(d.employment_status));
+        $("#vb_end_date").text(d.end_date ? parseSqlDate(d.end_date) : "—");
+        $("#vb_remarks").text(fillOrDash(d.remarks));
+
+        const nameParts = [d.first_name, d.middle_name, d.last_name, d.suffix]
+          .map((p) => (p || "").trim())
+          .filter(Boolean);
+        $("#vb_full_name").text(nameParts.join(" ") || "—");
 
         $("#vb_employment_status_group").toggle(!isDirectHire);
         $("#vb_brand_group").toggle(!isDirectHire);

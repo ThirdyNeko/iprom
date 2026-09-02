@@ -11,6 +11,7 @@ $pdo = qa_db();
 ?>
 
 <style>
+    /* --- Blacklisted tables (Promodiser / Direct Hire) --- */
     #BlacklistedtablePromodiser th,
     #BlacklistedtablePromodiser td,
     #BlacklistedtableDirectHire th,
@@ -55,6 +56,7 @@ $pdo = qa_db();
         text-align: left;
     }
 
+    /* --- Shared filter controls --- */
     .clear-input {
         position: relative;
     }
@@ -81,6 +83,7 @@ $pdo = qa_db();
         color: #333;
     }
 
+    /* --- Tabs --- */
     .nav-tabs .nav-link.active {
         font-weight: 600;
         color: #2d68c4;
@@ -90,6 +93,7 @@ $pdo = qa_db();
 <div class="content">
     <div class="container-fluid">
 
+        <!-- Page header / toolbar -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold mb-0">Blacklisted</h4>
             <div class="d-flex gap-2">
@@ -102,6 +106,7 @@ $pdo = qa_db();
             </div>
         </div>
 
+        <!-- Tab nav -->
         <ul class="nav nav-tabs" id="blacklistedTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="promodiser-tab" data-bs-toggle="tab" data-bs-target="#promodiser-pane" type="button" role="tab" aria-controls="promodiser-pane" aria-selected="true">
@@ -115,6 +120,7 @@ $pdo = qa_db();
             </li>
         </ul>
 
+        <!-- Tab content -->
         <div class="tab-content border border-top-0 rounded-bottom shadow-sm mb-3" id="blacklistedTabsContent">
 
             <!-- PROMODISER TAB -->
