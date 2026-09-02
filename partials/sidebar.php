@@ -126,6 +126,9 @@
                 <a href="blacklist_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'blacklist_request.php' ? 'active' : '' ?>">
                     <i class="bi bi-person-slash"></i>
                     <span>Blacklist Requests</span>
+                    <?php if ($_SESSION['role'] === 'admin'): ?>
+                        <span id="sidebarBlacklistRequestCountBadge" class="badge rounded-pill bg-danger ms-auto d-none"></span>
+                    <?php endif; ?>
                 </a>
             </li>
         <?php endif; ?>
@@ -265,6 +268,41 @@
             }
 
             document.addEventListener('DOMContentLoaded', loadSidebarVerifyCount);
+        })();
+    </script>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+    <script>
+        // Sidebar "Verification" nav badge — shows count of LOAs pending
+        // verification for this branch manager's branch(es). Fetched here so it
+        // updates on every page load regardless of which page the sidebar is
+        // included on. functions/get_loa_verification_count.php re-checks role
+        // and branch server-side; this is just UI.
+        (function() {
+            function loadSidebarBlacklistRequestCount() {
+                fetch('functions/get_blacklist_request_count.php')
+                    .then(res => res.json())
+                    .then(data => {
+                        const count = parseInt(data.count, 10) || 0;
+                        const badge = document.getElementById('sidebarBlacklistRequestCountBadge');
+                        if (!badge) return;
+
+                        if (count > 0) {
+                            badge.textContent = count > 99 ? '99+' : count;
+                            badge.classList.remove('d-none');
+                        } else {
+                            badge.classList.add('d-none');
+                            badge.textContent = '';
+                        }
+                    })
+                    .catch(() => {
+                        const badge = document.getElementById('sidebarBlacklistRequestCountBadge');
+                        if (badge) badge.classList.add('d-none');
+                    });
+            }
+
+            document.addEventListener('DOMContentLoaded', loadSidebarBlacklistRequestCount);
         })();
     </script>
 <?php endif; ?>
