@@ -29,6 +29,15 @@ $can_request_blacklist = $is_audit || $role_lower === 'branch_manager';
 // Approve / reject pending requests
 $can_action_requests = $is_admin;
 
+// Directly adding a blacklisted record — admin/super_admin only. Audit
+// roles can only submit a request via the Blacklist Requests tab; they
+// do not get the Add Blacklisted button, modal, or JS included on the
+// page at all. (Keeping this separate from $can_view_blacklisted_tabs is
+// what keeps add_blacklisted_modal.php's bl_* field IDs out of the DOM
+// for audit roles, so they can never collide with request_blacklist_modal.php's
+// fields regardless of naming.)
+$can_add_blacklisted = $is_admin;
+
 // Pick a sensible default active tab — Blacklist Requests comes first now
 $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs ? 'promodiser' : null);
 ?>
@@ -133,9 +142,10 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
     #BLtable td.bl-actions-col {
         cursor: default;
     }
-    .status-badge-pending  { background:#ffc107; color:#212529; }
-    .status-badge-approved { background:#198754; color:#fff; }
-    .status-badge-rejected { background:#dc3545; color:#fff; }
+    .status-badge-pending   { background:#ffc107; color:#212529; }
+    .status-badge-approved  { background:#198754; color:#fff; }
+    .status-badge-rejected  { background:#dc3545; color:#fff; }
+    .status-badge-cancelled { background:#6c757d; color:#fff; }
 </style>
 
 <div class="content">
@@ -149,9 +159,11 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
                     <button type="button" class="btn btn-sm btn-primary" id="syncBlacklistBtn">
                         <i class="bi bi-arrow-repeat"></i> Sync from Employees
                     </button>
+                    <?php if ($can_add_blacklisted): ?>
                     <button type="button" class="btn btn-sm btn-success" id="addBlacklistedBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedModal">
                         <i class="bi bi-plus-lg"></i> Add Blacklisted
                     </button>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 
@@ -211,6 +223,7 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
                                     <option value="Pending">Pending</option>
                                     <option value="Approved">Approved</option>
                                     <option value="Rejected">Rejected</option>
+                                    <option value="Cancelled">Cancelled</option>
                                 </select>
                             </div>
                         </div>
@@ -228,7 +241,7 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
                                         <th>Status</th>
                                         <th>Requested By</th>
                                         <th>Requested Date</th>
-                                        <?php if ($can_action_requests): ?>
+                                        <?php if ($can_action_requests || $can_request_blacklist): ?>
                                             <th>Actions</th>
                                         <?php endif; ?>
                                     </tr>
@@ -320,6 +333,7 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
     // UI convenience only — endpoints re-check $_SESSION['role'] server-side.
     const CURRENT_USER_ROLE     = <?php echo json_encode($user_role); ?>;
     const CURRENT_USER_BRANCH   = <?php echo json_encode($user_branch); ?>;
+    const CURRENT_USER_NAME     = <?php echo json_encode($_SESSION['fullname'] ?? ($_SESSION['username'] ?? '')); ?>;
     const CAN_REQUEST_BLACKLIST = <?php echo json_encode($can_request_blacklist); ?>;
     const CAN_ACTION_REQUESTS   = <?php echo json_encode($can_action_requests); ?>;
 </script>
@@ -331,8 +345,11 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
 
 <?php if ($can_view_blacklisted_tabs): ?>
 <script src="assets/js/blacklisted/blacklisted.js"></script>
-<script src="assets/js/blacklisted/add_blacklisted.js"></script>
 <script src="assets/js/blacklisted/view_blacklisted.js"></script>
+<?php endif; ?>
+
+<?php if ($can_add_blacklisted): ?>
+<script src="assets/js/blacklisted/add_blacklisted.js"></script>
 <?php endif; ?>
 
 <?php if ($can_view_requests_tab): ?>
@@ -377,8 +394,11 @@ document.getElementById('openRequestBlacklistBtn')?.classList.remove('d-none');
 <?php endif; ?>
 </script>
 
-<?php if ($can_view_blacklisted_tabs): ?>
+<?php if ($can_add_blacklisted): ?>
 <?php include 'modals/add_blacklisted_modal.php'; ?>
+<?php endif; ?>
+
+<?php if ($can_view_blacklisted_tabs): ?>
 <?php include 'modals/view_blacklisted_modal.php'; ?>
 <?php endif; ?>
 

@@ -22,7 +22,27 @@ $(function () {
     },
   ];
 
-  if (CAN_ACTION_REQUESTS) {
+  // Can the current user cancel THIS particular row? Client-side check is
+  // for showing/hiding the button only — cancel_blacklist_request.php /
+  // the SQL proc re-verify this independently before actually cancelling.
+  function canCancelRow(r) {
+    if (r.status !== "Pending") return false;
+    const isOwner = r.requested_by === CURRENT_USER_NAME;
+    const isManagerOverSupervisor =
+      (CURRENT_USER_ROLE || "").toLowerCase() === "audit_manager" &&
+      (r.requester_role || "").toLowerCase() === "audit_supervisor";
+    return isOwner || isManagerOverSupervisor;
+  }
+
+  // Reject is only allowed on requests submitted by a branch_manager.
+  // Client-side check is for showing/hiding the button only —
+  // update_blacklist_request_status.php / the SQL proc must independently
+  // re-verify requester_role === 'branch_manager' before actually rejecting.
+  function canRejectRow(r) {
+    return (r.requester_role || "").toLowerCase() === "branch_manager";
+  }
+
+  if (CAN_ACTION_REQUESTS || CAN_REQUEST_BLACKLIST) {
     columns.push({
       data: null,
       orderable: false,
@@ -31,14 +51,33 @@ $(function () {
         if (r.status !== "Pending") {
           return `<span class="text-muted">—</span>`;
         }
-        return `
+
+        let buttons = "";
+
+        if (CAN_ACTION_REQUESTS) {
+          buttons += `
                     <button class="btn btn-success btn-sm bl-approve-btn" data-id="${r.id}">
                         <i class="bi bi-check-lg"></i>
                     </button>
+                `;
+          if (canRejectRow(r)) {
+            buttons += `
                     <button class="btn btn-outline-danger btn-sm bl-reject-btn" data-id="${r.id}">
                         <i class="bi bi-x-lg"></i>
                     </button>
                 `;
+          }
+        }
+
+        if (canCancelRow(r)) {
+          buttons += `
+                    <button class="btn btn-outline-secondary btn-sm bl-cancel-btn" data-id="${r.id}">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                `;
+        }
+
+        return buttons || `<span class="text-muted">—</span>`;
       },
     });
   }
@@ -63,7 +102,9 @@ $(function () {
         ? "status-badge-approved"
         : status === "Rejected"
           ? "status-badge-rejected"
-          : "status-badge-pending";
+          : status === "Cancelled"
+            ? "status-badge-cancelled"
+            : "status-badge-pending";
     return `<span class="badge ${cls}">${status}</span>`;
   }
 
@@ -83,7 +124,7 @@ $(function () {
   });
 
   // ---------------------------------------------------------------
-  // Approve / Reject
+  // Approve / Reject / Cancel
   // ---------------------------------------------------------------
   $("#BLtable").on("click", ".bl-approve-btn, .bl-reject-btn", function () {
     const id = $(this).data("id");
@@ -116,6 +157,36 @@ $(function () {
     });
   });
 
+  $("#BLtable").on("click", ".bl-cancel-btn", function () {
+    const id = $(this).data("id");
+
+    Swal.fire({
+      title: "Cancel this request?",
+      text: "This cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, cancel it",
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      fetch("functions/cancel_blacklist_request.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      })
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.success) {
+            Swal.fire("Cancelled", res.message, "success");
+            table.ajax.reload(null, false);
+          } else {
+            Swal.fire("Error", res.message, "error");
+          }
+        })
+        .catch(() => Swal.fire("Error", "Something went wrong.", "error"));
+    });
+  });
+
   // ---------------------------------------------------------------
   // Row click -> view request details modal
   // (skip clicks on the Actions cell/buttons — those have their own
@@ -125,10 +196,7 @@ $(function () {
   const viewModal = viewModalEl ? new bootstrap.Modal(viewModalEl) : null;
 
   $("#BLtable tbody").on("click", "tr", function (e) {
-    if (
-      $(e.target).closest(".bl-actions-col, .bl-approve-btn, .bl-reject-btn")
-        .length
-    ) {
+    if ($(e.target).closest(".bl-actions-col, .bl-approve-btn, .bl-reject-btn, .bl-cancel-btn").length) {
       return;
     }
 
@@ -142,26 +210,16 @@ $(function () {
   function populateViewModal(r) {
     $("#vbr_full_name").text(r.full_name || "—");
     $("#vbr_status_badge").html(statusBadge(r.status));
-    $("#vbr_birthday").text(
-      r.birthday ? new Date(r.birthday).toLocaleDateString() : "—",
-    );
+    $("#vbr_birthday").text(r.birthday ? new Date(r.birthday).toLocaleDateString() : "—");
     $("#vbr_branch").text(r.branch || "—");
     $("#vbr_brand").text(r.brand || "—");
     $("#vbr_employment_status").text(r.employment_status || "—");
-    $("#vbr_end_date").text(
-      r.end_date ? new Date(r.end_date).toLocaleDateString() : "—",
-    );
+    $("#vbr_end_date").text(r.end_date ? new Date(r.end_date).toLocaleDateString() : "—");
     $("#vbr_requested_by").text(r.requested_by || "—");
-    $("#vbr_requested_date").text(
-      r.requested_date ? new Date(r.requested_date).toLocaleString() : "—",
-    );
+    $("#vbr_requested_date").text(r.requested_date ? new Date(r.requested_date).toLocaleString() : "—");
     $("#vbr_approved_by").text(r.approved_by || "—");
-    $("#vbr_approved_date").text(
-      r.approved_date ? new Date(r.approved_date).toLocaleString() : "—",
-    );
-    $("#vbr_remarks").text(
-      r.remarks && r.remarks.trim() ? r.remarks : "No remarks provided.",
-    );
+    $("#vbr_approved_date").text(r.approved_date ? new Date(r.approved_date).toLocaleString() : "—");
+    $("#vbr_remarks").text(r.remarks && r.remarks.trim() ? r.remarks : "No remarks provided.");
   }
 
   // ---------------------------------------------------------------
@@ -251,9 +309,7 @@ $(function () {
           loadEmployeesForBranch(myCode);
         })
         .catch(() => {
-          $select
-            .empty()
-            .append(`<option value="${myCode}">${myCode}</option>`);
+          $select.empty().append(`<option value="${myCode}">${myCode}</option>`);
           $select.prop("disabled", true);
           loadEmployeesForBranch(myCode);
         });
@@ -279,9 +335,7 @@ $(function () {
 
         $select.append('<option value="">Select branch...</option>');
         branches.forEach((b) =>
-          $select.append(
-            `<option value="${b.branch_code}">${b.branch}</option>`,
-          ),
+          $select.append(`<option value="${b.branch_code}">${b.branch}</option>`),
         );
         $select.prop("disabled", false);
       })

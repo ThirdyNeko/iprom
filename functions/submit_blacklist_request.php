@@ -64,7 +64,7 @@ try {
         nullIfEmpty($input['remarks'] ?? null),
         $input['employee_id'],
         $user_fullname,
-        $user_role
+        strtolower($user_role),
     ]);
 
     $result = $stmt->fetch(PDO::FETCH_ASSOC);

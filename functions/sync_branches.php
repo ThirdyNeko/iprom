@@ -1,10 +1,12 @@
 <?php
 header('Content-Type: application/json');
+
 require_once '../config/db.php';
 
 $pdo = qa_db();
 
-function cleanValue($value, $fallback = null) {
+function cleanValue($value, $fallback = null)
+{
     $value = trim((string)$value);
 
     if ($value === '' || strtolower($value) === 'null') {
@@ -16,39 +18,44 @@ function cleanValue($value, $fallback = null) {
 
 try {
 
-    // Start transaction for safety
     $pdo->beginTransaction();
 
-    // Call stored procedure
+    /*
+     * Call stored procedure
+     */
     $stmt = $pdo->query("EXEC ImperialBranchDetails_Complete");
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $inserted = 0;
-    $updated = 0;
+    $updated  = 0;
 
-    // prevent duplicates in same result set
+    // Prevent duplicate BranchCode values from the SP result
     $seen = [];
 
-    // check if exists
+    /*
+     * Check if branch already exists
+     */
     $checkStmt = $pdo->prepare("
-        SELECT branch, region, corpo, area, status, deployed
-        FROM branches 
-        WHERE branch_code = :code
+        SELECT branch, region, corpo, area
+        FROM branches
+        WHERE branch_code = ?
     ");
 
-    // update
+    /*
+     * Update existing branch
+     */
     $updateStmt = $pdo->prepare("
         UPDATE branches
-        SET branch = :branch,
-            region = :region,
-            corpo  = :corpo,
-            area   = :area,
-            status = :status,
-            deployed = :deployed
-        WHERE branch_code = :code
+        SET branch   = ?,
+            region   = ?,
+            corpo    = ?,
+            area     = ?
+        WHERE branch_code = ?
     ");
 
-    // insert
+    /*
+     * Insert new branch
+     */
     $insertStmt = $pdo->prepare("
         INSERT INTO branches (
             branch_code,
@@ -60,11 +67,11 @@ try {
             deployed
         )
         VALUES (
-            :code,
-            :branch,
-            :region,
-            :corpo,
-            :area,
+            ?,
+            ?,
+            ?,
+            ?,
+            ?,
             1,
             0
         )
@@ -74,53 +81,92 @@ try {
 
         $branchCode = cleanValue($row['BranchCode'] ?? null);
 
-        if (!$branchCode) continue;
-
-        // skip duplicates from SP output
-        if (isset($seen[$branchCode])) continue;
-        $seen[$branchCode] = true;
-
-        $checkStmt->execute([':code' => $branchCode]);
-        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-        $data = [
-            ':code'   => $branchCode,
-            ':branch' => cleanValue($row['Branch'] ?? null),
-            ':region' => cleanValue($row['Location'] ?? null),
-            ':corpo'  => cleanValue($row['Company'] ?? null, 'NO COMPANY'),
-            ':area'   => cleanValue($row['DM'] ?? null)
-        ];
-
-        if ($existing) {
-            $hasChanges = $existing['branch'] !== $data[':branch']
-                    || $existing['region'] !== $data[':region']
-                    || $existing['corpo']  !== $data[':corpo']
-                    || $existing['area']   !== $data[':area'];
-
-            if ($hasChanges) {
-                $updateStmt->execute($data);
-                $updated++;
-            }
-        } else {
-            $insertStmt->execute($data);
-            $inserted++;
+        if (!$branchCode) {
+            continue;
         }
 
+        // Skip duplicates from stored procedure output
+        if (isset($seen[$branchCode])) {
+            continue;
+        }
+
+        $seen[$branchCode] = true;
+
+        /*
+         * Prepare values
+         */
+        $branch = cleanValue($row['Branch'] ?? null);
+        $region = cleanValue($row['Location'] ?? null);
+        $corpo  = cleanValue($row['Company'] ?? null, 'NO COMPANY');
+        $area   = cleanValue($row['DM'] ?? null);
+
+        /*
+         * Check existing record
+         */
+        $checkStmt->execute([
+            $branchCode
+        ]);
+
+        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+
+            /*
+             * Determine whether anything actually changed
+             */
+            $hasChanges =
+                $existing['branch'] !== $branch ||
+                $existing['region'] !== $region ||
+                $existing['corpo']  !== $corpo ||
+                $existing['area']   !== $area;
+
+            if ($hasChanges) {
+
+                $updateStmt->execute([
+                    $branch,
+                    $region,
+                    $corpo,
+                    $area,
+                    $branchCode
+                ]);
+
+                $updated++;
+            }
+
+        } else {
+
+            /*
+             * Insert new branch
+             */
+            $insertStmt->execute([
+                $branchCode,
+                $branch,
+                $region,
+                $corpo,
+                $area
+            ]);
+
+            $inserted++;
+        }
     }
 
     $pdo->commit();
 
     echo json_encode([
-        "success" => true,
-        "message" => "Sync completed. Inserted: $inserted | Updated: $updated"
+        'success' => true,
+        'message' => "Sync completed. Inserted: $inserted | Updated: $updated"
     ]);
 
-} catch (Exception $e) {
+} catch (Throwable $e) {
 
-    $pdo->rollBack();
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
 
     echo json_encode([
-        "success" => false,
-        "message" => "Error: " . $e->getMessage()
+        'success' => false,
+        'message' => 'Error: ' . $e->getMessage(),
+        'file'    => $e->getFile(),
+        'line'    => $e->getLine()
     ]);
 }
