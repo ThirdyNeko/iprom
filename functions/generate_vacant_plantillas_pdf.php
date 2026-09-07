@@ -145,8 +145,8 @@ $vacantRows = array_map(function ($p) {
         $p['required_count'] ?? '',
         $p['assigned_count'] ?? '',
         vacantCount($p['required_count'] ?? 0, $p['assigned_count'] ?? 0),
-        formatDatePdf($p['timestamp'] ?? ''),
-        monthDaysSince($p['timestamp'] ?? ''),
+        formatDatePdf($p['timestamp'] ?? $p['created_at'] ?? ''),
+        monthDaysSince($p['timestamp'] ?? $p['created_at'] ?? ''),
         '',
         '',
     ];
@@ -161,8 +161,8 @@ $completeRows = array_map(function ($p) {
         '0',
         '',
         '',
-        formatDatePdf($p['timestamp'] ?? ''),
-        monthDaysSince($p['timestamp'] ?? ''),
+        formatDatePdf($p['timestamp'] ?? $p['created_at'] ?? ''),
+        monthDaysSince($p['timestamp'] ?? $p['created_at'] ?? ''),
     ];
 }, $completeData);
 

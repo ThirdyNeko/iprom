@@ -20,6 +20,7 @@ $stmt = $pdo->prepare("
         a.required_count,
         a.assigned_count,
         a.timestamp,
+        a.created_at,
         a.brand_name AS brand
     FROM assignment a
     LEFT JOIN branches b
