@@ -193,21 +193,25 @@ table td {
                         <div class="filter-label">Reason</div>
                         <select id="filterReason" class="form-select form-select-sm filter-control">
                             <option value="">All</option>
-                            <option value="RESIGNED">RESIGNED</option>
-                            <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
-                            <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
-                            <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
-                            <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                            <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
                             <option value="BLACKLISTED / AWOL / TERMINATED">BLACKLISTED / AWOL / TERMINATED</option>
+                            <option value="CHANGE AGENCY">CHANGE AGENCY</option>
+                            <option value="CHANGE CATEGORIES">CHANGE CATEGORIES</option>
+                            <option value="CHANGE EMPLOYEE PICTURE">CHANGE EMPLOYEE PICTURE</option>
                             <option value="CHANGE EMPLOYMENT STATUS">CHANGE EMPLOYMENT STATUS</option>
                             <option value="CHANGE SUB STATUS">CHANGE SUB STATUS</option>
-                            <option value="REMOVED CURRENT BRANCH/BRAND">REMOVED CURRENT BRANCH/BRAND</option>
-                            <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
-                            <option value="AUTO REACTIVATED">AUTO REACTIVATED</option>
-                            <option value="AUTO UPDATED">AUTO UPDATED</option>
-                            <option value="AUTO ACTIVATED">AUTO ACTIVATED</option>
-                            <option value="AUTO DEACTIVATED">AUTO DEACTIVATED</option>
-                            <option value="ASSIGNED">ASSIGNED/REASSIGNED</option>
+                            <option value="CLERICAL ERROR">CLERICAL ERROR</option>
+                            <option value="DECEASED">DECEASED</option>
+                            <option value="EMERGENCY LEAVE">EMERGENCY LEAVE</option>
+                            <option value="MATERNITY LEAVE">MATERNITY LEAVE</option>
+                            <option value="PULL-OUT / END OF CONTRACT">PULL-OUT / END OF CONTRACT</option>
+                            <option value="REMOVE BRANCH/BRAND">REMOVE CURRENT BRANCH/BRAND</option>
+                            <option value="RESIGNED">RESIGNED</option>
+                            <option value="TRANSFER BRANCH">TRANSFER BRANCH</option>
+                            <option value="UPDATE ADDRESS">UPDATE ADDRESS</option>
+                            <option value="UPDATE BIOMETRIC NUMBER">UPDATE BIOMETRIC NUMBER</option>
+                            <option value="UPDATE CONTACT NUMBER">UPDATE CONTACT NUMBER</option>
+                            <option value="UPDATE MARITAL STATUS">UPDATE MARITAL STATUS</option>
                         </select>
                     </div>
 
