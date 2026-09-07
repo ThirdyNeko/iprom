@@ -5,6 +5,17 @@ ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
+// Surfaces any fatal error as readable text instead of a blank/broken PDF.
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level() > 0) { ob_end_clean(); }
+        http_response_code(500);
+        header('Content-Type: text/plain');
+        echo "FATAL: {$err['message']} in {$err['file']} on line {$err['line']}";
+    }
+});
+
 session_start();
 
 // IMPORTANT: release the session file lock immediately. This script makes
@@ -33,8 +44,13 @@ if (empty($branch)) {
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-function fpdf_str(string $s): string {
-    return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $s);
+function fpdf_str($s): string {
+    $s = (string)$s;
+    if (!mb_check_encoding($s, 'UTF-8')) {
+        $s = mb_convert_encoding($s, 'UTF-8', 'UTF-8');
+    }
+    $result = @iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $s);
+    return $result === false ? '' : $result;
 }
 
 function formatDatePdf($value) {
@@ -67,25 +83,57 @@ function monthDaysSince($timestamp) {
     return "{$months}mo {$days}d";
 }
 
-function fetchInternalJson(string $relativePath, array $params): array {
+function fetchInternalJson(string $relativePath, array $params, int $maxAttempts = 3): array
+{
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'];
     $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-    $url    = $scheme . '://' . $host . $dir . '/' . $relativePath . '?' . http_build_query($params);
+
+    $url = $scheme . '://' . $host . $dir . '/' .
+           $relativePath . '?' . http_build_query($params);
 
     $context = stream_context_create([
         'http' => [
-            'header'  => "Cookie: " . ($_SERVER['HTTP_COOKIE'] ?? '') . "\r\n",
-            'timeout' => 15,
+            'header'        => "Cookie: " . ($_SERVER['HTTP_COOKIE'] ?? '') . "\r\n",
+            'timeout'       => 15,
+            'ignore_errors' => true,
+        ],
+        'ssl' => [
+            // This is a loopback call to the same server, not to a third
+            // party — the self-signed cert on the internal IP will fail
+            // default verification ("Failed to enable crypto"), so it's
+            // safe to relax verification here specifically.
+            'verify_peer'      => false,
+            'verify_peer_name' => false,
+            'allow_self_signed'=> true,
         ],
     ]);
 
-    $json = @file_get_contents($url, false, $context);
-    if ($json === false) {
-        return [];
+    for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+        $json = @file_get_contents($url, false, $context);
+
+        $status = null;
+        if (isset($http_response_header[0]) && preg_match('#HTTP/\S+\s+(\d+)#', $http_response_header[0], $m)) {
+            $status = (int)$m[1];
+        }
+
+        if ($json !== false && ($status === null || $status < 400)) {
+            $data = json_decode($json, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+                return $data;
+            }
+            error_log("[fetchInternalJson] attempt $attempt: $url returned invalid JSON (" . json_last_error_msg() . "): " . substr((string)$json, 0, 500));
+        } else {
+            error_log("[fetchInternalJson] attempt $attempt: $url failed" . ($status ? " (HTTP $status)" : " (no response)"));
+        }
+
+        if ($attempt < $maxAttempts) {
+            usleep(300000);
+        }
     }
-    $data = json_decode($json, true);
-    return is_array($data) ? $data : [];
+
+    error_log("[fetchInternalJson] giving up on $url after $maxAttempts attempts");
+    return [];
 }
 
 // ─── Fetch data ────────────────────────────────────────────────────────────
@@ -137,9 +185,6 @@ if (empty($combined)) {
 }
 
 // ─── PDF class ─────────────────────────────────────────────────────────────
-// Overriding Header() means FPDF calls this automatically on every AddPage()
-// — including automatic page breaks from SetAutoPageBreak below — so the
-// letterhead + title + table column headers are guaranteed on every page.
 class ReportPDF extends FPDF {
     public $letterheadImage = '../assets/icons/LETTER HEAD GENERIC.jpg';
     public $imgW = 216;
@@ -179,37 +224,11 @@ class ReportPDF extends FPDF {
                 $this->SetXY($x, $y);
 
                 if (strpos($h, "\n") === false) {
-                    // Single-line headers
-                    $this->Cell(
-                        $this->colWidths[$i],
-                        $headerHeight,
-                        $h,
-                        1,
-                        0,
-                        'C',
-                        true
-                    );
+                    $this->Cell($this->colWidths[$i], $headerHeight, $h, 1, 0, 'C', true);
                 } else {
-                    // Draw border/background
-                    $this->Cell(
-                        $this->colWidths[$i],
-                        $headerHeight,
-                        '',
-                        1,
-                        0,
-                        'C',
-                        true
-                    );
-
-                    // Draw two-line text
+                    $this->Cell($this->colWidths[$i], $headerHeight, '', 1, 0, 'C', true);
                     $this->SetXY($x, $y);
-                    $this->MultiCell(
-                        $this->colWidths[$i],
-                        $lineHeight,
-                        $h,
-                        0,
-                        'C'
-                    );
+                    $this->MultiCell($this->colWidths[$i], $lineHeight, $h, 0, 'C');
                 }
 
                 $x += $this->colWidths[$i];
@@ -258,29 +277,22 @@ $dateStr = date('l, F d, Y h:i A');
 $fileSuffix = date('Y-m-d');
 
 $headers = [
-    'Branch',
-    'Brand',
-    'Plantilla',
-    'Deployed',
-    'Vacant',
-    'Vacant Since',
-    "Vacant\nPeriod",
-    'Complete Since',
-    "Complete\nPeriod"
+    'Branch', 'Brand', 'Plantilla', 'Deployed', 'Vacant',
+    'Vacant Since', "Vacant\nPeriod", 'Complete Since', "Complete\nPeriod"
 ];
 $widths  = [34, 34, 18, 18, 18, 22, 16, 22, 16];
 
-$pdf = new ReportPDF('P', 'mm', 'Letter'); // portrait: 216 x 279mm
+$pdf = new ReportPDF('P', 'mm', 'Letter');
 $pdf->Ln(10);
 $pdf->reportTitle    = fpdf_str($branchLabel);
 $pdf->reportSubtitle = fpdf_str('As of ' . $dateStr);
 $pdf->colHeaders     = array_map('fpdf_str', $headers);
 $pdf->colWidths      = $widths;
-$pdf->SetAutoPageBreak(true, 30); // auto page break re-calls Header() -> letterhead redrawn automatically
+$pdf->SetAutoPageBreak(true, 30);
 $pdf->AddPage();
 
 $fitSize = computeFitFontSize($pdf, $combined, $widths);
-$rowH = 5; // compact row height
+$rowH = 5;
 
 $pdf->SetFont('Arial', '', $fitSize);
 foreach ($combined as $row) {

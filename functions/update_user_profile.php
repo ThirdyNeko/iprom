@@ -5,7 +5,7 @@ include '../auth/require_login.php';
 
 header('Content-Type: application/json');
 
-$allowed = ['admin', 'super_admin'];
+$allowed = ['admin', 'super_admin', 'audit_manager', 'audit_supervisor'];
 if (!in_array($_SESSION['role'] ?? '', $allowed)) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
     exit;
@@ -19,7 +19,7 @@ $middleName = trim($_POST['middle_name'] ?? '');
 $lastName   = trim($_POST['last_name'] ?? '');
 $suffix     = trim($_POST['suffix'] ?? '');
 
-$validRoles = ['staff', 'supervisor', 'branch_manager', 'admin', 'super_admin'];
+$validRoles = ['staff', 'supervisor', 'branch_manager', 'admin', 'super_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'];
 
 if (!$id || !$position || !$firstName || !$lastName || !in_array($role, $validRoles)) {
     echo json_encode(['success' => false, 'message' => 'Invalid input.']);

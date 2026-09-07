@@ -5,6 +5,17 @@ ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
+// Surfaces any fatal error as readable text instead of a blank/broken PDF.
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        while (ob_get_level() > 0) { ob_end_clean(); }
+        http_response_code(500);
+        header('Content-Type: text/plain');
+        echo "FATAL: {$err['message']} in {$err['file']} on line {$err['line']}";
+    }
+});
+
 session_start();
 
 // IMPORTANT: release the session file lock immediately. This script makes
@@ -31,8 +42,15 @@ if (empty($branchCode)) {
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
-function fpdf_str(string $s): string {
-    return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $s);
+function fpdf_str($s): string {
+    $s = (string)$s;
+    // Repair genuinely invalid UTF-8 byte sequences first (this is what
+    // //TRANSLIT cannot fix on its own).
+    if (!mb_check_encoding($s, 'UTF-8')) {
+        $s = mb_convert_encoding($s, 'UTF-8', 'UTF-8'); // drops/replaces bad bytes
+    }
+    $result = @iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $s);
+    return $result === false ? '' : $result;
 }
 
 function formatDatePdf($value) {
@@ -67,26 +85,64 @@ function firstNonEmpty(...$values): string {
  * current session cookie so role/branch-based filtering in that endpoint
  * still applies. This keeps a single source of truth for the actual
  * SQL/stored-procedure logic instead of duplicating it here.
+ *
+ * Retries a few times with a short backoff: if the server can only handle
+ * one request at a time (e.g. PHP's built-in dev server, or a low
+ * php-fpm worker count), the first attempt can fail simply because the
+ * outer request hasn't finished yet. A short pause and retry lets that
+ * clear up instead of failing outright.
  */
-function fetchInternalJson(string $relativePath, array $params): array {
+function fetchInternalJson(string $relativePath, array $params, int $maxAttempts = 3): array
+{
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host   = $_SERVER['HTTP_HOST'];
     $dir    = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-    $url    = $scheme . '://' . $host . $dir . '/' . $relativePath . '?' . http_build_query($params);
+
+    $url = $scheme . '://' . $host . $dir . '/' .
+           $relativePath . '?' . http_build_query($params);
 
     $context = stream_context_create([
         'http' => [
-            'header'  => "Cookie: " . ($_SERVER['HTTP_COOKIE'] ?? '') . "\r\n",
-            'timeout' => 15,
+            'header'        => "Cookie: " . ($_SERVER['HTTP_COOKIE'] ?? '') . "\r\n",
+            'timeout'       => 15,
+            'ignore_errors' => true,
+        ],
+        'ssl' => [
+            // This is a loopback call to the same server, not to a third
+            // party — the self-signed cert on the internal IP will fail
+            // default verification ("Failed to enable crypto"), so it's
+            // safe to relax verification here specifically.
+            'verify_peer'      => false,
+            'verify_peer_name' => false,
+            'allow_self_signed'=> true,
         ],
     ]);
 
-    $json = @file_get_contents($url, false, $context);
-    if ($json === false) {
-        return [];
+    for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+        $json = @file_get_contents($url, false, $context);
+
+        $status = null;
+        if (isset($http_response_header[0]) && preg_match('#HTTP/\S+\s+(\d+)#', $http_response_header[0], $m)) {
+            $status = (int)$m[1];
+        }
+
+        if ($json !== false && ($status === null || $status < 400)) {
+            $data = json_decode($json, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+                return $data;
+            }
+            error_log("[fetchInternalJson] attempt $attempt: $url returned invalid JSON (" . json_last_error_msg() . "): " . substr((string)$json, 0, 500));
+        } else {
+            error_log("[fetchInternalJson] attempt $attempt: $url failed" . ($status ? " (HTTP $status)" : " (no response)"));
+        }
+
+        if ($attempt < $maxAttempts) {
+            usleep(300000);
+        }
     }
-    $data = json_decode($json, true);
-    return is_array($data) ? $data : [];
+
+    error_log("[fetchInternalJson] giving up on $url after $maxAttempts attempts");
+    return [];
 }
 
 // ─── Fetch data ────────────────────────────────────────────────────────────

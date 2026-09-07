@@ -51,27 +51,48 @@ if (!in_array($user_role, ['admin', 'super_admin', 'audit_manager', 'audit_super
 
 $stmt = $pdo->prepare(
     "SELECT
-        ei.[id],
-        ei.[employee_id],
-        ei.[first_name],
-        ei.[middle_name],
-        ei.[last_name],
-        ei.[birthday],
-        ei.[suffix],
-        ei.[gender],
-        ei.[marital_status],
-        ei.[branch] AS [branch_code],
-        COALESCE(b.[branch], ei.[branch]) AS [branch],
-        ei.[brand],
-        ei.[employment_status]
-     FROM dbo.[employee_info] ei
-     LEFT JOIN dbo.[branches] b ON b.[branch_code] = ei.[branch]
-     WHERE ei.[branch] = :branch
-        AND (
-            ei.[reason_for_update] <> 'Clerical Error'
-            OR ei.[reason_for_update] IS NULL
-        )
-     ORDER BY ei.[last_name], ei.[first_name]"
+        [id],
+        [employee_id],
+        [first_name],
+        [middle_name],
+        [last_name],
+        [birthday],
+        [suffix],
+        [gender],
+        [marital_status],
+        [branch_code],
+        [branch],
+        [brand],
+        [employment_status]
+     FROM (
+        SELECT
+            ei.[id],
+            ei.[employee_id],
+            ei.[first_name],
+            ei.[middle_name],
+            ei.[last_name],
+            ei.[birthday],
+            ei.[suffix],
+            ei.[gender],
+            ei.[marital_status],
+            ei.[branch] AS [branch_code],
+            COALESCE(b.[branch], ei.[branch]) AS [branch],
+            ei.[brand],
+            ei.[employment_status],
+            ROW_NUMBER() OVER (
+                PARTITION BY ei.[employee_id]
+                ORDER BY ei.[id]
+            ) AS [rn]
+        FROM dbo.[employee_info] ei
+        LEFT JOIN dbo.[branches] b ON b.[branch_code] = ei.[branch]
+        WHERE ei.[branch] = :branch
+            AND (
+                ei.[reason_for_update] NOT IN ('Clerical Error', 'BLACKLISTED / AWOL / TERMINATED', 'DECEASED')
+                OR ei.[reason_for_update] IS NULL
+            )
+     ) x
+     WHERE x.[rn] = 1
+     ORDER BY [last_name], [first_name]"
 );
 $stmt->execute([':branch' => $requested_branch]);
 

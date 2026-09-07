@@ -236,7 +236,7 @@ $skipSlotValidation = in_array($reason_for_update, [
     'DECEASED',
     'CLERICAL ERROR',
     'UPDATE BIOMETRIC NUMBER',
-    'MARITAL STATUS',
+    'UPDATE MARITAL STATUS',
     'UPDATE CONTACT NUMBER',
     'UPDATE ADDRESS',
     'CHANGE CATEGORIES',
