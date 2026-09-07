@@ -193,8 +193,15 @@ table td {
                         <div class="filter-label">Reason</div>
                         <select id="filterReason" class="form-select form-select-sm filter-control">
                             <option value="">All</option>
+                            <option value="ACTIVATED">ACTIVATED</option>
                             <option value="ADD BRANCH/BRAND">ADD BRANCH/BRAND</option>
+                            <option value="ASSIGNED">ASSIGNED</option>                            
+                            <option value="BLACKLIST APPROVED ">BLACKLIST APPROVED </option>
+                            <option value="BLACKLIST CANCELLED ">BLACKLIST CANCELLED </option>
+                            <option value="BLACKLIST REJECTED">BLACKLIST REJECTED</option>
+                            <option value="BLACKLIST REQUEST">BLACKLIST REQUEST</option>
                             <option value="BLACKLISTED / AWOL / TERMINATED">BLACKLISTED / AWOL / TERMINATED</option>
+                            <option value="CANCELLED VERIFICATION">CANCELLED VERIFICATION</option>
                             <option value="CHANGE AGENCY">CHANGE AGENCY</option>
                             <option value="CHANGE CATEGORIES">CHANGE CATEGORIES</option>
                             <option value="CHANGE EMPLOYEE PICTURE">CHANGE EMPLOYEE PICTURE</option>
