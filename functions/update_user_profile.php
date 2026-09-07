@@ -5,7 +5,7 @@ include '../auth/require_login.php';
 
 header('Content-Type: application/json');
 
-$allowed = ['admin', 'super_admin', 'audit_manager', 'audit_supervisor'];
+$allowed = ['admin', 'super_admin', 'audit_manager'];
 if (!in_array($_SESSION['role'] ?? '', $allowed)) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
     exit;
