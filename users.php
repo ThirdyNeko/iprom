@@ -128,7 +128,7 @@ include 'partials/sidebar.php';
                                 data-bs-toggle="modal"
                                 data-bs-target="#createUserModal"
                                 data-role-scope="hr">
-                            <i class="bi bi-plus-lg"></i> Add User
+                            <i class="bi bi-plus-lg"></i> Add HR User
                         </button>
                     </div>
                     <div class="card-body">
