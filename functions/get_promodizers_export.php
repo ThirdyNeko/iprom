@@ -37,6 +37,7 @@ SELECT
     p.gender,
     p.birthday,
     p.date_hired,
+    p.categories,
     p.assignment_date,
     p.last_assigned_by,
     b.area,
@@ -144,7 +145,7 @@ if (!empty($_GET['search'])) {
 }
 
 /* =========================
-   DATE FILTERS
+   DATE FILTERS (assignment_date)
 ========================= */
 if (!empty($_GET['from_date'])) {
     $sql .= " AND p.assignment_date >= :from_date";
@@ -159,6 +160,38 @@ if (!empty($_GET['to_date'])) {
 if (!empty($_GET['assigned_by'])) {
     $sql .= " AND p.last_assigned_by = :assigned_by";
     $params[':assigned_by'] = $_GET['assigned_by'];
+}
+
+/* =========================
+   CATEGORY FILTER
+   employee_info.categories stores comma-separated category_code
+   values, so match any row whose categories column contains at
+   least one of the requested codes.
+========================= */
+if (!empty($_GET['category'])) {
+    $categoryValues = array_filter(array_map('trim', explode(',', $_GET['category'])));
+    $catConditions = [];
+    foreach ($categoryValues as $i => $val) {
+        $key = ":category$i";
+        $catConditions[] = "p.categories LIKE $key";
+        $params[$key] = "%$val%";
+    }
+    if ($catConditions) {
+        $sql .= " AND (" . implode(' OR ', $catConditions) . ")";
+    }
+}
+
+/* =========================
+   DATE HIRED FILTERS
+========================= */
+if (!empty($_GET['date_hired_from'])) {
+    $sql .= " AND p.date_hired >= :date_hired_from";
+    $params[':date_hired_from'] = $_GET['date_hired_from'];
+}
+
+if (!empty($_GET['date_hired_to'])) {
+    $sql .= " AND p.date_hired <= :date_hired_to";
+    $params[':date_hired_to'] = $_GET['date_hired_to'];
 }
 
 $sql .= " ORDER BY p.last_name ASC";
@@ -191,6 +224,7 @@ foreach ($data as $p) {
         "gender" => $p['gender'],
         "birthday" => $p['birthday'],
         "date_hired" => $p['date_hired'],
+        "categories" => $p['categories'],
         "assignment_date" => $p['assignment_date'],
         "last_assigned_by" => $p['last_assigned_by']
     ];
