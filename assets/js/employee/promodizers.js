@@ -365,6 +365,13 @@ document.getElementById("exportExcel").addEventListener("click", function () {
         "Company",
         "Assignment Date",
         "Last Assigned By",
+        "Marital Status",
+        "Contact Number",
+        "Province",
+        "Municipality",
+        "Barangay",
+        "Street",
+        "Biometric Number",
       );
 
       let exportData = [headers];
@@ -397,6 +404,13 @@ document.getElementById("exportExcel").addEventListener("click", function () {
           (branchByName[p.branch]?.corpo || "").toUpperCase(),
           formatDate(p.assignment_date),
           p.last_assigned_by,
+          p.marital_status,
+          p.contact_number,
+          p.province_name,
+          p.municipality_name,
+          p.barangay_name,
+          p.street,
+          p.biometric_number,
         );
 
         exportData.push(row);

@@ -12,10 +12,13 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
-// Same pattern as the rest of the app: a session branch means the
-// user (staff or branch_manager) is scoped to that branch only.
-// Empty/null session branch = full access (e.g. super_admin).
-$sessionBranch = $_SESSION['branch'] ?? null;
+// Same pattern as fetch_promodizers.php: branch is stored in session
+// as a comma-separated string (even for a single branch), so a staff
+// user with multiple branches gets "BR01,BR02". Empty/null = full
+// access (e.g. super_admin).
+$sessionBranches = !empty($_SESSION['branch'])
+    ? array_map('trim', explode(',', $_SESSION['branch']))
+    : [];
 
 $pdo = qa_db();
 
@@ -26,6 +29,13 @@ SELECT
     p.middle_name,
     p.last_name,
     p.suffix,
+    p.marital_status,
+    p.contact_number,
+    p.province_name,
+    p.municipality_name,
+    p.barangay_name,
+    p.street,
+    p.biometric_number,
     p.branch,
     b.branch AS branch_name,   
     p.brand,
@@ -52,13 +62,18 @@ $params = [];
 
 /* =========================
    SESSION BRANCH LOCK
-   If the session has a branch assigned, force the query to that
-   branch and ignore any branch/corpo/region/area params from the
+   If the session has branch(es) assigned, force the query to those
+   branches and ignore any branch/corpo/region/area params from the
    client — same restriction staff already get elsewhere.
 ========================= */
-if (!empty($sessionBranch)) {
-    $sql .= " AND p.branch = :session_branch";
-    $params[':session_branch'] = $sessionBranch;
+if (!empty($sessionBranches)) {
+    $placeholders = [];
+    foreach ($sessionBranches as $i => $val) {
+        $key = ":session_branch$i";
+        $placeholders[] = $key;
+        $params[$key] = $val;
+    }
+    $sql .= " AND p.branch IN (" . implode(',', $placeholders) . ")";
 } else {
     /* =========================
        FILTERS (only reachable when there's no session branch lock)
@@ -214,6 +229,13 @@ foreach ($data as $p) {
         "middle_name" => $p['middle_name'],
         "last_name" => $p['last_name'],
         "suffix" => $p['suffix'],
+        "marital_status" => $p['marital_status'],
+        "contact_number" => $p['contact_number'],
+        "province_name" => $p['province_name'],
+        "municipality_name" => $p['municipality_name'],
+        "barangay_name" => $p['barangay_name'],
+        "street" => $p['street'],
+        "biometric_number" => $p['biometric_number'],
         "branch" => $p['branch_name'] ?? $p['branch'],
         "brand" => $p['brand'],
         "status" => $p['status'],
