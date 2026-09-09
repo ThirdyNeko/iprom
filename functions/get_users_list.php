@@ -51,7 +51,7 @@ $visibleRoles = match ($_SESSION['role']) {
     default            => []
 };
 
-$hiddenUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
+$hiddenUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF'];
 $excludeUsernames = in_array($_SESSION['role'], ['admin', 'supervisor'])
     ? $hiddenUsernames
     : [];
