@@ -52,16 +52,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':username' => $username
             ]);
         } else {
+            // 🌐 No exact branch match here anymore — a branch_manager can be
+            // assigned more than one branch (branch column stores comma-separated
+            // codes, same convention as roving_branches / multi_brands elsewhere
+            // in IPROM). We fetch by username/role only and check branch
+            // membership in PHP below, alongside the password check.
             $stmt = $pdo->prepare("
                 SELECT * FROM users
                 WHERE username = :username
                   AND role = 'branch_manager'
-                  AND branch = :branch
                   AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
             ");
             $stmt->execute([
-                ':username' => $username,
-                ':branch'   => $branchSelect
+                ':username' => $username
             ]);
         }
 
@@ -72,11 +75,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // must only ever match their own password, never whichever row the query
         // happened to return first (no ORDER BY = non-deterministic on ties).
         $user = null;
+        $userBranches = [];
         foreach ($rows as $row) {
-            if (password_verify($password, $row['password'])) {
-                $user = $row;
-                break;
+            if (!password_verify($password, $row['password'])) {
+                continue;
             }
+
+            if ($branchSelect !== 'HEAD_OFFICE') {
+                // branch column may hold a single code ("BR01") or a
+                // comma-separated list ("BR01,BR07,BR12") for managers
+                // covering multiple branches
+                $userBranches = array_values(array_filter(array_map('trim', explode(',', $row['branch'] ?? ''))));
+                if (!in_array($branchSelect, $userBranches, true)) {
+                    // right password, but not authorized for the branch they picked —
+                    // keep checking other rows in case of a name collision
+                    continue;
+                }
+            }
+
+            $user = $row;
+            break;
         }
 
         if ($user) {
@@ -108,12 +126,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id']     = $user['id'];
                 $_SESSION['username']    = $user['username'];
                 $_SESSION['role']        = $user['role'];
-                $_SESSION['branch']      = $user['branch'] ?? null;
+                $_SESSION['branch']      = $user['role'] === 'branch_manager' ? $branchSelect : ($user['branch'] ?? null);
                 $_SESSION['brand']       = $user['brand'] ?? null;
                 $_SESSION['position']    = $user['position'] ?? null;
                 $_SESSION['department']  = $user['department'] ?? null;
                 $_SESSION['status']      = $user['status'] ?? null;
                 $_SESSION['first_login'] = $user['first_login'] ?? null;
+
+                // 🏬 Full list of branches this user can access — populated for
+                // branch_managers with multiple branches; falls back to a single
+                // entry for everyone else so downstream code has one shape to check.
+                $_SESSION['user_branches'] = !empty($userBranches)
+                    ? $userBranches
+                    : array_filter([$_SESSION['branch']]);
 
                 header("Location: ../index.php");
                 exit;
