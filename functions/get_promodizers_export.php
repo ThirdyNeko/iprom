@@ -63,8 +63,10 @@ $params = [];
 /* =========================
    SESSION BRANCH LOCK
    If the session has branch(es) assigned, force the query to those
-   branches and ignore any branch/corpo/region/area params from the
-   client — same restriction staff already get elsewhere.
+   branches. This is its own independent AND clause, so any filter
+   added below can only narrow further within it — never widen
+   beyond it, even if a client param requests a branch outside the
+   session's set (that just yields zero rows, not a bypass).
 ========================= */
 if (!empty($sessionBranches)) {
     $placeholders = [];
@@ -74,29 +76,31 @@ if (!empty($sessionBranches)) {
         $params[$key] = $val;
     }
     $sql .= " AND p.branch IN (" . implode(',', $placeholders) . ")";
-} else {
-    /* =========================
-       FILTERS (only reachable when there's no session branch lock)
-    ========================= */
-    if (!empty($_GET['region'])) {
-        $sql .= " AND b.region = :region";
-        $params[':region'] = $_GET['region'];
-    }
+}
 
-    if (!empty($_GET['area'])) {
-        $sql .= " AND b.area = :area";
-        $params[':area'] = $_GET['area'];
-    }
+/* =========================
+   FILTERS
+   Always applied, session-locked or not — they can only narrow
+   the result set, never escape the session lock above.
+========================= */
+if (!empty($_GET['region'])) {
+    $sql .= " AND b.region = :region";
+    $params[':region'] = $_GET['region'];
+}
 
-    if (!empty($_GET['corpo'])) {
-        $sql .= " AND p.corpo = :corpo";
-        $params[':corpo'] = $_GET['corpo'];
-    }
+if (!empty($_GET['area'])) {
+    $sql .= " AND b.area = :area";
+    $params[':area'] = $_GET['area'];
+}
 
-    if (!empty($_GET['branch'])) {
-        $sql .= " AND p.branch = :branch";
-        $params[':branch'] = $_GET['branch'];
-    }
+if (!empty($_GET['corpo'])) {
+    $sql .= " AND p.corpo = :corpo";
+    $params[':corpo'] = $_GET['corpo'];
+}
+
+if (!empty($_GET['branch'])) {
+    $sql .= " AND p.branch = :branch";
+    $params[':branch'] = $_GET['branch'];
 }
 
 if (!empty($_GET['brand'])) {
