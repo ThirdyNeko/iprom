@@ -100,7 +100,13 @@ $pdo = qa_db();
                 <button type="button" class="btn btn-sm btn-primary" id="syncBlacklistBtn">
                     <i class="bi bi-arrow-repeat"></i> Sync from Employees
                 </button>
-                <button type="button" class="btn btn-sm btn-success" id="addBlacklistedBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedModal">
+                <!-- One button per tab — each opens its own dedicated modal.
+                     Only the button matching the active tab is shown; see the
+                     shown.bs.tab handler below. -->
+                <button type="button" class="btn btn-sm btn-success" id="addBlacklistedPromodiserBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedPromodiserModal">
+                    <i class="bi bi-plus-lg"></i> Add Blacklisted
+                </button>
+                <button type="button" class="btn btn-sm btn-success d-none" id="addBlacklistedDirectHireBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedDirectHireModal">
                     <i class="bi bi-plus-lg"></i> Add Blacklisted
                 </button>
             </div>
@@ -201,7 +207,8 @@ $pdo = qa_db();
 <script src="assets/js/datatables.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/blacklisted/blacklisted.js"></script>
-<script src="assets/js/blacklisted/add_blacklisted.js"></script>
+<script src="assets/js/blacklisted/add_blacklisted_promodiser.js"></script>
+<script src="assets/js/blacklisted/add_blacklisted_direct_hire.js"></script>
 <script src="assets/js/blacklisted/view_blacklisted.js"></script>
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {
@@ -215,8 +222,19 @@ document.querySelectorAll(".clear-btn").forEach(btn => {
     input.dispatchEvent(new Event("input"));
   });
 });
+
+// Show only the Add button that matches the active tab.
+document.querySelectorAll('#blacklistedTabs button[data-bs-toggle="tab"]').forEach((tabBtn) => {
+  tabBtn.addEventListener("shown.bs.tab", (e) => {
+    const target = e.target.getAttribute("data-bs-target");
+    const isDirectHire = target === "#direct-hire-pane";
+    document.getElementById("addBlacklistedPromodiserBtn").classList.toggle("d-none", isDirectHire);
+    document.getElementById("addBlacklistedDirectHireBtn").classList.toggle("d-none", !isDirectHire);
+  });
+});
 </script>
 
-<?php include 'modals/add_blacklisted_modal.php'; ?>
+<?php include 'modals/add_blacklisted_promodiser_modal.php'; ?>
+<?php include 'modals/add_blacklisted_direct_hire_modal.php'; ?>
 <?php include 'modals/view_blacklisted_modal.php'; ?>
 <?php include 'modals/change_password_modal.php'; ?>

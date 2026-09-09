@@ -36,8 +36,6 @@ $can_action_requests = $is_admin;
 // what keeps add_blacklisted_modal.php's bl_* field IDs out of the DOM
 // for audit roles, so they can never collide with request_blacklist_modal.php's
 // fields regardless of naming.)
-$can_add_blacklisted = $is_admin;
-
 // Pick a sensible default active tab — Blacklist Requests comes first now
 $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs ? 'promodiser' : null);
 ?>
@@ -159,11 +157,6 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
                     <button type="button" class="btn btn-sm btn-primary" id="syncBlacklistBtn">
                         <i class="bi bi-arrow-repeat"></i> Sync from Employees
                     </button>
-                    <?php if ($can_add_blacklisted): ?>
-                    <button type="button" class="btn btn-sm btn-success" id="addBlacklistedBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedModal">
-                        <i class="bi bi-plus-lg"></i> Add Blacklisted
-                    </button>
-                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 
@@ -348,10 +341,6 @@ $default_tab = $can_view_requests_tab ? 'requests' : ($can_view_blacklisted_tabs
 <script src="assets/js/blacklisted/view_blacklisted.js"></script>
 <?php endif; ?>
 
-<?php if ($can_add_blacklisted): ?>
-<script src="assets/js/blacklisted/add_blacklisted.js"></script>
-<?php endif; ?>
-
 <?php if ($can_view_requests_tab): ?>
 <script src="assets/js/blacklist_request/blacklist_request.js"></script>
 <?php endif; ?>
@@ -393,10 +382,6 @@ document.getElementById('openRequestBlacklistBtn')?.classList.toggle('d-none', i
 document.getElementById('openRequestBlacklistBtn')?.classList.remove('d-none');
 <?php endif; ?>
 </script>
-
-<?php if ($can_add_blacklisted): ?>
-<?php include 'modals/add_blacklisted_modal.php'; ?>
-<?php endif; ?>
 
 <?php if ($can_view_blacklisted_tabs): ?>
 <?php include 'modals/view_blacklisted_modal.php'; ?>

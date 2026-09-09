@@ -1193,3 +1193,17 @@
 [2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 331
 [2026-08-05 15:51:18] Error [2]: Undefined array key "id" in C:\xampp\htdocs\iprom\users.php on line 335
 [2026-08-05 15:51:18] Error [8192]: htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\iprom\users.php on line 335
+[2026-09-09 13:39:38] Error [2]: include(modals/add_blacklisted_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 13:39:38] Error [2]: include(): Failed opening 'modals/add_blacklisted_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 13:45:04] Error [2]: include(modals/add_blacklisted_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 13:45:04] Error [2]: include(): Failed opening 'modals/add_blacklisted_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 13:51:17] Error [2]: include(modals/add_blacklisted_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 13:51:17] Error [2]: include(): Failed opening 'modals/add_blacklisted_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:54:57] Error [2]: include(modals/add_blacklisted_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:54:57] Error [2]: include(): Failed opening 'modals/add_blacklisted_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:55:00] Error [2]: include(modals/add_blacklisted_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:55:00] Error [2]: include(): Failed opening 'modals/add_blacklisted_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:55:01] Error [2]: include(modals/add_blacklisted_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:55:01] Error [2]: include(): Failed opening 'modals/add_blacklisted_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:56:05] Error [2]: include(modals/add_blacklisted_modal.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
+[2026-09-09 14:56:05] Error [2]: include(): Failed opening 'modals/add_blacklisted_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\blacklist_request.php on line 398
