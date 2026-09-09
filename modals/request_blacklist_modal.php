@@ -77,6 +77,14 @@
             <textarea id="bl_remarks" class="form-control" rows="3" style="background:#fffbdf;"
                       placeholder="Explain the reason for this blacklist request..."></textarea>
           </div>
+
+          <div class="col-md-12">
+            <label class="form-label fw-semibold">Attachments (up to 3 images)</label>
+            <input type="file" id="bl_attachments_input" class="form-control"
+                   accept="image/png,image/jpeg" multiple>
+            <div class="form-text">JPEG or PNG only — max 3 images, 5MB each.</div>
+            <div id="bl_attachments_preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+          </div>
         </div>
 
       </div>

@@ -62,6 +62,15 @@
             <label class="form-label text-muted small mb-0">Remarks / Reason</label>
             <div id="vbr_remarks" class="border rounded p-2" style="background:#f8f9fa; min-height:60px;"></div>
           </div>
+
+          <div class="col-12">
+            <button type="button" id="vbr_view_attachments_btn" class="btn btn-outline-primary btn-sm d-none">
+              <i class="bi bi-paperclip me-1"></i>View Attachments
+            </button>
+            <div id="vbr_attachments_wrapper" class="d-none mt-2">
+              <div id="vbr_attachments" class="d-flex flex-wrap gap-2"></div>
+            </div>
+          </div>
         </div>
 
       </div>
