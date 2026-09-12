@@ -204,7 +204,8 @@
                 <li>Face clearly visible, no sunglasses or mask</li>
                 <li>Plain, well-lit background</li>
                 <li>Head and shoulders centered in frame</li>
-                <li>Please use white clothing and background</li>
+                <li>Make sure to use white clothing</li>
+                <li>Make sure to use a white background</li>
                 <li>Make sure clothing is collared and professional</li>
                 <li>Make sure the image is not blurry</li>
                 <li>Upload JPEG, JPG, or PNG only</li>
