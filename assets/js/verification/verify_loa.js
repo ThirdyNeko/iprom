@@ -586,10 +586,14 @@ async function finalizeVerification() {
     const result = await res.json();
 
     if (result.success) {
+      const statusLabel = (result.status || "QUEUED").toUpperCase();
+      const statusClass =
+        statusLabel === "ACTIVE" ? "text-success" : "text-warning";
+
       $("#finalizeResult").html(`
-        <i class="bi bi-check-circle-fill text-success" style="font-size:2.2rem;"></i>
-        <p class="mt-2 mb-0">Verification complete. Employee status set to <strong>QUEUED</strong>.</p>
-      `);
+    <i class="bi bi-check-circle-fill text-success" style="font-size:2.2rem;"></i>
+    <p class="mt-2 mb-0">Verification complete. Employee status set to <strong class="${statusClass}">${statusLabel}</strong>.</p>
+  `);
       if (
         typeof table !== "undefined" &&
         table &&

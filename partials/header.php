@@ -335,7 +335,9 @@ if (isset($_SESSION['user_id'])) {
     <script>
         (function() {
             const isSuperAdmin = <?= json_encode(($_SESSION['role'] ?? '') === 'super_admin') ?>;
-            const isExempt = <?= json_encode(in_array($_SESSION['username'] ?? '', ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'])) ?>;
+            const isExempt = <?= json_encode(in_array($_SESSION['username'] ?? '', 
+            ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF', 'QA_BRANCH_MANAGER']
+            )) ?>;
 
             let swalShown = false;
             let countdownInterval = null;

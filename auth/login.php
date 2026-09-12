@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // 🚧 Check maintenance mode
             $maintenanceFile = __DIR__ . '/../maintenance.flag';
-            $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
+            $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF', 'QA_BRANCH_MANAGER'];
             $blockedByMaintenance = false;
             $maintenanceMessage = 'The system is currently under maintenance. Please try again later.';
 

@@ -331,6 +331,10 @@ function toggleBranchReasonOptions() {
   ).toUpperCase();
 
   const isStationary = subStatus === "STATIONARY";
+  // NEW: MULTI BRAND employees can also TRANSFER BRANCH — it moves
+  // the whole group (every brand-row) onto a new shared branch.
+  const isMultiBrand = subStatus === "MULTI BRAND";
+  const canTransferBranch = isStationary || isMultiBrand;
   const isInactive = status === "INACTIVE";
 
   // Check the EMPLOYEE'S STORED reason (from DB), not the live dropdown
@@ -354,8 +358,8 @@ function toggleBranchReasonOptions() {
   if (addOpt) addOpt.disabled = isStationary;
   if (removeOpt) removeOpt.disabled = isStationary;
   if (transferOpt) {
-    transferOpt.disabled = !isStationary;
-    transferOpt.style.color = !isStationary ? "#aaa" : "";
+    transferOpt.disabled = !canTransferBranch;
+    transferOpt.style.color = !canTransferBranch ? "#aaa" : "";
   }
 
   const inactiveOnly = new Set([
@@ -591,9 +595,27 @@ function toggleTransferEditable() {
 
   if (reason !== "TRANSFER BRANCH" && reason !== "REASSIGN") return;
 
-  if (subStatus === "STATIONARY" && employmentStatus !== "RELIEVER") {
+  // NEW: MULTI BRAND employees can also TRANSFER BRANCH — editBranch
+  // becomes editable, but editBrand stays locked since each brand-row
+  // in the group keeps its own brand; only the shared branch moves
+  // for all of them together.
+  const canEditBranch =
+    (subStatus === "STATIONARY" || subStatus === "MULTI BRAND") &&
+    employmentStatus !== "RELIEVER";
+
+  if (canEditBranch) {
     if (branchEl) branchEl.disabled = false;
-    if (reason === "REASSIGN") {
+
+    // Only show branches that actually have room for every brand
+    // this employee currently holds — for TRANSFER BRANCH specifically.
+    if (reason === "TRANSFER BRANCH") {
+      populateTransferBranchOptions(subStatus);
+    }
+
+    // REASSIGN also lets brand change, but only for STATIONARY —
+    // MULTI BRAND's brand set is managed via the multi-brand rows,
+    // not this single editBrand field.
+    if (reason === "REASSIGN" && subStatus === "STATIONARY") {
       if (brandEl) brandEl.disabled = false;
     }
   }
@@ -692,6 +714,70 @@ function populateEditBranch(
       );
       const displayName = pair?.branch_name || code;
       return `<option value="${code}" ${list.includes(code) ? "selected" : ""}>${displayName}</option>`;
+    })
+    .join("");
+}
+
+// NEW: every branch_code where the given brand currently has an open
+// slot (assigned_count < required_count).
+function getBranchesWithAvailableSlot(brandName) {
+  return branchBrandPairs
+    .filter(
+      (p) => p.brand_name === brandName && p.assigned_count < p.required_count,
+    )
+    .map((p) => p.branch_code);
+}
+
+// NEW: for TRANSFER BRANCH, only list destination branches that have
+// a free slot for EVERY brand the employee currently holds. For
+// STATIONARY that's just their one brand; for MULTI BRAND it's every
+// brand in their group, since a transfer moves the whole group onto
+// the new branch together. The employee's current branch is always
+// included (and pre-selected) even though it isn't itself required to
+// pass the "open slot" check — they're already assigned there.
+function populateTransferBranchOptions(subStatus) {
+  const branchSelect = document.getElementById("editBranch");
+  if (!branchSelect) return;
+
+  const baseBranch = window.currentEmployee?.branch || "";
+
+  let requiredBrands = [];
+  if ((subStatus || "").toUpperCase() === "MULTI BRAND") {
+    requiredBrands = Array.from(
+      pageEl.querySelectorAll("#editMultiBrandContainer select"),
+    )
+      .map((s) => s.value)
+      .filter(Boolean);
+    if (!requiredBrands.length && window.currentEmployee?.brand) {
+      requiredBrands = [window.currentEmployee.brand];
+    }
+  } else if (window.currentEmployee?.brand) {
+    requiredBrands = [window.currentEmployee.brand];
+  }
+
+  if (!requiredBrands.length) return;
+
+  // Intersect the "has an open slot" branch list across every
+  // required brand.
+  let candidateBranches = null;
+  requiredBrands.forEach((brandName) => {
+    const available = new Set(getBranchesWithAvailableSlot(brandName));
+    candidateBranches = candidateBranches
+      ? new Set([...candidateBranches].filter((b) => available.has(b)))
+      : available;
+  });
+
+  const candidates = [...(candidateBranches || [])].filter(
+    (code) => code !== baseBranch,
+  );
+
+  const options = [baseBranch, ...candidates].filter(Boolean);
+
+  branchSelect.innerHTML = options
+    .map((code) => {
+      const pair = branchBrandPairs.find((p) => p.branch_code === code);
+      const displayName = pair?.branch_name || code;
+      return `<option value="${code}" ${code === baseBranch ? "selected" : ""}>${displayName}</option>`;
     })
     .join("");
 }
@@ -1483,16 +1569,38 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const reason = (
     document.getElementById("editReasonUpdate").value || ""
   ).toUpperCase();
+  const subStatusForSave = (
+    document.getElementById("editSubStatus")?.value || ""
+  ).toUpperCase();
 
   let spouseLastName = null;
 
   const requiresAssignmentCheck =
     reason === "TRANSFER BRANCH" || reason === "REASSIGN";
-  let isAvailable = true;
 
   if (requiresAssignmentCheck) {
-    isAvailable = isComboAvailable(branch, brand);
-    if (!isAvailable) {
+    // NEW: a MULTI BRAND transfer moves every brand-row onto the new
+    // branch, so every brand in the group needs a free slot there —
+    // not just the single brand shown in editBrand.
+    if (reason === "TRANSFER BRANCH" && subStatusForSave === "MULTI BRAND") {
+      const groupBrands = Array.from(
+        pageEl.querySelectorAll("#editMultiBrandContainer select"),
+      )
+        .map((s) => s.value)
+        .filter(Boolean);
+
+      const fullBrands = groupBrands.length ? groupBrands : [brand];
+      const allAvailable = fullBrands.every((b) => isComboAvailable(branch, b));
+
+      if (!allAvailable) {
+        await Swal.fire({
+          icon: "warning",
+          title: "Slot Full",
+          text: "One or more brands in this group don't have a free slot at that branch.",
+        });
+        return;
+      }
+    } else if (!isComboAvailable(branch, brand)) {
       await Swal.fire({
         icon: "warning",
         title: "Slot Full",
