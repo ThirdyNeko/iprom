@@ -123,10 +123,10 @@ $(function () {
 
     Swal.fire({
       title: "Unflag this request?",
-      text: "This removes the flag from this promodiser.",
+      text: "This will clear the employee record status.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, unflag",
+      confirmButtonText: "Yes",
     }).then((result) => {
       if (!result.isConfirmed) return;
 
@@ -617,7 +617,7 @@ $(function () {
       .then((r) => r.json())
       .then((res) => {
         if (res.success) {
-          Swal.fire("Submitted", res.message, "success");
+          Swal.fire("Flagging request submitted", res.message, "success");
           requestModal.hide();
           table.ajax.reload(null, false);
         } else {
