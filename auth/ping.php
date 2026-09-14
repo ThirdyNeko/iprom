@@ -22,7 +22,7 @@ $pdo = qa_db();
 
 // 🚧 Kick users if maintenance timer has elapsed
 $maintenanceFile  = __DIR__ . '/../maintenance.flag';
-$allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF'];
+$allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF', 'QA_BRANCH_MANAGER'];
 $isSuperAdmin     = ($_SESSION['role'] ?? '') === 'super_admin';
 $isAllowed        = in_array($_SESSION['username'] ?? '', $allowedUsernames);
 

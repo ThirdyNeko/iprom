@@ -122,13 +122,22 @@
         <?php endif; ?>
 
         <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
-            <li>
+            <!-- <li>
                 <a href="blacklist_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'blacklist_request.php' ? 'active' : '' ?>">
                     <i class="bi bi-person-slash"></i>
                     <span>Blacklist Requests</span>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
                         <span id="sidebarBlacklistRequestCountBadge" class="badge rounded-pill bg-danger ms-auto d-none"></span>
                     <?php endif; ?>
+                </a>
+            </li> -->
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
+            <li>
+                <a href="flagging_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'flagging_request.php' ? 'active' : '' ?>">
+                    <i class="bi bi-flag"></i>
+                    <span>Flagging Requests</span>
                 </a>
             </li>
         <?php endif; ?>
