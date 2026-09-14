@@ -97,6 +97,7 @@ $pdo = qa_db();
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold mb-0">Blacklisted</h4>
             <div class="d-flex gap-2">
+                <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin', 'assistant_admin'])): ?>
                 <button type="button" class="btn btn-sm btn-primary" id="syncBlacklistBtn">
                     <i class="bi bi-arrow-repeat"></i> Sync from Employees
                 </button>
@@ -108,7 +109,7 @@ $pdo = qa_db();
                 </button>
                 <button type="button" class="btn btn-sm btn-success d-none" id="addBlacklistedDirectHireBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedDirectHireModal">
                     <i class="bi bi-plus-lg"></i> Add Blacklisted
-                </button>
+                </button><?php endif; ?>
             </div>
         </div>
 

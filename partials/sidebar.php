@@ -140,6 +140,17 @@
                     <span>Flagging Requests</span>
                 </a>
             </li>
+
+            <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['audit_manager', 'audit_supervisor'])): ?>
+
+            <li>
+                <a href="blacklisted.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'blacklisted.php' ? 'active' : '' ?>">
+                    <i class="bi bi-person-x"></i>
+                    Blacklisted
+                </a>
+            </li>
+
+             <?php endif; ?>
         <?php endif; ?>
 
         <!-- Reports — admin tier + the whole audit team -->
