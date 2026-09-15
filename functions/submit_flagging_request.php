@@ -54,6 +54,11 @@ if (!$employeeId || !$firstName || !$lastName || !$branchCode || $remarks === ''
     exit;
 }
 
+if (mb_strlen($remarks) > 100) {
+    echo json_encode(['success' => false, 'message' => 'Remarks must be 100 characters or fewer.']);
+    exit;
+}
+
 // branch_manager can only file a request for their own branch — never
 // trust the client-side locked dropdown alone.
 if ($role_lower === 'branch_manager') {

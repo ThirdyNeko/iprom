@@ -399,7 +399,7 @@ $categories = $pdo->query("
                                 <th>Employment Status</th>
                                 <th>Sub-Status</th>
                                 <th>Assignment Date</th>
-                                <th>Last Assigned By</th>
+                                <th>Last Assigned by</th>
                             </tr>
                         </thead>
                         <tbody></tbody>

@@ -486,7 +486,7 @@ th {
                         <input type="text" id="editAssignmentDate" class="form-control" readonly>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Last Assigned By</label>
+                        <label class="form-label">Last Assigned by</label>
                         <input type="text" id="editLastAssignedBy" class="form-control" readonly>
                     </div>
                     <div class="col-md-3">
@@ -494,7 +494,7 @@ th {
                         <input type="date" id="editDateLastUpdated" class="form-control" readonly>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Last Updated By</label>
+                        <label class="form-label">Last Updated by</label>
                         <input type="text" id="editLastUpdatedBy" class="form-control" readonly>
                     </div>                    
                 </div>

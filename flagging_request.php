@@ -97,7 +97,7 @@ $can_action_flagging_requests = $is_admin;
     <div class="container-fluid">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">Flagging Requests</h4>
+            <h4 class="fw-bold mb-0">Flagging Request Management</h4>
 
             <?php if ($can_request_flagging): ?>
                 <button type="button" id="openRequestFlaggingBtn" class="btn btn-danger btn-sm">
@@ -139,7 +139,7 @@ $can_action_flagging_requests = $is_admin;
                                 <th>Employment Status</th>
                                 <th>Sub Status</th>
                                 <th>Status</th>
-                                <th>Requested By</th>
+                                <th>Requested by</th>
                                 <th>Requested Date</th>
                                 <?php if ($can_action_flagging_requests || $can_request_flagging): ?>
                                     <th>Actions</th>

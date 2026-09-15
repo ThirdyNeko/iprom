@@ -90,7 +90,7 @@ $isAllowed =
                                     <td id="modalUpdated" class="readonly-field"></td>
                                 </tr>
                                 <tr>
-                                    <th>Last Updated By</th>
+                                    <th>Last Updated by</th>
                                     <td id="modalUpdatedBy" class="readonly-field"></td>
                                 </tr>
                             </tbody>

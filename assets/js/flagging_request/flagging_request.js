@@ -72,7 +72,7 @@ $(function () {
 
         return `
                     <button class="btn btn-outline-danger btn-sm fr-unflag-btn" data-id="${r.id}">
-                        <i class="bi bi-flag"></i> Unflag
+                        Unflag
                     </button>
                 `;
       },
@@ -126,12 +126,30 @@ $(function () {
       title: "Unflag this request?",
       text: "This will clear the employee record status.",
       icon: "warning",
-      input: "textarea",
-      inputPlaceholder: "Reason for unflagging...",
-      inputValidator: (value) => {
-        if (!value || !value.trim()) {
-          return "A reason is required.";
+      html: `
+        <textarea id="swal-unflag-remarks" class="swal2-textarea" maxlength="100"
+                  placeholder="Reason for unflagging..." style="margin-bottom:0;"></textarea>
+        <div class="text-end text-muted" style="font-size:12px;">
+          <span id="swal-unflag-remarks-count">0</span>/100
+        </div>
+      `,
+      didOpen: () => {
+        const textarea = document.getElementById("swal-unflag-remarks");
+        const counter = document.getElementById("swal-unflag-remarks-count");
+        textarea.addEventListener("input", () => {
+          counter.textContent = textarea.value.length;
+        });
+        textarea.focus();
+      },
+      preConfirm: () => {
+        const value = document
+          .getElementById("swal-unflag-remarks")
+          .value.trim();
+        if (!value) {
+          Swal.showValidationMessage("A reason is required.");
+          return false;
         }
+        return value;
       },
       showCancelButton: true,
       confirmButtonText: "Yes",
@@ -141,7 +159,7 @@ $(function () {
       fetch("functions/unflag_request.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, remarks: result.value.trim() }),
+        body: JSON.stringify({ id, remarks: result.value }),
       })
         .then((r) => r.json())
         .then((res) => {
@@ -295,6 +313,10 @@ $(function () {
   const MAX_ATTACHMENT_MB = 5;
   let selectedAttachments = []; // array of File
 
+  $("#fl_remarks").on("input", function () {
+    $("#fl_remarks_count").text(this.value.length);
+  });
+
   $("#fl_attachments_input").on("change", function () {
     const incoming = Array.from(this.files || []);
     this.value = ""; // allow re-selecting the same file after a remove
@@ -396,6 +418,7 @@ $(function () {
     ].forEach((f) => $("#fl_" + f).val(""));
     $("#fl_employee_id").val("");
     $("#fl_remarks").val("");
+    $("#fl_remarks_count").text("0");
     $("#submitFlaggingRequestBtn").prop("disabled", true);
   }
 

@@ -41,7 +41,7 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label text-muted small mb-0">Requested By</label>
+            <label class="form-label text-muted small mb-0">Requested by</label>
             <div id="vfr_requested_by" class="fw-semibold"></div>
           </div>
           <div class="col-md-6">
@@ -55,7 +55,7 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label text-muted small mb-0">Unflagged By</label>
+            <label class="form-label text-muted small mb-0">Unflagged by</label>
             <div id="vfr_unflagged_by" class="fw-semibold">—</div>
           </div>
           <div class="col-md-6">

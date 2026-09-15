@@ -71,8 +71,9 @@
 
           <div class="col-md-12">
             <label class="form-label fw-semibold">Remarks / Reason for Flagging</label>
-            <textarea id="fl_remarks" class="form-control" rows="3" style="background:#fffbdf;"
+            <textarea id="fl_remarks" class="form-control" rows="3" maxlength="100" style="background:#fffbdf;"
                       placeholder="Explain the reason for this flagging request..."></textarea>
+            <div class="form-text text-end"><span id="fl_remarks_count">0</span>/100</div>
           </div>
 
           <div class="col-md-12">

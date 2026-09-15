@@ -39,6 +39,11 @@ if ($remarks === '') {
     exit;
 }
 
+if (mb_strlen($remarks) > 100) {
+    echo json_encode(['success' => false, 'message' => 'Reason must be 100 characters or fewer.']);
+    exit;
+}
+
 try {
     $stmt = $pdo->prepare("{CALL unflag_flagging_request(?, ?, ?, ?)}");
     $stmt->execute([$id, $user_name, $user_role, $remarks]);

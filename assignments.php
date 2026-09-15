@@ -197,7 +197,7 @@ $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand
                                 <th>Queued</th>
                                 <th>Status</th>
                                 <th>Date Last Updated</th>
-                                <th>Last Updated By</th>
+                                <th>Last Updated by</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
