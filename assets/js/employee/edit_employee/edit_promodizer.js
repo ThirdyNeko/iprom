@@ -92,6 +92,106 @@ function checkPrintBtnState() {
   printBtn.disabled = !canPrintLOA || status === "INACTIVE";
 }
 
+let initialFormSnapshot = null;
+let initialFieldValues = {};
+
+function getFieldValue(el) {
+  if (!el) return "";
+  return el.type === "checkbox" || el.type === "radio"
+    ? el.checked
+      ? "1"
+      : "0"
+    : (el.value ?? "");
+}
+
+// Serializes every relevant field's current value so we can detect
+// whether the user has actually changed anything since load. Includes
+// id'd inputs/selects/textareas, the category checkboxes (no ids),
+// and the dynamic roving-branch / multi-brand rows (no ids either).
+// Also records each id'd field's value into initialFieldValues so
+// specific fields (employment_status, sub_status) can be checked
+// individually — see updateSaveButtonState().
+function getFormSnapshot({ captureFieldValues = false } = {}) {
+  if (!pageEl) return "";
+  const parts = [];
+  if (captureFieldValues) initialFieldValues = {};
+
+  pageEl
+    .querySelectorAll("input[id], select[id], textarea[id]")
+    .forEach((el) => {
+      // Picking a reason on its own (before touching any actual data)
+      // shouldn't enable Save — it just reveals/enables other fields.
+      if (el.id === "editReasonUpdate") return;
+      const val = getFieldValue(el);
+      parts.push(`${el.id}:${val}`);
+      if (captureFieldValues) initialFieldValues[el.id] = val;
+    });
+
+  editCatItems.forEach((cb, i) => {
+    parts.push(`cat${i}:${cb.checked ? "1" : "0"}`);
+  });
+
+  const rovingVals = Array.from(
+    editRovingContainer?.querySelectorAll("select") || [],
+  ).map((s) => s.value);
+  parts.push(`roving:${rovingVals.join(",")}`);
+
+  const brandVals = Array.from(
+    editMultiBrandContainer?.querySelectorAll("select") || [],
+  ).map((s) => s.value);
+  parts.push(`brands:${brandVals.join(",")}`);
+
+  return parts.join("|");
+}
+
+// Disables Save unless the form differs from the loaded baseline.
+// Additionally, when the reason is specifically to change
+// employment_status or sub_status, that field itself must actually
+// differ from its original value — merely picking the reason (which
+// can also show/require a start date) isn't enough on its own.
+// Never fights the branch_manager lock, which already forces the
+// button off/hidden.
+function updateSaveButtonState() {
+  const saveBtn = document.getElementById("saveBtn");
+  if (!saveBtn || isBranchManagerRole()) return;
+  if (initialFormSnapshot === null) return;
+
+  let hasChanges = getFormSnapshot() !== initialFormSnapshot;
+
+  const reason = (reasonSelect?.value || "").trim().toUpperCase();
+
+  if (reason === "CHANGE EMPLOYMENT STATUS") {
+    const empStatusEl = document.getElementById("editEmploymentStatus");
+    if (
+      getFieldValue(empStatusEl) ===
+      (initialFieldValues.editEmploymentStatus ?? "")
+    ) {
+      hasChanges = false;
+    }
+  }
+
+  if (reason === "CHANGE SUB STATUS") {
+    const subStatusEl = document.getElementById("editSubStatus");
+    if (
+      getFieldValue(subStatusEl) === (initialFieldValues.editSubStatus ?? "")
+    ) {
+      hasChanges = false;
+    }
+  }
+
+  if (reason === "RESIGNED") {
+    const dateSeparatedEl = document.getElementById("editDateSeparated");
+    if (
+      getFieldValue(dateSeparatedEl) ===
+      (initialFieldValues.editDateSeparated ?? "")
+    ) {
+      hasChanges = false;
+    }
+  }
+
+  saveBtn.disabled = !hasChanges;
+}
+
 // =========================
 // ROLE HELPERS
 // =========================
@@ -440,7 +540,11 @@ function toggleReasonDates() {
   const showStart = shouldShowReason || shouldShow;
   if (startDateRow) startDateRow.style.display = showStart ? "" : "none";
   if (startDateInput) {
-    const disableStart = !showStart || isTerminationReason;
+    // NEW: the "reliever/seasonal" path (shouldShow) is driven purely
+    // by employment_status and ignores the reason entirely — so it
+    // was enabling/requiring this field even with no reason selected
+    // yet. Require a reason to actually be chosen first.
+    const disableStart = !showStart || isTerminationReason || !reason;
     startDateInput.disabled = disableStart;
     startDateInput.required = !disableStart;
   }
@@ -1334,6 +1438,15 @@ async function loadEmployeePage(id) {
       }
     });
 
+    // NEW: baseline snapshot for "disable Save when nothing changed".
+    // Scheduled in its own rAF so it runs after the roving/brand
+    // population + branch_manager relock above (same-tick rAF
+    // callbacks fire in the order they were scheduled).
+    requestAnimationFrame(() => {
+      initialFormSnapshot = getFormSnapshot({ captureFieldValues: true });
+      updateSaveButtonState();
+    });
+
     if (reasonSelect) reasonSelect.selectedIndex = 0;
 
     if (el("editDateSeparated"))
@@ -1563,6 +1676,7 @@ async function collectSpouseInfoIfNeeded(reason) {
 // =========================
 document.getElementById("saveBtn").addEventListener("click", async () => {
   if (isBranchManagerRole()) return;
+  if (document.getElementById("saveBtn").disabled) return; // NEW: no-op if nothing changed
 
   const branch = document.getElementById("editBranch")?.value || "";
   const brand = document.getElementById("editBrand")?.value || "";
@@ -1966,6 +2080,17 @@ function isComboAvailable(branch, brand) {
 // INIT
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
+  // NEW: Save stays disabled until the baseline snapshot is captured
+  // (after the employee record loads) and re-evaluated on every
+  // field change against that baseline.
+  const saveBtnEl = document.getElementById("saveBtn");
+  if (saveBtnEl) saveBtnEl.disabled = true;
+
+  if (pageEl) {
+    pageEl.addEventListener("input", updateSaveButtonState);
+    pageEl.addEventListener("change", updateSaveButtonState);
+  }
+
   if (reasonSelect) {
     reasonSelect.addEventListener("change", toggleDateSeparated);
     reasonSelect.addEventListener("change", toggleDateReturned);
@@ -2085,6 +2210,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       e.target.closest(".roving-row").remove();
       updateBranchOptions();
     }
+    updateSaveButtonState(); // NEW: add/remove doesn't fire input/change
   });
 
   editMultiBrandContainer.addEventListener("click", (e) => {
@@ -2110,6 +2236,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         e.target.closest(".brand-row").querySelector("select").value = "";
       }
     }
+    updateSaveButtonState(); // NEW: add/remove doesn't fire input/change
   });
 
   const editSubStatus = document.getElementById("editSubStatus");
