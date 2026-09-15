@@ -34,9 +34,9 @@ $searchValue  = $_GET['search']['value'] ?? '';
 $statusFilter = $_GET['status'] ?? null; // optional, e.g. dropdown to view only Flagged/Unflagged
 
 // Column order here MUST match the <thead> column order in flagging_requests.php
-$sortColumns = ['full_name', 'branch', 'brand', 'employment_status', 'status', 'requested_by', 'requested_date'];
+$sortColumns = ['full_name', 'branch', 'brand', 'employment_status', 'sub_status', 'status', 'requested_by', 'requested_date'];
 
-$orderColIndex = $_GET['order'][0]['column'] ?? 6; // default: requested_date
+$orderColIndex = $_GET['order'][0]['column'] ?? 7; // default: requested_date
 $orderDir      = strtoupper($_GET['order'][0]['dir'] ?? 'DESC');
 $orderDir      = in_array($orderDir, ['ASC', 'DESC'], true) ? $orderDir : 'DESC';
 $sortColumn    = $sortColumns[$orderColIndex] ?? 'requested_date';

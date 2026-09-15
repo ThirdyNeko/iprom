@@ -46,6 +46,7 @@ $maritalStatus    = nullIfEmpty($_POST['marital_status'] ?? null);
 $branchCode       = nullIfEmpty($_POST['branch'] ?? null); // branch_code, not the display name
 $brand            = nullIfEmpty($_POST['brand'] ?? null);
 $employmentStatus = nullIfEmpty($_POST['employment_status'] ?? null);
+$subStatus        = nullIfEmpty($_POST['sub_status'] ?? null);
 $remarks          = trim($_POST['remarks'] ?? '');
 
 if (!$employeeId || !$firstName || !$lastName || !$branchCode || $remarks === '') {
@@ -131,21 +132,21 @@ try {
         INSERT INTO dbo.flagging_request (
             employee_id, first_name, middle_name, last_name, suffix,
             date_hired, gender, marital_status, branch, brand,
-            employment_status, remarks, status,
+            employment_status, sub_status, remarks, status,
             requested_by, requested_by_role, requested_date
         )
         OUTPUT INSERTED.id
         VALUES (
             ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?,
-            ?, ?, 'Flagged',
+            ?, ?, ?, 'Flagged',
             ?, ?, GETDATE()
         )
     ");
     $insert->execute([
         $employeeId, $firstName, $middleName, $lastName, $suffix,
         $dateHired, $gender, $maritalStatus, $branchCode, $brand,
-        $employmentStatus, $remarks,
+        $employmentStatus, $subStatus, $remarks,
         $user_name, $user_role,
     ]);
 

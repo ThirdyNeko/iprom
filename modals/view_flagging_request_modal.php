@@ -3,7 +3,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Flagging Request Details</h5>
+        <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Flagging Request Details</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -31,13 +31,17 @@
             <label class="form-label text-muted small mb-0">Employment Status</label>
             <div id="vfr_employment_status" class="fw-semibold"></div>
           </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small mb-0">Sub Status</label>
+            <div id="vfr_sub_status" class="fw-semibold"></div>
+          </div>
 
           <div class="col-12">
             <hr class="my-2">
           </div>
 
           <div class="col-md-6">
-            <label class="form-label text-muted small mb-0">Requested by</label>
+            <label class="form-label text-muted small mb-0">Requested By</label>
             <div id="vfr_requested_by" class="fw-semibold"></div>
           </div>
           <div class="col-md-6">
@@ -46,7 +50,7 @@
           </div>
 
           <div class="col-md-6">
-            <label class="form-label text-muted small mb-0">Unflagged by</label>
+            <label class="form-label text-muted small mb-0">Unflagged By</label>
             <div id="vfr_unflagged_by" class="fw-semibold">—</div>
           </div>
           <div class="col-md-6">

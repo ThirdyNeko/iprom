@@ -9,14 +9,20 @@
       <div class="modal-body">
 
         <div class="row g-2 mb-2">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label class="form-label fw-semibold">Branch</label>
             <select id="fl_branch_select" class="form-select"></select>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Brand</label>
+            <select id="fl_brand_select" class="form-select" disabled>
+              <option value="">Select a branch first...</option>
+            </select>
+          </div>
+          <div class="col-md-4">
             <label class="form-label fw-semibold">Promodiser</label>
             <select id="fl_employee_select" class="form-select" disabled>
-              <option value="">Select a branch first...</option>
+              <option value="">Select a brand first...</option>
             </select>
           </div>
         </div>
@@ -24,48 +30,43 @@
         <input type="hidden" id="fl_employee_id">
 
         <div class="row g-2">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">First Name</label>
             <input type="text" id="fl_first_name" class="form-control" readonly style="background:#e9ecef;">
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Middle Name</label>
             <input type="text" id="fl_middle_name" class="form-control" readonly style="background:#e9ecef;">
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Last Name</label>
             <input type="text" id="fl_last_name" class="form-control" readonly style="background:#e9ecef;">
           </div>
-
           <div class="col-md-3">
             <label class="form-label">Suffix</label>
             <input type="text" id="fl_suffix" class="form-control" readonly style="background:#e9ecef;">
           </div>
-          <div class="col-md-3">
+
+          <div class="col-md-4">
             <label class="form-label">Date Hired</label>
             <input type="text" id="fl_date_hired" class="form-control" readonly style="background:#e9ecef;">
           </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Gender</label>
             <input type="text" id="fl_gender" class="form-control" readonly style="background:#e9ecef;">
           </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Marital Status</label>
             <input type="text" id="fl_marital_status" class="form-control" readonly style="background:#e9ecef;">
           </div>
 
-          <div class="col-md-4">
-            <label class="form-label">Branch</label>
-            <input type="text" id="fl_branch" class="form-control" readonly style="background:#e9ecef;">
-            <input type="hidden" id="fl_branch_code">
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Brand</label>
-            <input type="text" id="fl_brand" class="form-control" readonly style="background:#e9ecef;">
-          </div>
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label class="form-label">Employment Status</label>
             <input type="text" id="fl_employment_status" class="form-control" readonly style="background:#e9ecef;">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Sub Status</label>
+            <input type="text" id="fl_sub_status" class="form-control" readonly style="background:#e9ecef;">
           </div>
 
           <div class="col-md-12">

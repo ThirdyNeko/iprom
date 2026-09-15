@@ -97,7 +97,7 @@ $can_action_flagging_requests = $is_admin;
     <div class="container-fluid">
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="fw-bold mb-0">Flagging Request Management</h4>
+            <h4 class="fw-bold mb-0">Flagging Requests</h4>
 
             <?php if ($can_request_flagging): ?>
                 <button type="button" id="openRequestFlaggingBtn" class="btn btn-danger btn-sm">
@@ -114,7 +114,7 @@ $can_action_flagging_requests = $is_admin;
                         <div class="clear-input">
                             <input type="text" id="filterFRName"
                                 class="form-control form-control-sm filter-control"
-                                placeholder="Promodiser, Branch, Brand, Status, Requested by">
+                                placeholder="Promodiser, Branch, Brand, Status, Requested By">
                             <button type="button" class="clear-btn" data-target="filterFRName">×</button>
                         </div>
                     </div>
@@ -137,8 +137,9 @@ $can_action_flagging_requests = $is_admin;
                                 <th>Branch</th>
                                 <th>Brand</th>
                                 <th>Employment Status</th>
+                                <th>Sub Status</th>
                                 <th>Status</th>
-                                <th>Requested by</th>
+                                <th>Requested By</th>
                                 <th>Requested Date</th>
                                 <?php if ($can_action_flagging_requests || $can_request_flagging): ?>
                                     <th>Actions</th>

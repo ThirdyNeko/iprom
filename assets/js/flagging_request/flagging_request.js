@@ -10,6 +10,7 @@ $(function () {
     { data: "branch" },
     { data: "brand" },
     { data: "employment_status" },
+    { data: "sub_status" },
     { data: "status", render: statusBadge },
     { data: "requested_by" },
     {
@@ -89,7 +90,7 @@ $(function () {
       },
     },
     columns: columns,
-    order: [[6, "desc"]],
+    order: [[7, "desc"]],
   });
 
   function statusBadge(status) {
@@ -179,6 +180,7 @@ $(function () {
     $("#vfr_branch").text(r.branch || "—");
     $("#vfr_brand").text(r.brand || "—");
     $("#vfr_employment_status").text(r.employment_status || "—");
+    $("#vfr_sub_status").text(r.sub_status || "—");
     $("#vfr_requested_by").text(r.requested_by || "—");
     $("#vfr_requested_date").text(
       r.requested_date ? new Date(r.requested_date).toLocaleString() : "—",
@@ -358,13 +360,18 @@ $(function () {
 
   function resetRequestForm() {
     selectedEmployee = null;
+    allBranchEmployees = [];
     selectedAttachments = [];
     $("#fl_attachments_preview").empty();
     $("#fl_attachments_input").val("").prop("disabled", false);
     $("#fl_branch_select").empty();
-    $("#fl_employee_select")
+    $("#fl_brand_select")
       .empty()
       .append('<option value="">Select a branch first...</option>')
+      .prop("disabled", true);
+    $("#fl_employee_select")
+      .empty()
+      .append('<option value="">Select a brand first...</option>')
       .prop("disabled", true);
     [
       "first_name",
@@ -374,11 +381,9 @@ $(function () {
       "date_hired",
       "gender",
       "marital_status",
-      "branch",
-      "brand",
       "employment_status",
+      "sub_status",
     ].forEach((f) => $("#fl_" + f).val(""));
-    $("#fl_branch_code").val("");
     $("#fl_employee_id").val("");
     $("#fl_remarks").val("");
     $("#submitFlaggingRequestBtn").prop("disabled", true);
@@ -394,6 +399,13 @@ $(function () {
   // Dropdown displays the branch NAME but the value (and everything sent
   // to the server) is the branch_code — matching how employee_info.branch /
   // flagging_request.branch actually store codes.
+  //
+  // Selection order is Branch -> Brand -> Promodiser: picking a branch
+  // loads that branch's employees once (cached in allBranchEmployees) and
+  // derives the Brand dropdown from their distinct brand values; picking a
+  // brand then filters that cache into the Promodiser dropdown.
+  let allBranchEmployees = [];
+
   function populateBranchDropdown() {
     const $select = $("#fl_branch_select").empty();
 
@@ -425,14 +437,14 @@ $(function () {
           const label = match ? match.branch : myCode;
           $select.empty().append(`<option value="${myCode}">${label}</option>`);
           $select.prop("disabled", true);
-          loadEmployeesForBranch(myCode);
+          loadBrandsForBranch(myCode);
         })
         .catch(() => {
           $select
             .empty()
             .append(`<option value="${myCode}">${myCode}</option>`);
           $select.prop("disabled", true);
-          loadEmployeesForBranch(myCode);
+          loadBrandsForBranch(myCode);
         });
       return;
     }
@@ -474,19 +486,28 @@ $(function () {
     const branchCode = $(this).val();
     clearEmployeeFields();
     if (branchCode) {
-      loadEmployeesForBranch(branchCode);
+      loadBrandsForBranch(branchCode);
     } else {
-      $("#fl_employee_select")
+      allBranchEmployees = [];
+      $("#fl_brand_select")
         .empty()
         .append('<option value="">Select a branch first...</option>')
+        .prop("disabled", true);
+      $("#fl_employee_select")
+        .empty()
+        .append('<option value="">Select a brand first...</option>')
         .prop("disabled", true);
     }
   });
 
-  function loadEmployeesForBranch(branchCode) {
-    const $empSelect = $("#fl_employee_select")
+  function loadBrandsForBranch(branchCode) {
+    const $brandSelect = $("#fl_brand_select")
       .empty()
       .append('<option value="">Loading...</option>')
+      .prop("disabled", true);
+    $("#fl_employee_select")
+      .empty()
+      .append('<option value="">Select a brand first...</option>')
       .prop("disabled", true);
 
     fetch(
@@ -495,33 +516,80 @@ $(function () {
     )
       .then((r) => r.json())
       .then((results) => {
-        $empSelect.empty();
+        $brandSelect.empty();
 
         if (results.error) {
-          $empSelect.append(`<option value="">${results.error}</option>`);
+          allBranchEmployees = [];
+          $brandSelect.append(`<option value="">${results.error}</option>`);
           return;
         }
         if (!results.length) {
-          $empSelect.append(
+          allBranchEmployees = [];
+          $brandSelect.append(
             '<option value="">No employees found for this branch</option>',
           );
           return;
         }
 
-        $empSelect.append('<option value="">Select promodiser...</option>');
-        results.forEach((emp) => {
-          $empSelect.append(
-            `<option value="${emp.employee_id}">${emp.first_name} ${emp.last_name}</option>`,
+        allBranchEmployees = results;
+
+        const brands = [
+          ...new Set(results.map((e) => e.brand).filter(Boolean)),
+        ].sort();
+
+        if (!brands.length) {
+          $brandSelect.append(
+            '<option value="">No brands found for this branch</option>',
           );
+          return;
+        }
+
+        $brandSelect.append('<option value="">Select brand...</option>');
+        brands.forEach((brand) => {
+          $brandSelect.append(`<option value="${brand}">${brand}</option>`);
         });
-        $empSelect.prop("disabled", false);
-        $empSelect.data("employees", results);
+        $brandSelect.prop("disabled", false);
       })
       .catch(() => {
-        $empSelect
+        allBranchEmployees = [];
+        $brandSelect
           .empty()
-          .append('<option value="">Failed to load employees</option>');
+          .append('<option value="">Failed to load brands</option>');
       });
+  }
+
+  $("#fl_brand_select").on("change", function () {
+    const brand = $(this).val();
+    clearEmployeeFields();
+    if (brand) {
+      populateEmployeesForBrand(brand);
+    } else {
+      $("#fl_employee_select")
+        .empty()
+        .append('<option value="">Select a brand first...</option>')
+        .prop("disabled", true);
+    }
+  });
+
+  function populateEmployeesForBrand(brand) {
+    const $empSelect = $("#fl_employee_select").empty();
+    const filtered = allBranchEmployees.filter((e) => e.brand === brand);
+
+    if (!filtered.length) {
+      $empSelect
+        .append('<option value="">No promodisers found for this brand</option>')
+        .prop("disabled", true);
+      return;
+    }
+
+    $empSelect.append('<option value="">Select promodiser...</option>');
+    filtered.forEach((emp) => {
+      $empSelect.append(
+        `<option value="${emp.employee_id}">${emp.first_name} ${emp.last_name}</option>`,
+      );
+    });
+    $empSelect.prop("disabled", false);
+    $empSelect.data("employees", filtered);
   }
 
   $("#fl_employee_select").on("change", function () {
@@ -548,11 +616,9 @@ $(function () {
       "date_hired",
       "gender",
       "marital_status",
-      "branch",
-      "brand",
       "employment_status",
+      "sub_status",
     ].forEach((f) => $("#fl_" + f).val(""));
-    $("#fl_branch_code").val("");
     $("#fl_employee_id").val("");
     $("#submitFlaggingRequestBtn").prop("disabled", true);
   }
@@ -568,10 +634,8 @@ $(function () {
     $("#fl_date_hired").val(emp.date_hired ? emp.date_hired.split("T")[0] : "");
     $("#fl_gender").val(emp.gender);
     $("#fl_marital_status").val(emp.marital_status);
-    $("#fl_branch").val(emp.branch); // display name
-    $("#fl_branch_code").val(emp.branch_code); // actual value submitted/stored
-    $("#fl_brand").val(emp.brand);
     $("#fl_employment_status").val(emp.employment_status);
+    $("#fl_sub_status").val(emp.sub_status);
 
     $("#submitFlaggingRequestBtn").prop("disabled", false);
   }
@@ -601,9 +665,10 @@ $(function () {
     formData.append("date_hired", $("#fl_date_hired").val());
     formData.append("gender", $("#fl_gender").val());
     formData.append("marital_status", $("#fl_marital_status").val());
-    formData.append("branch", $("#fl_branch_code").val()); // store the code, not the display name
-    formData.append("brand", $("#fl_brand").val());
+    formData.append("branch", $("#fl_branch_select").val()); // picked directly — already the branch_code
+    formData.append("brand", $("#fl_brand_select").val()); // picked directly
     formData.append("employment_status", $("#fl_employment_status").val());
+    formData.append("sub_status", $("#fl_sub_status").val());
     formData.append("remarks", $("#fl_remarks").val());
 
     selectedAttachments.forEach((file) =>

@@ -2,8 +2,8 @@
 /**
  * ajax/fetch_branch_employees.php
  *
- * Returns employees for a given branch, to populate the "Promodiser"
- * dropdown in the Request Blacklist modal after a branch is chosen.
+ * Returns employees for a given branch, to populate the Brand/Promodiser
+ * dropdowns in the Request Flagging modal after a branch is chosen.
  *
  * Server-side branch enforcement:
  * - branch_manager: locked to their own session branch, ignoring/rejecting
@@ -56,14 +56,15 @@ $stmt = $pdo->prepare(
         [first_name],
         [middle_name],
         [last_name],
-        [birthday],
+        [date_hired],
         [suffix],
         [gender],
         [marital_status],
         [branch_code],
         [branch],
         [brand],
-        [employment_status]
+        [employment_status],
+        [sub_status]
      FROM (
         SELECT
             ei.[id],
@@ -71,7 +72,7 @@ $stmt = $pdo->prepare(
             ei.[first_name],
             ei.[middle_name],
             ei.[last_name],
-            ei.[birthday],
+            ei.[date_hired],
             ei.[suffix],
             ei.[gender],
             ei.[marital_status],
@@ -79,6 +80,7 @@ $stmt = $pdo->prepare(
             COALESCE(b.[branch], ei.[branch]) AS [branch],
             ei.[brand],
             ei.[employment_status],
+            ei.[sub_status],
             ROW_NUMBER() OVER (
                 PARTITION BY ei.[employee_id]
                 ORDER BY ei.[id]
