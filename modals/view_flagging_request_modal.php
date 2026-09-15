@@ -49,6 +49,11 @@
             <div id="vfr_requested_date" class="fw-semibold"></div>
           </div>
 
+          <div class="col-12">
+            <label class="form-label text-muted small mb-0">Remarks / Reason</label>
+            <div id="vfr_remarks" class="border rounded p-2" style="background:#f8f9fa; min-height:60px;"></div>
+          </div>
+
           <div class="col-md-6">
             <label class="form-label text-muted small mb-0">Unflagged By</label>
             <div id="vfr_unflagged_by" class="fw-semibold">—</div>
@@ -59,8 +64,8 @@
           </div>
 
           <div class="col-12">
-            <label class="form-label text-muted small mb-0">Remarks / Reason</label>
-            <div id="vfr_remarks" class="border rounded p-2" style="background:#f8f9fa; min-height:60px;"></div>
+            <label class="form-label text-muted small mb-0">Unflag Remarks</label>
+            <div id="vfr_unflag_remarks" class="border rounded p-2" style="background:#f8f9fa; min-height:60px;">—</div>
           </div>
 
           <div class="col-12">

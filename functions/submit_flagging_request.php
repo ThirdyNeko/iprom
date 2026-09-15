@@ -126,38 +126,19 @@ if (!empty($_FILES['attachments']) && is_array($_FILES['attachments']['tmp_name'
 }
 
 try {
-    $pdo->beginTransaction();
-
-    $insert = $pdo->prepare("
-        INSERT INTO dbo.flagging_request (
-            employee_id, first_name, middle_name, last_name, suffix,
-            date_hired, gender, marital_status, branch, brand,
-            employment_status, sub_status, remarks, status,
-            requested_by, requested_by_role, requested_date
-        )
-        OUTPUT INSERTED.id
-        VALUES (
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, 'Flagged',
-            ?, ?, GETDATE()
-        )
-    ");
-    $insert->execute([
+    $stmt = $pdo->prepare("{CALL add_flagging_request(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+    $stmt->execute([
         $employeeId, $firstName, $middleName, $lastName, $suffix,
         $dateHired, $gender, $maritalStatus, $branchCode, $brand,
         $employmentStatus, $subStatus, $remarks,
         $user_name, $user_role,
     ]);
 
-    // OUTPUT INSERTED.id comes back as this statement's own result set —
-    // avoids relying on SCOPE_IDENTITY()/a second statement, which PDO_ODBC
-    // doesn't handle reliably across a batch.
-    $requestId = (int) $insert->fetchColumn();
-    $insert->closeCursor();
+    $result    = $stmt->fetch(PDO::FETCH_ASSOC);
+    $requestId = $result['new_id'] ?? null;
 
-    if ($requestId <= 0) {
-        throw new RuntimeException('Insert succeeded but no identity value was returned.');
+    if (!$requestId) {
+        throw new RuntimeException('Procedure ran but no identity value was returned.');
     }
 
     if ($attachments) {
@@ -170,15 +151,19 @@ try {
         }
     }
 
-    $pdo->commit();
-
     echo json_encode(['success' => true, 'message' => 'Flagging request submitted.']);
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
-    // Log the real error server-side — the response to the browser stays generic.
     error_log('submit_flagging_request.php: ' . $e->getMessage());
+
+    if (strpos($e->getMessage(), 'An active flag already exists for this employee') !== false) {
+        http_response_code(409);
+        echo json_encode([
+            'success' => false,
+            'message' => 'This promodiser already has an active flag.',
+        ]);
+        exit;
+    }
+
     http_response_code(500);
     echo json_encode([
         'success' => false,

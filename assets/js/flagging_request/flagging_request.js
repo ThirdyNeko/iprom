@@ -126,6 +126,13 @@ $(function () {
       title: "Unflag this request?",
       text: "This will clear the employee record status.",
       icon: "warning",
+      input: "textarea",
+      inputPlaceholder: "Reason for unflagging...",
+      inputValidator: (value) => {
+        if (!value || !value.trim()) {
+          return "A reason is required.";
+        }
+      },
       showCancelButton: true,
       confirmButtonText: "Yes",
     }).then((result) => {
@@ -134,7 +141,7 @@ $(function () {
       fetch("functions/unflag_request.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, remarks: result.value.trim() }),
       })
         .then((r) => r.json())
         .then((res) => {
@@ -188,6 +195,9 @@ $(function () {
     $("#vfr_unflagged_by").text(r.unflagged_by || "—");
     $("#vfr_unflagged_date").text(
       r.unflagged_date ? new Date(r.unflagged_date).toLocaleString() : "—",
+    );
+    $("#vfr_unflag_remarks").text(
+      r.unflag_remarks && r.unflag_remarks.trim() ? r.unflag_remarks : "—",
     );
     $("#vfr_remarks").text(
       r.remarks && r.remarks.trim() ? r.remarks : "No remarks provided.",
