@@ -82,6 +82,7 @@ $(function () {
   const table = $("#FRtable").DataTable({
     serverSide: true,
     processing: true,
+    searching: false, // custom search box below
     ajax: {
       url: "functions/fetch_flagging_requests.php",
       type: "GET",
@@ -668,7 +669,14 @@ $(function () {
     $("#fl_middle_name").val(emp.middle_name);
     $("#fl_last_name").val(emp.last_name);
     $("#fl_suffix").val(emp.suffix);
-    $("#fl_date_hired").val(emp.date_hired ? emp.date_hired.split("T")[0] : "");
+    $("#fl_date_hired").val(
+      emp.date_hired
+        ? (() => {
+            const d = new Date(emp.date_hired);
+            return d.getMonth() + 1 + "/" + d.getDate() + "/" + d.getFullYear();
+          })()
+        : "",
+    );
     $("#fl_gender").val(emp.gender);
     $("#fl_marital_status").val(emp.marital_status);
     $("#fl_employment_status").val(emp.employment_status);
