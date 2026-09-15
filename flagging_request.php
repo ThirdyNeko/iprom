@@ -114,7 +114,7 @@ $can_action_flagging_requests = $is_admin;
                         <div class="clear-input">
                             <input type="text" id="filterFRName"
                                 class="form-control form-control-sm filter-control"
-                                placeholder="Promodiser, Branch, Brand, Status, Requested By">
+                                placeholder="Name, Branch, Brand, Requested by">
                             <button type="button" class="clear-btn" data-target="filterFRName">×</button>
                         </div>
                     </div>
@@ -133,7 +133,7 @@ $can_action_flagging_requests = $is_admin;
                     <table id="FRtable" class="table table-striped table-hover align-middle text-center">
                         <thead class="table-primary">
                             <tr>
-                                <th>Promodiser</th>
+                                <th>Name</th>
                                 <th>Branch</th>
                                 <th>Brand</th>
                                 <th>Employment Status</th>

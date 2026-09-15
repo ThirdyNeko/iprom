@@ -127,8 +127,12 @@ $(function () {
       text: "This will clear the employee record status.",
       icon: "warning",
       html: `
-        <textarea id="swal-unflag-remarks" class="swal2-textarea" maxlength="100"
-                  placeholder="Reason for unflagging..." style="margin-bottom:0;"></textarea>
+        <textarea id="swal-unflag-remarks"
+                  class="swal2-textarea"
+                  maxlength="100"
+                  placeholder="Reason for unflagging..."
+                  style="margin-bottom:0; width:80%;"></textarea>
+
         <div class="text-end text-muted" style="font-size:12px;">
           <span id="swal-unflag-remarks-count">0</span>/100
         </div>
