@@ -124,21 +124,22 @@ $(function () {
     const id = $(this).data("id");
 
     Swal.fire({
-      title: "Unflag this request?",
+      title: "To unflag this request, please provide a reason.",
       text: "This will clear the employee record status.",
-      icon: "warning",
       html: `
         <textarea id="swal-unflag-remarks"
                   class="swal2-textarea"
                   maxlength="100"
                   placeholder="Reason for unflagging..."
-                  style="margin-bottom:0; width:80%;"></textarea>
+                  style="margin:0; width:100%; height:100px; font-size:16px; resize:none;"></textarea>
 
         <div class="text-end text-muted" style="font-size:12px;">
           <span id="swal-unflag-remarks-count">0</span>/100
         </div>
       `,
       didOpen: () => {
+        const titleEl = document.querySelector(".swal2-title");
+        if (titleEl) titleEl.style.fontSize = "24px";
         const textarea = document.getElementById("swal-unflag-remarks");
         const counter = document.getElementById("swal-unflag-remarks-count");
         textarea.addEventListener("input", () => {
@@ -157,7 +158,7 @@ $(function () {
         return value;
       },
       showCancelButton: true,
-      confirmButtonText: "Yes",
+      confirmButtonText: "Submit",
     }).then((result) => {
       if (!result.isConfirmed) return;
 
@@ -169,7 +170,7 @@ $(function () {
         .then((r) => r.json())
         .then((res) => {
           if (res.success) {
-            Swal.fire("Unflagged", res.message, "success");
+            Swal.fire("Successfully Unflagged", "", "success");
             table.ajax.reload(null, false);
           } else {
             Swal.fire("Error", res.message, "error");

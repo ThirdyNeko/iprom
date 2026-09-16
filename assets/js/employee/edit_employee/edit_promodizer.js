@@ -1496,6 +1496,12 @@ async function loadEmployeePage(id) {
       el("editDateReturn").value = cleanValue(employee.date_of_return);
     if (el("editRemarks")) el("editRemarks").value = "";
 
+    // NEW: editRemarks.value was just set programmatically above,
+    // which doesn't fire a native "input" event — sync the "N/100"
+    // counter (defined in edit_promodizer_modal.js) so it doesn't
+    // keep showing a stale count from a previously loaded employee.
+    window.updateRemarksCount?.();
+
     if (el("editLastUpdatedBy"))
       el("editLastUpdatedBy").value = cleanValue(employee.last_updated_by);
     if (el("editDateLastUpdated")) {

@@ -206,6 +206,15 @@ th {
     max-height: 220px;
     overflow-y: auto;
 }
+
+/* Remarks character counter */
+#editRemarksCount {
+    font-size: 12px;
+}
+
+#editRemarksCount.text-danger {
+    font-weight: 600;
+}
 </style>
 
 <div class="content">
@@ -514,7 +523,10 @@ th {
                 <!-- Remarks -->
                 <div class="row g-3 mb-3">
                     <div class="col-12">
-                        <label class="form-label">Remarks</label>
+                        <label class="form-label d-flex justify-content-between align-items-center">
+                            <span>Remarks</span>
+                            <small id="editRemarksCount" class="text-muted">0/100</small>
+                        </label>
                         <input type="text" id="editRemarks" class="form-control remarks-input" maxlength="100" placeholder="e.g. immediate resignation, pull out product">
                     </div>
                 </div>

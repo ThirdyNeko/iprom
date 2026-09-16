@@ -145,6 +145,31 @@ document.addEventListener("DOMContentLoaded", function () {
   window.updateReasonHeaders = updateHeaders;
 
   // ============================================================
+  // REMARKS CHARACTER COUNTER
+  // Updates the "N/100" label next to the Remarks field as the
+  // user types. Also exposed on window so edit_promodizer.js can
+  // call it after setting editRemarks.value programmatically (on
+  // load / reset), since that doesn't fire a native "input" event
+  // — same pattern as updateReasonHeaders / refreshAddressTooltips.
+  // ============================================================
+  const editRemarksEl = document.getElementById("editRemarks");
+  const editRemarksCount = document.getElementById("editRemarksCount");
+
+  function updateRemarksCount() {
+    if (!editRemarksEl || !editRemarksCount) return;
+    const len = editRemarksEl.value.length;
+    const max = editRemarksEl.maxLength > 0 ? editRemarksEl.maxLength : 100;
+    editRemarksCount.textContent = `${len}/${max}`;
+    editRemarksCount.classList.toggle("text-danger", len >= max);
+    editRemarksCount.classList.toggle("text-muted", len < max);
+  }
+
+  editRemarksEl?.addEventListener("input", updateRemarksCount);
+  updateRemarksCount();
+
+  window.updateRemarksCount = updateRemarksCount;
+
+  // ============================================================
   // ADDRESS FIELD HOVER-TOOLTIP LOGIC
   // Shows full value on hover for Province, Municipality,
   // Barangay, and Street — useful when text is too long
