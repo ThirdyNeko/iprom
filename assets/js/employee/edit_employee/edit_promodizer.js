@@ -75,6 +75,13 @@ function checkPrintBtnState() {
   }
   printBtn.style.display = "";
 
+  // NEW: admin / super_admin can always print — no quota limit, no
+  // INACTIVE restriction. Takes priority over everything below.
+  if (isAdminRole()) {
+    printBtn.disabled = false;
+    return;
+  }
+
   // branch_manager can never print, full stop — takes priority over
   // canPrintLOA below.
   if (isBranchManagerRole()) {
@@ -160,6 +167,17 @@ function updateSaveButtonState() {
 
   const reason = (reasonSelect?.value || "").trim().toUpperCase();
 
+  // Remarks changing is always a real, save-worthy edit on its own —
+  // for RESIGNED specifically, the gating check below only exists to
+  // block a "picked RESIGNED but didn't actually change the
+  // separation date" no-op save, and shouldn't swallow an intentional
+  // Remarks edit made alongside it. CHANGE EMPLOYMENT STATUS / CHANGE
+  // SUB STATUS stay strict: those require the actual status field to
+  // change, regardless of Remarks.
+  const remarksEl = document.getElementById("editRemarks");
+  const remarksChanged =
+    getFieldValue(remarksEl) !== (initialFieldValues.editRemarks ?? "");
+
   if (reason === "CHANGE EMPLOYMENT STATUS") {
     const empStatusEl = document.getElementById("editEmploymentStatus");
     if (
@@ -179,7 +197,7 @@ function updateSaveButtonState() {
     }
   }
 
-  if (reason === "RESIGNED") {
+  if (reason === "RESIGNED" && !remarksChanged) {
     const dateSeparatedEl = document.getElementById("editDateSeparated");
     if (
       getFieldValue(dateSeparatedEl) ===
@@ -207,6 +225,15 @@ function isBranchManagerRole() {
 
 function isStaffRole() {
   return (window.userRole || "").toLowerCase() === "staff";
+}
+
+// NEW: admin / super_admin get unlimited LOA printing — no quota
+// check, no INACTIVE restriction. Still gated by the biometric-number
+// check above, since there's nothing to print without one.
+function isAdminRole() {
+  return ["admin", "super_admin"].includes(
+    (window.userRole || "").toLowerCase(),
+  );
 }
 
 // Fully locks the page down to read-only for branch_manager.
@@ -585,14 +612,28 @@ const showDateSeparatedReasons = [
 function toggleDateSeparated() {
   if (!reasonSelect) return;
   const value = (reasonSelect.value || "").trim().toUpperCase();
-  const shouldShow = showDateSeparatedReasons.includes(value);
+
+  // NEW: an already-INACTIVE record should always show its
+  // Date Separated / Effectivity Date row, even before a reason is
+  // picked — it's informational for an inactive employee. It still
+  // stays DISABLED in that case though; only actually selecting one
+  // of the termination reasons re-enables it for editing (this keeps
+  // the same "don't enable until a reason is chosen" rule from
+  // before, just for visibility instead of editability).
+  const status = (document.getElementById("editStatus")?.value || "")
+    .trim()
+    .toUpperCase();
+  const isInactive = status === "INACTIVE";
+
+  const shouldEnable = showDateSeparatedReasons.includes(value);
+  const shouldShowRow = shouldEnable || isInactive;
 
   if (dateSeparatedRow)
-    dateSeparatedRow.style.display = shouldShow ? "" : "none";
+    dateSeparatedRow.style.display = shouldShowRow ? "" : "none";
   if (dateSeparatedInput) {
-    dateSeparatedInput.disabled = !shouldShow;
-    dateSeparatedInput.required = shouldShow;
-    if (!shouldShow) dateSeparatedInput.value = "";
+    dateSeparatedInput.disabled = !shouldEnable;
+    dateSeparatedInput.required = shouldEnable;
+    if (!shouldEnable && !isInactive) dateSeparatedInput.value = "";
   }
 }
 
@@ -1491,6 +1532,14 @@ async function loadEmployeePage(id) {
     toggleBranchReasonOptions();
     togglePictureButton(); // ADD THIS
 
+    // NEW: edit_promodizer_modal.js's updateHeaders() ran once on
+    // DOMContentLoaded before this record was fetched, so it never
+    // saw the real editStatus/editEmploymentStatus values (e.g. an
+    // already-INACTIVE record). Re-run it now that they're set.
+    if (typeof window.updateReasonHeaders === "function") {
+      window.updateReasonHeaders();
+    }
+
     // Must run last: several of the toggle*() calls above explicitly
     // re-enable specific fields depending on the selected reason, so
     // the lock has to be applied after all of them to actually stick.
@@ -2111,6 +2160,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   if (editStatus) {
     editStatus.addEventListener("change", checkPrintBtnState);
     editStatus.addEventListener("input", checkPrintBtnState);
+    editStatus.addEventListener("change", toggleDateSeparated); // NEW
+    editStatus.addEventListener("input", toggleDateSeparated); // NEW
   }
 
   // Biometric number: digits only, max 8 (optional field)

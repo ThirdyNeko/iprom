@@ -727,7 +727,7 @@ $(function () {
       .then((r) => r.json())
       .then((res) => {
         if (res.success) {
-          Swal.fire("Flagging request submitted", res.message, "success");
+          Swal.fire({ title: "Flagging request submitted", icon: "success" });
           requestModal.hide();
           table.ajax.reload(null, false);
         } else {

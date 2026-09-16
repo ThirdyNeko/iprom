@@ -59,6 +59,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const employmentStatusSelect = document.getElementById(
     "editEmploymentStatus",
   );
+  // NEW: overall record status (editStatus) — an INACTIVE record
+  // should always show the date-separated-group (Date Separated /
+  // Effectivity Date / Date Returned), even before a reason is
+  // picked, since that's the historical info relevant to an
+  // already-inactive employee.
+  const statusSelect = document.getElementById("editStatus");
 
   const thDateSeparated = document.getElementById("thDateSeparated");
   const thDateReturned = document.getElementById("thDateReturned");
@@ -87,6 +93,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const leaveReasons = ["EMERGENCY LEAVE", "MATERNITY LEAVE"];
 
+    // NEW: record is already INACTIVE (overall status), regardless
+    // of whether a reason has been picked yet.
+    const isInactive =
+      (statusSelect?.value || "").trim().toUpperCase() === "INACTIVE";
+
     if (effectivityReasons.includes(value)) {
       thDateSeparated.textContent = "Effectivity Date";
       thStartDate.textContent = "Effectivity Date";
@@ -102,9 +113,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Toggle which date group is visible.
+    // NEW: an INACTIVE record always shows the date-separated-group
+    // (Date Separated / Date Returned), on top of the existing
+    // reason-driven cases below.
     // NOTE: adjust this condition to match your actual business
     // rule for which reasons use "separated/return" vs "start/end".
-    if (effectivityReasons.includes(value) || leaveReasons.includes(value)) {
+    if (
+      effectivityReasons.includes(value) ||
+      leaveReasons.includes(value) ||
+      isInactive
+    ) {
       dateSeparatedGroup.forEach((el) => el.classList.remove("d-none"));
       dateStartGroup.forEach((el) => el.classList.add("d-none"));
     } else {
@@ -115,7 +133,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   reasonSelect.addEventListener("change", updateHeaders);
   employmentStatusSelect.addEventListener("change", updateHeaders);
+  statusSelect?.addEventListener("change", updateHeaders); // NEW
   updateHeaders();
+
+  // NEW: editStatus/editReasonUpdate/editEmploymentStatus get their
+  // values set programmatically (via .value = ...) once the employee
+  // record loads in edit_promodizer.js — that doesn't fire native
+  // "change" events, so updateHeaders() (which ran once above, before
+  // the record was fetched) never sees the real values. Expose it so
+  // loadEmployeePage() can re-run it once those fields are populated.
+  window.updateReasonHeaders = updateHeaders;
 
   // ============================================================
   // ADDRESS FIELD HOVER-TOOLTIP LOGIC
