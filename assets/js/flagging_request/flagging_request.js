@@ -126,12 +126,15 @@ $(function () {
     Swal.fire({
       title: "To unflag this request, please provide a reason.",
       text: "This will clear the employee record status.",
+      theme: "bootstrap-5",
+      width: "600px",
+      confirmButtonColor: "#0d6efd",
       html: `
         <textarea id="swal-unflag-remarks"
                   class="swal2-textarea"
                   maxlength="100"
                   placeholder="Reason for unflagging..."
-                  style="margin:0; width:100%; height:100px; font-size:16px; resize:none;"></textarea>
+                  style="background-color: #fffbdf; margin-top:0; margin-bottom:0; margin-left:0; margin-right:0; width:100%; height:100px; font-size:16px; resize:none;"></textarea>
 
         <div class="text-end text-muted" style="font-size:12px;">
           <span id="swal-unflag-remarks-count">0</span>/100
@@ -139,7 +142,19 @@ $(function () {
       `,
       didOpen: () => {
         const titleEl = document.querySelector(".swal2-title");
-        if (titleEl) titleEl.style.fontSize = "24px";
+        if (titleEl) {
+          titleEl.style.fontSize = "20px";
+          titleEl.style.marginTop = "15px";
+          titleEl.style.marginLeft = "10px";
+          titleEl.style.textAlign = "left";
+        }
+        const actions = document.querySelector(".swal2-actions");
+        if (actions) {
+          actions.style.width = "100%";
+          actions.style.marginTop = "0";
+          actions.style.paddingRight = "25px";
+          actions.style.justifyContent = "flex-end";
+        }
         const textarea = document.getElementById("swal-unflag-remarks");
         const counter = document.getElementById("swal-unflag-remarks-count");
         textarea.addEventListener("input", () => {

@@ -1,4 +1,11 @@
 <!-- modals/request_flagging_modal.php -->
+<style>
+  /* Match the remarks textarea's yellow highlight on any select in this
+     modal while it's enabled/selectable (branch/brand/promodiser). */
+  #requestFlaggingModal select.form-select:not(:disabled) {
+    background-color: #fffbdf;
+  }
+</style>
 <div class="modal fade" id="requestFlaggingModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -72,15 +79,15 @@
           <div class="col-md-12">
             <label class="form-label fw-semibold">Remarks / Reason for Flagging</label>
             <textarea id="fl_remarks" class="form-control" rows="3" maxlength="100" style="background:#fffbdf;"
-                      placeholder="Explain the reason for this flagging request..."></textarea>
+                      placeholder="Type Here..."></textarea>
             <div class="form-text text-end"><span id="fl_remarks_count">0</span>/100</div>
           </div>
 
           <div class="col-md-12">
             <label class="form-label fw-semibold">Attachments (up to 3 images)</label>
             <input type="file" id="fl_attachments_input" class="form-control"
-                   accept="image/png,image/jpeg" multiple>
-            <div class="form-text">JPEG or PNG only — max 3 images, 5MB each.</div>
+                   accept="image/png,image/jpeg,image/jpg" multiple>
+            <div class="form-text">JPEG, JPG, or PNG only — max 3 images, 5MB each.</div>
             <div id="fl_attachments_preview" class="d-flex flex-wrap gap-2 mt-2"></div>
           </div>
         </div>

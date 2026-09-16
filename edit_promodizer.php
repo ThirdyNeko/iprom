@@ -523,7 +523,7 @@ th {
                 <!-- Remarks -->
                 <div class="row g-3 mb-3">
                     <div class="col-12">
-                        <label class="form-label d-flex justify-content-between align-items-center">
+                        <label class="form-label d-flex gap-2 align-items-center">
                             <span>Remarks</span>
                             <small id="editRemarksCount" class="text-muted">0/100</small>
                         </label>

@@ -47,7 +47,10 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
         border-left: 1px solid #dee2e6; /* remove extra line at start */
         text-align: center !important;
     }
-    #LOAtable td:nth-child(4) {
+    /* Employment Status column. Was nth-child(4) when the columns were
+       checkbox/Promodiser/Agency/Employment Status/... — shifted to
+       nth-child(5) now that Branch sits between Promodiser and Agency. */
+    #LOAtable td:nth-child(5) {
         text-align: center !important;
     }
     #LOAtable td:last-child {
@@ -138,6 +141,7 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
                                     <input type="checkbox" id="bulkVerifySelectAll" class="form-check-input">
                                 </th>
                                 <th>Promodiser</th>
+                                <th>Branch</th>
                                 <th>Agency</th>
                                 <th>Employment Status</th>
                                 <th>Sub Status</th>

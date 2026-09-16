@@ -268,7 +268,7 @@ function lockPageForBranchManager() {
   const alertBox = document.getElementById("editAlert");
   if (alertBox) {
     alertBox.innerHTML =
-      '<div class="alert alert-warning mt-2 mb-0">You have read-only access to this record.</div>';
+      '<div class="alert alert-danger mt-3 mb-2 py-0" style="font-size: 14px; background-color: #f00000; color: white; border-color: #b11f1f; border-width: 2px;">Note: You have read-only access to this record. Certain fields are hidden for data privacy and security purposes.</div>';
   }
 }
 

@@ -62,6 +62,16 @@ $(document).ready(function () {
         },
       },
       { data: "promodiser" },
+      // NEW: Branch column. Prefers branch_name (display label) and
+      // falls back to branch_code if fetch_loa.php hasn't aliased a
+      // name for this row.
+      {
+        data: null,
+        className: "text-center",
+        render: function (data) {
+          return data.branch_name || data.branch_code || "";
+        },
+      },
       { data: "agency" },
       { data: "employment_status" },
       { data: "sub_status" },

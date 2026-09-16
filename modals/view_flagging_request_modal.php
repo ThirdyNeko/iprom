@@ -27,11 +27,11 @@
             <div id="vfr_brand" class="fw-semibold"></div>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label class="form-label text-muted small mb-0">Employment Status</label>
             <div id="vfr_employment_status" class="fw-semibold"></div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label class="form-label text-muted small mb-0">Sub Status</label>
             <div id="vfr_sub_status" class="fw-semibold"></div>
           </div>
@@ -78,9 +78,6 @@
           </div>
         </div>
 
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
