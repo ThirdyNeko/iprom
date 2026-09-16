@@ -72,6 +72,14 @@ if (isset($_GET['remarks_empty']) && $_GET['remarks_empty'] == '1') {
     $params[':remarks'] = '%' . $_GET['remarks'] . '%';
 }
 
+/* =========================
+   DATE FILTERS
+   Default to the last 1 month for ALL roles unless the caller
+   explicitly supplies from_date/to_date — then their chosen
+   range takes over instead of the default.
+========================= */
+$hasDateFilter = !empty($_GET['from_date']) || !empty($_GET['to_date']);
+
 if (!empty($_GET['from_date'])) {
     $sql .= " AND CAST(h.update_date AS DATE) >= :from_date";
     $params[':from_date'] = $_GET['from_date'];
@@ -80,6 +88,10 @@ if (!empty($_GET['from_date'])) {
 if (!empty($_GET['to_date'])) {
     $sql .= " AND CAST(h.update_date AS DATE) <= :to_date";
     $params[':to_date'] = $_GET['to_date'];
+}
+
+if (!$hasDateFilter) {
+    $sql .= " AND h.update_date >= DATEADD(MONTH, -1, GETDATE())";
 }
 
 $sql .= " ORDER BY h.update_date DESC";

@@ -39,8 +39,9 @@ LEFT JOIN employee_info i
 $conditions = [];
 $params = [];
 
-// STAFF BRANCH FILTER
-$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager';
+// STAFF BRANCH FILTER (branch restriction only — date restriction is handled
+// separately below so it applies consistently to all roles)
+$isStaff = isset($_SESSION['role']) && ($_SESSION['role'] === 'staff' || $_SESSION['role'] === 'branch_manager');
 
 if ($isStaff) {
     $sessionBranches = array_values(array_filter(
@@ -64,8 +65,6 @@ if ($isStaff) {
     } else {
         $conditions[] = "1 = 0";
     }
-
-    $conditions[] = "h.update_date >= DATEADD(MONTH, -1, GETDATE())";
 }
 
 // GLOBAL SEARCH
@@ -80,7 +79,7 @@ if ($search !== '') {
     $params[':search'] = "%$search%";
 }
 
-// USER FILTER ✅ Fixed: was using $sql .= instead of $conditions[]
+// USER FILTER
 if ($user !== '') {
     if (strtolower($user) === 'system') {
         $conditions[] = "h.updated_by IS NULL";
@@ -105,6 +104,8 @@ if ($remarksEmpty) {
 }
 
 // DATE FILTERS
+$hasDateFilter = !empty($from_date) || !empty($to_date);
+
 if (!empty($from_date)) {
     $conditions[] = "CAST(h.update_date AS DATE) >= :from_date";
     $params[':from_date'] = $from_date;
@@ -113,6 +114,12 @@ if (!empty($from_date)) {
 if (!empty($to_date)) {
     $conditions[] = "CAST(h.update_date AS DATE) <= :to_date";
     $params[':to_date'] = $to_date;
+}
+
+// DEFAULT DATE RANGE: last 1 month, for ALL roles, unless the user explicitly
+// supplied a from_date/to_date — in that case their chosen range takes over.
+if (!$hasDateFilter) {
+    $conditions[] = "h.update_date >= DATEADD(MONTH, -1, GETDATE())";
 }
 
 // BUILD WHERE
@@ -130,7 +137,7 @@ $recordsTotal = (int)$totalStmt->fetchColumn();
 $countSql = "SELECT COUNT(*) $baseQuery $where";
 
 $countStmt = $pdo->prepare($countSql);
-$countStmt->execute($params); // ✅ cleaner than foreach bindValue
+$countStmt->execute($params);
 $recordsFiltered = (int)$countStmt->fetchColumn();
 
 // -------------------------
