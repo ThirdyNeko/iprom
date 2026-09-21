@@ -11,7 +11,7 @@ $stmt = $pdo->query("
 $data = [];
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $data[$row['branch_code']] = $row['branch'];
+    $data[trim($row['branch_code'])] = trim($row['branch']);
 }
 
 echo json_encode($data);

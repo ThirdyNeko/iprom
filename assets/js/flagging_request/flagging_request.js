@@ -6,7 +6,16 @@ $(function () {
   // $sortColumns mapping.
   // ---------------------------------------------------------------
   const columns = [
-    { data: "full_name" },
+    {
+      data: "full_name",
+      render: (d, type, r) => {
+        if (type !== "display") return d;
+        const isChecked = Number(r.is_checked) === 1;
+        return !isChecked
+          ? `<span class="text-danger fw-bold">●</span> ${d}`
+          : d;
+      },
+    },
     { data: "branch" },
     { data: "brand" },
     { data: "employment_status" },
@@ -213,7 +222,45 @@ $(function () {
 
     populateViewModal(rowData);
     viewModal.show();
+
+    if (Number(rowData.is_checked) !== 1) {
+      markFlaggingRequestChecked(rowData.id);
+    }
   });
+
+function markFlaggingRequestChecked(id) {
+  fetch("functions/mark_flagging_checked.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  })
+    .then((r) => r.json())
+    .then((res) => {
+      if (res.success && !res.skipped) {
+        table.ajax.reload(null, false);
+        refreshSidebarFlaggingBadge();
+      }
+    })
+    .catch(() => {});
+}
+
+function refreshSidebarFlaggingBadge() {
+  const badge = document.getElementById("sidebarFlaggingUncheckedBadge");
+  if (!badge) return; // not admin, badge doesn't exist on this session
+
+  fetch("functions/get_flagging_request_count.php")
+    .then((r) => r.json())
+    .then((data) => {
+      const count = parseInt(data.count, 10) || 0;
+      if (count > 0) {
+        badge.textContent = count > 99 ? "99+" : count;
+        badge.classList.remove("d-none");
+      } else {
+        badge.classList.add("d-none");
+      }
+    })
+    .catch(() => {});
+}
 
   let currentViewRequestId = null;
 

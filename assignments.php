@@ -13,12 +13,12 @@ $branchMap = [];
 
 $stmt = $pdo->query("
     SELECT branch_code, branch
-    FROM IPROM.dbo.branches
+    FROM IPROM_2.dbo.branches
     WHERE status = 1
 ");
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $branchMap[$row['branch_code']] = $row['branch'];
+    $branchMap[trim($row['branch_code'])] = trim($row['branch']);
 }
 
 $isAllowed =

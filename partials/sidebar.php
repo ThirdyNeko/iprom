@@ -138,6 +138,9 @@
                 <a href="flagging_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'flagging_request.php' ? 'active' : '' ?>">
                     <i class="bi bi-flag"></i>
                     <span>Flagging Requests</span>
+                    <?php if ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'super_admin'): ?>
+                        <span id="sidebarFlaggingUncheckedBadge" class="badge rounded-pill bg-danger ms-auto d-none"></span>
+                    <?php endif; ?>
                 </a>
             </li>
 
@@ -290,6 +293,34 @@
             document.addEventListener('DOMContentLoaded', loadSidebarVerifyCount);
         })();
     </script>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin'])): ?>
+<script>
+    (function() {
+        function loadSidebarFlaggingUncheckedCount() {
+            fetch('functions/get_flagging_request_count.php')
+                .then(res => res.json())
+                .then(data => {
+                    const count = parseInt(data.count, 10) || 0;
+                    const badge = document.getElementById('sidebarFlaggingUncheckedBadge');
+                    if (!badge) return;
+                    if (count > 0) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.classList.remove('d-none');
+                    } else {
+                        badge.classList.add('d-none');
+                        badge.textContent = '';
+                    }
+                })
+                .catch(() => {
+                    const badge = document.getElementById('sidebarFlaggingUncheckedBadge');
+                    if (badge) badge.classList.add('d-none');
+                });
+        }
+        document.addEventListener('DOMContentLoaded', loadSidebarFlaggingUncheckedCount);
+    })();
+</script>
 <?php endif; ?>
 
 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
