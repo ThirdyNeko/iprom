@@ -12,6 +12,8 @@ function generateReport(type) {
   if (type === "vacant_plantillas") {
     const brand = document.getElementById("selectBrandVacant").value;
     const status = document.getElementById("selectStatusVacant").value;
+    const period =
+      document.getElementById("selectPeriodVacant")?.value ?? "all";
     if (!brand) {
       Swal.fire({
         icon: "warning",
@@ -22,7 +24,7 @@ function generateReport(type) {
       return;
     }
     bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
-    exportVacantPlantillas(brand, status);
+    exportVacantPlantillas(brand, status, period);
   } else if (type === "employee_report") {
     const branchCode = document.getElementById("selectBranch").value;
     const branchLabel =
@@ -44,6 +46,8 @@ function generateReport(type) {
     const status = document.getElementById(
       "selectStatusBranchPlantillas",
     ).value;
+    const period =
+      document.getElementById("selectPeriodBranchPlantillas")?.value ?? "all";
     if (!branch) {
       Swal.fire({
         icon: "warning",
@@ -54,7 +58,7 @@ function generateReport(type) {
       return;
     }
     bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
-    exportBranchPlantillas(branch, status);
+    exportBranchPlantillas(branch, status, period);
   } else if (type === "missing_biometric") {
     const branch = document.getElementById(
       "selectBranchMissingBiometric",
@@ -140,7 +144,7 @@ function exportEmployeeReport(branchCode, branchLabel) {
 
 // ─── Vacant & Incomplete Plantillas Export (PDF) ──────────────────────────
 
-function exportVacantPlantillas(brand, status = "all") {
+function exportVacantPlantillas(brand, status = "all", period = "all") {
   const btn = document.getElementById("btnGenerateVacantPlantillas");
   btn.disabled = true;
   btn.innerHTML =
@@ -171,15 +175,33 @@ function exportVacantPlantillas(brand, status = "all") {
         return;
       }
 
+      // NOTE: the above only checks status, not period — the actual
+      // period filtering happens server-side, so the PDF endpoint can
+      // still come back empty. Handled below via content-type check.
       return fetch(
         "functions/generate_vacant_plantillas_pdf.php?" +
-          new URLSearchParams({ brand, status }),
-      )
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to generate PDF");
-          return res.blob();
-        })
-        .then((blob) => {
+          new URLSearchParams({ brand, status, period }),
+      ).then((res) => {
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok) throw new Error("Failed to generate PDF");
+
+        if (!contentType.includes("application/pdf")) {
+          // Server returned a plain-text "no records" message instead of a PDF —
+          // don't download it, just show it.
+          return res.text().then((msg) => {
+            Swal.fire({
+              icon: "info",
+              title: "No records found",
+              html:
+                msg ||
+                "No plantilla records were found for the selected period.",
+              confirmButtonColor: "#2d68c4",
+            });
+          });
+        }
+
+        return res.blob().then((blob) => {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
@@ -189,6 +211,7 @@ function exportVacantPlantillas(brand, status = "all") {
           a.remove();
           window.URL.revokeObjectURL(url);
         });
+      });
     })
     .catch(() => {
       Swal.fire({
@@ -206,7 +229,7 @@ function exportVacantPlantillas(brand, status = "all") {
 
 // ─── Branch Plantilla Records Export (PDF) ────────────────────────────────
 
-function exportBranchPlantillas(branch, status = "all") {
+function exportBranchPlantillas(branch, status = "all", period = "all") {
   const btn = document.getElementById("btnGenerateBranchPlantillas");
   btn.disabled = true;
   btn.innerHTML =
@@ -246,13 +269,31 @@ function exportBranchPlantillas(branch, status = "all") {
 
       return fetch(
         "functions/generate_branch_plantillas_pdf.php?" +
-          new URLSearchParams({ branch, branch_label: branchLabel, status }),
-      )
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to generate PDF");
-          return res.blob();
-        })
-        .then((blob) => {
+          new URLSearchParams({
+            branch,
+            branch_label: branchLabel,
+            status,
+            period,
+          }),
+      ).then((res) => {
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok) throw new Error("Failed to generate PDF");
+
+        if (!contentType.includes("application/pdf")) {
+          return res.text().then((msg) => {
+            Swal.fire({
+              icon: "info",
+              title: "No records found",
+              html:
+                msg ||
+                "No plantilla records were found for the selected period.",
+              confirmButtonColor: "#2d68c4",
+            });
+          });
+        }
+
+        return res.blob().then((blob) => {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
@@ -262,6 +303,7 @@ function exportBranchPlantillas(branch, status = "all") {
           a.remove();
           window.URL.revokeObjectURL(url);
         });
+      });
     })
     .catch(() => {
       Swal.fire({
@@ -304,7 +346,7 @@ function exportMissingBiometric(branch) {
       }
 
       const rows = data.map((emp) => ({
-        "ID": emp.id,
+        ID: emp.id,
         "First Name": emp.first_name ?? "",
         "Last Name": emp.last_name ?? "",
         "Biometric Number": "", // intentionally blank — these are the missing ones
