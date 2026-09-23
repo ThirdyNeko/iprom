@@ -436,8 +436,8 @@ while ($i < $totalRows) {
     }
 
     $summaryRow = [
-        'Count',
-        (string) count($branchesOrBrandsOnPage),
+        'Count: ' . count($branchesOrBrandsOnPage),
+        '',
         fmtCount($plantillaSum),
         fmtCount($deployedSum),
         fmtCount($vacantSum),

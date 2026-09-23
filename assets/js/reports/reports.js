@@ -74,6 +74,29 @@ function generateReport(type) {
     }
     bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
     exportMissingBiometric(branch);
+  } else if (type === "flagged_employees") {
+    const branchSelect = document.getElementById(
+      "selectBranchFlaggedEmployees",
+    );
+    const brandSelect = document.getElementById("selectBrandFlaggedEmployees");
+    const branch = branchSelect.value;
+    const brand = brandSelect.value;
+    const period =
+      document.getElementById("selectPeriodFlaggedEmployees")?.value ?? "all";
+    const branchLabel = branchSelect.selectedOptions[0]?.text ?? branch;
+    const brandLabel = brandSelect.selectedOptions[0]?.text ?? brand;
+
+    if (!branch || !brand) {
+      Swal.fire({
+        icon: "warning",
+        title: "No option selected",
+        text: "Please select a branch and a brand (or 'All') to generate the Flagged Employees Report.",
+        confirmButtonColor: "#2d68c4",
+      });
+      return;
+    }
+    bootstrap.Modal.getInstance(document.querySelector(".modal.show"))?.hide();
+    exportFlaggedEmployees(branch, brand, period, branchLabel, brandLabel);
   }
 }
 
@@ -360,6 +383,94 @@ function exportMissingBiometric(branch) {
 
       const label = branch === "ALL" ? "ALL_BRANCHES" : branch;
       XLSX.writeFile(wb, `${label}_MISSING_BIOMETRIC_${fileSuffix}.xlsx`);
+    })
+    .catch(() => {
+      Swal.fire({
+        icon: "error",
+        title: "Export failed",
+        text: "Something went wrong while fetching the data.",
+        confirmButtonColor: "#2d68c4",
+      });
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.innerHTML = "Generate Report";
+    });
+}
+
+// ─── Flagged Employees Report Export (PDF) ────────────────────────────────
+
+function exportFlaggedEmployees(
+  branch,
+  brand,
+  period,
+  branchLabel,
+  brandLabel,
+) {
+  const btn = document.getElementById("btnGenerateFlaggedEmployees");
+  btn.disabled = true;
+  btn.innerHTML =
+    '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
+
+  const today = new Date();
+  const fileSuffix = formatDateFile(today);
+  const branchTag = branch === "ALL" ? "ALL_BRANCHES" : branch;
+
+  // Existence check first, same pattern as the other PDF reports.
+  fetch(
+    "functions/get_flagged_employees.php?" +
+      new URLSearchParams({ branch, brand, period }),
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.length) {
+        Swal.fire({
+          icon: "info",
+          title: "No records found",
+          html: "No flagged employees were found for the selected filters.",
+          confirmButtonColor: "#2d68c4",
+        });
+        return;
+      }
+
+      return fetch(
+        "functions/generate_flagged_employees_report_pdf.php?" +
+          new URLSearchParams({
+            branch,
+            brand,
+            period,
+            branch_label: branchLabel,
+            brand_label: brandLabel,
+          }),
+      ).then((res) => {
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!res.ok) throw new Error("Failed to generate PDF");
+
+        if (!contentType.includes("application/pdf")) {
+          return res.text().then((msg) => {
+            Swal.fire({
+              icon: "info",
+              title: "No records found",
+              html:
+                msg ||
+                "No flagged employees were found for the selected filters.",
+              confirmButtonColor: "#2d68c4",
+            });
+          });
+        }
+
+        return res.blob().then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${branchTag}_FLAGGED_EMPLOYEES_${fileSuffix}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        });
+      });
     })
     .catch(() => {
       Swal.fire({

@@ -128,6 +128,24 @@ $branches = $pdo->query("
                 </div>
             </div>
 
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="report-type-card card shadow-sm h-100 p-3"
+                     data-type="flagged_employees"
+                     data-bs-toggle="modal"
+                     data-bs-target="#modalFlaggedEmployees"
+                     onclick="selectReportType(this)">
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <div class="report-icon">🚩</div>
+                        <div>
+                            <h6 class="card-title fw-bold mb-1">Flagged Employees</h6>
+                            <p class="card-text text-muted small mb-0">
+                                Generate a report on employees with active flags, grouped by branch and brand, with how long each flag has been open.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div id="reportFiltersArea"></div>
@@ -148,5 +166,6 @@ include 'modals/reports/modal_vacant_plantillas.php';
 include 'modals/reports/modal_employee_report.php';
 include 'modals/reports/modal_branch_plantillas.php';
 include 'modals/reports/modal_missing_biometric.php';
+include 'modals/reports/modal_flagged_employees.php';
 include 'modals/change_password_modal.php';
 ?>
