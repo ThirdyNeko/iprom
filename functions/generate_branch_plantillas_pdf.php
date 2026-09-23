@@ -280,10 +280,12 @@ class ReportPDF extends FPDF {
             $this->Cell(0, 5, $this->reportSubtitle, 0, 1, 'C');
         }
         if ($this->reportSubtitle2 !== '') {
-            $this->SetFont('Arial', 'I', 9);
+            $this->SetFont('Arial', '', 9);
             $this->Cell(0, 5, $this->reportSubtitle2, 0, 1, 'L');
         }
-        $this->Ln(2);
+        if ($this->reportSubtitle2 == ''){
+            $this->Ln(2);
+        }
 
         if (!empty($this->colHeaders)) {
             $this->SetFont('Arial', 'B', 7.5);

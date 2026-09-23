@@ -35,7 +35,7 @@
                     <option value="all">All</option>
                     <option value="lt15">Less than 15 days</option>
                     <option value="15to30">15 - 30 days</option>
-                    <option value="1to2mo">1 month to 2 months</option>
+                    <option value="1to2mo">1 - 2 months</option>
                     <option value="gt2mo">More than 2 months</option>
                 </select>
             </div>
