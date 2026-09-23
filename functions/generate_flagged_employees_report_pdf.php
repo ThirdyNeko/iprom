@@ -143,7 +143,7 @@ class ReportPDF extends FPDF {
     public $contentStartY = 15;
     public $reportTitle = '';
     public $reportSubtitle = '';
-    public $reportSubtitle2 = ''; // e.g. "Branch: X | Brand: Y | Period: Z" — left-aligned
+    public $reportSubtitle2 = []; // array of ['text' => ..., 'bold' => bool] segments, rendered left-aligned on one line
     public $colHeaders = [];
     public $colWidths = [];
     public $headerRowH = 6;
@@ -163,11 +163,18 @@ class ReportPDF extends FPDF {
             $this->SetFont('Arial', 'I', 9);
             $this->Cell(0, 5, $this->reportSubtitle, 0, 1, 'C');
         }
-        if ($this->reportSubtitle2 !== '') {
-            $this->SetFont('Arial', '', 9);
-            $this->Cell(0, 5, $this->reportSubtitle2, 0, 1, 'L');
-        }
-        if ($this->reportSubtitle2 == ''){
+
+        if (!empty($this->reportSubtitle2)) {
+            // reportSubtitle2 is an array of ['text' => ..., 'bold' => bool]
+            // segments rendered left-to-right on one line, since FPDF can't
+            // mix bold/regular within a single Cell().
+            foreach ($this->reportSubtitle2 as $seg) {
+                $this->SetFont('Arial', $seg['bold'] ? 'B' : '', 9);
+                $w = $this->GetStringWidth($seg['text']) + 1;
+                $this->Cell($w, 5, $seg['text'], 0, 0, 'L');
+            }
+            $this->Ln(5);
+        } else {
             $this->Ln(2);
         }
 
@@ -264,12 +271,23 @@ $periodLabel = $periodLabels[$period] ?? 'All';
 
 $pdf = new ReportPDF('P', 'mm', 'Letter');
 $pdf->Ln(10);
-$pdf->reportTitle     = fpdf_str('Flagged Employees');
-$pdf->reportSubtitle  = fpdf_str('As of ' . $dateStr);
-$pdf->reportSubtitle2 = fpdf_str(
-    'Branch: ' . $branchLabel . '   Brand: ' . $brandLabel .
-    ($period !== 'all' ? '   Period: ' . $periodLabel : '')
-);
+$pdf->reportTitle    = fpdf_str('Flagged Employees');
+$pdf->reportSubtitle = fpdf_str('As of ' . $dateStr);
+
+// Built as segments (rather than one concatenated string) so Header()
+// can render "Branch:", "Brand:", and "Period:" in bold while the
+// values stay regular weight — FPDF can't mix weights within one Cell().
+$pdf->reportSubtitle2 = [
+    ['text' => 'Branch: ', 'bold' => true],
+    ['text' => fpdf_str($branchLabel) . '   ', 'bold' => false],
+    ['text' => 'Brand: ', 'bold' => true],
+    ['text' => fpdf_str($brandLabel), 'bold' => false],
+];
+if ($period !== 'all') {
+    $pdf->reportSubtitle2[] = ['text' => '   Period: ', 'bold' => true];
+    $pdf->reportSubtitle2[] = ['text' => fpdf_str($periodLabel), 'bold' => false];
+}
+
 $pdf->colHeaders = array_map('fpdf_str', $headers);
 $pdf->colWidths  = $widths;
 
