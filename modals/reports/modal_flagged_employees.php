@@ -32,7 +32,7 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Period (Days Since Oldest Flag)</label>
+          <label class="form-label">Period (Period Since Oldest Flag)</label>
           <select id="selectPeriodFlaggedEmployees" class="form-select">
             <option value="all">All</option>
             <option value="lt15">Less than 15 Days</option>
