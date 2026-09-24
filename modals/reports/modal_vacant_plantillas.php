@@ -29,6 +29,15 @@
                     <option value="complete">Complete</option>
                     <option value="vacant">Vacant & Incomplete</option>
                 </select>
+
+                <label class="form-label fw-semibold small mt-3">Period</label>
+                <select id="selectPeriodVacant" class="form-select">
+                    <option value="all">All</option>
+                    <option value="lt15">Less than 15 days</option>
+                    <option value="15to30">15 - 30 days</option>
+                    <option value="1to2mo">1 - 2 months</option>
+                    <option value="gt2mo">More than 2 months</option>
+                </select>
             </div>
 
             <div class="modal-footer">

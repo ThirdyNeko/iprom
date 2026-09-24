@@ -35,6 +35,7 @@ $pdo = qa_db();
 $branch      = $_GET['branch'] ?? '';
 $branchLabel = $_GET['branch_label'] ?? $branch;
 $status      = $_GET['status'] ?? 'all'; // all | vacant | complete
+$period      = $_GET['period'] ?? 'all'; // all | lt15 | 15to30 | 1to2mo | gt2mo
 
 if (empty($branch)) {
     ob_end_clean();
@@ -81,6 +82,32 @@ function monthDaysSince($timestamp) {
     if ($months === 0) return "{$days}d";
     if ($days === 0)   return "{$months}mo";
     return "{$months}mo {$days}d";
+}
+
+// Raw day count since a timestamp, used for period bucketing.
+function daysSince($timestamp): ?int {
+    if (empty($timestamp)) return null;
+    try {
+        $then = new DateTime($timestamp);
+    } catch (Exception $e) {
+        return null;
+    }
+    $now = new DateTime();
+    return (int) $now->diff($then)->days;
+}
+
+// Buckets a day count into one of the filter's period options.
+function periodBucket(?int $days): string {
+    if ($days === null) return 'unknown';
+    if ($days < 15) return 'lt15';
+    if ($days <= 30) return '15to30';
+    if ($days <= 60) return '1to2mo';
+    return 'gt2mo';
+}
+
+// Sum/format helper for the per-page summary row.
+function fmtCount($n) {
+    return (fmod($n, 1) === 0.0) ? number_format($n, 0) : number_format($n, 2);
 }
 
 function fetchInternalJson(string $relativePath, array $params, int $maxAttempts = 3): array
@@ -140,42 +167,85 @@ function fetchInternalJson(string $relativePath, array $params, int $maxAttempts
 $vacantData   = fetchInternalJson('get_vacant_plantilla_branch.php', ['branch' => $branch]);
 $completeData = fetchInternalJson('get_complete_plantilla_branch.php', ['branch' => $branch]);
 
+// Each row carries 'cols' (what actually prints) and 'period' (bucket used
+// for filtering only — not printed as its own column).
 $vacantRows = array_map(function ($p) {
+    $ts = $p['timestamp'] ?? null;
+    if (!$ts) {
+        $updatedAt = $p['updated_at'] ?? null;
+        $latestDateSeparated = $p['latest_date_separated'] ?? null;
+
+        if ($updatedAt && $latestDateSeparated) {
+            $ts = strtotime($updatedAt) >= strtotime($latestDateSeparated)
+                ? $updatedAt
+                : $latestDateSeparated;
+        } else {
+            $ts = $updatedAt ?: $latestDateSeparated ?: '';
+        }
+    }
     return [
-        $p['branch'] ?? '',
-        $p['brand'] ?? '',
-        $p['required_count'] ?? '',
-        $p['assigned_count'] ?? '',
-        vacantCount($p['required_count'] ?? 0, $p['assigned_count'] ?? 0),
-        formatDatePdf($p['timestamp'] ?? $p['created_at'] ?? ''),
-        monthDaysSince($p['timestamp'] ?? $p['created_at'] ?? ''),
-        '',
-        '',
+        'cols' => [
+            $p['branch'] ?? '',
+            $p['brand'] ?? '',
+            $p['required_count'] ?? '',
+            $p['assigned_count'] ?? '',
+            vacantCount($p['required_count'] ?? 0, $p['assigned_count'] ?? 0),
+            formatDatePdf($ts),
+            monthDaysSince($ts),
+            '',
+            '',
+        ],
+        'period' => periodBucket(daysSince($ts)),
     ];
 }, $vacantData);
 
 $completeRows = array_map(function ($p) {
+    $ts = $p['timestamp'] ?? null;
+    if (!$ts) {
+        $updatedAt = $p['updated_at'] ?? null;
+        $latestStartDate = $p['latest_start_date'] ?? null;
+
+        if ($updatedAt && $latestStartDate) {
+            $ts = strtotime($updatedAt) >= strtotime($latestStartDate)
+                ? $updatedAt
+                : $latestStartDate;
+        } else {
+            $ts = $updatedAt ?: $latestStartDate ?: '';
+        }
+    }
     return [
-        $p['branch'] ?? '',
-        $p['brand'] ?? '',
-        $p['required_count'] ?? '',
-        $p['assigned_count'] ?? '',
-        '0',
-        '',
-        '',
-        formatDatePdf($p['timestamp'] ?? $p['created_at'] ?? ''),
-        monthDaysSince($p['timestamp'] ?? $p['created_at'] ?? ''),
+        'cols' => [
+            $p['branch'] ?? '',
+            $p['brand'] ?? '',
+            $p['required_count'] ?? '',
+            $p['assigned_count'] ?? '',
+            '0',
+            '',
+            '',
+            formatDatePdf($ts),
+            monthDaysSince($ts),
+        ],
+        'period' => periodBucket(daysSince($ts)),
     ];
 }, $completeData);
 
-$combined = array_merge(
+$combinedMeta = array_merge(
     $status === 'complete' ? [] : $vacantRows,
     $status === 'vacant' ? [] : $completeRows
 );
 
-usort($combined, function ($a, $b) {
-    return strcasecmp($a[0], $b[0]) ?: strcasecmp($a[1], $b[1]);
+if ($period !== 'all') {
+    $combinedMeta = array_values(array_filter(
+        $combinedMeta,
+        fn($row) => $row['period'] === $period
+    ));
+}
+
+usort($combinedMeta, function ($a, $b) {
+    return strcasecmp($a['cols'][0], $b['cols'][0]) ?: strcasecmp($a['cols'][1], $b['cols'][1]);
 });
+
+$combined = array_map(fn($row) => $row['cols'], $combinedMeta);
 
 if (empty($combined)) {
     ob_end_clean();
@@ -192,6 +262,7 @@ class ReportPDF extends FPDF {
     public $contentStartY = 35;
     public $reportTitle = '';
     public $reportSubtitle = '';
+    public $reportSubtitle2 = ''; // e.g. "For Period: 15 - 30 days" — shown below reportSubtitle, left-aligned
     public $colHeaders = [];
     public $colWidths = [];
     public $headerRowH = 6;
@@ -208,7 +279,13 @@ class ReportPDF extends FPDF {
             $this->SetFont('Arial', 'I', 9);
             $this->Cell(0, 5, $this->reportSubtitle, 0, 1, 'C');
         }
-        $this->Ln(2);
+        if ($this->reportSubtitle2 !== '') {
+            $this->SetFont('Arial', '', 9);
+            $this->Cell(0, 5, $this->reportSubtitle2, 0, 1, 'L');
+        }
+        if ($this->reportSubtitle2 == ''){
+            $this->Ln(2);
+        }
 
         if (!empty($this->colHeaders)) {
             $this->SetFont('Arial', 'B', 7.5);
@@ -237,6 +314,13 @@ class ReportPDF extends FPDF {
             $this->SetXY($this->lMargin, $y + $headerHeight);
             $this->SetTextColor(0, 0, 0);
         }
+    }
+
+    // FPDF doesn't expose page height publicly by default — needed to
+    // manually compute how many rows fit before we must reserve space
+    // for that page's summary row.
+    function PageHeight() {
+        return $this->h;
     }
 }
 
@@ -282,27 +366,96 @@ $headers = [
 ];
 $widths  = [34, 34, 18, 18, 18, 22, 16, 22, 16];
 
+$periodLabels = [
+    'all'     => 'All',
+    'lt15'    => 'Less than 15 days',
+    '15to30'  => '15 - 30 days',
+    '1to2mo'  => '1 month to 2 months',
+    'gt2mo'   => 'More than 2 months',
+];
+$statusLabels = [
+    'all'      => 'All',
+    'complete' => 'Complete',
+    'vacant'   => 'Vacant & Incomplete',
+];
+$statusLabel = $statusLabels[$status] ?? 'All';
+$periodLabel = $periodLabels[$period] ?? 'All';
+
 $pdf = new ReportPDF('P', 'mm', 'Letter');
 $pdf->Ln(10);
-$pdf->reportTitle    = fpdf_str($branchLabel);
-$pdf->reportSubtitle = fpdf_str('As of ' . $dateStr);
-$pdf->colHeaders     = array_map('fpdf_str', $headers);
-$pdf->colWidths      = $widths;
-$pdf->SetAutoPageBreak(true, 30);
+$pdf->reportTitle     = fpdf_str('Branch Plantilla Records');
+$pdf->reportSubtitle  = fpdf_str($statusLabel . ' statuses as of ' . $dateStr);
+$pdf->reportSubtitle2 = fpdf_str($period !== 'all' ? 'For Period: ' . $periodLabel : '');
+$pdf->colHeaders      = array_map('fpdf_str', $headers);
+$pdf->colWidths       = $widths;
+
+// Pagination is handled manually below so each page's summary row can be
+// reserved space and kept as the last row of that page's table — FPDF's
+// automatic page break has no concept of "leave room for one more row".
+$pdf->SetAutoPageBreak(false);
 $pdf->AddPage();
 
 $fitSize = computeFitFontSize($pdf, $combined, $widths);
 $rowH = 5;
+$bottomMargin = 20; // mm reserved at the bottom of every page
 
-$pdf->SetFont('Arial', '', $fitSize);
-foreach ($combined as $row) {
-    foreach ($row as $i => $val) {
-        $text = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$i]);
-        $align = ($i === 1) ? 'L' : 'C';
-        $pdf->Cell($widths[$i], $rowH, $text, 1, 0, $align);
+$totalRows = count($combined);
+$i = 0;
+
+while ($i < $totalRows) {
+    $pdf->SetFont('Arial', '', $fitSize);
+
+    // How much vertical space is left on this page, minus one row height
+    // reserved for the summary row that must close out this page's table.
+    $availableHeight = $pdf->PageHeight() - $bottomMargin - $pdf->GetY() - $rowH;
+    $rowsThatFit = max(1, (int) floor($availableHeight / $rowH));
+
+    $pageRows = array_slice($combined, $i, $rowsThatFit);
+    $i += count($pageRows);
+
+    // ─ Data rows for this page ─
+    foreach ($pageRows as $row) {
+        foreach ($row as $c => $val) {
+            $text = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$c]);
+            $align = ($c === 1) ? 'L' : 'C';
+            $pdf->Cell($widths[$c], $rowH, $text, 1, 0, $align);
+        }
+        $pdf->Ln();
+        $pdf->SetFont('Arial', '', $fitSize);
+    }
+
+    // ─ Per-page summary row — part of the table, not a separate block ─
+    $branchesOrBrandsOnPage = array_unique(array_map(fn($r) => $r[1], $pageRows));
+    $plantillaSum = 0;
+    $deployedSum  = 0;
+    $vacantSum    = 0;
+    foreach ($pageRows as $r) {
+        $plantillaSum += is_numeric($r[2]) ? (float)$r[2] : 0;
+        $deployedSum  += is_numeric($r[3]) ? (float)$r[3] : 0;
+        $vacantSum    += is_numeric($r[4]) ? (float)$r[4] : 0;
+    }
+
+    $summaryRow = [
+        'Count: ' . count($branchesOrBrandsOnPage),
+        '',
+        fmtCount($plantillaSum),
+        fmtCount($deployedSum),
+        fmtCount($vacantSum),
+        '', '', '', '',
+    ];
+
+    $pdf->SetFont('Arial', 'B', $fitSize);
+    $pdf->SetFillColor(230, 230, 230);
+    foreach ($summaryRow as $c => $val) {
+        $text = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$c]);
+        $align = ($c === 1) ? 'L' : 'C';
+        $pdf->Cell($widths[$c], $rowH, $text, 1, 0, $align, true);
     }
     $pdf->Ln();
-    $pdf->SetFont('Arial', '', $fitSize);
+
+    if ($i < $totalRows) {
+        $pdf->AddPage();
+    }
 }
 
 ob_end_clean();

@@ -19,28 +19,22 @@ register_shutdown_function(function () {
 session_start();
 
 // IMPORTANT: release the session file lock immediately. This script makes
-// internal HTTP requests to get_vacant_plantilla.php / get_complete_plantilla.php,
-// which ALSO call session_start(). PHP's default session handler locks the
-// session file for the life of the request that holds it — so without this,
-// those inner requests block waiting for this outer request's lock, time out,
-// and you get a corrupted/empty response instead of a PDF.
+// an internal HTTP request to get_flagged_employees.php, which ALSO calls
+// session_start(). PHP's default session handler locks the session file for
+// the life of the request that holds it — so without this, that inner
+// request blocks waiting for this outer request's lock, times out, and you
+// get a corrupted/empty response instead of a PDF.
 session_write_close();
 
 require('../fpdf/fpdf.php');
-require_once '../config/db.php';
-$pdo = qa_db();
 
 // ─── Params ────────────────────────────────────────────────────────────────
-$brand  = $_GET['brand'] ?? '';
-$status = $_GET['status'] ?? 'all'; // all | vacant | complete
-$period = $_GET['period'] ?? 'all'; // all | lt15 | 15to30 | 1to2mo | gt2mo
+$branch = $_GET['branch'] ?? 'ALL';
+$brand  = $_GET['brand']  ?? 'ALL';
+$period = $_GET['period'] ?? 'all'; // all | lt15 | 15_30 | 1_2mo | 2mo_plus
 
-if (empty($brand)) {
-    ob_end_clean();
-    http_response_code(400);
-    echo 'Missing brand parameter.';
-    exit;
-}
+$branchLabel = $_GET['branch_label'] ?? ($branch === 'ALL' ? 'All Branches' : $branch);
+$brandLabel  = $_GET['brand_label']  ?? ($brand  === 'ALL' ? 'All Brands'   : $brand);
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function fpdf_str($s): string {
@@ -52,61 +46,6 @@ function fpdf_str($s): string {
     return $result === false ? '' : $result;
 }
 
-function formatDatePdf($value) {
-    if (empty($value)) return '';
-    $ts = strtotime($value);
-    if ($ts === false) return $value;
-    return date('m/d/Y', $ts);
-}
-
-function vacantCount($required, $assigned) {
-    $r = is_numeric($required) ? (float)$required : 0;
-    $a = is_numeric($assigned) ? (float)$assigned : 0;
-    return (string) max(0, $r - $a);
-}
-
-function monthDaysSince($timestamp) {
-    if (empty($timestamp)) return '';
-    try {
-        $then = new DateTime($timestamp);
-    } catch (Exception $e) {
-        return '';
-    }
-    $now  = new DateTime();
-    $diff = $now->diff($then);
-    $months = $diff->y * 12 + $diff->m;
-    $days   = $diff->d;
-
-    if ($months === 0) return "{$days}d";
-    if ($days === 0)   return "{$months}mo";
-    return "{$months}mo {$days}d";
-}
-
-// Raw day count since a timestamp, used for period bucketing.
-function daysSince($timestamp): ?int {
-    if (empty($timestamp)) return null;
-    try {
-        $then = new DateTime($timestamp);
-    } catch (Exception $e) {
-        return null;
-    }
-    $now = new DateTime();
-    return (int) $now->diff($then)->days;
-}
-
-// Buckets a day count into one of the filter's period options.
-// Rows with no date at all (never happens for vacant, but complete rows
-// have no "since" date relevant to this filter) bucket to 'unknown' and
-// are excluded by any specific period filter.
-function periodBucket(?int $days): string {
-    if ($days === null) return 'unknown';
-    if ($days < 15) return 'lt15';
-    if ($days <= 30) return '15to30';
-    if ($days <= 60) return '1to2mo';
-    return 'gt2mo';
-}
-
-// Sum/format helper for the per-page summary row.
 function fmtCount($n) {
     return (fmod($n, 1) === 0.0) ? number_format($n, 0) : number_format($n, 2);
 }
@@ -165,111 +104,55 @@ function fetchInternalJson(string $relativePath, array $params, int $maxAttempts
 }
 
 // ─── Fetch data ────────────────────────────────────────────────────────────
-$vacantData   = fetchInternalJson('get_vacant_plantilla.php', ['brand' => $brand]);
-$completeData = fetchInternalJson('get_complete_plantilla.php', ['brand' => $brand]);
+// get_flagged_employees.php already applies the branch/brand/period
+// filtering and the flag-count / oldest-flag logic — single source of
+// truth, no SQL duplicated here (same pattern as the vacant/complete
+// plantilla fetches above).
+$employees = fetchInternalJson('get_flagged_employees.php', [
+    'branch' => $branch,
+    'brand'  => $brand,
+    'period' => $period,
+]);
 
-// Each row carries 'cols' (what actually prints) and 'period' (bucket used
-// for filtering only — not printed as its own column).
-$vacantRows = array_map(function ($p) {
-    $ts = $p['timestamp'] ?? null;
-    if (!$ts) {
-        $updatedAt = $p['updated_at'] ?? null;
-        $latestDateSeparated = $p['latest_date_separated'] ?? null;
-
-        if ($updatedAt && $latestDateSeparated) {
-            $ts = strtotime($updatedAt) >= strtotime($latestDateSeparated)
-                ? $updatedAt
-                : $latestDateSeparated;
-        } else {
-            $ts = $updatedAt ?: $latestDateSeparated ?: '';
-        }
-    }
-    return [
-        'cols' => [
-            $p['brand'] ?? '',
-            $p['branch'] ?? '',
-            $p['required_count'] ?? '',
-            $p['assigned_count'] ?? '',
-            vacantCount($p['required_count'] ?? 0, $p['assigned_count'] ?? 0),
-            formatDatePdf($ts),
-            monthDaysSince($ts),
-            '',
-            '',
-        ],
-        'period' => periodBucket(daysSince($ts)),
-    ];
-}, $vacantData);
-
-$completeRows = array_map(function ($p) {
-    $ts = $p['timestamp'] ?? null;
-    if (!$ts) {
-        $updatedAt = $p['updated_at'] ?? null;
-        $latestStartDate = $p['latest_start_date'] ?? null;
-
-        if ($updatedAt && $latestStartDate) {
-            $ts = strtotime($updatedAt) >= strtotime($latestStartDate)
-                ? $updatedAt
-                : $latestStartDate;
-        } else {
-            $ts = $updatedAt ?: $latestStartDate ?: '';
-        }
-    }
-    return [
-        'cols' => [
-            $p['brand'] ?? '',
-            $p['branch'] ?? '',
-            $p['required_count'] ?? '',
-            $p['assigned_count'] ?? '',
-            '0',
-            '',
-            '',
-            formatDatePdf($ts),
-            monthDaysSince($ts),
-        ],
-        'period' => periodBucket(daysSince($ts)),
-    ];
-}, $completeData);
-
-$combinedMeta = array_merge(
-    $status === 'complete' ? [] : $vacantRows,
-    $status === 'vacant' ? [] : $completeRows
-);
-
-if ($period !== 'all') {
-    $combinedMeta = array_values(array_filter(
-        $combinedMeta,
-        fn($row) => $row['period'] === $period
-    ));
-}
-
-usort($combinedMeta, function ($a, $b) {
-    return strcasecmp($a['cols'][0], $b['cols'][0]) ?: strcasecmp($a['cols'][1], $b['cols'][1]);
-});
-
-$combined = array_map(fn($row) => $row['cols'], $combinedMeta);
-
-if (empty($combined)) {
+if (empty($employees)) {
     ob_end_clean();
     header('Content-Type: text/plain');
-    echo 'No plantilla records were found for the selected brand.';
+    echo 'No flagged employees were found for the selected filters.';
     exit;
 }
 
+// get_flagged_employees.php already returns rows ordered oldest-flag-first
+// (ORDER BY oldest_flag_date ASC == largest "days since" first), so no
+// re-sort needed here.
+$combined = array_map(function ($e) {
+    return [
+        str_replace(',', ', ', (string)($e['branches'] ?? '')),
+        str_replace(',', ', ', (string)($e['brands'] ?? '')),
+        $e['name'] ?? '',
+        (string)($e['flag_count'] ?? 0),
+        $e['days_since_label'] ?? '',
+    ];
+}, $employees);
+
 // ─── PDF class ─────────────────────────────────────────────────────────────
 class ReportPDF extends FPDF {
-    public $letterheadImage = '../assets/icons/LETTER HEAD GENERIC.jpg';
-    public $imgW = 216;
-    public $imgH = 279;
-    public $contentStartY = 35;
+    public $letterheadImage = '../assets/icons/CROWN_FLAG.png';
+    public $imgW = 130;  // 1321:826 aspect ratio preserved (130 x 81.3mm)
+    public $imgH = 81.3;
+    public $opacity = 0.1;
+    public $contentStartY = 15;
     public $reportTitle = '';
     public $reportSubtitle = '';
-    public $reportSubtitle2 = ''; // e.g. "For Period: 15 - 30 days" — shown below reportSubtitle, left-aligned
+    public $reportSubtitle2 = []; // array of ['text' => ..., 'bold' => bool] segments, rendered left-aligned on one line
     public $colHeaders = [];
     public $colWidths = [];
     public $headerRowH = 6;
 
+
     function Header() {
-        $this->Image($this->letterheadImage, 0, 0, $this->imgW, $this->imgH);
+        $x = ($this->GetPageWidth() - $this->imgW) / 2;
+        $y = ($this->GetPageHeight() - $this->imgH) / 2;
+        $this->Image($this->letterheadImage, $x, $y, $this->imgW, $this->imgH);
         $this->SetY($this->contentStartY);
 
         if ($this->reportTitle !== '') {
@@ -280,11 +163,18 @@ class ReportPDF extends FPDF {
             $this->SetFont('Arial', 'I', 9);
             $this->Cell(0, 5, $this->reportSubtitle, 0, 1, 'C');
         }
-        if ($this->reportSubtitle2 !== '') {
-            $this->SetFont('Arial', '', 9);
-            $this->Cell(0, 5, $this->reportSubtitle2, 0, 1, 'L');
-        }
-        if ($this->reportSubtitle2 == ''){
+
+        if (!empty($this->reportSubtitle2)) {
+            // reportSubtitle2 is an array of ['text' => ..., 'bold' => bool]
+            // segments rendered left-to-right on one line, since FPDF can't
+            // mix bold/regular within a single Cell().
+            foreach ($this->reportSubtitle2 as $seg) {
+                $this->SetFont('Arial', $seg['bold'] ? 'B' : '', 9);
+                $w = $this->GetStringWidth($seg['text']) + 1;
+                $this->Cell($w, 5, $seg['text'], 0, 0, 'L');
+            }
+            $this->Ln(5);
+        } else {
             $this->Ln(2);
         }
 
@@ -316,6 +206,12 @@ class ReportPDF extends FPDF {
             $this->SetXY($this->lMargin, $y + $headerHeight);
             $this->SetTextColor(0, 0, 0);
         }
+    }
+
+    function Footer() {
+        $this->SetY(-15);
+        $this->SetFont('Arial', 'I', 7);
+        $this->Cell(0, 10, 'Page ' . $this->PageNo() . '/{nb}', 0, 0, 'C');
     }
 
     // FPDF doesn't expose page height publicly by default — needed to
@@ -358,38 +254,42 @@ function fitTextToWidth(FPDF $pdf, string $text, float $width, float $padding = 
 }
 
 // ─── Build PDF ─────────────────────────────────────────────────────────────
-$dateStr = date('l, F d, Y h:i A');
-
+$dateStr    = date('l, F d, Y h:i A');
 $fileSuffix = date('Y-m-d');
 
-$headers = [
-    'Brand', 'Branch', 'Plantilla', 'Deployed', 'Vacant',
-    'Vacant Since', "Vacant\nPeriod", 'Complete Since', "Complete\nPeriod"
-];
-$widths  = [34, 34, 18, 18, 18, 22, 16, 22, 16]; // sums to 222mm, fits landscape Letter w/ margins
+$headers = ['Branch', 'Brand', 'Name', 'Flag Count', "Period"];
+$widths  = [50, 40, 50, 22, 28]; // sums to 190mm, fits portrait Letter (215.9mm) w/ margins
 
 $periodLabels = [
-    'all'     => 'All',
-    'lt15'    => 'Less than 15 days',
-    '15to30'  => '15 - 30 days',
-    '1to2mo'  => '1 month to 2 months',
-    'gt2mo'   => 'More than 2 months',
-];
-$statusLabels = [
     'all'      => 'All',
-    'complete' => 'Complete',
-    'vacant'   => 'Vacant & Incomplete',
+    'lt15'     => 'Less than 15 Days',
+    '15_30'    => '15 - 30 Days',
+    '1_2mo'    => '1 - 2 Months',
+    '2mo_plus' => 'More than 2 Months',
 ];
-$statusLabel = $statusLabels[$status] ?? 'All';
 $periodLabel = $periodLabels[$period] ?? 'All';
 
 $pdf = new ReportPDF('P', 'mm', 'Letter');
 $pdf->Ln(10);
-$pdf->reportTitle     = fpdf_str('Brand Plantilla Records');
-$pdf->reportSubtitle  = fpdf_str($statusLabel . ' statuses as of ' . $dateStr);
-$pdf->reportSubtitle2 = fpdf_str($period !== 'all' ? 'For Period: ' . $periodLabel : '');
-$pdf->colHeaders      = array_map('fpdf_str', $headers);
-$pdf->colWidths       = $widths;
+$pdf->reportTitle    = fpdf_str('Flagged Employees');
+$pdf->reportSubtitle = fpdf_str('As of ' . $dateStr);
+
+// Built as segments (rather than one concatenated string) so Header()
+// can render "Branch:", "Brand:", and "Period:" in bold while the
+// values stay regular weight — FPDF can't mix weights within one Cell().
+$pdf->reportSubtitle2 = [
+    ['text' => 'Branch: ', 'bold' => true],
+    ['text' => fpdf_str($branchLabel) . '   ', 'bold' => false],
+    ['text' => 'Brand: ', 'bold' => true],
+    ['text' => fpdf_str($brandLabel), 'bold' => false],
+];
+if ($period !== 'all') {
+    $pdf->reportSubtitle2[] = ['text' => '   Period: ', 'bold' => true];
+    $pdf->reportSubtitle2[] = ['text' => fpdf_str($periodLabel), 'bold' => false];
+}
+
+$pdf->colHeaders = array_map('fpdf_str', $headers);
+$pdf->colWidths  = $widths;
 
 // Pagination is handled manually below so each page's summary row can be
 // reserved space and kept as the last row of that page's table — FPDF's
@@ -397,8 +297,8 @@ $pdf->colWidths       = $widths;
 $pdf->SetAutoPageBreak(false);
 $pdf->AddPage();
 
-$fitSize = computeFitFontSize($pdf, $combined, $widths);
-$rowH = 5;
+$fitSize      = computeFitFontSize($pdf, $combined, $widths);
+$rowH         = 5;
 $bottomMargin = 20; // mm reserved at the bottom of every page
 
 $totalRows = count($combined);
@@ -418,8 +318,8 @@ while ($i < $totalRows) {
     // ─ Data rows for this page ─
     foreach ($pageRows as $row) {
         foreach ($row as $c => $val) {
-            $text = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$c]);
-            $align = ($c === 1) ? 'L' : 'C';
+            $text  = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$c]);
+            $align = ($c === 3 || $c === 4) ? 'C' : 'L';
             $pdf->Cell($widths[$c], $rowH, $text, 1, 0, $align);
         }
         $pdf->Ln();
@@ -427,30 +327,24 @@ while ($i < $totalRows) {
     }
 
     // ─ Per-page summary row — part of the table, not a separate block ─
-    $branchesOrBrandsOnPage = array_unique(array_map(fn($r) => $r[1], $pageRows));
-    $plantillaSum = 0;
-    $deployedSum  = 0;
-    $vacantSum    = 0;
+    $flagSum = 0;
     foreach ($pageRows as $r) {
-        $plantillaSum += is_numeric($r[2]) ? (float)$r[2] : 0;
-        $deployedSum  += is_numeric($r[3]) ? (float)$r[3] : 0;
-        $vacantSum    += is_numeric($r[4]) ? (float)$r[4] : 0;
+        $flagSum += is_numeric($r[3]) ? (float)$r[3] : 0;
     }
 
     $summaryRow = [
-        'Count: ' . count($branchesOrBrandsOnPage),
+        'Count: ' . count($pageRows),
         '',
-        fmtCount($plantillaSum),
-        fmtCount($deployedSum),
-        fmtCount($vacantSum),
-        '', '', '', '',
+        '',
+        fmtCount($flagSum),
+        '',
     ];
 
     $pdf->SetFont('Arial', 'B', $fitSize);
     $pdf->SetFillColor(230, 230, 230);
     foreach ($summaryRow as $c => $val) {
-        $text = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$c]);
-        $align = ($c === 1) ? 'L' : 'C';
+        $text  = fitTextToWidth($pdf, fpdf_str((string)$val), $widths[$c]);
+        $align = ($c === 3 || $c === 4) ? 'C' : 'L';
         $pdf->Cell($widths[$c], $rowH, $text, 1, 0, $align, true);
     }
     $pdf->Ln();
@@ -461,4 +355,5 @@ while ($i < $totalRows) {
 }
 
 ob_end_clean();
-$pdf->Output('I', "{$brand}_" . strtoupper($status) . "_PLANTILLAS_{$fileSuffix}.pdf");
+$branchTag = $branch === 'ALL' ? 'ALL_BRANCHES' : $branch;
+$pdf->Output('I', "{$branchTag}_FLAGGED_EMPLOYEES_{$fileSuffix}.pdf");
