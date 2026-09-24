@@ -1333,6 +1333,9 @@ async function loadEmployeePage(id) {
       barangay: p.barangay,
       barangay_name: p.barangay_name,
       street: p.street,
+      // needed by rollbackFormChanges()
+      roving_branches: p.roving_branches,
+      multi_brands: p.multi_brands,
     };
 
     window.currentEmployee = employee;
@@ -2132,6 +2135,114 @@ function isComboAvailable(branch, brand) {
 }
 
 // =========================
+// ROLLBACK ON REASON CHANGE
+// =========================
+// Fields that survive a reason change. Empty = everything rolls back.
+// Add "editRemarks" here if typed remarks should be kept.
+const KEEP_ON_REASON_CHANGE = new Set([]);
+
+// Restored by dedicated logic below instead of the generic loop.
+const ROLLBACK_SPECIAL_IDS = new Set([
+  "editReasonUpdate",
+  "editBranch",
+  "editBrand",
+  "editProvince",
+  "editMunicipality",
+  "editBarangay",
+]);
+
+// The synchronous part runs immediately; the returned promise only
+// covers the address cascade (province -> municipality -> barangay),
+// which needs fetches and is skipped entirely if the address wasn't touched.
+async function rollbackFormChanges() {
+  const emp = window.currentEmployee;
+  if (!emp || initialFormSnapshot === null || isBranchManagerRole()) return;
+
+  // 1. Plain inputs / selects / textareas back to their loaded values
+  Object.entries(initialFieldValues).forEach(([id, val]) => {
+    if (ROLLBACK_SPECIAL_IDS.has(id) || KEEP_ON_REASON_CHANGE.has(id)) return;
+    const field = document.getElementById(id);
+    if (!field || field.type === "file") return;
+    if (field.type === "checkbox" || field.type === "radio") {
+      field.checked = val === "1";
+    } else {
+      field.value = val;
+    }
+  });
+  window.updateRemarksCount?.();
+
+  // 2. Branch / brand / corpo (option lists may have been narrowed
+  //    by TRANSFER BRANCH, so rebuild rather than just set .value)
+  populateEditBranch([emp.branch], emp.brand, emp.branch);
+  populateEditBrand([emp.brand], emp.branch, emp.brand);
+  setCorpoFromBranch(emp.branch);
+
+  // 3. Designated categories (checkboxes have no ids)
+  populateEditCategoriesFromValue(emp.categories);
+
+  // 4. Sub status UI + roving branch / multi-brand rows
+  const subStatus = cleanValue(emp.sub_status).toUpperCase();
+  toggleSubStatusOptions();
+  syncMultiUI(subStatus);
+  editRovingContainer.innerHTML = "";
+  editMultiBrandContainer.innerHTML = "";
+  if (subStatus === "MULTI BRANCH" || subStatus === "HYBRID") {
+    populateEditRoving(safeArray(emp.roving_branches), emp.brand, emp.branch);
+    updateBranchOptions();
+  }
+  if (subStatus === "MULTI BRAND" || subStatus === "HYBRID") {
+    populateEditBrands(safeArray(emp.multi_brands), emp.branch, emp.brand);
+    updateBrandOptions();
+  }
+
+  // 5. Address cascade — only reload if it was actually changed
+  const provinceCode = emp.province || "";
+  const municipalityCode = emp.municipality || "";
+  const barangayCode = emp.barangay || "";
+  const addressChanged =
+    (editProvince?.value || "") !== provinceCode ||
+    (editMunicipality?.value || "") !== municipalityCode ||
+    (editBarangay?.value || "") !== barangayCode;
+
+  if (addressChanged) {
+    populateEditProvinceSelect(provinceCode);
+    await loadEditMunicipalities(provinceCode, municipalityCode);
+    await loadEditBarangays(municipalityCode, barangayCode);
+  }
+}
+
+function runReasonToggles() {
+  toggleDateSeparated();
+  toggleDateReturned();
+  toggleReasonDates();
+  toggleEmploymentDates();
+  toggleTransferEditable();
+  toggleStatusesEditable();
+  toggleContactAddressEditable();
+  toggleAddButtons();
+  togglePictureButton();
+}
+
+let reasonChangeSeq = 0;
+
+function onReasonChange() {
+  const seq = ++reasonChangeSeq;
+
+  // Roll back first so the toggles below see the original values
+  const addressReload = rollbackFormChanges();
+  runReasonToggles();
+  updateSaveButtonState();
+
+  // Address dropdowns finish loading async; re-evaluate their
+  // enabled state once they have.
+  addressReload.then(() => {
+    if (seq !== reasonChangeSeq) return; // superseded by a newer change
+    toggleContactAddressEditable();
+    updateSaveButtonState();
+  });
+}
+
+// =========================
 // INIT
 // =========================
 document.addEventListener("DOMContentLoaded", async function () {
@@ -2146,17 +2257,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     pageEl.addEventListener("change", updateSaveButtonState);
   }
 
-  if (reasonSelect) {
-    reasonSelect.addEventListener("change", toggleDateSeparated);
-    reasonSelect.addEventListener("change", toggleDateReturned);
-    reasonSelect.addEventListener("change", toggleReasonDates);
-    reasonSelect.addEventListener("change", toggleEmploymentDates);
-    reasonSelect.addEventListener("change", toggleTransferEditable);
-    reasonSelect.addEventListener("change", toggleStatusesEditable);
-    reasonSelect.addEventListener("change", toggleContactAddressEditable);
-    reasonSelect.addEventListener("change", toggleAddButtons);
-    reasonSelect.addEventListener("change", togglePictureButton); // ADD THIS
-  }
+  // Reason change: roll back any edits, then apply the toggles for
+  // the newly selected reason (see onReasonChange above).
+  reasonSelect?.addEventListener("change", onReasonChange);
 
   if (employmentStatusSelect) {
     employmentStatusSelect.addEventListener("change", toggleEmploymentDates);
