@@ -145,6 +145,63 @@ $(document).ready(function () {
     });
   }
 
+  /* ── REGIONAL TABLE (server-side) ── */
+  if ($("#usersTableRegion").length) {
+    var tableRegion = $("#usersTableRegion").DataTable({
+      serverSide: true,
+      processing: true,
+      pageLength: 25,
+      responsive: true,
+      dom: "lrtip",
+      ajax: {
+        url: "functions/get_users_list.php",
+        type: "GET",
+        data: function (d) {
+          d.scope = "region";
+        },
+      },
+      columns: [
+        { data: "username", render: (d) => escapeHtml(d) },
+        { data: "region", render: (d) => escapeHtml(d) },
+        { data: "position", render: (d) => escapeHtml(d) },
+        {
+          data: "status",
+          render: (d, type, row) =>
+            type === "display" ? statusCellHtml(row) : d,
+        },
+        {
+          data: null,
+          orderable: false,
+          searchable: false,
+          render: (d, type, row) => actionsCellHtml(row),
+        },
+      ],
+      language: {
+        emptyTable: "No data available",
+        zeroRecords: "No Regional users match the selected filters",
+      },
+    });
+
+    $("#filterStatusRegion").on("change", function () {
+      var val = this.value;
+      tableRegion
+        .column(3)
+        .search(val ? "^" + val + "$" : "", true, false)
+        .draw();
+    });
+    $("#filterRegionRegion").on("keyup", function () {
+      tableRegion.column(1).search(this.value).draw();
+    });
+    $("#filterUsernameRegion").on("keyup", function () {
+      tableRegion.column(0).search(this.value).draw();
+    });
+
+    // recalc column widths once the Regional tab is actually shown
+    $("#regional-tab").on("shown.bs.tab", function () {
+      tableRegion.columns.adjust();
+    });
+  }
+
   /* ── AUDIT TABLE (server-side) ── */
   if ($("#usersTableAudit").length) {
     var tableAudit = $("#usersTableAudit").DataTable({
@@ -194,7 +251,7 @@ $(document).ready(function () {
 });
 
 /* ───────────────────────────────────────────
-   USER STATUS SWITCH (delegated — works for all three tables)
+   USER STATUS SWITCH (delegated — works for all tables)
 ─────────────────────────────────────────── */
 $(document).on("change", ".user-status-switch", function () {
   const toggle = $(this);

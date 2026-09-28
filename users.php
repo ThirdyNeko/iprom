@@ -29,6 +29,8 @@ include 'partials/sidebar.php';
     #usersTable td,
     #usersTableBM th,
     #usersTableBM td,
+    #usersTableRegion th,
+    #usersTableRegion td,
     #usersTableAudit th,
     #usersTableAudit td {
         text-align: center;
@@ -37,6 +39,7 @@ include 'partials/sidebar.php';
     }
     #usersTable th,
     #usersTableBM th,
+    #usersTableRegion th,
     #usersTableAudit th {
         background-color: #2d68c4;
         color: white;
@@ -45,12 +48,15 @@ include 'partials/sidebar.php';
     #usersTable td:first-child,
     #usersTableBM th:first-child,
     #usersTableBM td:first-child,
+    #usersTableRegion th:first-child,
+    #usersTableRegion td:first-child,
     #usersTableAudit th:first-child,
     #usersTableAudit td:first-child {
         border-left: 1px solid #dee2e6;
     }
     #usersTable.table-hover tbody tr:hover > td,
     #usersTableBM.table-hover tbody tr:hover > td,
+    #usersTableRegion.table-hover tbody tr:hover > td,
     #usersTableAudit.table-hover tbody tr:hover > td {
         background-color: #e6f0ff !important;
     }
@@ -112,6 +118,13 @@ include 'partials/sidebar.php';
             <li class="nav-item" role="presentation">
                 <button class="nav-link <?= $defaultTab === 'audit' ? 'active' : '' ?>" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-pane" type="button" role="tab" aria-controls="audit-pane" aria-selected="<?= $defaultTab === 'audit' ? 'true' : 'false' ?>">
                     Audit
+                </button>
+            </li>
+            <?php endif; ?>
+            <?php if ($canSeeHR): ?>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="regional-tab" data-bs-toggle="tab" data-bs-target="#regional-pane" type="button" role="tab" aria-controls="regional-pane" aria-selected="false">
+                    Regional
                 </button>
             </li>
             <?php endif; ?>
@@ -282,6 +295,66 @@ include 'partials/sidebar.php';
                                     <tr>
                                         <th>Username</th>
                                         <th>Role</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- populated via DataTables serverSide ajax -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($canSeeHR): ?>
+            <!-- REGIONAL TAB -->
+            <div class="tab-pane fade p-0" id="regional-pane" role="tabpanel" aria-labelledby="regional-tab">
+                <div class="card border-0">
+                    <div class="card-body pb-0 d-flex justify-content-end">
+                        <button class="btn btn-sm btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#createUserModal"
+                                data-preset-role="regional_manager">
+                            <i class="bi bi-plus-lg"></i> Add Regional User
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <label class="form-label">Username</label>
+                                <div class="clear-input">
+                                    <input type="text" id="filterUsernameRegion" class="form-control filter-control" placeholder="Search...">
+                                    <button class="clear-btn">&times;</button>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select id="filterStatusRegion" class="form-select filter-control">
+                                    <option value="">All</option>
+                                    <option value="active">ACTIVE</option>
+                                    <option value="inactive">INACTIVE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Region</label>
+                                <div class="clear-input">
+                                    <input type="text" id="filterRegionRegion" class="form-control filter-control" placeholder="Search...">
+                                    <button class="clear-btn">&times;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="table-responsive">
+                            <table id="usersTableRegion" class="table table-striped table-hover align-middle text-center">
+                                <thead class="table-primary text-center">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Region</th>
                                         <th>Position</th>
                                         <th>Status</th>
                                         <th>Actions</th>

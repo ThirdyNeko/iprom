@@ -19,6 +19,7 @@ $stmt = $pdo->prepare("
         suffix,
         position,
         branch,
+        region,
         role,
         status,
         created_at,
@@ -38,5 +39,18 @@ if (!$user) {
 // All branches (for the full checkbox list)
 $allBranchesStmt = $pdo->query("SELECT branch_code, branch FROM branches ORDER BY branch");
 $user['branch_names'] = $allBranchesStmt->fetchAll(PDO::FETCH_KEY_PAIR); // [code => name]
+
+// All regions (for the full checkbox list). Regions have no separate code
+// column like branches do — the value stored in users.region IS the display
+// text — so this is a {region: region} map rather than a {code: name} one.
+$allRegionsStmt = $pdo->query("
+    SELECT DISTINCT region
+    FROM branches
+    WHERE region IS NOT NULL
+      AND region <> ''
+    ORDER BY region
+");
+$regionList = $allRegionsStmt->fetchAll(PDO::FETCH_COLUMN);
+$user['region_names'] = array_combine($regionList, $regionList);
 
 echo json_encode($user);

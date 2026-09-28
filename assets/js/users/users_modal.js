@@ -7,16 +7,24 @@ function isAuditRole(role) {
   return VIEW_MODAL_AUDIT_ROLES.includes((role || "").trim().toLowerCase());
 }
 
+function isRegionalRole(role) {
+  return (role || "").trim().toLowerCase() === "regional_manager";
+}
+
 function setBranchSectionVisible(visible) {
   $("#v_branchSectionWrapper").toggle(!!visible);
+}
+
+function setRegionSectionVisible(visible) {
+  $("#v_regionSectionWrapper").toggle(!!visible);
 }
 
 /* ───────────────────────────────────────────
    BRANCH HELPERS
 ─────────────────────────────────────────── */
 function sortBranches() {
-  const leftPane = document.getElementById("v_branch_left"); // Branches
-  const rightPane = document.getElementById("v_branch_right"); // Selected
+  const leftPane = document.getElementById("v_branch_left");
+  const rightPane = document.getElementById("v_branch_right");
   if (!leftPane || !rightPane) return;
 
   const allItems = [
@@ -24,24 +32,16 @@ function sortBranches() {
     ...rightPane.querySelectorAll(".branch-item"),
   ];
 
-  // distribute between panes
   allItems.forEach((el) => {
     const checked = el.querySelector(".branch-checkbox").checked;
     (checked ? rightPane : leftPane).appendChild(el);
   });
 
-  // FIX: restore original order in Branches pane
   [...leftPane.querySelectorAll(".branch-item")]
-    .sort(
-      (a, b) =>
-        (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0),
-    )
+    .sort((a, b) => (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0))
     .forEach((el) => leftPane.appendChild(el));
 }
 
-/* ───────────────────────────────────────────
-   COUNTER
-─────────────────────────────────────────── */
 function updateBranchCounter() {
   const $modal = $("#userViewModal");
   const count = $modal.find(".branch-checkbox:checked").length;
@@ -49,7 +49,36 @@ function updateBranchCounter() {
 }
 
 /* ───────────────────────────────────────────
-   ROLE → BRANCH SELECTION MODE
+   REGION HELPERS (mirror of branch helpers)
+─────────────────────────────────────────── */
+function sortRegions() {
+  const leftPane = document.getElementById("v_region_left");
+  const rightPane = document.getElementById("v_region_right");
+  if (!leftPane || !rightPane) return;
+
+  const allItems = [
+    ...leftPane.querySelectorAll(".region-item"),
+    ...rightPane.querySelectorAll(".region-item"),
+  ];
+
+  allItems.forEach((el) => {
+    const checked = el.querySelector(".region-checkbox").checked;
+    (checked ? rightPane : leftPane).appendChild(el);
+  });
+
+  [...leftPane.querySelectorAll(".region-item")]
+    .sort((a, b) => (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0))
+    .forEach((el) => leftPane.appendChild(el));
+}
+
+function updateRegionCounter() {
+  const $modal = $("#userViewModal");
+  const count = $modal.find(".region-checkbox:checked").length;
+  $modal.find("#regionCounter").text(`Selected: ${count}`);
+}
+
+/* ───────────────────────────────────────────
+   ROLE → BRANCH / REGION SELECTION MODE
 ─────────────────────────────────────────── */
 function branchSelectionAllowed(role) {
   return role === "staff" || role === "branch_manager";
@@ -57,6 +86,10 @@ function branchSelectionAllowed(role) {
 
 function viewModalIsBranchManagerRole() {
   return $("#v_role").val() === "branch_manager";
+}
+
+function viewModalIsRegionalRole() {
+  return $("#v_role").val() === "regional_manager";
 }
 
 /* ───────────────────────────────────────────
@@ -105,16 +138,22 @@ function refreshSaveBtn() {
   const $modal = $("#userViewModal");
 
   const origBranches = $modal.data("originalBranches");
-  const current = new Set(
-    $modal
-      .find(".branch-checkbox:checked")
-      .map((_, el) => el.value.trim())
-      .get(),
+  const currentBranches = new Set(
+    $modal.find(".branch-checkbox:checked").map((_, el) => el.value.trim()).get(),
   );
   const branchChanged =
     !!origBranches &&
-    (current.size !== origBranches.size ||
-      [...current].some((v) => !origBranches.has(v)));
+    (currentBranches.size !== origBranches.size ||
+      [...currentBranches].some((v) => !origBranches.has(v)));
+
+  const origRegions = $modal.data("originalRegions");
+  const currentRegions = new Set(
+    $modal.find(".region-checkbox:checked").map((_, el) => el.value.trim()).get(),
+  );
+  const regionChanged =
+    !!origRegions &&
+    (currentRegions.size !== origRegions.size ||
+      [...currentRegions].some((v) => !origRegions.has(v)));
 
   const origPos = $modal.data("originalPosition");
   const origRole = $modal.data("originalRole");
@@ -132,52 +171,66 @@ function refreshSaveBtn() {
       $("#v_last_name").val().trim() !== origLast ||
       $("#v_suffix").val().trim() !== origSuffix);
 
-  $("#saveChangesBtn").prop("disabled", !branchChanged && !profileChanged);
+  $("#saveChangesBtn").prop("disabled", !branchChanged && !regionChanged && !profileChanged);
 }
 
 /* ───────────────────────────────────────────
-   ROLE CHANGE  →  branch access
+   ROLE CHANGE → branch / region access
 ─────────────────────────────────────────── */
 $(document).on("change", "#v_role", function () {
   const role = $(this).val();
-  const allowed = branchSelectionAllowed(role);
+  const allowedBranch = branchSelectionAllowed(role);
+  const allowedRegion = isRegionalRole(role);
 
-  // audit roles never take a branch assignment — hide the section outright
-  setBranchSectionVisible(!isAuditRole(role));
+  setBranchSectionVisible(!isAuditRole(role) && !isRegionalRole(role));
+  setRegionSectionVisible(allowedRegion);
 
-  $("#branchSearch").prop("disabled", !allowed).val("");
-  $("#userViewModal .branch-item").show();
+  $("#branchSearch").prop("disabled", !allowedBranch).val("");
+  $("#regionSearch").prop("disabled", !allowedRegion).val("");
+  $("#userViewModal .branch-item, #userViewModal .region-item").show();
 
-  if (allowed) {
+  if (allowedBranch) {
     $("#userViewModal .branch-checkbox").prop("disabled", false);
-
-    // switching into single-select mode: if more than one branch is
-    // currently checked, keep only the first and drop the rest
     if (role === "branch_manager") {
-      const checked = $("#userViewModal .branch-checkbox:checked");
-      checked.each(function (i) {
+      $("#userViewModal .branch-checkbox:checked").each(function (i) {
         if (i > 0) $(this).prop("checked", false);
       });
     }
   } else {
-    $("#userViewModal .branch-checkbox").prop({
-      checked: false,
-      disabled: true,
+    $("#userViewModal .branch-checkbox").prop({ checked: false, disabled: true });
+  }
+
+  if (allowedRegion) {
+    $("#userViewModal .region-checkbox").prop("disabled", false);
+    // regional_manager = single region only, same radio behavior as branch_manager
+    $("#userViewModal .region-checkbox:checked").each(function (i) {
+      if (i > 0) $(this).prop("checked", false);
     });
+  } else {
+    $("#userViewModal .region-checkbox").prop({ checked: false, disabled: true });
   }
 
   sortBranches();
+  sortRegions();
   updateBranchCounter();
+  updateRegionCounter();
   refreshSaveBtn();
 });
 
 /* ───────────────────────────────────────────
-   SEARCH — filters both panes
+   SEARCH
 ─────────────────────────────────────────── */
 $(document).on("input", "#branchSearch", function () {
   const search = $(this).val().trim().toUpperCase();
-
   $("#userViewModal .branch-item").each(function () {
+    const text = $(this).find("label").text().trim().toUpperCase();
+    $(this).toggle(search === "" || text.includes(search));
+  });
+});
+
+$(document).on("input", "#regionSearch", function () {
+  const search = $(this).val().trim().toUpperCase();
+  $("#userViewModal .region-item").each(function () {
     const text = $(this).find("label").text().trim().toUpperCase();
     $(this).toggle(search === "" || text.includes(search));
   });
@@ -187,17 +240,26 @@ $(document).on("input", "#branchSearch", function () {
    CHECKBOX / FIELD CHANGES
 ─────────────────────────────────────────── */
 $(document).on("change", "#userViewModal .branch-checkbox", function () {
-  // BRANCH MANAGER = single branch only. Checking one unchecks the rest,
-  // giving radio-button behavior without swapping out the picker markup.
   const changedEl = this;
   if (viewModalIsBranchManagerRole() && changedEl.checked) {
     $("#userViewModal .branch-checkbox:checked").each(function () {
       if (this !== changedEl) $(this).prop("checked", false);
     });
   }
-
   sortBranches();
   updateBranchCounter();
+  refreshSaveBtn();
+});
+
+$(document).on("change", "#userViewModal .region-checkbox", function () {
+  const changedEl = this;
+  if (viewModalIsRegionalRole() && changedEl.checked) {
+    $("#userViewModal .region-checkbox:checked").each(function () {
+      if (this !== changedEl) $(this).prop("checked", false);
+    });
+  }
+  sortRegions();
+  updateRegionCounter();
   refreshSaveBtn();
 });
 
@@ -247,6 +309,7 @@ $(document).on("click", ".view-user", function () {
       const username = data.username;
       const role = (data.role || "").trim().toLowerCase();
       const isAuditUser = isAuditRole(role);
+      const isRegionUser = isRegionalRole(role);
       const allowsBranchSelection = branchSelectionAllowed(role);
       const canEdit = isReadonly ? false : isPrivileged();
       const isSuperAdmin = isReadonly ? false : isPrivileged("super_admin");
@@ -256,11 +319,20 @@ $(document).on("click", ".view-user", function () {
         .trim()
         .toLowerCase();
 
-      const assigned = data.branch
+      const assignedBranches = data.branch
         ? data.branch.split(",").map((c) => c.trim())
         : [];
-      const normalizedAssigned = assigned.map((v) => v.trim());
+      const normalizedAssignedBranches = assignedBranches.map((v) => v.trim());
       const allBranches = data.branch_names ?? {};
+
+      // expects get_user.php to also return data.region (comma list, though
+      // regional_manager only ever has one) and data.region_names (code -> name map),
+      // same shape as branch/branch_names
+      const assignedRegions = data.region
+        ? data.region.split(",").map((c) => c.trim())
+        : [];
+      const normalizedAssignedRegions = assignedRegions.map((v) => v.trim());
+      const allRegions = data.region_names ?? {};
 
       const roleLabels = {
         admin: "ADMIN",
@@ -268,6 +340,7 @@ $(document).on("click", ".view-user", function () {
         staff: "STAFF",
         supervisor: "SUPERVISOR",
         branch_manager: "BRANCH",
+        regional_manager: "REGIONAL",
         audit_manager: "AUDIT MANAGER",
         audit_supervisor: "AUDIT SUPERVISOR",
         audit_staff: "AUDIT STAFF",
@@ -286,8 +359,9 @@ $(document).on("click", ".view-user", function () {
       $("#v_updated_at").val(formatMDY(data.updated_at));
       $("#v_position").val(data.position).prop("readonly", !canEdit);
 
-      /* ── branch section visibility (audit roles never show it) ── */
-      setBranchSectionVisible(!isAuditUser);
+      /* ── branch/region section visibility ── */
+      setBranchSectionVisible(!isAuditUser && !isRegionUser);
+      setRegionSectionVisible(isRegionUser);
 
       /* ── role ── */
       if (canEdit) {
@@ -332,6 +406,7 @@ $(document).on("click", ".view-user", function () {
                <option value="staff">STAFF</option>
                <option value="supervisor">SUPERVISOR</option>
                <option value="branch_manager">BRANCH</option>
+               <option value="regional_manager">REGIONAL</option>
                <option value="admin">ADMIN</option>
              </select>`,
           );
@@ -347,6 +422,7 @@ $(document).on("click", ".view-user", function () {
                <option value="staff">STAFF</option>
                <option value="supervisor">SUPERVISOR</option>
                <option value="branch_manager">BRANCH</option>
+               <option value="regional_manager">REGIONAL</option>
              </select>`,
           );
           $("#v_role").val(data.role);
@@ -368,13 +444,17 @@ $(document).on("click", ".view-user", function () {
         .find("#branchSearch")
         .prop("disabled", !allowsBranchSelection || isReadonly)
         .val("");
+      $modal
+        .find("#regionSearch")
+        .prop("disabled", !isRegionUser || isReadonly)
+        .val("");
 
       /* ── build two-pane branch layout ── */
-      const leftItems = [];
-      const rightItems = [];
+      const branchLeftItems = [];
+      const branchRightItems = [];
 
       Object.entries(allBranches).forEach(([code, name], index) => {
-        const checked = normalizedAssigned.includes(String(code).trim());
+        const checked = normalizedAssignedBranches.includes(String(code).trim());
         const disabled = !allowsBranchSelection || isReadonly;
 
         const item = `
@@ -388,24 +468,61 @@ $(document).on("click", ".view-user", function () {
             <label class="form-check-label" for="v_branch_${code}">${name}</label>
           </div>`;
 
-        (checked ? rightItems : leftItems).push(item);
+        (checked ? branchRightItems : branchLeftItems).push(item);
       });
 
       $("#v_branch").html(
         Object.keys(allBranches).length
           ? `<div class="branch-col">
               <div class="branch-col-header">Branches</div>
-              <div id="v_branch_left" class="branch-pane">${leftItems.join("")}</div>
+              <div id="v_branch_left" class="branch-pane">${branchLeftItems.join("")}</div>
             </div>
             <div class="branch-col-divider"></div>
             <div class="branch-col">
               <div class="branch-col-header">Selected</div>
-              <div id="v_branch_right" class="branch-pane">${rightItems.join("")}</div>
+              <div id="v_branch_right" class="branch-pane">${branchRightItems.join("")}</div>
             </div>`
           : '<span class="text-muted">No branches available</span>',
       );
 
-      $modal.data("originalBranches", new Set(normalizedAssigned));
+      /* ── build two-pane region layout ── */
+      const regionLeftItems = [];
+      const regionRightItems = [];
+
+      Object.entries(allRegions).forEach(([code, name], index) => {
+        const checked = normalizedAssignedRegions.includes(String(code).trim());
+        const disabled = !isRegionUser || isReadonly;
+
+        const item = `
+          <div class="region-item" data-index="${index}" style="margin:2px 0;">
+            <input class="form-check-input region-checkbox"
+                   type="checkbox"
+                   value="${code}"
+                   id="v_region_${code}"
+                   ${checked ? "checked" : ""}
+                   ${disabled ? "disabled" : ""}>
+            <label class="form-check-label" for="v_region_${code}">${name}</label>
+          </div>`;
+
+        (checked ? regionRightItems : regionLeftItems).push(item);
+      });
+
+      $("#v_region").html(
+        Object.keys(allRegions).length
+          ? `<div class="branch-col">
+              <div class="branch-col-header">Regions</div>
+              <div id="v_region_left" class="branch-pane">${regionLeftItems.join("")}</div>
+            </div>
+            <div class="branch-col-divider"></div>
+            <div class="branch-col">
+              <div class="branch-col-header">Selected</div>
+              <div id="v_region_right" class="branch-pane">${regionRightItems.join("")}</div>
+            </div>`
+          : '<span class="text-muted">No regions available</span>',
+      );
+
+      $modal.data("originalBranches", new Set(normalizedAssignedBranches));
+      $modal.data("originalRegions", new Set(normalizedAssignedRegions));
       $modal.data("originalPosition", (data.position || "").trim());
       $modal.data("originalRole", data.role);
       $modal.data("originalFirstName", (data.first_name || "").trim());
@@ -414,7 +531,10 @@ $(document).on("click", ".view-user", function () {
       $modal.data("originalSuffix", (data.suffix || "").trim());
       $("#saveChangesBtn").prop("disabled", true);
 
-      setTimeout(updateBranchCounter, 0);
+      setTimeout(() => {
+        updateBranchCounter();
+        updateRegionCounter();
+      }, 0);
       $modal.modal("show");
     },
     error: function () {
@@ -438,14 +558,16 @@ $(document).on("click", "#saveChangesBtn", function () {
   const username = generateUsername(firstName, lastName);
 
   const origBranches = $modal.data("originalBranches");
-  const current = new Set(
-    $modal
-      .find(".branch-checkbox:checked")
-      .map((_, el) => el.value.trim())
-      .get(),
+  const currentBranches = new Set(
+    $modal.find(".branch-checkbox:checked").map((_, el) => el.value.trim()).get(),
   );
 
-  if (role === "branch_manager" && current.size !== 1) {
+  const origRegions = $modal.data("originalRegions");
+  const currentRegions = new Set(
+    $modal.find(".region-checkbox:checked").map((_, el) => el.value.trim()).get(),
+  );
+
+  if (role === "branch_manager" && currentBranches.size !== 1) {
     Swal.fire(
       "Validation",
       "Please select exactly one branch for a Branch Manager.",
@@ -454,10 +576,24 @@ $(document).on("click", "#saveChangesBtn", function () {
     return;
   }
 
+  if (role === "regional_manager" && currentRegions.size !== 1) {
+    Swal.fire(
+      "Validation",
+      "Please select exactly one region for a Regional Manager.",
+      "warning",
+    );
+    return;
+  }
+
   const branchChanged =
     !!origBranches &&
-    (current.size !== origBranches.size ||
-      [...current].some((v) => !origBranches.has(v)));
+    (currentBranches.size !== origBranches.size ||
+      [...currentBranches].some((v) => !origBranches.has(v)));
+
+  const regionChanged =
+    !!origRegions &&
+    (currentRegions.size !== origRegions.size ||
+      [...currentRegions].some((v) => !origRegions.has(v)));
 
   const origPos = $modal.data("originalPosition");
   const origRole = $modal.data("originalRole");
@@ -476,7 +612,7 @@ $(document).on("click", "#saveChangesBtn", function () {
       lastName !== origLast ||
       suffix !== origSuffix);
 
-  if (!branchChanged && !profileChanged) return;
+  if (!branchChanged && !regionChanged && !profileChanged) return;
 
   if (profileChanged && !position) {
     Swal.fire("Validation", "Position cannot be empty.", "warning");
@@ -525,7 +661,19 @@ $(document).on("click", "#saveChangesBtn", function () {
         $.ajax({
           url: "functions/update_user_branches.php",
           type: "POST",
-          data: { id, username, branches: [...current].join(",") },
+          data: { id, username, branches: [...currentBranches].join(",") },
+          dataType: "json",
+        }),
+      );
+    }
+
+    // expects a new endpoint mirroring update_user_branches.php for the region column
+    if (regionChanged) {
+      requests.push(
+        $.ajax({
+          url: "functions/update_user_regions.php",
+          type: "POST",
+          data: { id, username, regions: [...currentRegions].join(",") },
           dataType: "json",
         }),
       );
@@ -596,4 +744,5 @@ $(document).on("click", "#resetPasswordBtn", function () {
 ─────────────────────────────────────────── */
 $(document).ready(function () {
   updateBranchCounter();
+  updateRegionCounter();
 });

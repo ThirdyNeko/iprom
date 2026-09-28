@@ -3,6 +3,7 @@
 $branches = [];
 $brands   = [];
 $suffixes = [];
+$regions  = [];
 
 try {
 
@@ -37,6 +38,29 @@ try {
 } catch (PDOException $e) {
 
     $suffixes = [];
+
+}
+
+try {
+
+    // No stored proc for this yet — pulling distinct regions straight off
+    // dbo.branches, same table get_branches_brands reads from. Region has
+    // no separate code column like branch_code, so the value itself IS
+    // both the stored value and the display label.
+    $stmt = $pdo->prepare("
+        SELECT DISTINCT region
+        FROM dbo.branches
+        WHERE region IS NOT NULL
+          AND region <> ''
+        ORDER BY region
+    ");
+
+    $stmt->execute();
+    $regions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+} catch (PDOException $e) {
+
+    $regions = [];
 
 }
 
@@ -79,8 +103,9 @@ $creatableAuditRoles = match ($_SESSION['role'] ?? '') {
         cursor: not-allowed;
     }
 
-    /* ── two-pane branch layout ── */
-    #branchSelect {
+    /* ── two-pane branch/region layout ── */
+    #branchSelect,
+    #regionSelect {
         display: flex;
         height: 260px;
         border: 1px solid #ced4da;
@@ -120,7 +145,8 @@ $creatableAuditRoles = match ($_SESSION['role'] ?? '') {
         flex-shrink: 0;
     }
 
-    .branch-item {
+    .branch-item,
+    .region-item {
         width: 100%;
         display: flex;
         align-items: center;
@@ -187,6 +213,10 @@ $creatableAuditRoles = match ($_SESSION['role'] ?? '') {
                                          assignment silently fails and falls back to "". -->
                                     <option value="branch_manager" data-scope="hr" hidden>BRANCH MANAGER</option>
 
+                                    <!-- Same idea as branch_manager above — only ever set via
+                                         data-preset-role="regional_manager" on the trigger button. -->
+                                    <option value="regional_manager" data-scope="hr" hidden>REGIONAL MANAGER</option>
+
                                     <?php if (in_array('audit_manager', $creatableAuditRoles)): ?>
                                     <option value="audit_manager" data-scope="audit">AUDIT MANAGER</option>
                                     <?php endif; ?>
@@ -204,7 +234,9 @@ $creatableAuditRoles = match ($_SESSION['role'] ?? '') {
                             </div>
 
                             <!-- ROLE (locked display — shown instead of the select when the
-                                 modal is opened from the "Add Branch Manager" button) -->
+                                 modal is opened from a data-preset-role button. Value is set
+                                 dynamically by create_user.js based on which preset role
+                                 triggered the modal — see roleDisplayLabels there. -->
                             <div class="mb-3" id="roleDisplayGroup" style="display:none;">
 
                                 <label class="form-label">
@@ -214,13 +246,13 @@ $creatableAuditRoles = match ($_SESSION['role'] ?? '') {
                                 <input type="text"
                                        id="roleDisplayReadonly"
                                        class="form-control"
-                                       value="BRANCH"
                                        readonly>
 
                             </div>
 
                             <!-- BRANCH — wrapper id lets roles.js hide this whole section
-                                 for audit roles, which don't take a branch assignment. -->
+                                 for audit roles and regional_manager, which don't take a
+                                 branch assignment directly. -->
                             <div class="mb-3" id="branchSectionWrapper">
 
                                 <label class="form-label mb-0" id="branchSectionLabel">
@@ -264,6 +296,59 @@ $creatableAuditRoles = match ($_SESSION['role'] ?? '') {
                                                 class="form-check-label"
                                                 for="branch_<?= htmlspecialchars($b['branch_code']) ?>">
                                                 <?= htmlspecialchars($b['branch']) ?>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; ?>
+
+                                </div>
+
+                            </div>
+
+                            <!-- REGION — wrapper id lets roles.js show this only for
+                                 regional_manager, hidden otherwise (mirrors the branch
+                                 section, but single-select-only, no staff-equivalent). -->
+                            <div class="mb-3" id="regionSectionWrapper" style="display:none;">
+
+                                <label class="form-label mb-0" id="regionSectionLabel">
+                                    Region
+                                </label>
+
+                                <small id="regionCounter" class="text-muted">
+                                    Selected: 0
+                                </small>
+
+                                <small class="text-muted">
+                                    (select one region)
+                                </small>
+
+                                <!-- Search -->
+                                <input type="text"
+                                       id="regionSearch"
+                                       class="form-control mb-2"
+                                       placeholder="Search regions..."
+                                       style="text-transform: uppercase;"
+                                       disabled>
+
+                                <!-- Region List — JS will split this into left/right panes.
+                                     Single-select only, enforced in create_user.js. -->
+                                <div id="regionSelect">
+
+                                    <?php foreach ($regions as $r): ?>
+                                        <div class="region-item"
+                                             style="margin: 2px 0;">
+
+                                            <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                name="regions[]"
+                                                id="region_<?= htmlspecialchars(preg_replace('/\s+/', '_', $r)) ?>"
+                                                value="<?= htmlspecialchars($r) ?>"
+                                                disabled>
+
+                                            <label
+                                                class="form-check-label"
+                                                for="region_<?= htmlspecialchars(preg_replace('/\s+/', '_', $r)) ?>">
+                                                <?= htmlspecialchars($r) ?>
                                             </label>
                                         </div>
                                     <?php endforeach; ?>

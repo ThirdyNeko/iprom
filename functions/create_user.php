@@ -28,6 +28,9 @@ try {
     $branch   = !empty($branches) ? implode(',', $branches) : null;
     $brand      = !empty($_POST['brand']) ? $_POST['brand'] : null;
 
+    $regions = $_POST['regions'] ?? [];
+    $region  = !empty($regions) ? implode(',', $regions) : null;
+
     $first_name = strtoupper(trim($_POST['first_name'] ?? ''));
     $last_name  = strtoupper(trim($_POST['last_name'] ?? ''));
     $position   = trim($_POST['position'] ?? '');
@@ -41,6 +44,25 @@ try {
             'message' => 'Please fill in required fields'
         ]);
 
+        exit;
+    }
+
+    // BRANCH MANAGER = exactly one branch. Enforced client-side already,
+    // but the client can't be trusted — check it again here.
+    if ($role === 'branch_manager' && count($branches) !== 1) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Please select exactly one branch for a Branch Manager'
+        ]);
+        exit;
+    }
+
+    // REGIONAL MANAGER = exactly one region, same rule as branch_manager.
+    if ($role === 'regional_manager' && count($regions) !== 1) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Please select exactly one region for a Regional Manager'
+        ]);
         exit;
     }
 
@@ -80,6 +102,7 @@ try {
             role,
             branch,
             brand,
+            region,
             first_name,
             middle_name,
             last_name,
@@ -94,6 +117,7 @@ try {
             :role,
             :branch,
             :brand,
+            :region,
             :first_name,
             :middle_name,
             :last_name,
@@ -110,6 +134,7 @@ try {
         ':role'        => $role,
         ':branch'      => $branch,
         ':brand'       => $brand,
+        ':region'      => $region,
         ':first_name'  => $first_name,
         ':middle_name' => $middle_name,
         ':last_name'   => $last_name,

@@ -18,7 +18,7 @@ if (
     exit;
 }
 
-$scope = $_GET['scope'] ?? 'users'; // 'users' | 'bm' | 'audit'
+$scope = $_GET['scope'] ?? 'users'; // 'users' | 'bm' | 'region' | 'audit'
 
 /* =========================
    SCOPE PERMISSION (defense-in-depth on top of the role-visibility filter below)
@@ -26,7 +26,7 @@ $scope = $_GET['scope'] ?? 'users'; // 'users' | 'bm' | 'audit'
 $hrRoles    = ['super_admin', 'admin', 'supervisor'];
 $auditRoles = ['super_admin', 'audit_manager', 'audit_supervisor'];
 
-if (in_array($scope, ['users', 'bm']) && !in_array($_SESSION['role'], $hrRoles)) {
+if (in_array($scope, ['users', 'bm', 'region']) && !in_array($_SESSION['role'], $hrRoles)) {
     http_response_code(403);
     echo json_encode(['error' => 'Forbidden']);
     exit;
@@ -43,15 +43,15 @@ $pdo = qa_db();
    ROLE VISIBILITY (mirrors users.php)
 ========================= */
 $visibleRoles = match ($_SESSION['role']) {
-    'super_admin'      => ['admin', 'supervisor', 'staff', 'branch_manager', 'assistant_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'],
-    'admin'            => ['supervisor', 'staff', 'branch_manager', 'assistant_admin'],
-    'supervisor'       => ['staff', 'branch_manager'],
+    'super_admin'      => ['admin', 'supervisor', 'staff', 'branch_manager', 'regional_manager', 'assistant_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'],
+    'admin'            => ['supervisor', 'staff', 'branch_manager', 'regional_manager', 'assistant_admin'],
+    'supervisor'       => ['staff', 'branch_manager', 'regional_manager'],
     'audit_manager'    => ['audit_supervisor', 'audit_staff'],
     'audit_supervisor' => ['audit_staff'],
     default            => []
 };
 
-$hiddenUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF', 'QA_BRANCH_MANAGER'];
+$hiddenUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF', 'QA_BRANCH_MANAGER', 'QA_REGIONAL_MANAGER'];
 $excludeUsernames = in_array($_SESSION['role'], ['admin', 'supervisor'])
     ? $hiddenUsernames
     : [];
@@ -62,6 +62,7 @@ $roleLabels = [
     'staff'            => 'STAFF',
     'supervisor'       => 'SUPERVISOR',
     'branch_manager'   => 'BRANCH MANAGER',
+    'regional_manager' => 'REGIONAL MANAGER',
     'assistant_admin'  => 'ASSISTANT ADMIN',
     'audit_manager'    => 'AUDIT MANAGER',
     'audit_supervisor' => 'AUDIT SUPERVISOR',
@@ -100,6 +101,14 @@ function bm_branch_name(array $u, array $map): string {
     return $map[$code] ?? $code;
 }
 
+// regions aren't coded like branches (no separate region_code column on
+// dbo.branches) — the value stored in users.region IS the display text,
+// so no lookup map is needed, just pull the first (only) value.
+function regional_display_name(array $u): string {
+    if (empty($u['region'])) return '-';
+    return trim(explode(',', $u['region'])[0]);
+}
+
 /* =========================
    SPLIT BY SCOPE + SHAPE ROWS
 ========================= */
@@ -111,6 +120,16 @@ if ($scope === 'bm') {
             'id'       => $u['id'],
             'username' => $u['username'],
             'branch'   => bm_branch_name($u, $branchNameMap),
+            'position' => $u['position'] ?? '-',
+            'status'   => strtolower($u['status']) === 'active' ? 'active' : 'inactive',
+        ];
+    }
+} elseif ($scope === 'region') {
+    foreach (array_filter($users, fn($u) => $u['role'] === 'regional_manager') as $u) {
+        $rows[] = [
+            'id'       => $u['id'],
+            'username' => $u['username'],
+            'region'   => regional_display_name($u),
             'position' => $u['position'] ?? '-',
             'status'   => strtolower($u['status']) === 'active' ? 'active' : 'inactive',
         ];
@@ -127,7 +146,10 @@ if ($scope === 'bm') {
         ];
     }
 } else { // 'users'
-    foreach (array_filter($users, fn($u) => $u['role'] !== 'branch_manager' && !in_array($u['role'], AUDIT_ROLES)) as $u) {
+    foreach (array_filter($users, fn($u) =>
+        !in_array($u['role'], ['branch_manager', 'regional_manager']) &&
+        !in_array($u['role'], AUDIT_ROLES)
+    ) as $u) {
         $rows[] = [
             'id'         => $u['id'],
             'username'   => $u['username'],
@@ -145,8 +167,9 @@ $recordsTotal = count($rows);
    COLUMN INDEX -> FIELD MAP (per tab)
 ========================= */
 $columnMap = match ($scope) {
-    'bm'    => [0 => 'username', 1 => 'branch', 2 => 'position', 3 => 'status'],
-    default => [0 => 'username', 1 => 'role_label', 2 => 'position', 3 => 'status'], // 'users' and 'audit'
+    'bm'     => [0 => 'username', 1 => 'branch', 2 => 'position', 3 => 'status'],
+    'region' => [0 => 'username', 1 => 'region', 2 => 'position', 3 => 'status'],
+    default  => [0 => 'username', 1 => 'role_label', 2 => 'position', 3 => 'status'], // 'users' and 'audit'
 };
 
 /* =========================
@@ -165,7 +188,7 @@ foreach ($columnsParam as $idx => $col) {
     $isRegex = filter_var($col['search']['regex'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
     // The status filter sends an exact "^active$" / "^inactive$" style regex.
-    // Everything else (username/position/branch) is a plain substring search.
+    // Everything else (username/position/branch/region) is a plain substring search.
     if ($isRegex && preg_match('/^\^(.*)\$$/', $value, $m)) {
         $needle = strtolower($m[1]);
         $rows = array_values(array_filter($rows, fn($r) => strtolower($r[$field] ?? '') === $needle));

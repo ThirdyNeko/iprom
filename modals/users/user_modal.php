@@ -26,8 +26,9 @@
         cursor: not-allowed;
     }
 
-    /* ── two-pane branch layout ── */
-    #v_branch {
+    /* ── two-pane branch/region layout ── */
+    #v_branch,
+    #v_region {
         display: flex;
         height: 260px;
         border: 1px solid #ced4da;
@@ -67,7 +68,8 @@
         flex-shrink: 0;
     }
 
-    .branch-item {
+    .branch-item,
+    .region-item {
         width: 100%;
         display: flex;
         align-items: center;
@@ -92,7 +94,7 @@
 
                 <div class="row g-3">
 
-                    <!-- LEFT COLUMN: Role + Branches -->
+                    <!-- LEFT COLUMN: Role + Branches/Region -->
                     <div class="col-md-6">
 
                         <div class="mb-3">
@@ -103,7 +105,7 @@
                         </div>
 
                         <!-- BRANCH — wrapper id lets users_modal.js hide this whole
-                             section for audit roles, which don't take a branch. -->
+                             section for audit roles and regional roles, which don't take a branch. -->
                         <div class="mb-3" id="v_branchSectionWrapper">
 
                             <label class="form-label mb-0">Branches</label>
@@ -117,6 +119,24 @@
                                    disabled>
 
                             <div id="v_branch"></div>
+
+                        </div>
+
+                        <!-- REGION — wrapper id lets users_modal.js show this only for
+                             regional_manager, hidden otherwise. -->
+                        <div class="mb-3" id="v_regionSectionWrapper" style="display:none;">
+
+                            <label class="form-label mb-0">Region</label>
+                            <small id="regionCounter" class="text-muted">Selected: 0</small>
+
+                            <input type="text"
+                                   id="regionSearch"
+                                   class="form-control mb-2"
+                                   placeholder="Search regions..."
+                                   style="text-transform: uppercase;"
+                                   disabled>
+
+                            <div id="v_region"></div>
 
                         </div>
 
