@@ -63,7 +63,9 @@ $(function () {
       (requesterRole === "audit_manager" ||
         requesterRole === "audit_supervisor");
     const isAdminOverBranchManager =
-      (role === "admin" || role === "super_admin") &&
+      (role === "admin" ||
+        role === "super_admin" ||
+        role === "regional_manager") &&
       requesterRole === "branch_manager";
     const isRegionalOverBranchManager =
       IS_REGIONAL_MANAGER &&

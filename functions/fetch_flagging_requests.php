@@ -21,28 +21,94 @@ if (!function_exists('nullIfEmpty')) {
 
 $pdo = qa_db();
 
-$user_role   = $_SESSION['role'] ?? '';
-$user_branch = $_SESSION['branch'] ?? ''; // comma-delimited
+$user_role = $_SESSION['role'] ?? '';
+
+/*
+ * ============================================================
+ * SESSION BRANCH ENFORCEMENT
+ * ============================================================
+ *
+ * Regional managers:
+ *   $_SESSION['user_branches'] contains the branch codes/names
+ *   resolved for their region.
+ *
+ * Other users:
+ *   $_SESSION['branch'] contains comma-delimited branches.
+ */
+
+$isRegional = ($user_role === 'regional_manager');
+
+if ($isRegional) {
+
+    // Regional managers can only see branches assigned to their region.
+    $sessionBranches = array_values(array_filter(
+        array_map('trim', $_SESSION['user_branches'] ?? [])
+    ));
+
+    // Fail closed.
+    if (empty($sessionBranches)) {
+        echo json_encode([
+            'draw'            => (int) ($_GET['draw'] ?? 1),
+            'recordsTotal'    => 0,
+            'recordsFiltered' => 0,
+            'data'            => []
+        ]);
+        exit;
+    }
+
+    // Pass allowed branches as a comma-delimited value.
+    $user_branch = implode(',', $sessionBranches);
+
+} else {
+
+    // Existing behavior for non-regional users.
+    $user_branch = $_SESSION['branch'] ?? '';
+
+}
+
 
 // --- DataTables server-side request params ---
+
 $draw   = (int) ($_GET['draw'] ?? 1);
 $start  = (int) ($_GET['start'] ?? 0);
 $length = (int) ($_GET['length'] ?? 10);
-if ($length < 1) $length = 10;
+
+if ($length < 1) {
+    $length = 10;
+}
 
 $searchValue  = $_GET['search']['value'] ?? '';
-$statusFilter = $_GET['status'] ?? null; // optional, e.g. dropdown to view only Flagged/Unflagged
+$statusFilter = $_GET['status'] ?? null;
 
-// Column order here MUST match the <thead> column order in flagging_requests.php
-$sortColumns = ['full_name', 'branch', 'brand', 'employment_status', 'sub_status', 'status', 'requested_by', 'requested_date'];
 
-$orderColIndex = $_GET['order'][0]['column'] ?? 7; // default: requested_date
+// Column order MUST match the <thead> column order in flagging_requests.php
+$sortColumns = [
+    'full_name',
+    'branch',
+    'brand',
+    'employment_status',
+    'sub_status',
+    'status',
+    'requested_by',
+    'requested_date'
+];
+
+$orderColIndex = $_GET['order'][0]['column'] ?? 7;
 $orderDir      = strtoupper($_GET['order'][0]['dir'] ?? 'DESC');
-$orderDir      = in_array($orderDir, ['ASC', 'DESC'], true) ? $orderDir : 'DESC';
-$sortColumn    = $sortColumns[$orderColIndex] ?? 'requested_date';
+
+$orderDir = in_array($orderDir, ['ASC', 'DESC'], true)
+    ? $orderDir
+    : 'DESC';
+
+$sortColumn = $sortColumns[$orderColIndex] ?? 'requested_date';
+
 
 try {
-    $stmt = $pdo->prepare("{CALL get_flagging_requests(?, ?, ?, ?, ?, ?, ?, ?)}");
+
+    $stmt = $pdo->prepare(
+        "{CALL get_flagging_requests(?, ?, ?, ?, ?, ?, ?, ?)}"
+    );
+
     $stmt->execute([
         nullIfEmpty($searchValue),
         nullIfEmpty($statusFilter),
@@ -55,6 +121,7 @@ try {
     ]);
 
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $totalCount = $rows[0]['TotalCount'] ?? 0;
 
     echo json_encode([
@@ -63,7 +130,13 @@ try {
         'recordsFiltered' => (int) $totalCount,
         'data'            => $rows,
     ]);
+
 } catch (Throwable $e) {
+
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to load flagging requests.']);
+
+    echo json_encode([
+        'error' => 'Failed to load flagging requests.'
+    ]);
 }
+?>
