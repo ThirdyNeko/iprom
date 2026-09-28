@@ -227,6 +227,15 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $result = [];
 
 foreach ($data as $p) {
+
+    $isRestrictedRole = (
+        $_SESSION['role'] === 'branch_manager' ||
+        $_SESSION['role'] === 'regional_manager' ||
+        $_SESSION['role'] === 'audit_supervisor' ||
+        $_SESSION['role'] === 'audit_manager' ||
+        $_SESSION['role'] === 'audit_staff'
+    );
+
     $result[] = [
         "name" => trim($p['first_name'] . ' ' . $p['last_name']),
         "first_name" => $p['first_name'],
@@ -235,10 +244,7 @@ foreach ($data as $p) {
         "suffix" => $p['suffix'],
         "marital_status" => $p['marital_status'],
         "contact_number" => $p['contact_number'],
-        "province_name" => $p['province_name'],
-        "municipality_name" => $p['municipality_name'],
-        "barangay_name" => $p['barangay_name'],
-        "street" => $p['street'],
+
         "biometric_number" => $p['biometric_number'],
         "branch" => $p['branch_name'] ?? $p['branch'],
         "brand" => $p['brand'],
@@ -248,12 +254,19 @@ foreach ($data as $p) {
         "agency" => $p['agency'],
         "corpo" => $p['corpo'],
         "gender" => $p['gender'],
-        "birthday" => $p['birthday'],
+
+        "birthday" => $isRestrictedRole ? '******' : $p['birthday'],
+        "province_name" => $isRestrictedRole ? '******' : $p['province_name'],
+        "municipality_name" => $isRestrictedRole ? '******' : $p['municipality_name'],
+        "barangay_name" => $isRestrictedRole ? '******' : $p['barangay_name'],
+        "street" => $isRestrictedRole ? '******' : $p['street'],
+
         "date_hired" => $p['date_hired'],
         "categories" => $p['categories'],
         "assignment_date" => $p['assignment_date'],
         "last_assigned_by" => $p['last_assigned_by']
     ];
 }
+
 
 echo json_encode($result);
