@@ -10,6 +10,11 @@ $start  = (int)($_POST['start'] ?? 0);
 $length = (int)($_POST['length'] ?? 25);
 $name   = trim($_POST['name'] ?? '');
 
+// Branch dropdown selection from the page. This can only NARROW results:
+// it is ANDed on top of the role/branch/region restriction below, so a
+// tampered value can never widen what the caller is allowed to see.
+$branchFilter = trim($_POST['branch_filter'] ?? '');
+
 $columns = [
     0 => 'promodiser',
     1 => 'agency',
@@ -30,49 +35,49 @@ $params       = [];   // full param set (branch + name search), used for the mai
 $branchParams = [];   // branch-only params, used for the unfiltered recordsTotal count
 
 // ── Branch restriction ──────────────────────────────────────────
-// branch manager / staff only see LOAs tied to their own branch(es).
-// $_SESSION['branch'] is set at login (auth/login.php) as a
-// comma-delimited string of branch codes, same pattern used
-// elsewhere in the app (dashboard/promodizers/assignments filtering).
-// Enforced here from the session (server-side) — never trust a
-// branch value posted from the client.
+// branch_manager / staff: limited to the branch codes in $_SESSION['branch']
+//   (comma-delimited, set at login).
+// regional_manager: limited to every branch in branches.region matching
+//   $_SESSION['region'] (no `deployed` check, mirroring branch_manager access).
+// Enforced from the session (server-side) — never trust a value posted
+// from the client.
 $sessionRole     = strtolower(trim($_SESSION['role'] ?? ''));
 $sessionBranch   = $_SESSION['branch'] ?? '';
-$restrictedRoles = ['branch_manager', 'staff'];
+$sessionRegion   = trim($_SESSION['region'] ?? '');
+$restrictedRoles = ['branch_manager', 'staff', 'regional_manager'];
 
 // LOA code is sensitive (used to verify a promodiser's identity at the
 // branch during the Verify flow) — only admin/super_admin should ever
-// receive it in the JSON payload. Masked server-side further down so it's
-// stripped from the AJAX response itself, not just hidden in the UI.
+// receive it in the JSON payload. Masked server-side further down.
 $canViewLoaCode = in_array($sessionRole, ['admin', 'super_admin'], true);
 
-// NOTE: this WHERE is applied against the letters_of_advice table
-// (aliased below as `loa`), since we now join against `branches` and
-// `employee_info` too and more than one table could plausibly have a
-// `branch_code` / `employee_id` column.
 $branchWhere = "WHERE 1=1";
-$branchCodes = []; // kept in scope outside the if-block below so it can be
-                    // reused later to scope roving_branches per-row
+$branchCodes = []; // reused later to scope roving_branches per-row
 
 if (in_array($sessionRole, $restrictedRoles, true)) {
-    $branchCodes = array_values(array_filter(array_map('trim', explode(',', $sessionBranch))));
+
+    if ($sessionRole === 'regional_manager') {
+        // Resolve the region into its branch codes once, so the same
+        // IN-style matching + roving_branches scoping below works for
+        // both branch-based and region-based roles.
+        if ($sessionRegion !== '') {
+            $regStmt = $pdo->prepare("SELECT DISTINCT branch_code FROM branches WHERE region = :region");
+            $regStmt->execute([':region' => $sessionRegion]);
+            $branchCodes = array_values(array_filter(array_map('trim', $regStmt->fetchAll(PDO::FETCH_COLUMN))));
+        }
+    } else {
+        $branchCodes = array_values(array_filter(array_map('trim', explode(',', $sessionBranch))));
+    }
 
     if (empty($branchCodes)) {
-        // Restricted role with no branch assigned -> see nothing, fail closed.
+        // Restricted role with no branch/region assigned -> see nothing, fail closed.
         $branchWhere .= " AND 1 = 0";
     } else {
         $branchConditions = [];
         foreach ($branchCodes as $i => $code) {
-            // Match on the LOA record's own home branch ONLY.
-            //
-            // letters_of_advice stores one row PER branch for a multi-branch
-            // employee (e.g. id 13: branch_code=TIGB, roving_branches=VIAC;
-            // id 14: branch_code=VIAC, roving_branches=TIGB, same employee).
-            // Matching on roving_branches too used to pull in row 14 for a
-            // TIGB-only manager just because "TIGB" appeared in its roving
-            // list -- effectively showing every branch's LOA record as soon
-            // as the manager's branch touched it anywhere. A manager should
-            // only see the record whose own branch_code is theirs.
+            // Match on the LOA record's own home branch ONLY (not
+            // roving_branches) — see earlier note: letters_of_advice stores
+            // one row PER branch for a multi-branch employee.
             $key = ":branch{$i}";
             $branchConditions[] = "loa.branch_code = {$key}";
             $branchParams[$key] = $code;
@@ -83,8 +88,14 @@ if (in_array($sessionRole, $restrictedRoles, true)) {
 
 $params = $branchParams;
 
-// ── Name/search filter (applied on top of the branch restriction) ──
+// ── Filters applied on top of the branch restriction ──
 $where = $branchWhere;
+
+// Branch dropdown filter
+if ($branchFilter !== '') {
+    $where .= " AND loa.branch_code = :branchFilter";
+    $params[':branchFilter'] = $branchFilter;
+}
 
 if (!empty($name)) {
     $where .= " AND (
@@ -103,9 +114,8 @@ if (!empty($name)) {
     $params[':name6'] = "%$name%";
 }
 
-// recordsTotal reflects what this user is allowed to see (branch-restricted,
-// no search filter) — not the whole table — so DataTables' "X of Y entries"
-// footer isn't misleading for restricted roles.
+// recordsTotal reflects what this user is allowed to see (role-restricted,
+// no dropdown/search filter).
 $totalStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice AS loa $branchWhere");
 $totalStmt->execute($branchParams);
 $recordsTotal = $totalStmt->fetchColumn();
@@ -114,23 +124,6 @@ $countStmt = $pdo->prepare("SELECT COUNT(*) FROM letters_of_advice AS loa $where
 $countStmt->execute($params);
 $recordsFiltered = $countStmt->fetchColumn();
 
-// NOTE: both joins are LEFT JOINs so a LOA row never disappears from
-// the grid just because its branch_code doesn't resolve to a branches
-// row, or its employee_id doesn't resolve to an employee_info row
-// (e.g. stale/deleted references) -- it'll just show a blank/fallback
-// value instead of vanishing silently. A missing biometric_number is
-// meant to be visible/actionable (blocks Verify), not hidden.
-//
-// 🔥 FIX: joined against DE-DUPED subqueries (one row per branch_code /
-// employee_id) instead of the raw tables directly. If `branches` or
-// `employee_info` ever has more than one row sharing the same key (dupe
-// import, soft-deleted duplicate, historical/versioned rows, etc.), a
-// plain LEFT JOIN against the raw table fans a single letters_of_advice
-// row out into 2+ rows in the grid -- which looked like "the same branch
-// showing up twice" even though letters_of_advice itself had only one row.
-// ROW_NUMBER() + rn = 1 guarantees at most one match per loa row, so the
-// row count out of this query can never exceed the row count in
-// letters_of_advice.
 $sql = "
 SELECT *
 FROM (
@@ -160,13 +153,8 @@ FROM (
         ISNULL(loa.multi_brands, '') AS multi_brands,
         loa.agency,
         -- Biometric number -- required before this LOA can be verified
-        -- (see verify_loa.js's .verifyLOABtn guard, and the corresponding
-        -- server-side check in finalize_verification).
         emp.biometric_number,
-        -- LOA code -- sensitive; masked in the PHP output loop below for
-        -- anyone who isn't admin/super_admin. Still selected here so the
-        -- masking decision stays centralized in one place (PHP), not
-        -- duplicated across every query that might need this table.
+        -- LOA code -- sensitive; masked in the PHP output loop below
         loa.loa_code,
         -- Status fields
         loa.employment_status,
@@ -177,30 +165,21 @@ FROM (
         loa.end_date,
         -- Remarks
         ISNULL(loa.remarks, '') AS remarks,
-        -- Original issuer, used when reprinting (loa_table.js) so the PDF
-        -- shows who ACTUALLY issued it, not the current viewer.
+        -- Original issuer, used when reprinting
         ISNULL(loa.issued_by, '')       AS issued_by,
         ISNULL(loa.issued_position, '') AS issued_position,
-        -- Last updated timestamp shown on the printed PDF. Falls back to
-        -- GETDATE() when updated_at is NULL (e.g. a record that was
-        -- inserted but never subsequently overwritten via the UPDATE path
-        -- in generate_letter_pdf.php).
+        -- Last updated timestamp shown on the printed PDF
         ISNULL(loa.updated_at, GETDATE()) AS last_updated,
         ROW_NUMBER() OVER (ORDER BY $orderExpr $orderDir) AS rownum
     FROM letters_of_advice AS loa
     LEFT JOIN (
-        -- De-duped: exactly one row per branch_code, in case `branches`
-        -- has more than one row sharing the same code. Without this,
-        -- a duplicate branch row fans out the LOA row into 2+ rows
-        -- in the grid that look like 'same branch shown twice'.
+        -- De-duped: exactly one row per branch_code
         SELECT branch_code, branch,
                ROW_NUMBER() OVER (PARTITION BY branch_code ORDER BY branch_code) AS rn
         FROM branches
     ) AS b ON b.branch_code = loa.branch_code AND b.rn = 1
     LEFT JOIN (
-        -- Same de-dupe for employee_info -- if an employee_id ever has
-        -- more than one row, only one is joined so the LOA row count
-        -- stays 1:1 with letters_of_advice.
+        -- Same de-dupe for employee_info
         SELECT employee_id, biometric_number,
                ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY employee_id) AS rn
         FROM employee_info
@@ -226,11 +205,6 @@ $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 foreach ($data as &$row) {
     unset($row['rownum']);
 
-    // LOA code is sensitive (used to verify a promodiser's identity at the
-    // branch) — only admin/super_admin should ever receive it. Stripped
-    // here so it's absent from the AJAX response entirely for
-    // branch_manager/staff, not just hidden in the UI (devtools/network
-    // tab would otherwise still expose it).
     if (!$canViewLoaCode) {
         unset($row['loa_code']);
     }
@@ -243,11 +217,8 @@ foreach ($data as &$row) {
     // Format effectivity_date for display only; keep raw date for the PDF payload
     if (!empty($row['effectivity_date'])) {
         $row['effectivity_date_display'] = date('M d, Y', strtotime($row['effectivity_date']));
-        // leave $row['effectivity_date'] as raw Y-m-d for generate_letter_pdf.php
     }
 
-    // Keep last_updated as a raw parseable string for the print button's
-    // payload; generate_letter_pdf.php reformats it for the PDF footer.
     if (!empty($row['last_updated'])) {
         $row['last_updated'] = date('Y-m-d H:i:s', strtotime($row['last_updated']));
     }
@@ -257,10 +228,9 @@ foreach ($data as &$row) {
         ? explode(',', $row['roving_branches'])
         : [];
 
-    // Branch managers / staff only get to see the roving branch(es) that
-    // are actually theirs — a roving employee assigned to BR01,BR02,BR05
-    // should not reveal BR02/BR05 to a manager who only manages BR01.
-    // Admin/super_admin (not in $restrictedRoles) still see the full list.
+    // Restricted roles (branch_manager / staff / regional_manager) only see
+    // the roving branch(es) that fall inside their own scope. For a
+    // regional_manager $branchCodes is every branch in their region.
     if (in_array($sessionRole, $restrictedRoles, true) && !empty($branchCodes)) {
         $row['roving_branches'] = array_values(
             array_intersect($row['roving_branches'], $branchCodes)
@@ -271,6 +241,7 @@ foreach ($data as &$row) {
         ? explode(',', $row['multi_brands'])
         : [];
 }
+unset($row);
 
 echo json_encode([
     "draw"            => intval($draw),

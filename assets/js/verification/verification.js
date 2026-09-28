@@ -23,6 +23,10 @@ $(document).ready(function () {
       type: "POST",
       data: function (d) {
         d.name = $("#filterName").val();
+        // Branch dropdown selection. fetch_loa.php ANDs this on top of the
+        // session-based role/branch/region restriction, so it can only
+        // narrow results, never widen them.
+        d.branch_filter = $("#filterBranch").val();
         // Sent so fetch_loa.php can restrict results to the caller's branch(es)
         // for role = branch manager / staff. The stored procedure/query should
         // treat this as the source of truth (from $_SESSION), not trust a
@@ -62,7 +66,7 @@ $(document).ready(function () {
         },
       },
       { data: "promodiser" },
-      // NEW: Branch column. Prefers branch_name (display label) and
+      // Branch column. Prefers branch_name (display label) and
       // falls back to branch_code if fetch_loa.php hasn't aliased a
       // name for this row.
       {
@@ -96,9 +100,7 @@ $(document).ready(function () {
 
           // LOA code is only ever present in `data` when fetch_loa.php
           // decided to include it (admin/super_admin) -- it's stripped
-          // server-side for everyone else. This role check is just belt
-          // and suspenders / keeps the render logic self-explanatory;
-          // the actual security boundary is in fetch_loa.php.
+          // server-side for everyone else.
           const canViewLoaCode = role === "admin" || role === "super_admin";
 
           const verifyBtnHtml = canVerify
@@ -122,8 +124,6 @@ $(document).ready(function () {
             : "";
 
           // Small inline display of the LOA code, admin/super_admin only.
-          // Sits above the action buttons rather than as its own column
-          // so non-admin roles don't get a visibly empty column.
           const loaCodeHtml =
             canViewLoaCode && data.loa_code
               ? `<div class="small text-muted mb-1">LOA Code: ${data.loa_code}</div>`
@@ -174,6 +174,11 @@ $(document).ready(function () {
     table.draw();
   });
 
+  // Branch dropdown -> redraw from page 1 with the new filter.
+  $("#filterBranch").on("change", function () {
+    table.draw();
+  });
+
   // ── Print LOA click handler ──────────────────────────────────────
   $("#LOAtable").on("click", ".printLOABtn", async function () {
     const btn = $(this);
@@ -183,8 +188,6 @@ $(document).ready(function () {
       .prop("disabled", true)
       .html('<i class="bi bi-hourglass-split me-1"></i>Generating...');
 
-    // 🔥 FIX: generate_letter_pdf.php now reads the business ID from
-    // `employee_id` (not `id`), to stay consistent with pdf.js's basePayload.
     const payload = {
       employee_id: btn.data("employee-id"), // employee_info.employee_id (business ID, e.g. "EMP-...")
       loa_id: btn.data("loa-id"),
@@ -210,10 +213,7 @@ $(document).ready(function () {
       // on the record (from the DB), not the current viewer's session.
       issued_by: btn.data("issued-by"),
       issued_position: btn.data("issued-position"),
-      // "Last updated" timestamp for the PDF footer — sourced from the DB
-      // row (see fetch_loa.php). Empty on a brand-new LOA generated via
-      // pdf.js, which never populates this field; generate_letter_pdf.php
-      // falls back to the current time in that case.
+      // "Last updated" timestamp for the PDF footer — sourced from the DB row.
       updated_at: btn.data("updated-at"),
     };
 
@@ -265,17 +265,12 @@ $(document).ready(function () {
       .toggleClass("btn-outline-primary", !bulkVerifyMode)
       .toggleClass("btn-primary", bulkVerifyMode);
 
-    // visible() alone re-shows/hides the column's cells -- it's the only
-    // mechanism controlling this column now (see the column def above).
-    // Do NOT follow this with table.draw() -- this table is serverSide:true,
-    // so draw() always fires a fresh ajax request to fetch_loa.php on every
-    // single toggle, even though no data actually changed.
+    // visible() alone re-shows/hides the column's cells. Do NOT follow this
+    // with table.draw() -- serverSide:true means draw() always re-hits
+    // fetch_loa.php.
     table.column(0).visible(bulkVerifyMode);
 
-    // Selections were just cleared above -- make sure the master checkbox
-    // doesn't show a stale checked/indeterminate state from a previous
-    // bulk-verify session. Runs AFTER visible() so this targets whatever
-    // #bulkVerifySelectAll node exists post-toggle, not a stale reference.
+    // Selections were just cleared above -- reset the master checkbox.
     $("#bulkVerifySelectAll")
       .prop("checked", false)
       .prop("indeterminate", false);
@@ -313,14 +308,9 @@ $(document).ready(function () {
     syncSelectAllCheckboxState();
   });
 
-  // Select all — applies to checkboxes currently rendered (i.e. current
-  // page only, since this is server-side paging). Delegated (not a direct
-  // $("#bulkVerifySelectAll").on(...) bind) because the column now starts
-  // as visible:false, which means DataTables actually destroys and
-  // recreates the <th> for this column each time it's toggled -- a direct
-  // binding would attach to the original node and go dead the moment that
-  // node gets replaced. Delegating from #LOAtable (which itself is never
-  // replaced) re-resolves the selector on every event instead.
+  // Select all — applies to checkboxes currently rendered (current page only).
+  // Delegated from #LOAtable because DataTables recreates the <th> when the
+  // column's visibility is toggled.
   $("#LOAtable").on("change", "#bulkVerifySelectAll", function () {
     const checked = this.checked;
     $("#LOAtable tbody .bulkVerifyCheckbox").each(function () {
@@ -328,12 +318,8 @@ $(document).ready(function () {
     });
   });
 
-  // Keeps the master checkbox honest against what's actually selected on
-  // the current page: checked only if every visible row is checked,
-  // indeterminate if some (but not all) are, unchecked otherwise. Also
-  // re-run on every DataTables redraw (page change, filter, etc.) since a
-  // fresh set of rows -- with their own checked/unchecked state -- just
-  // replaced the old ones.
+  // Keeps the master checkbox honest against what's selected on the current
+  // page: checked if every row is checked, indeterminate if some are.
   function syncSelectAllCheckboxState() {
     const $rowBoxes = $("#LOAtable tbody .bulkVerifyCheckbox");
     const total = $rowBoxes.length;

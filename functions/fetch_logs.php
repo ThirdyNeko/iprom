@@ -39,15 +39,28 @@ LEFT JOIN employee_info i
 $conditions = [];
 $params = [];
 
-// STAFF BRANCH FILTER (branch restriction only — date restriction is handled
-// separately below so it applies consistently to all roles)
-$isStaff = isset($_SESSION['role']) && ($_SESSION['role'] === 'staff' || $_SESSION['role'] === 'branch_manager');
+// BRANCH RESTRICTION (staff / branch_manager / regional_manager)
+// Date restriction is handled separately below so it applies consistently
+// to all roles.
+$sessionRole = $_SESSION['role'] ?? '';
+$isRegional  = $sessionRole === 'regional_manager';
+$isStaff     = $sessionRole === 'staff' || $sessionRole === 'branch_manager';
 
-if ($isStaff) {
-    $sessionBranches = array_values(array_filter(
-        explode(',', $_SESSION['branch'] ?? ''),
-        fn($v) => trim($v) !== ''
-    ));
+if ($isStaff || $isRegional) {
+    if ($isRegional) {
+        // Regional managers cover every branch in their region. login.php
+        // resolves the region into branch codes and stores them as an array
+        // in user_branches; $_SESSION['branch'] is null for them.
+        $sessionBranches = array_values(array_filter(
+            array_map('trim', $_SESSION['user_branches'] ?? []),
+            fn($v) => $v !== ''
+        ));
+    } else {
+        $sessionBranches = array_values(array_filter(
+            explode(',', $_SESSION['branch'] ?? ''),
+            fn($v) => trim($v) !== ''
+        ));
+    }
 
     if (!empty($sessionBranches)) {
         $branchPlaceholders = [];
@@ -63,6 +76,7 @@ if ($isStaff) {
             WHERE branch IN ($inList)
         )";
     } else {
+        // No branches = no logs, never "everything"
         $conditions[] = "1 = 0";
     }
 }

@@ -8,20 +8,35 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
-$user_role   = $_SESSION['role'] ?? '';
-$user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode when filtering
-$role_lower  = strtolower($user_role);
+$user_role  = $_SESSION['role'] ?? '';
+$role_lower = strtolower($user_role);
+
+// comma-delimited string, explode when filtering.
+// Regional managers have no single branch: login.php resolves their region
+// into an array of branch codes in user_branches, so join that into the same
+// comma-delimited shape and everything downstream can treat it the same way.
+if ($role_lower === 'regional_manager') {
+    $user_branch = implode(',', array_filter(
+        array_map('trim', $_SESSION['user_branches'] ?? [])
+    ));
+} else {
+    $user_branch = $_SESSION['branch'] ?? '';
+}
 
 $is_audit = in_array($role_lower, ['audit_manager', 'audit_supervisor']);
 $is_admin = in_array($role_lower, ['admin', 'super_admin']);
 
-// Flagging Requests tab — audit roles, admin/super_admin (so approvals
-// have somewhere to happen), and branch_manager (so they can still
-// submit requests)
-$can_view_flagging_tab = $is_audit || $is_admin || $role_lower === 'branch_manager';
+// Branch-side requesters: branch_manager and regional_manager
+$is_branch_side = in_array($role_lower, ['branch_manager', 'regional_manager']);
 
-// Submitting a new flagging request — audit roles and branch_manager
-$can_request_flagging = $is_audit || $role_lower === 'branch_manager';
+// Flagging Requests tab — audit roles, admin/super_admin (so approvals
+// have somewhere to happen), and branch_manager / regional_manager (so
+// they can still submit requests)
+$can_view_flagging_tab = $is_audit || $is_admin || $is_branch_side;
+
+// Submitting a new flagging request — audit roles, branch_manager and
+// regional_manager
+$can_request_flagging = $is_audit || $is_branch_side;
 
 // Approve / reject pending flagging requests
 $can_action_flagging_requests = $is_admin;

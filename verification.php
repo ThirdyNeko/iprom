@@ -10,6 +10,37 @@ $pdo = qa_db();
 
 $user_role   = $_SESSION['role'] ?? '';
 $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode when filtering
+$user_region = $_SESSION['region'] ?? ''; // regional_manager only (users.region)
+
+// ── Branch dropdown options ─────────────────────────────────────
+// regional_manager: only branches whose branches.region matches their region.
+// branch_manager / staff: narrowed to $_SESSION['branch'] in the loop below.
+// admin / super_admin: everything that has an LOA.
+$branchSql = "
+    SELECT DISTINCT 
+        l.branch_code AS branch_code,
+        b.branch AS branch
+    FROM letters_of_advice l
+    LEFT JOIN IPROM.dbo.branches b
+        ON l.branch_code = b.branch_code
+";
+$branchQueryParams = [];
+
+if (strtolower($user_role) === 'regional_manager') {
+    if ($user_region !== '') {
+        $branchSql .= " WHERE b.region = :region";
+        $branchQueryParams[':region'] = $user_region;
+    } else {
+        // No region assigned -> fail closed, empty dropdown
+        $branchSql .= " WHERE 1 = 0";
+    }
+}
+
+$branchSql .= " ORDER BY b.branch";
+
+$branchStmt = $pdo->prepare($branchSql);
+$branchStmt->execute($branchQueryParams);
+$branches = $branchStmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
@@ -116,6 +147,30 @@ $user_branch = $_SESSION['branch'] ?? ''; // comma-delimited string, explode whe
                                 placeholder="Promodiser, Agency, Employment Status, Sub Status">
                             <button type="button" class="clear-btn" data-target="filterName">×</button>
                         </div>
+                    </div>
+
+                    <!-- BRANCH FILTER -->
+                    <div class="col-md-2">
+                        <label class="form-label">Branch</label>
+                        <select id="filterBranch" class="form-select filter-control">
+                            <option value="">All</option>
+                            <?php 
+                            $sessionBranches = !empty($_SESSION['branch']) 
+                                ? array_map('trim', explode(',', $_SESSION['branch'])) 
+                                : [];
+
+                            foreach($branches as $b): 
+                                // branch_manager / staff with branch restrictions: only their branches.
+                                // (regional_manager is already scoped by region in the query above.)
+                                if (strtolower($user_role) !== 'regional_manager'
+                                    && !empty($sessionBranches)
+                                    && !in_array($b['branch_code'], $sessionBranches)) continue;
+                            ?>
+                                <option value="<?= htmlspecialchars($b['branch_code']) ?>">
+                                    <?= htmlspecialchars($b['branch'] ?? $b['branch_code']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                 </div>
