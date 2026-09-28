@@ -24,6 +24,8 @@ $branchSelect = trim($_POST['branch_select'] ?? '');
 $branchLabel = '';
 if ($branchSelect === 'HEAD_OFFICE') {
     $branchLabel = 'Head Office';
+} elseif ($branchSelect === 'REGIONAL_MANAGER') {
+    $branchLabel = 'Regional Manager';
 } elseif ($branchSelect !== '') {
     foreach ($branches as $b) {
         if ($b['branch_code'] === $branchSelect) {
@@ -47,6 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE username = :username
                 AND role IN ('staff', 'admin', 'super_admin', 'supervisor', 'assistant_admin', 'audit_manager', 'audit_supervisor', 'audit_staff')
                 AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
+            ");
+            $stmt->execute([
+                ':username' => $username
+            ]);
+        } elseif ($branchSelect === 'REGIONAL_MANAGER') {
+            // 🗺️ Regional managers log in through their own option — no branch
+            // is picked. Their access comes from the region stored on the user
+            // row, resolved to branch codes after the password check below.
+            $stmt = $pdo->prepare("
+                SELECT * FROM users
+                WHERE username = :username
+                  AND role = 'regional_manager'
+                  AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
             ");
             $stmt->execute([
                 ':username' => $username
@@ -76,12 +91,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // happened to return first (no ORDER BY = non-deterministic on ties).
         $user = null;
         $userBranches = [];
+        $userRegions = [];
         foreach ($rows as $row) {
             if (!password_verify($password, $row['password'])) {
                 continue;
             }
 
-            if ($branchSelect !== 'HEAD_OFFICE') {
+            if ($branchSelect === 'REGIONAL_MANAGER') {
+                // users.region holds the region name (single value, but split
+                // defensively in case it ever becomes a comma-separated list)
+                $userRegions = array_values(array_filter(array_map('trim', explode(',', $row['region'] ?? ''))));
+                if (empty($userRegions)) {
+                    // right password, but no region assigned — nothing to scope them to
+                    continue;
+                }
+            } elseif ($branchSelect !== 'HEAD_OFFICE') {
                 // branch column may hold a single code ("BR01") or a
                 // comma-separated list ("BR01,BR07,BR12") for managers
                 // covering multiple branches
@@ -97,11 +121,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
         }
 
+        // 🗺️ Resolve a regional manager's region into the branch codes they can access
+        $regionBranches = [];
+        if ($user && $user['role'] === 'regional_manager') {
+            try {
+                $placeholders = implode(',', array_fill(0, count($userRegions), '?'));
+                $regionStmt = $pdo->prepare("
+                    SELECT branch_code
+                    FROM dbo.branches
+                    WHERE region IN ($placeholders)
+                ");
+                $regionStmt->execute($userRegions);
+                $regionBranches = $regionStmt->fetchAll(PDO::FETCH_COLUMN);
+            } catch (PDOException $e) {
+                file_put_contents(__DIR__ . '/../error_log.txt', "[" . date("Y-m-d H:i:s") . "] Region branch fetch error: " . $e->getMessage() . PHP_EOL, FILE_APPEND);
+                $regionBranches = [];
+            }
+
+            if (empty($regionBranches)) {
+                $user = null;
+                $error = "No branches found for your region.";
+            }
+        }
+
         if ($user) {
 
             // 🚧 Check maintenance mode
             $maintenanceFile = __DIR__ . '/../maintenance.flag';
-            $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF', 'QA_BRANCH_MANAGER'];
+            $allowedUsernames = ['QA_HR_ADMIN', 'QA_HR_SUPERVISOR', 'QA_HR_STAFF', 'QA_AUDIT_MANAGER', 'QA_AUDIT_SUPERVISOR', 'QA_AUDIT_STAFF', 'QA_BRANCH_MANAGER', 'QA_REGIONAL_MANAGER'];
             $blockedByMaintenance = false;
             $maintenanceMessage = 'The system is currently under maintenance. Please try again later.';
 
@@ -123,10 +170,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // 🔥 Regenerate session ID (VERY IMPORTANT)
                 session_regenerate_id(true);
 
+                $isRegional = $user['role'] === 'regional_manager';
+
                 $_SESSION['user_id']     = $user['id'];
                 $_SESSION['username']    = $user['username'];
                 $_SESSION['role']        = $user['role'];
                 $_SESSION['branch']      = $user['role'] === 'branch_manager' ? $branchSelect : ($user['branch'] ?? null);
+                $_SESSION['region']      = $isRegional ? ($user['region'] ?? null) : null;
                 $_SESSION['brand']       = $user['brand'] ?? null;
                 $_SESSION['position']    = $user['position'] ?? null;
                 $_SESSION['department']  = $user['department'] ?? null;
@@ -134,16 +184,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['first_login'] = $user['first_login'] ?? null;
 
                 // 🏬 Full list of branches this user can access — populated for
-                // branch_managers with multiple branches; falls back to a single
+                // branch_managers with multiple branches and for regional_managers
+                // (every branch in their region); falls back to a single
                 // entry for everyone else so downstream code has one shape to check.
-                $_SESSION['user_branches'] = !empty($userBranches)
-                    ? $userBranches
-                    : array_filter([$_SESSION['branch']]);
+                if ($isRegional) {
+                    $_SESSION['user_branches'] = array_values($regionBranches);
+                } else {
+                    $_SESSION['user_branches'] = !empty($userBranches)
+                        ? $userBranches
+                        : array_filter([$_SESSION['branch']]);
+                }
 
                 header("Location: ../index.php");
                 exit;
             }
-        } else {
+        } elseif ($error === '') {
             $error = "Invalid ID or password.";
         }
     }
@@ -334,6 +389,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="text" id="branchSearchInput" class="form-control form-control-sm" placeholder="Search branch...">
                         </li>
                         <li><a class="dropdown-item branch-option <?= $branchSelect === 'HEAD_OFFICE' ? 'active' : '' ?>" href="#" data-value="HEAD_OFFICE">HEAD OFFICE</a></li>
+                        <li><a class="dropdown-item branch-option <?= $branchSelect === 'REGIONAL_MANAGER' ? 'active' : '' ?>" href="#" data-value="REGIONAL_MANAGER">REGIONAL MANAGER</a></li>
                         <?php foreach ($branches as $b): ?>
                             <li>
                                 <a class="dropdown-item branch-option <?= $branchSelect === $b['branch_code'] ? 'active' : '' ?>"

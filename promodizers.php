@@ -8,9 +8,24 @@ include 'partials/sidebar.php';
 
 $pdo = qa_db();
 
-$sessionBranches = !empty($_SESSION['branch'])
-    ? array_map('trim', explode(',', $_SESSION['branch']))
-    : [];
+// Regional managers cover every branch in their region. login.php resolves
+// the region into branch codes and stores them as an array in user_branches;
+// $_SESSION['branch'] is null for them.
+$isRegional = ($_SESSION['role'] ?? '') === 'regional_manager';
+
+if ($isRegional) {
+    $sessionBranches = array_values(array_filter(
+        array_map('trim', $_SESSION['user_branches'] ?? [])
+    ));
+} else {
+    $sessionBranches = !empty($_SESSION['branch'])
+        ? array_map('trim', explode(',', $_SESSION['branch']))
+        : [];
+}
+
+// A regional manager with no branches must see no branch options,
+// not fall back to "everything" like an unscoped role would.
+$isBranchScoped = $isRegional || !empty($sessionBranches);
 
 $branchMap = [];
 
@@ -21,6 +36,11 @@ $stmt = $pdo->query("
 ");
 
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    // Regional managers only get their own branches in the JS-side map
+    if ($isRegional && !in_array($row['branch_code'], $sessionBranches, true)) {
+        continue;
+    }
+
     $branchMap[$row['branch_code']] = [
         'branch' => $row['branch'],
         'area'   => $row['area'],
@@ -43,14 +63,44 @@ $branches = $pdo->query("
 $brands = $pdo->query("SELECT DISTINCT brand_name FROM assignment ORDER BY brand_name")
     ->fetchAll(PDO::FETCH_COLUMN);
 
-$regions = $pdo->query("SELECT DISTINCT region FROM branches ORDER BY region")
-    ->fetchAll(PDO::FETCH_COLUMN);
+if ($isRegional) {
+    // Region / Area / Company options limited to what their branches belong to
+    $regions = [];
+    $areas   = [];
+    $corpos  = [];
 
-$areas = $pdo->query("SELECT DISTINCT area FROM branches ORDER BY area")
-    ->fetchAll(PDO::FETCH_COLUMN);
+    if (!empty($sessionBranches)) {
+        $placeholders = implode(',', array_fill(0, count($sessionBranches), '?'));
+        $scopeStmt = $pdo->prepare("
+            SELECT DISTINCT region, area, corpo
+            FROM branches
+            WHERE branch_code IN ($placeholders)
+        ");
+        $scopeStmt->execute($sessionBranches);
 
-$corpos = $pdo->query("SELECT DISTINCT corpo FROM branches ORDER BY corpo")
-    ->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($scopeStmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            if (!empty($r['region'])) $regions[$r['region']] = true;
+            if (!empty($r['area']))   $areas[$r['area']]     = true;
+            if (!empty($r['corpo']))  $corpos[$r['corpo']]   = true;
+        }
+    }
+
+    $regions = array_keys($regions);
+    $areas   = array_keys($areas);
+    $corpos  = array_keys($corpos);
+    sort($regions);
+    sort($areas);
+    sort($corpos);
+} else {
+    $regions = $pdo->query("SELECT DISTINCT region FROM branches ORDER BY region")
+        ->fetchAll(PDO::FETCH_COLUMN);
+
+    $areas = $pdo->query("SELECT DISTINCT area FROM branches ORDER BY area")
+        ->fetchAll(PDO::FETCH_COLUMN);
+
+    $corpos = $pdo->query("SELECT DISTINCT corpo FROM branches ORDER BY corpo")
+        ->fetchAll(PDO::FETCH_COLUMN);
+}
 
 $agencies = $pdo->query("SELECT DISTINCT agencies FROM agencies ORDER BY agencies")
     ->fetchAll(PDO::FETCH_COLUMN);
@@ -158,7 +208,7 @@ $categories = $pdo->query("
                     <button id="exportExcel" class="btn btn-success">
                         <i class="bi bi-file-earmark-excel"></i> Export
                     </button>
-                    <?php if (!in_array($_SESSION['role'] ?? '', ['branch_manager', 'assistant_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'])): ?>
+                    <?php if (!in_array($_SESSION['role'] ?? '', ['branch_manager', 'regional_manager', 'assistant_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'])): ?>
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
                             <i class="bi bi-plus-circle"></i> Add Employee
                         </button>
@@ -220,7 +270,7 @@ $categories = $pdo->query("
                                         <option value="">All</option>
                                         <?php
                                         foreach ($branches as $b):
-                                            if (!empty($sessionBranches) && !in_array($b['branch_code'], $sessionBranches)) continue;
+                                            if ($isBranchScoped && !in_array($b['branch_code'], $sessionBranches, true)) continue;
                                         ?>
                                             <option value="<?= htmlspecialchars($b['branch_code']) ?>">
                                                 <?= htmlspecialchars($b['branch']) ?>

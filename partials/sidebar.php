@@ -36,12 +36,12 @@
                 <span>Logs</span>
             </a>
         </li>
-        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin') || ($_SESSION['role'] === 'supervisor') || ($_SESSION['role'] === 'branch_manager')): ?>
+        <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin') || ($_SESSION['role'] === 'super_admin') || ($_SESSION['role'] === 'supervisor') || ($_SESSION['role'] === 'branch_manager') || ($_SESSION['role'] === 'regional_manager')): ?>
             <li>
                 <a href="Verification.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'Verification.php' ? 'active' : '' ?>">
                     <i class="bi bi-journal-check"></i>
                     <span>Verification</span>
-                    <?php if ($_SESSION['role'] === 'branch_manager'): ?>
+                    <?php if (($_SESSION['role'] === 'branch_manager') || ($_SESSION['role'] === 'regional_manager')): ?>
                         <span id="sidebarVerifyCountBadge" class="badge rounded-pill bg-danger ms-auto d-none"></span>
                     <?php endif; ?>
                 </a>
@@ -121,7 +121,7 @@
             <?php endif; ?>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'regional_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
             <!-- <li>
                 <a href="blacklist_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'blacklist_request.php' ? 'active' : '' ?>">
                     <i class="bi bi-person-slash"></i>
@@ -133,7 +133,7 @@
             </li> -->
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'regional_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
             <li>
                 <a href="flagging_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'flagging_request.php' ? 'active' : '' ?>">
                     <i class="bi bi-flag"></i>
@@ -260,7 +260,7 @@
 
 </div>
 
-<?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager'): ?>
+<?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['branch_manager', 'regional_manager'])): ?>
     <script>
         // Sidebar "Verification" nav badge — shows count of LOAs pending
         // verification for this branch manager's branch(es). Fetched here so it

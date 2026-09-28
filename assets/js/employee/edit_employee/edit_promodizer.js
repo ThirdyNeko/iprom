@@ -216,6 +216,7 @@ function updateSaveButtonState() {
 function isBranchManagerRole() {
   return [
     "branch_manager",
+    "regional_manager",
     "assistant_admin",
     "audit_manager",
     "audit_supervisor",

@@ -8,6 +8,7 @@ let currentQueued = 0;
 // Roles that should not see Edit / Add Promodiser actions in the modal.
 const RESTRICTED_ROLES = [
   "branch_manager",
+  "regional_manager",
   "audit_manager",
   "audit_supervisor",
   "audit_staff",

@@ -46,10 +46,21 @@ $area   = trim($_GET['area']   ?? '');
 $corpo  = trim($_GET['corpo']  ?? '');
 
 // Session / role
-$sessionBranches = !empty($_SESSION['branch'])
-    ? array_map('trim', explode(',', $_SESSION['branch']))
-    : [];
-$isStaff = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager';
+$sessionRole = $_SESSION['role'] ?? '';
+$isRegional  = $sessionRole === 'regional_manager';
+$isStaff     = $sessionRole === 'staff' || $sessionRole === 'branch_manager';
+
+if ($isRegional) {
+    // Regional managers cover every branch in their region. login.php resolves
+    // the region into branch codes and stores them as an array in user_branches.
+    $sessionBranches = array_values(array_filter(
+        array_map('trim', $_SESSION['user_branches'] ?? [])
+    ));
+} else {
+    $sessionBranches = !empty($_SESSION['branch'])
+        ? array_map('trim', explode(',', $_SESSION['branch']))
+        : [];
+}
 
 // =========================
 // BRANCH MAP
@@ -93,9 +104,9 @@ $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // =========================
-// STAFF RESTRICTION
+// STAFF / BRANCH MANAGER / REGIONAL MANAGER RESTRICTION
 // =========================
-if ($isStaff) {
+if ($isStaff || $isRegional) {
     if (empty($sessionBranches)) {
         $rows = [];
     } else {

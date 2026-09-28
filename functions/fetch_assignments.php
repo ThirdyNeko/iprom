@@ -27,9 +27,31 @@ $from   = clean($from);
 $to     = clean($to);
 
 // Session branch enforcement
-$sessionBranches = !empty($_SESSION['branch'])
-    ? array_map('trim', explode(',', $_SESSION['branch']))
-    : [];
+$isRegional = ($_SESSION['role'] ?? '') === 'regional_manager';
+
+if ($isRegional) {
+    // Regional managers cover every branch in their region. login.php resolves
+    // the region into branch codes and stores them as an array in user_branches.
+    $sessionBranches = array_values(array_filter(
+        array_map('trim', $_SESSION['user_branches'] ?? [])
+    ));
+
+    // Fail closed: a regional manager with no branches must see nothing,
+    // not fall through to the unfiltered query below.
+    if (empty($sessionBranches)) {
+        echo json_encode([
+            "draw"            => intval($draw),
+            "recordsTotal"    => 0,
+            "recordsFiltered" => 0,
+            "data"            => []
+        ]);
+        exit;
+    }
+} else {
+    $sessionBranches = !empty($_SESSION['branch'])
+        ? array_map('trim', explode(',', $_SESSION['branch']))
+        : [];
+}
 
 if (!empty($sessionBranches)) {
     if ($branch && !in_array($branch, $sessionBranches)) {

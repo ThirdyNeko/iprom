@@ -12,14 +12,21 @@ $pdo = qa_db();
 /* ==============================
    DASHBOARD COUNTS
 ============================== */
-// Before (no filtering):
-$stmt = $pdo->prepare("EXEC get_dashboard_counts");
-$stmt->execute();
+// Roles that only see their own slice of the data instead of all branches
+$sessionRole = $_SESSION['role'] ?? '';
+$isScoped    = in_array($sessionRole, ['staff', 'branch_manager', 'regional_manager'], true);
 
-// After (with branch filtering):
-$isStaff         = isset($_SESSION['role']) && $_SESSION['role'] === 'staff' || isset($_SESSION['role']) && $_SESSION['role'] === 'branch_manager';
-$sessionBranches = !empty($_SESSION['branch']) ? $_SESSION['branch'] : null;
-if ($isStaff && $sessionBranches === null) {
+if ($sessionRole === 'regional_manager') {
+    // Regional managers cover every branch in their region. login.php resolves
+    // the region into a list of branch codes and stores it in user_branches.
+    $sessionBranches = !empty($_SESSION['user_branches'])
+        ? implode(',', $_SESSION['user_branches'])
+        : null;
+} else {
+    $sessionBranches = !empty($_SESSION['branch']) ? $_SESSION['branch'] : null;
+}
+
+if ($isScoped && $sessionBranches === null) {
     $result = [
         'total_promodizers' => 0, 'active_promodizers' => 0, 'inactive_promodizers' => 0, 'queued_promodizers' => 0,
         'total_assignments' => 0, 'complete_assignments' => 0,
@@ -27,7 +34,7 @@ if ($isStaff && $sessionBranches === null) {
     ];
 } else {
     $stmt = $pdo->prepare("EXEC get_dashboard_counts @branches = ?");
-    $stmt->execute([$isStaff ? $sessionBranches : null]); // null = all branches
+    $stmt->execute([$isScoped ? $sessionBranches : null]); // null = all branches
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
