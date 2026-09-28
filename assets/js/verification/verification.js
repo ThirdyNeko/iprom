@@ -92,6 +92,11 @@ $(document).ready(function () {
               : "";
 
           const canVerify = role === "branch_manager";
+          // regional_manager gets a one-click Verify instead of the modal
+          // flow: no LOA code, no ID picture. UI convenience only --
+          // functions/direct_verify_loa.php independently re-checks the
+          // role and the region server-side.
+          const canDirectVerify = role === "regional_manager";
           // Cancel LOA (hard delete, confirmed via LOA code entry) is
           // restricted to admin / super_admin. This is UI convenience
           // only -- functions/cancel_loa.php independently re-checks
@@ -109,6 +114,18 @@ $(document).ready(function () {
                 data-employee-id="${data.employee_id ?? ""}"
                 data-branch="${data.branch_code ?? ""}"
                 data-biometric-number="${data.biometric_number ?? ""}">
+                <i class="bi bi-patch-check me-1"></i>Verify
+              </button>`
+            : "";
+
+          // Deliberately NOT the .verifyLOABtn class -- that one opens the
+          // verification modal in verify_loa.js.
+          const directVerifyBtnHtml = canDirectVerify
+            ? `<button class="btn btn-success btn-sm px-2 py-1 directVerifyLOABtn"
+                data-loa-id="${data.loa_id}"
+                data-employee-id="${data.employee_id ?? ""}"
+                data-employee-name="${data.promodiser ?? ""}"
+                data-branch="${data.branch_code ?? ""}">
                 <i class="bi bi-patch-check me-1"></i>Verify
               </button>`
             : "";
@@ -161,6 +178,7 @@ $(document).ready(function () {
                 </button>
 
                 ${verifyBtnHtml}
+                ${directVerifyBtnHtml}
                 ${cancelBtnHtml}
               </div>
             </div>
@@ -248,9 +266,77 @@ $(document).ready(function () {
     }
   });
 
-  // Note: the "Verify" button click handler lives in assets/js/verify_loa.js
-  // so the verification modal logic stays in its own file. Likewise, the
-  // "Cancel" button click handler lives in assets/js/verification/cancel_loa.js.
+  // ── Direct verify (regional_manager) ─────────────────────────────
+  // One record at a time, confirmed with a plain SweetAlert -- no modal,
+  // no LOA code, no ID picture. Posts to functions/direct_verify_loa.php,
+  // which re-checks the role and that the branch is inside the caller's
+  // region before calling dbo.finalize_verification.
+  $("#LOAtable").on("click", ".directVerifyLOABtn", async function () {
+    const btn = $(this);
+    const loaId = btn.data("loa-id");
+    const employeeId = btn.data("employee-id");
+    const branchCode = btn.data("branch");
+    const employeeName = btn.data("employee-name");
+
+    const confirmResult = await Swal.fire({
+      title: "Verify this promodiser?",
+      text: `${employeeName ? employeeName + " will" : "This promodiser will"} be set ACTIVE, or QUEUED if the effectivity date hasn't started yet.`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, verify",
+      confirmButtonColor: "#198754",
+    });
+    if (!confirmResult.isConfirmed) return;
+
+    btn
+      .prop("disabled", true)
+      .html('<i class="bi bi-hourglass-split me-1"></i>Verifying...');
+
+    try {
+      const response = await fetch("functions/direct_verify_loa.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          loa_id: loaId,
+          employee_id: employeeId,
+          branch_code: branchCode,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || `Server error: ${response.status}`);
+      }
+
+      await Swal.fire(
+        "Verified",
+        result.status
+          ? `Status is now ${String(result.status).toUpperCase()}.`
+          : "Promodiser verified.",
+        "success",
+      );
+
+      // Row is no longer pending verification -- reload, keep current page
+      table.draw(false);
+    } catch (err) {
+      console.error("Direct verify failed:", err);
+      Swal.fire(
+        "Error",
+        err.message || "Verification failed. Please try again.",
+        "error",
+      );
+      btn
+        .prop("disabled", false)
+        .html('<i class="bi bi-patch-check me-1"></i>Verify');
+    }
+  });
+
+  // Note: the branch_manager "Verify" button click handler lives in
+  // assets/js/verification/verify_loa.js so the verification modal logic
+  // stays in its own file. Likewise, the "Cancel" button click handler
+  // lives in assets/js/verification/cancel_loa.js. The regional_manager
+  // one-click verify (.directVerifyLOABtn) is handled above.
 
   // ── Bulk verify: toggle mode on/off ───────────────────────────────
   $("#toggleBulkVerifyBtn").on("click", function () {

@@ -1,4 +1,14 @@
 $(function () {
+  // Role helpers. For regional_manager, flagging_request.php passes
+  // CURRENT_USER_BRANCH as a comma-joined list of every branch code in their
+  // region (resolved at login), so the same list doubles as their region scope.
+  const CURRENT_ROLE = (CURRENT_USER_ROLE || "").toLowerCase();
+  const IS_REGIONAL_MANAGER = CURRENT_ROLE === "regional_manager";
+  const REGION_BRANCH_CODES = (CURRENT_USER_BRANCH || "")
+    .split(",")
+    .map((b) => b.trim())
+    .filter(Boolean);
+
   // ---------------------------------------------------------------
   // DataTable init — server-side processing, matching the
   // get_flagging_requests SP (ROW_NUMBER paging, COUNT(*) OVER total).
@@ -34,12 +44,18 @@ $(function () {
   //   - audit_manager can unflag any request submitted by an audit role
   //     (audit_manager or audit_supervisor)
   //   - admin/super_admin can unflag requests submitted by a branch_manager
+  //   - regional_manager can unflag requests submitted by a branch_manager
+  //     whose branch is inside their region
   // Client-side check is for showing/hiding the button only —
   // unflag_request.php / the SQL proc re-verify this independently
   // before actually unflagging.
   function canUnflagRow(r) {
-    const role = (CURRENT_USER_ROLE || "").toLowerCase();
+    const role = CURRENT_ROLE;
     const requesterRole = (r.requester_role || "").toLowerCase();
+
+    // Prefer an explicit branch_code if the endpoint returns one; the
+    // flagging_request.branch column stores branch codes.
+    const rowBranch = String(r.branch_code ?? r.branch ?? "").trim();
 
     const isOwner = r.requested_by === CURRENT_USER_NAME;
     const isAuditManagerOverAudit =
@@ -49,8 +65,17 @@ $(function () {
     const isAdminOverBranchManager =
       (role === "admin" || role === "super_admin") &&
       requesterRole === "branch_manager";
+    const isRegionalOverBranchManager =
+      IS_REGIONAL_MANAGER &&
+      requesterRole === "branch_manager" &&
+      REGION_BRANCH_CODES.includes(rowBranch);
 
-    return isOwner || isAuditManagerOverAudit || isAdminOverBranchManager;
+    return (
+      isOwner ||
+      isAuditManagerOverAudit ||
+      isAdminOverBranchManager ||
+      isRegionalOverBranchManager
+    );
   }
 
   // Attachments are visible to: the requester themself, anyone with the
@@ -60,7 +85,7 @@ $(function () {
   // button only — fetch_flagging_attachments.php independently
   // re-verifies this before returning any image data.
   function canViewAttachments(r) {
-    const role = (CURRENT_USER_ROLE || "").toLowerCase();
+    const role = CURRENT_ROLE;
     const isOwner = r.requested_by === CURRENT_USER_NAME;
     const isAdmin = role === "admin" || role === "super_admin";
     const isManagerOverSupervisor =
@@ -228,39 +253,39 @@ $(function () {
     }
   });
 
-function markFlaggingRequestChecked(id) {
-  fetch("functions/mark_flagging_checked.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id }),
-  })
-    .then((r) => r.json())
-    .then((res) => {
-      if (res.success && !res.skipped) {
-        table.ajax.reload(null, false);
-        refreshSidebarFlaggingBadge();
-      }
+  function markFlaggingRequestChecked(id) {
+    fetch("functions/mark_flagging_checked.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
     })
-    .catch(() => {});
-}
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success && !res.skipped) {
+          table.ajax.reload(null, false);
+          refreshSidebarFlaggingBadge();
+        }
+      })
+      .catch(() => {});
+  }
 
-function refreshSidebarFlaggingBadge() {
-  const badge = document.getElementById("sidebarFlaggingUncheckedBadge");
-  if (!badge) return; // not admin, badge doesn't exist on this session
+  function refreshSidebarFlaggingBadge() {
+    const badge = document.getElementById("sidebarFlaggingUncheckedBadge");
+    if (!badge) return; // not admin, badge doesn't exist on this session
 
-  fetch("functions/get_flagging_request_count.php")
-    .then((r) => r.json())
-    .then((data) => {
-      const count = parseInt(data.count, 10) || 0;
-      if (count > 0) {
-        badge.textContent = count > 99 ? "99+" : count;
-        badge.classList.remove("d-none");
-      } else {
-        badge.classList.add("d-none");
-      }
-    })
-    .catch(() => {});
-}
+    fetch("functions/get_flagging_request_count.php")
+      .then((r) => r.json())
+      .then((data) => {
+        const count = parseInt(data.count, 10) || 0;
+        if (count > 0) {
+          badge.textContent = count > 99 ? "99+" : count;
+          badge.classList.remove("d-none");
+        } else {
+          badge.classList.add("d-none");
+        }
+      })
+      .catch(() => {});
+  }
 
   let currentViewRequestId = null;
 
@@ -370,8 +395,7 @@ function refreshSidebarFlaggingBadge() {
   const requestModal = requestModalEl
     ? new bootstrap.Modal(requestModalEl)
     : null;
-  const IS_BRANCH_MANAGER =
-    (CURRENT_USER_ROLE || "").toLowerCase() === "branch_manager";
+  const IS_BRANCH_MANAGER = CURRENT_ROLE === "branch_manager";
   let selectedEmployee = null;
 
   // ---------------------------------------------------------------
@@ -494,6 +518,8 @@ function refreshSidebarFlaggingBadge() {
   // - branch_manager: locked to their single session branch, cannot change.
   //   The server independently re-validates this too — never trust the
   //   disabled select alone.
+  // - regional_manager: limited to the branches in their region (the codes
+  //   from CURRENT_USER_BRANCH), selectable. Same server-side caveat.
   // - audit_manager / audit_supervisor: unrestricted — full branch list
   //   fetched from the server, not limited to their own session branch.
   //
@@ -546,6 +572,53 @@ function refreshSidebarFlaggingBadge() {
             .append(`<option value="${myCode}">${myCode}</option>`);
           $select.prop("disabled", true);
           loadBrandsForBranch(myCode);
+        });
+      return;
+    }
+
+    if (IS_REGIONAL_MANAGER) {
+      // No branches = nothing to pick, never "everything"
+      if (!REGION_BRANCH_CODES.length) {
+        $select
+          .append('<option value="">No branches in your region</option>')
+          .prop("disabled", true);
+        return;
+      }
+
+      $select
+        .append('<option value="">Loading branches...</option>')
+        .prop("disabled", true);
+
+      fetch("functions/fetch_all_branches.php")
+        .then((r) => r.json())
+        .then((branches) => {
+          $select.empty();
+
+          // Only keep branches inside their region
+          const mine = (Array.isArray(branches) ? branches : []).filter((b) =>
+            REGION_BRANCH_CODES.includes(String(b.branch_code)),
+          );
+
+          if (!mine.length) {
+            $select
+              .append('<option value="">No branches in your region</option>')
+              .prop("disabled", true);
+            return;
+          }
+
+          $select.append('<option value="">Select branch...</option>');
+          mine.forEach((b) =>
+            $select.append(
+              `<option value="${b.branch_code}">${b.branch}</option>`,
+            ),
+          );
+          $select.prop("disabled", false);
+        })
+        .catch(() => {
+          $select
+            .empty()
+            .append('<option value="">Failed to load branches</option>')
+            .prop("disabled", true);
         });
       return;
     }

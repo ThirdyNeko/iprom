@@ -6,18 +6,28 @@ include '../auth/require_login.php';
 
 $pdo = qa_db();
 
-$role   = $_SESSION['role'] ?? '';
-$branch = $_SESSION['branch'] ?? ''; // comma-delimited string
+$role = strtolower($_SESSION['role'] ?? '');
 
-// Only branch managers get this bubble. Everyone else gets 0 — server-side
-// gate, don't rely on the JS/UI check alone.
-if (strtolower($role) !== 'branch_manager') {
+// Only branch managers and regional managers get this bubble. Everyone
+// else gets 0 — server-side gate, don't rely on the JS/UI check alone.
+if (!in_array($role, ['branch_manager', 'regional_manager'], true)) {
     echo json_encode(['count' => 0]);
     exit;
 }
 
-$branchCodes = array_values(array_filter(array_map('trim', explode(',', $branch))));
+if ($role === 'regional_manager') {
+    // Regional managers cover every branch in their region. login.php
+    // resolves the region into branch codes and stores them as an array in
+    // user_branches; $_SESSION['branch'] is null for them.
+    $branchCodes = array_values(array_filter(
+        array_map('trim', $_SESSION['user_branches'] ?? [])
+    ));
+} else {
+    $branch      = $_SESSION['branch'] ?? ''; // comma-delimited string
+    $branchCodes = array_values(array_filter(array_map('trim', explode(',', $branch))));
+}
 
+// No branches = nothing to count, never "everything"
 if (empty($branchCodes)) {
     echo json_encode(['count' => 0]);
     exit;
