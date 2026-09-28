@@ -143,8 +143,9 @@
                     <?php endif; ?>
                 </a>
             </li>
+        <?php endif; ?>
 
-            <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['audit_manager', 'audit_supervisor'])): ?>
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['audit_manager', 'audit_supervisor', 'staff'])): ?>
 
             <li>
                 <a href="blacklisted.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'blacklisted.php' ? 'active' : '' ?>">
@@ -153,7 +154,6 @@
                 </a>
             </li>
 
-             <?php endif; ?>
         <?php endif; ?>
 
         <!-- Reports — admin tier + the whole audit team -->
