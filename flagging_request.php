@@ -24,7 +24,7 @@ if ($role_lower === 'regional_manager') {
 }
 
 $is_audit = in_array($role_lower, ['audit_manager', 'audit_supervisor']);
-$is_admin = in_array($role_lower, ['admin', 'super_admin']);
+$is_admin = in_array($role_lower, ['admin', 'super_admin', 'assistant_admin']);
 
 // Branch-side requesters: branch_manager and regional_manager
 $is_branch_side = in_array($role_lower, ['branch_manager', 'regional_manager']);

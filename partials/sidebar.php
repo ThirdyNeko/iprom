@@ -133,7 +133,7 @@
             </li> -->
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'branch_manager', 'regional_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
+        <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'assistant_admin', 'branch_manager', 'regional_manager', 'super_admin', 'audit_manager', 'audit_supervisor'])): ?>
             <li>
                 <a href="flagging_request.php" class="nav-link d-flex align-items-center gap-2 <?= $current_page == 'flagging_request.php' ? 'active' : '' ?>">
                     <i class="bi bi-flag"></i>
