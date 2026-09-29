@@ -7,8 +7,10 @@
  * buttons):
  *   - request must be 'Flagged'
  *   - existing + new attachments may not exceed 3
- *   - branch_manager / regional_manager: never when last_updated_by_role is
- *     audit_manager / audit_supervisor (audit lock)
+ *   - branch_manager / regional_manager: never when the last updater's role
+ *     (last_updated_by_role, falling back to requested_by_role) is
+ *     audit_manager / audit_supervisor. Those rows are hidden from them, so
+ *     the response is the same "not found" they'd get for a missing row.
  *   - png/jpeg only, 5MB each
  *
  * The count check, inserts and last_updated stamp run in one transaction
@@ -113,7 +115,7 @@ try {
 
     // Lock the request row so concurrent uploads serialize on it.
     $stmt = $pdo->prepare("
-        SELECT status, last_updated_by_role
+        SELECT status, last_updated_by_role, requested_by_role
         FROM dbo.flagging_request WITH (UPDLOCK, HOLDLOCK)
         WHERE id = ?
     ");
@@ -124,15 +126,20 @@ try {
     if (!$req) {
         fail($pdo, 404, 'Request not found.');
     }
-    if ($req['status'] !== 'Flagged') {
-        fail($pdo, 409, 'Attachments can only be added to flagged requests.');
+
+    // Last updater's role, falling back to the requester for rows that
+    // were never updated (same fallback as get_flagging_requests).
+    $lastRole = strtolower(trim((string)($req['last_updated_by_role'] ?: $req['requested_by_role'])));
+
+    // Audit lock: branch_manager / regional_manager can't see, or add
+    // attachments to, a request whose last updater is audit.
+    if (in_array($role_lower, $branch_side_roles, true)
+        && in_array($lastRole, $audit_roles, true)) {
+        fail($pdo, 404, 'Request not found.');
     }
 
-    // Audit lock: branch_manager / regional_manager can't add attachments
-    // once audit was the last to update the request.
-    if (in_array($role_lower, $branch_side_roles, true)
-        && in_array(strtolower((string)$req['last_updated_by_role']), $audit_roles, true)) {
-        fail($pdo, 403, 'This request was last updated by audit and is locked.');
+    if ($req['status'] !== 'Flagged') {
+        fail($pdo, 409, 'Attachments can only be added to flagged requests.');
     }
 
     // Count what's already attached, THEN check the new files fit

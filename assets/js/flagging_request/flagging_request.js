@@ -73,33 +73,53 @@ $(function () {
   // Client-side check is for showing/hiding the button only —
   // unflag_request.php / the SQL proc re-verify this independently
   // before actually unflagging.
+  // Who last touched the request. Falls back to the requester for rows
+  // that have never been updated (in case last_updated_* comes back null).
+  function getLastUpdater(r) {
+    return {
+      name: r.last_updated_by || r.requested_by,
+      role: (r.last_updated_by_role || r.requester_role || "").toLowerCase(),
+    };
+  }
+
+  // Branch-side roles must never see requests last updated by audit.
+  function isHiddenFromCurrentRole(r) {
+    return (
+      BRANCH_SIDE_ROLES.includes(CURRENT_ROLE) &&
+      AUDIT_ROLES.includes(getLastUpdater(r).role)
+    );
+  }
+
+  // Who can unflag a given row, based on the LAST UPDATER:
+  //   - the last updater themself
+  //   - audit_manager: last updated by audit_manager / audit_supervisor
+  //   - admin/super_admin: last updated by branch_manager
+  //   - regional_manager: last updated by branch_manager, branch in their region
+  // Client-side check is for showing/hiding the button only —
+  // unflag_request.php / the SQL proc re-verify this independently.
   function canUnflagRow(r) {
-    if (isLockedByAudit(r)) return false;
+    if (isHiddenFromCurrentRole(r)) return false;
 
     const role = CURRENT_ROLE;
-    const requesterRole = (r.requester_role || "").toLowerCase();
-
-    // Prefer an explicit branch_code if the endpoint returns one; the
-    // flagging_request.branch column stores branch codes.
+    const last = getLastUpdater(r);
     const rowBranch = normCode(r.branch_code ?? r.branch);
 
-    const isOwner = r.requested_by === CURRENT_USER_NAME;
+    const isLastUpdater = last.name === CURRENT_USER_NAME;
+
     const isAuditManagerOverAudit =
-      role === "audit_manager" &&
-      (requesterRole === "audit_manager" ||
-        requesterRole === "audit_supervisor");
-    // regional_manager is intentionally NOT in this list — they're limited
-    // to their own region via isRegionalOverBranchManager below.
+      role === "audit_manager" && AUDIT_ROLES.includes(last.role);
+
     const isAdminOverBranchManager =
       (role === "admin" || role === "super_admin") &&
-      requesterRole === "branch_manager";
+      last.role === "branch_manager";
+
     const isRegionalOverBranchManager =
       IS_REGIONAL_MANAGER &&
-      requesterRole === "branch_manager" &&
+      last.role === "branch_manager" &&
       REGION_BRANCH_CODES.includes(rowBranch);
 
     return (
-      isOwner ||
+      isLastUpdater ||
       isAuditManagerOverAudit ||
       isAdminOverBranchManager ||
       isRegionalOverBranchManager
@@ -272,12 +292,10 @@ $(function () {
   const viewModal = viewModalEl ? new bootstrap.Modal(viewModalEl) : null;
 
   $("#FRtable tbody").on("click", "tr", function (e) {
-    if ($(e.target).closest(".fr-actions-col, .fr-unflag-btn").length) {
-      return;
-    }
+    if ($(e.target).closest(".fr-actions-col, .fr-unflag-btn").length) return;
 
     const rowData = table.row(this).data();
-    if (!rowData) return;
+    if (!rowData || isHiddenFromCurrentRole(rowData)) return;
 
     populateViewModal(rowData);
     viewModal.show();
