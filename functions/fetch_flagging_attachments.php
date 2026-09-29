@@ -48,7 +48,7 @@ try {
     }
 
     $isOwner = $row['requested_by'] === $user_name;
-    $isAdmin = in_array($role_lower, ['admin', 'super_admin'], true);
+    $isAdmin = in_array($role_lower, ['admin', 'super_admin', 'assistant_admin'], true);
     $isAudit = in_array($role_lower, ['audit_manager', 'audit_supervisor'], true);
 
     if (!($isOwner || $isAdmin || $isAudit)) {

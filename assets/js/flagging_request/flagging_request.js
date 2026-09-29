@@ -110,8 +110,10 @@ $(function () {
       role === "audit_manager" && AUDIT_ROLES.includes(last.role);
 
     const isAdminOverBranchManager =
-      (role === "admin" || role === "super_admin") &&
-      last.role === "branch_manager";
+      (role === "admin" ||
+        role === "super_admin" ||
+        role === "assistant_admin") &&
+      (last.role === "branch_manager" || last.role === "regional_manager");
 
     const isRegionalOverBranchManager =
       IS_REGIONAL_MANAGER &&
@@ -132,7 +134,10 @@ $(function () {
   // re-verifies this before returning any image data.
   function canViewAttachments(r) {
     const isOwner = r.requested_by === CURRENT_USER_NAME;
-    const isAdmin = CURRENT_ROLE === "admin" || CURRENT_ROLE === "super_admin";
+    const isAdmin =
+      CURRENT_ROLE === "admin" ||
+      CURRENT_ROLE === "super_admin" ||
+      CURRENT_ROLE === "assistant_admin";
     const isAudit = AUDIT_ROLES.includes(CURRENT_ROLE);
     return isOwner || isAdmin || isAudit;
   }
