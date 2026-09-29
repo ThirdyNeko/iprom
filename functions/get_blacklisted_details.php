@@ -29,6 +29,7 @@ $sql = "SELECT
             bl.end_date,
             bl.remarks,
             bl.employee_id,
+            bl.encoded_by,
             br.region
         FROM blacklisted bl
         LEFT JOIN branches br ON br.branch_code = bl.branch

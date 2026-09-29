@@ -64,6 +64,10 @@
             <label class="form-label text-muted small mb-0">End Date</label>
             <div id="vb_end_date" class="fw-semibold"></div>
           </div>
+          <div class="col-md-4">
+            <label class="form-label text-muted small mb-0">Encoded By</label>
+            <div id="vb_encoded_by" class="fw-semibold"></div>
+          </div>
 
           <div class="col-12">
             <hr class="my-2">

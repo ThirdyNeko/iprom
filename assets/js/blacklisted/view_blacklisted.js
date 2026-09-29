@@ -49,6 +49,7 @@ $(document).on(
         $("#vb_region").text(fillOrDash(d.region));
         $("#vb_employment_status").text(fillOrDash(d.employment_status));
         $("#vb_end_date").text(d.end_date ? parseSqlDate(d.end_date) : "—");
+        $("#vb_encoded_by").text(fillOrDash(d.encoded_by)); // ADDED
         $("#vb_remarks").text(fillOrDash(d.remarks));
 
         const nameParts = [d.first_name, d.middle_name, d.last_name, d.suffix]
