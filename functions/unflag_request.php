@@ -6,6 +6,10 @@
  * does the permission check, status check, and race-condition guard
  * atomically server-side. There is no approve/reject/cancel anymore —
  * this is the only status-changing action left.
+ *
+ * regional_manager additionally gets a branch-scope check here, because
+ * the stored procedure has no way to know which branches make up their
+ * region.
  */
 
 session_start();
@@ -14,16 +18,11 @@ header('Content-Type: application/json');
 require '../config/db.php';
 require '../auth/require_login.php';
 
-if (!function_exists('nullIfEmpty')) {
-    function nullIfEmpty($value) {
-        return ($value === null || $value === '') ? null : $value;
-    }
-}
-
 $pdo = qa_db();
 
 $user_role  = $_SESSION['role'] ?? '';
 $user_name  = $_SESSION['fullname'] ?? ($_SESSION['username'] ?? '');
+$role_lower = strtolower($user_role);
 
 $input   = json_decode(file_get_contents('php://input'), true) ?? [];
 $id      = isset($input['id']) ? (int) $input['id'] : 0;
@@ -45,6 +44,31 @@ if (mb_strlen($remarks) > 100) {
 }
 
 try {
+    // regional_manager: the request's branch must be inside their region.
+    if ($role_lower === 'regional_manager') {
+        $sessionBranches = $_SESSION['user_branches'] ?? [];
+        if (!is_array($sessionBranches)) {
+            $sessionBranches = explode(',', (string)$sessionBranches);
+        }
+        $allowedBranches = array_values(array_filter(array_map('trim', $sessionBranches)));
+
+        $chk = $pdo->prepare("SELECT branch FROM dbo.flagging_request WHERE id = ?");
+        $chk->execute([$id]);
+        $row = $chk->fetch(PDO::FETCH_ASSOC);
+        $chk->closeCursor();
+
+        if (!$row) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Request not found.']);
+            exit;
+        }
+        if (!in_array(trim((string)$row['branch']), $allowedBranches, true)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'You are not allowed to unflag this request.']);
+            exit;
+        }
+    }
+
     $stmt = $pdo->prepare("{CALL unflag_flagging_request(?, ?, ?, ?)}");
     $stmt->execute([$id, $user_name, $user_role, $remarks]);
 

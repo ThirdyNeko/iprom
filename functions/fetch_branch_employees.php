@@ -1,17 +1,15 @@
 <?php
 /**
- * ajax/fetch_branch_employees.php
+ * functions/fetch_branch_employees.php
  *
  * Returns employees for a given branch, to populate the Brand/Promodiser
  * dropdowns in the Request Flagging modal after a branch is chosen.
  *
  * Server-side branch enforcement:
- * - branch_manager: locked to their own session branch, ignoring/rejecting
- *   any other branch value the client sends. Never trust the dropdown alone.
- * - audit_manager / audit_supervisor: may only request the branches listed
- *   in their own session branch CSV.
- * - admin / super_admin: unrestricted (not expected to use this modal, but
- *   scoping stays open in case that changes).
+ * - branch_manager: locked to their own session branch(es).
+ * - regional_manager: locked to the branch codes in $_SESSION['user_branches']
+ *   (their region, resolved at login).
+ * - audit_manager / audit_supervisor / admin / super_admin: unrestricted.
  */
 
 session_start();
@@ -20,17 +18,23 @@ header('Content-Type: application/json');
 require '../config/db.php';
 require '../auth/require_login.php';
 
-if (!function_exists('nullIfEmpty')) {
-    function nullIfEmpty($value) {
-        return ($value === null || $value === '') ? null : $value;
-    }
-}
-
 $pdo = qa_db();
 
-$user_role   = strtolower($_SESSION['role'] ?? '');
-$user_branch = $_SESSION['branch'] ?? ''; // comma-delimited
-$allowed_branches = array_filter(array_map('trim', explode(',', $user_branch)));
+$user_role = strtolower($_SESSION['role'] ?? '');
+
+// Branch scope: regional_manager has a list of codes (their region),
+// everyone else has a comma-delimited string in $_SESSION['branch'].
+if ($user_role === 'regional_manager') {
+    $sessionBranches = $_SESSION['user_branches'] ?? [];
+    if (!is_array($sessionBranches)) {
+        $sessionBranches = explode(',', (string)$sessionBranches);
+    }
+    $allowed_branches = array_values(array_filter(array_map('trim', $sessionBranches)));
+} else {
+    $allowed_branches = array_values(array_filter(
+        array_map('trim', explode(',', $_SESSION['branch'] ?? ''))
+    ));
+}
 
 $requested_branch = trim($_GET['branch'] ?? '');
 
@@ -40,8 +44,8 @@ if ($requested_branch === '') {
 }
 
 if (!in_array($user_role, ['admin', 'super_admin', 'audit_manager', 'audit_supervisor'], true)) {
-    // Only branch_manager (or any other restricted role) is locked to
-    // their own session branch(es).
+    // branch_manager / regional_manager (or any other restricted role):
+    // only branches inside their own scope.
     if (!in_array($requested_branch, $allowed_branches, true)) {
         http_response_code(403);
         echo json_encode(['error' => 'You are not authorized to view employees for that branch.']);

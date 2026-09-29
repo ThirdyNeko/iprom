@@ -10,7 +10,7 @@
  * only, this is the real check):
  *   - the requester themself
  *   - admin / super_admin
- *   - audit_manager, viewing a request from an audit_supervisor
+ *   - audit_manager / audit_supervisor
  */
 
 session_start();
@@ -34,25 +34,24 @@ if ($requestId <= 0) {
 
 try {
     $stmt = $pdo->prepare("
-        SELECT id, requested_by, requested_by_role
+        SELECT id, requested_by
         FROM dbo.flagging_request
         WHERE id = ?
     ");
     $stmt->execute([$requestId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->closeCursor();
 
     if (!$row) {
         echo json_encode(['success' => false, 'message' => 'Request not found.']);
         exit;
     }
 
-    $requesterRole = strtolower($row['requested_by_role'] ?? '');
-
     $isOwner = $row['requested_by'] === $user_name;
     $isAdmin = in_array($role_lower, ['admin', 'super_admin'], true);
-    $isManagerOverSupervisor = $role_lower === 'audit_manager' && $requesterRole === 'audit_supervisor';
+    $isAudit = in_array($role_lower, ['audit_manager', 'audit_supervisor'], true);
 
-    if (!($isOwner || $isAdmin || $isManagerOverSupervisor)) {
+    if (!($isOwner || $isAdmin || $isAudit)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'You are not allowed to view these attachments.']);
         exit;
@@ -69,6 +68,7 @@ try {
 
     echo json_encode(['success' => true, 'attachments' => $attachments]);
 } catch (Throwable $e) {
+    error_log('fetch_flagging_attachments.php: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Failed to load attachments.']);
 }

@@ -4,10 +4,32 @@ $(function () {
   // region (resolved at login), so the same list doubles as their region scope.
   const CURRENT_ROLE = (CURRENT_USER_ROLE || "").toLowerCase();
   const IS_REGIONAL_MANAGER = CURRENT_ROLE === "regional_manager";
+
+  // Normalize any branch code before comparing (handles CHAR padding,
+  // numbers vs strings, null/undefined).
+  const normCode = (v) => String(v ?? "").trim();
+
   const REGION_BRANCH_CODES = (CURRENT_USER_BRANCH || "")
     .split(",")
-    .map((b) => b.trim())
+    .map(normCode)
     .filter(Boolean);
+
+  // Attachment cap for a single request (existing + newly added).
+  const MAX_TOTAL_ATTACHMENTS = 3;
+
+  // Once an audit role was the last to touch a request, the branch-side
+  // roles are locked out of adding attachments and unflagging it.
+  const AUDIT_ROLES = ["audit_manager", "audit_supervisor"];
+  const BRANCH_SIDE_ROLES = ["branch_manager", "regional_manager"];
+
+  // Client-side check is for showing/hiding buttons only — the SQL proc /
+  // PHP endpoints re-verify this independently.
+  function isLockedByAudit(r) {
+    return (
+      BRANCH_SIDE_ROLES.includes(CURRENT_ROLE) &&
+      AUDIT_ROLES.includes((r.last_updated_by_role || "").toLowerCase())
+    );
+  }
 
   // ---------------------------------------------------------------
   // DataTable init — server-side processing, matching the
@@ -46,26 +68,30 @@ $(function () {
   //   - admin/super_admin can unflag requests submitted by a branch_manager
   //   - regional_manager can unflag requests submitted by a branch_manager
   //     whose branch is inside their region
+  // EXCEPT: branch_manager / regional_manager can never unflag a request
+  // whose last_updated_by is an audit_manager / audit_supervisor.
   // Client-side check is for showing/hiding the button only —
   // unflag_request.php / the SQL proc re-verify this independently
   // before actually unflagging.
   function canUnflagRow(r) {
+    if (isLockedByAudit(r)) return false;
+
     const role = CURRENT_ROLE;
     const requesterRole = (r.requester_role || "").toLowerCase();
 
     // Prefer an explicit branch_code if the endpoint returns one; the
     // flagging_request.branch column stores branch codes.
-    const rowBranch = String(r.branch_code ?? r.branch ?? "").trim();
+    const rowBranch = normCode(r.branch_code ?? r.branch);
 
     const isOwner = r.requested_by === CURRENT_USER_NAME;
     const isAuditManagerOverAudit =
       role === "audit_manager" &&
       (requesterRole === "audit_manager" ||
         requesterRole === "audit_supervisor");
+    // regional_manager is intentionally NOT in this list — they're limited
+    // to their own region via isRegionalOverBranchManager below.
     const isAdminOverBranchManager =
-      (role === "admin" ||
-        role === "super_admin" ||
-        role === "regional_manager") &&
+      (role === "admin" || role === "super_admin") &&
       requesterRole === "branch_manager";
     const isRegionalOverBranchManager =
       IS_REGIONAL_MANAGER &&
@@ -80,20 +106,26 @@ $(function () {
     );
   }
 
-  // Attachments are visible to: the requester themself, anyone with the
-  // literal 'admin' or 'super_admin' role, and — as an explicit
-  // exception — an audit_manager viewing a request submitted by an
-  // audit_supervisor. Client-side check is for showing/hiding the
-  // button only — fetch_flagging_attachments.php independently
+  // Attachments are visible to: the requester themself, admin/super_admin,
+  // and audit_manager / audit_supervisor. Client-side check is for
+  // showing/hiding the button only — fetch_flagging_attachments.php
   // re-verifies this before returning any image data.
   function canViewAttachments(r) {
-    const role = CURRENT_ROLE;
     const isOwner = r.requested_by === CURRENT_USER_NAME;
-    const isAdmin = role === "admin" || role === "super_admin";
-    const isManagerOverSupervisor =
-      role === "audit_manager" &&
-      (r.requester_role || "").toLowerCase() === "audit_supervisor";
-    return isOwner || isAdmin || isManagerOverSupervisor;
+    const isAdmin = CURRENT_ROLE === "admin" || CURRENT_ROLE === "super_admin";
+    const isAudit = AUDIT_ROLES.includes(CURRENT_ROLE);
+    return isOwner || isAdmin || isAudit;
+  }
+
+  // Adding attachments to an existing request: only while it's Flagged and
+  // only for users who can request flagging. branch_manager / regional_manager
+  // are additionally locked out once audit_manager / audit_supervisor was the
+  // last to update the request (see isLockedByAudit).
+  // add_flagging_attachments.php re-verifies all of this, including the
+  // 3-attachment cap.
+  function canAddAttachments(r) {
+    if (r.status !== "Flagged" || !CAN_REQUEST_FLAGGING) return false;
+    return !isLockedByAudit(r);
   }
 
   if (CAN_ACTION_FLAGGING_REQUESTS || CAN_REQUEST_FLAGGING) {
@@ -290,6 +322,7 @@ $(function () {
   }
 
   let currentViewRequestId = null;
+  let currentViewRow = null; // the row object behind the open view modal
 
   function populateViewModal(r) {
     $("#vfr_full_name").text(r.full_name || "—");
@@ -318,12 +351,15 @@ $(function () {
 
     // Reset attachment section for this open
     currentViewRequestId = r.id;
+    currentViewRow = r;
     $("#vfr_attachments").empty();
     $("#vfr_attachments_wrapper").addClass("d-none");
     $("#vfr_view_attachments_btn")
       .toggleClass("d-none", !canViewAttachments(r))
       .html('<i class="bi bi-paperclip me-1"></i>View Attachments')
       .prop("disabled", false);
+
+    refreshAddAttachmentUI();
   }
 
   $("#vfr_view_attachments_btn").on("click", function () {
@@ -389,6 +425,144 @@ $(function () {
         if (typeof onDone === "function") onDone();
       });
   }
+
+  // ---------------------------------------------------------------
+  // Add attachments to an existing request (from the view modal)
+  //   - max MAX_TOTAL_ATTACHMENTS per request, counting what's already
+  //     attached (r.attachment_count comes from the list SP)
+  //   - Add button is disabled once the request is at the cap
+  //   - hidden entirely when canAddAttachments() is false (not Flagged,
+  //     or locked because audit was the last updater)
+  // ---------------------------------------------------------------
+  function refreshAddAttachmentUI() {
+    const r = currentViewRow;
+    if (!r) return;
+
+    // If the list endpoint doesn't send attachment_count, don't silently
+    // treat it as 0 (that would let people add past the cap) — disable
+    // the button and say why.
+    const countKnown =
+      r.attachment_count !== undefined && r.attachment_count !== null;
+    if (!countKnown) {
+      console.warn(
+        "attachment_count missing from the flagging request row — add it to get_flagging_requests / fetch_flagging_requests.php",
+      );
+    }
+
+    const count = Number(r.attachment_count) || 0;
+    const atCap = count >= MAX_TOTAL_ATTACHMENTS;
+
+    $("#vfr_add_attachments_wrapper").toggleClass(
+      "d-none",
+      !canAddAttachments(r),
+    );
+    $("#vfr_attachment_count").text(
+      countKnown
+        ? `${count}/${MAX_TOTAL_ATTACHMENTS}`
+        : "?/" + MAX_TOTAL_ATTACHMENTS,
+    );
+    $("#vfr_add_attachments_btn")
+      .prop("disabled", atCap || !countKnown)
+      .attr(
+        "title",
+        !countKnown
+          ? "Attachment count unavailable"
+          : atCap
+            ? "Maximum of 3 attachments reached"
+            : "",
+      );
+  }
+
+  $("#vfr_add_attachments_btn").on("click", function () {
+    $("#vfr_add_attachments_input").trigger("click");
+  });
+
+  $("#vfr_add_attachments_input").on("change", function () {
+    const r = currentViewRow;
+    const files = Array.from(this.files || []);
+    this.value = ""; // allow re-selecting the same file
+
+    if (!r || !files.length || !canAddAttachments(r)) return;
+
+    const remaining = MAX_TOTAL_ATTACHMENTS - (Number(r.attachment_count) || 0);
+    if (remaining <= 0) {
+      Swal.fire(
+        "Limit reached",
+        `A request can have at most ${MAX_TOTAL_ATTACHMENTS} attachments.`,
+        "warning",
+      );
+      return;
+    }
+    if (files.length > remaining) {
+      Swal.fire(
+        "Too many images",
+        `You can add ${remaining} more image${remaining === 1 ? "" : "s"} to this request.`,
+        "warning",
+      );
+      return;
+    }
+    for (const file of files) {
+      if (!/^image\/(png|jpe?g)$/.test(file.type)) {
+        Swal.fire(
+          "Unsupported file",
+          `"${file.name}" isn't a supported image type.`,
+          "warning",
+        );
+        return;
+      }
+      if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+        Swal.fire(
+          "File too large",
+          `"${file.name}" exceeds ${MAX_ATTACHMENT_MB}MB.`,
+          "warning",
+        );
+        return;
+      }
+    }
+
+    Swal.fire({
+      title: `Upload ${files.length} image${files.length === 1 ? "" : "s"}?`,
+      text: "Attachments can't be removed once added.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Upload",
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      const fd = new FormData();
+      fd.append("request_id", r.id);
+      files.forEach((f) => fd.append("attachments[]", f));
+
+      $("#vfr_add_attachments_btn").prop("disabled", true);
+
+      fetch("functions/add_flagging_attachments.php", {
+        method: "POST",
+        body: fd, // no Content-Type header — browser sets the multipart boundary
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (!res.success) {
+            Swal.fire("Error", res.message || "Upload failed.", "error");
+            return;
+          }
+
+          // Keep the modal's copy of the row in sync with what the server did
+          r.attachment_count = res.attachment_count;
+          r.last_updated_by = CURRENT_USER_NAME;
+          r.last_updated_by_role = CURRENT_ROLE;
+
+          Swal.fire("Attachments added", "", "success");
+
+          // Refresh the gallery if it's currently open
+          if (!$("#vfr_attachments_wrapper").hasClass("d-none")) {
+            loadViewAttachments(r.id);
+          }
+          table.ajax.reload(null, false);
+        })
+        .catch(() => Swal.fire("Error", "Something went wrong.", "error"))
+        .finally(() => refreshAddAttachmentUI());
+    });
+  });
 
   // ---------------------------------------------------------------
   // Request Flagging modal
@@ -541,7 +715,7 @@ $(function () {
     if (IS_BRANCH_MANAGER) {
       const codes = (CURRENT_USER_BRANCH || "")
         .split(",")
-        .map((b) => b.trim())
+        .map(normCode)
         .filter(Boolean);
 
       if (!codes.length) {
@@ -560,9 +734,9 @@ $(function () {
       fetch("functions/fetch_all_branches.php")
         .then((r) => r.json())
         .then((branches) => {
-          const match = (branches || []).find(
-            (b) => String(b.branch_code) === String(myCode),
-          );
+          // Guard against an error object, and compare normalized codes
+          const list = Array.isArray(branches) ? branches : [];
+          const match = list.find((b) => normCode(b.branch_code) === myCode);
           const label = match ? match.branch : myCode;
           $select.empty().append(`<option value="${myCode}">${label}</option>`);
           $select.prop("disabled", true);
@@ -596,12 +770,28 @@ $(function () {
         .then((branches) => {
           $select.empty();
 
-          // Only keep branches inside their region
-          const mine = (Array.isArray(branches) ? branches : []).filter((b) =>
-            REGION_BRANCH_CODES.includes(String(b.branch_code)),
+          // A failed/non-array response is a load error, not "no branches"
+          if (!Array.isArray(branches)) {
+            console.error("fetch_all_branches.php returned:", branches);
+            $select
+              .append('<option value="">Failed to load branches</option>')
+              .prop("disabled", true);
+            return;
+          }
+
+          // Normalize the endpoint's codes before matching
+          const mine = branches.filter((b) =>
+            REGION_BRANCH_CODES.includes(normCode(b.branch_code)),
           );
 
           if (!mine.length) {
+            // Helps diagnose a code-format mismatch between the two lists
+            console.warn(
+              "No region match. REGION_BRANCH_CODES:",
+              REGION_BRANCH_CODES,
+              "sample endpoint code:",
+              branches[0] && JSON.stringify(branches[0].branch_code),
+            );
             $select
               .append('<option value="">No branches in your region</option>')
               .prop("disabled", true);
@@ -611,7 +801,7 @@ $(function () {
           $select.append('<option value="">Select branch...</option>');
           mine.forEach((b) =>
             $select.append(
-              `<option value="${b.branch_code}">${b.branch}</option>`,
+              `<option value="${normCode(b.branch_code)}">${b.branch}</option>`,
             ),
           );
           $select.prop("disabled", false);
@@ -635,7 +825,7 @@ $(function () {
       .then((branches) => {
         $select.empty();
 
-        if (branches.error || !branches.length) {
+        if (!Array.isArray(branches) || !branches.length) {
           $select
             .append('<option value="">No branches available</option>')
             .prop("disabled", true);
@@ -645,7 +835,7 @@ $(function () {
         $select.append('<option value="">Select branch...</option>');
         branches.forEach((b) =>
           $select.append(
-            `<option value="${b.branch_code}">${b.branch}</option>`,
+            `<option value="${normCode(b.branch_code)}">${b.branch}</option>`,
           ),
         );
         $select.prop("disabled", false);

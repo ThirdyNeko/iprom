@@ -21,13 +21,27 @@ if (!function_exists('nullIfEmpty')) {
 
 $pdo = qa_db();
 
-$user_role   = $_SESSION['role'] ?? '';
-$user_branch = $_SESSION['branch'] ?? ''; // comma-delimited
-$user_name   = $_SESSION['fullname'] ?? ($_SESSION['username'] ?? '');
-$role_lower  = strtolower($user_role);
+$user_role  = $_SESSION['role'] ?? '';
+$user_name  = $_SESSION['fullname'] ?? ($_SESSION['username'] ?? '');
+$role_lower = strtolower($user_role);
 
-$is_audit = in_array($role_lower, ['audit_manager', 'audit_supervisor'], true);
-$can_request_flagging = $is_audit || $role_lower === 'branch_manager';
+// Branch scope: regional_manager -> every branch code in their region
+// ($_SESSION['user_branches']); branch_manager -> $_SESSION['branch'] CSV.
+if ($role_lower === 'regional_manager') {
+    $sessionBranches = $_SESSION['user_branches'] ?? [];
+    if (!is_array($sessionBranches)) {
+        $sessionBranches = explode(',', (string)$sessionBranches);
+    }
+    $allowedBranches = array_values(array_filter(array_map('trim', $sessionBranches)));
+} else {
+    $allowedBranches = array_values(array_filter(
+        array_map('trim', explode(',', $_SESSION['branch'] ?? ''))
+    ));
+}
+
+$is_audit       = in_array($role_lower, ['audit_manager', 'audit_supervisor'], true);
+$is_branch_side = in_array($role_lower, ['branch_manager', 'regional_manager'], true);
+$can_request_flagging = $is_audit || $is_branch_side;
 
 if (!$can_request_flagging) {
     http_response_code(403);
@@ -59,13 +73,17 @@ if (mb_strlen($remarks) > 100) {
     exit;
 }
 
-// branch_manager can only file a request for their own branch — never
-// trust the client-side locked dropdown alone.
-if ($role_lower === 'branch_manager') {
-    $allowedBranches = array_map('trim', explode(',', $user_branch));
-    if (!in_array($branchCode, $allowedBranches, true)) {
+// branch_manager / regional_manager can only file for branches in their own
+// scope — never trust the client-side dropdown alone.
+if ($is_branch_side) {
+    if (!in_array(trim($branchCode), $allowedBranches, true)) {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'You can only submit requests for your own branch.']);
+        echo json_encode([
+            'success' => false,
+            'message' => $role_lower === 'regional_manager'
+                ? 'You can only submit requests for branches in your region.'
+                : 'You can only submit requests for your own branch.',
+        ]);
         exit;
     }
 }
@@ -126,7 +144,7 @@ if (!empty($_FILES['attachments']) && is_array($_FILES['attachments']['tmp_name'
         $data    = file_get_contents($tmpName);
         $dataUri = 'data:' . $type . ';base64,' . base64_encode($data);
 
-        $attachments[] = ['filename' => $name, 'picture_data' => $dataUri];
+        $attachments[] = ['filename' => basename($name), 'picture_data' => $dataUri];
     }
 }
 
@@ -141,6 +159,7 @@ try {
 
     $result    = $stmt->fetch(PDO::FETCH_ASSOC);
     $requestId = $result['new_id'] ?? null;
+    $stmt->closeCursor();
 
     if (!$requestId) {
         throw new RuntimeException('Procedure ran but no identity value was returned.');

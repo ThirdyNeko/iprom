@@ -69,9 +69,24 @@
           </div>
 
           <div class="col-12">
-            <button type="button" id="vfr_view_attachments_btn" class="btn btn-outline-primary btn-sm d-none">
-              <i class="bi bi-paperclip me-1"></i>View Attachments
-            </button>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button type="button" id="vfr_view_attachments_btn" class="btn btn-outline-primary btn-sm d-none">
+                <i class="bi bi-paperclip me-1"></i>View Attachments
+              </button>
+
+              <!-- Shown by JS only when the user may add attachments to this request -->
+              <div id="vfr_add_attachments_wrapper" class="d-none">
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" id="vfr_add_attachments_btn" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Add Attachments
+                  </button>
+                  <span class="text-muted small"><span id="vfr_attachment_count">0/3</span> attached</span>
+                  <input type="file" id="vfr_add_attachments_input" class="d-none"
+                         accept="image/png,image/jpeg" multiple>
+                </div>
+              </div>
+            </div>
+
             <div id="vfr_attachments_wrapper" class="d-none mt-2">
               <div id="vfr_attachments" class="d-flex flex-wrap gap-2"></div>
             </div>

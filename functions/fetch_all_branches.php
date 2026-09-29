@@ -20,7 +20,7 @@ require '../auth/require_login.php';
 
 $user_role = strtolower($_SESSION['role'] ?? '');
 
-$allowed_roles = ['audit_manager', 'audit_supervisor', 'branch_manager', 'admin', 'super_admin'];
+$allowed_roles = ['audit_manager', 'regional_manager', 'audit_supervisor', 'branch_manager', 'admin', 'super_admin'];
 
 if (!in_array($user_role, $allowed_roles, true)) {
     http_response_code(403);
