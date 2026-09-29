@@ -19,13 +19,15 @@ $length = $length > 0 ? $length : 10;
 
 $searchValue = nullIfEmpty($_POST['search']['value'] ?? '');
 
+// "all" (or anything unrecognized) becomes null = no category filter
 $category = nullIfEmpty($_POST['category'] ?? '');
 $category = in_array($category, ['promodiser', 'direct_hire'], true) ? $category : null;
 
-// DataTable column index -> actual sortable column name
-$columns = ['full_name', 'branch', 'brand', 'employment_status'];
+// DataTable column index -> sortable column name.
+// Order matches the table: hidden id, full_name, category, branch, brand, employment_status
+$columns = ['full_name', 'full_name', 'brand', 'branch', 'brand', 'employment_status'];
 
-$orderColIndex = (int)($_POST['order'][0]['column'] ?? 0);
+$orderColIndex = (int)($_POST['order'][0]['column'] ?? 1);
 $orderDir      = strtoupper($_POST['order'][0]['dir'] ?? 'ASC');
 $orderDir      = in_array($orderDir, ['ASC', 'DESC'], true) ? $orderDir : 'ASC';
 $sortColumn    = $columns[$orderColIndex] ?? 'full_name';
@@ -56,11 +58,12 @@ try {
     $data = [];
     foreach ($rows as $r) {
         $data[] = [
-            'id'                 => $r['id'],
-            'full_name'          => htmlspecialchars($r['full_name']),
-            'branch'             => htmlspecialchars($r['branch'] ?? ''),
-            'brand'              => htmlspecialchars($r['brand'] ?? ''),
-            'employment_status'  => htmlspecialchars($r['employment_status'] ?? ''),
+            'id'                => $r['id'],
+            'full_name'         => htmlspecialchars($r['full_name']),
+            'category'          => (($r['brand'] ?? '') === 'DIRECT HIRE') ? 'direct_hire' : 'promodiser',
+            'branch'            => htmlspecialchars($r['branch'] ?? ''),
+            'brand'             => htmlspecialchars($r['brand'] ?? ''),
+            'employment_status' => htmlspecialchars($r['employment_status'] ?? ''),
         ];
     }
 

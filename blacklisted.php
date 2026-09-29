@@ -7,32 +7,28 @@ include 'partials/header.php';
 include 'partials/sidebar.php';
 
 $pdo = qa_db();
-
 ?>
 
 <style>
-    /* --- Blacklisted tables (Promodiser / Direct Hire) --- */
-    #BlacklistedtablePromodiser th,
-    #BlacklistedtablePromodiser td,
-    #BlacklistedtableDirectHire th,
-    #BlacklistedtableDirectHire td {
+    #Blacklistedtable th,
+    #Blacklistedtable td {
         border-right: 1px solid #dee2e6;
-    }
-    #BlacklistedtablePromodiser.table-hover tbody tr:hover > td,
-    #BlacklistedtableDirectHire.table-hover tbody tr:hover > td {
-        background-color: #e6f0ff !important;
-    }
-    #BlacklistedtablePromodiser th,
-    #BlacklistedtableDirectHire th
-    {
         text-align: center;
         vertical-align: middle;
-        background-color: #2d68c4;
-        color : white;
     }
-
-    .card-body .row.g-2 .col {
-        min-width: 160px;
+    #Blacklistedtable th:first-child,
+    #Blacklistedtable td:first-child {
+        border-left: 1px solid #dee2e6;
+    }
+    #Blacklistedtable td:first-child {
+        text-align: left;
+    }
+    #Blacklistedtable th {
+        background-color: #2d68c4;
+        color: white;
+    }
+    #Blacklistedtable.table-hover tbody tr:hover > td {
+        background-color: #e6f0ff !important;
     }
 
     .filter-control {
@@ -40,31 +36,8 @@ $pdo = qa_db();
         font-size: 14px;
     }
 
-    #BlacklistedtablePromodiser td,
-    #BlacklistedtableDirectHire td {
-        text-align: center;
-    }
-
-    #BlacklistedtablePromodiser th:first-child,
-    #BlacklistedtablePromodiser td:first-child,
-    #BlacklistedtableDirectHire th:first-child,
-    #BlacklistedtableDirectHire td:first-child {
-        border-left: 1px solid #dee2e6;
-    }
-    #BlacklistedtablePromodiser td:first-child,
-    #BlacklistedtableDirectHire td:first-child {
-        text-align: left;
-    }
-
-    /* --- Shared filter controls --- */
-    .clear-input {
-        position: relative;
-    }
-
-    .clear-input input {
-        padding-right: 28px;
-    }
-
+    .clear-input { position: relative; }
+    .clear-input input { padding-right: 28px; }
     .clear-btn {
         position: absolute;
         right: 6px;
@@ -78,16 +51,7 @@ $pdo = qa_db();
         cursor: pointer;
         padding: 0;
     }
-
-    .clear-btn:hover {
-        color: #333;
-    }
-
-    /* --- Tabs --- */
-    .nav-tabs .nav-link.active {
-        font-weight: 600;
-        color: #2d68c4;
-    }
+    .clear-btn:hover { color: #333; }
 </style>
 
 <div class="content">
@@ -101,103 +65,55 @@ $pdo = qa_db();
                 <button type="button" class="btn btn-sm btn-primary" id="syncBlacklistBtn">
                     <i class="bi bi-arrow-repeat"></i> Sync from Employees
                 </button>
-                <!-- One button per tab — each opens its own dedicated modal.
-                     Only the button matching the active tab is shown; see the
-                     shown.bs.tab handler below. -->
                 <button type="button" class="btn btn-sm btn-success" id="addBlacklistedPromodiserBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedPromodiserModal">
-                    <i class="bi bi-plus-lg"></i> Add Blacklisted
+                    <i class="bi bi-plus-lg"></i> Add Promodiser
                 </button>
-                <button type="button" class="btn btn-sm btn-success d-none" id="addBlacklistedDirectHireBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedDirectHireModal">
-                    <i class="bi bi-plus-lg"></i> Add Blacklisted
-                </button><?php endif; ?>
+                <button type="button" class="btn btn-sm btn-success" id="addBlacklistedDirectHireBtn" data-bs-toggle="modal" data-bs-target="#addBlacklistedDirectHireModal">
+                    <i class="bi bi-plus-lg"></i> Add Direct Hire
+                </button>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- Tab nav -->
-        <ul class="nav nav-tabs" id="blacklistedTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="promodiser-tab" data-bs-toggle="tab" data-bs-target="#promodiser-pane" type="button" role="tab" aria-controls="promodiser-pane" aria-selected="true">
-                    Promodiser
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="direct-hire-tab" data-bs-toggle="tab" data-bs-target="#direct-hire-pane" type="button" role="tab" aria-controls="direct-hire-pane" aria-selected="false">
-                    Direct Hire
-                </button>
-            </li>
-        </ul>
-
-        <!-- Tab content -->
-        <div class="tab-content border border-top-0 rounded-bottom shadow-sm mb-3" id="blacklistedTabsContent">
-
-            <!-- PROMODISER TAB -->
-            <div class="tab-pane fade show active p-0" id="promodiser-pane" role="tabpanel" aria-labelledby="promodiser-tab">
-                <div class="card border-0">
-                    <div class="card-body">
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-4">
-                                <label class="form-label">Search</label>
-                                <div class="clear-input">
-                                    <input type="text" id="filterNamePromodiser"
-                                        class="form-control form-control-sm filter-control"
-                                        placeholder="First, Middle, or Last Name">
-                                    <button type="button" class="clear-btn" data-target="filterNamePromodiser">×</button>
-                                </div>
-                            </div>
+        <div class="card border shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label">Search</label>
+                        <div class="clear-input">
+                            <input type="text" id="filterName"
+                                class="form-control form-control-sm filter-control"
+                                placeholder="First, Middle, or Last Name">
+                            <button type="button" class="clear-btn" data-target="filterName">×</button>
                         </div>
                     </div>
-                    <div class="card-body pt-0">
-                        <div class="table-responsive">
-                            <table id="BlacklistedtablePromodiser" class="table table-striped table-hover align-middle text-center">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th>Full Name</th>
-                                        <th>Branch</th>
-                                        <th>Brand</th>
-                                        <th>Employment Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Type</label>
+                        <select id="filterCategory" class="form-select form-select-sm filter-control">
+                            <option value="all">All</option>
+                            <option value="promodiser">Promodiser</option>
+                            <option value="direct_hire">Direct Hire</option>
+                        </select>
                     </div>
                 </div>
             </div>
-
-            <!-- DIRECT HIRE TAB -->
-            <div class="tab-pane fade p-0" id="direct-hire-pane" role="tabpanel" aria-labelledby="direct-hire-tab">
-                <div class="card border-0">
-                    <div class="card-body">
-                        <div class="row g-2 align-items-end">
-                            <div class="col-md-4">
-                                <label class="form-label">Search</label>
-                                <div class="clear-input">
-                                    <input type="text" id="filterNameDirectHire"
-                                        class="form-control form-control-sm filter-control"
-                                        placeholder="First, Middle, or Last Name">
-                                    <button type="button" class="clear-btn" data-target="filterNameDirectHire">×</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body pt-0">
-                        <div class="table-responsive">
-                            <table id="BlacklistedtableDirectHire" class="table table-striped table-hover align-middle text-center">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th>Full Name</th>
-                                        <th>Branch</th>
-                                        <th>Brand</th>
-                                        <th>Employment Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="card-body pt-0">
+                <div class="table-responsive">
+                    <table id="Blacklistedtable" class="table table-striped table-hover align-middle text-center w-100">
+                        <thead>
+                            <tr>
+                                <th class="d-none">ID</th>
+                                <th>Full Name</th>
+                                <th>Type</th>
+                                <th>Branch</th>
+                                <th>Brand</th>
+                                <th>Employment Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
-
         </div>
 
     </div>
@@ -214,23 +130,9 @@ $pdo = qa_db();
 <script>
 document.querySelectorAll(".clear-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-
-    const targetId = btn.getAttribute("data-target");
-    const input = document.getElementById(targetId);
-
+    const input = document.getElementById(btn.getAttribute("data-target"));
     input.value = "";
-
     input.dispatchEvent(new Event("input"));
-  });
-});
-
-// Show only the Add button that matches the active tab.
-document.querySelectorAll('#blacklistedTabs button[data-bs-toggle="tab"]').forEach((tabBtn) => {
-  tabBtn.addEventListener("shown.bs.tab", (e) => {
-    const target = e.target.getAttribute("data-bs-target");
-    const isDirectHire = target === "#direct-hire-pane";
-    document.getElementById("addBlacklistedPromodiserBtn").classList.toggle("d-none", isDirectHire);
-    document.getElementById("addBlacklistedDirectHireBtn").classList.toggle("d-none", !isDirectHire);
   });
 });
 </script>

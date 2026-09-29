@@ -142,7 +142,11 @@ $(document).ready(function () {
             timer: 1800,
             showConfirmButton: false,
           }).then(() => {
-            location.reload();
+            if (window.blacklistedTable) {
+              window.blacklistedTable.ajax.reload(null, false);
+            } else {
+              location.reload();
+            }
           });
         } else {
           Swal.fire("Error", res.message || "Failed to add record.", "error");

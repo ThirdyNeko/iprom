@@ -15,55 +15,51 @@ function fillOrDash(value) {
   return value === null || value === undefined || value === "" ? "—" : value;
 }
 
-$(document).on(
-  "click",
-  "#BlacklistedtablePromodiser tbody tr, #BlacklistedtableDirectHire tbody tr",
-  function () {
-    const id = $(this).data("id");
-    if (!id) return;
+$(document).on("click", "#Blacklistedtable tbody tr", function () {
+  const id = $(this).data("id");
+  if (!id) return;
 
-    $.ajax({
-      url: "functions/get_blacklisted_details.php",
-      type: "POST",
-      dataType: "json",
-      data: { id: id },
+  $.ajax({
+    url: "functions/get_blacklisted_details.php",
+    type: "POST",
+    dataType: "json",
+    data: { id: id },
+  })
+    .done(function (res) {
+      if (!res.success) {
+        Swal.fire("Error", res.message || "Unable to load record.", "error");
+        return;
+      }
+
+      const d = res.data;
+      const isDirectHire = d.brand === "DIRECT HIRE";
+
+      $("#vb_first_name").text(fillOrDash(d.first_name));
+      $("#vb_middle_name").text(fillOrDash(d.middle_name));
+      $("#vb_last_name").text(fillOrDash(d.last_name));
+      $("#vb_suffix").text(fillOrDash(d.suffix));
+      $("#vb_gender").text(fillOrDash(d.gender));
+      $("#vb_birthday").text(d.birthday ? parseSqlDate(d.birthday) : "—");
+      $("#vb_marital_status").text(fillOrDash(d.marital_status));
+      $("#vb_branch").text(fillOrDash(d.branch));
+      $("#vb_brand").text(fillOrDash(d.brand));
+      $("#vb_region").text(fillOrDash(d.region));
+      $("#vb_employment_status").text(fillOrDash(d.employment_status));
+      $("#vb_end_date").text(d.end_date ? parseSqlDate(d.end_date) : "—");
+      $("#vb_encoded_by").text(fillOrDash(d.encoded_by));
+      $("#vb_remarks").text(fillOrDash(d.remarks));
+
+      const nameParts = [d.first_name, d.middle_name, d.last_name, d.suffix]
+        .map((p) => (p || "").trim())
+        .filter(Boolean);
+      $("#vb_full_name").text(nameParts.join(" ") || "—");
+
+      $("#vb_employment_status_group").toggle(!isDirectHire);
+      $("#vb_brand_group").toggle(!isDirectHire);
+
+      $("#viewBlacklistedModal").modal("show");
     })
-      .done(function (res) {
-        if (!res.success) {
-          Swal.fire("Error", res.message || "Unable to load record.", "error");
-          return;
-        }
-
-        const d = res.data;
-        const isDirectHire = d.brand === "DIRECT HIRE";
-
-        $("#vb_first_name").text(fillOrDash(d.first_name));
-        $("#vb_middle_name").text(fillOrDash(d.middle_name));
-        $("#vb_last_name").text(fillOrDash(d.last_name));
-        $("#vb_suffix").text(fillOrDash(d.suffix));
-        $("#vb_gender").text(fillOrDash(d.gender));
-        $("#vb_birthday").text(d.birthday ? parseSqlDate(d.birthday) : "—");
-        $("#vb_marital_status").text(fillOrDash(d.marital_status));
-        $("#vb_branch").text(fillOrDash(d.branch));
-        $("#vb_brand").text(fillOrDash(d.brand));
-        $("#vb_region").text(fillOrDash(d.region));
-        $("#vb_employment_status").text(fillOrDash(d.employment_status));
-        $("#vb_end_date").text(d.end_date ? parseSqlDate(d.end_date) : "—");
-        $("#vb_encoded_by").text(fillOrDash(d.encoded_by)); // ADDED
-        $("#vb_remarks").text(fillOrDash(d.remarks));
-
-        const nameParts = [d.first_name, d.middle_name, d.last_name, d.suffix]
-          .map((p) => (p || "").trim())
-          .filter(Boolean);
-        $("#vb_full_name").text(nameParts.join(" ") || "—");
-
-        $("#vb_employment_status_group").toggle(!isDirectHire);
-        $("#vb_brand_group").toggle(!isDirectHire);
-
-        $("#viewBlacklistedModal").modal("show");
-      })
-      .fail(function () {
-        Swal.fire("Error", "Something went wrong loading the record.", "error");
-      });
-  },
-);
+    .fail(function () {
+      Swal.fire("Error", "Something went wrong loading the record.", "error");
+    });
+});
