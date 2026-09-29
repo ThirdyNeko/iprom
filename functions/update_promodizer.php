@@ -397,7 +397,13 @@ $dateSeparatedValue = $date_separated ? strtotime($date_separated) : null;
 $today = strtotime(date('Y-m-d'));
 $hidden = false;
 
-if ($isInactiveReason) {
+if (strtoupper(trim($reason_for_update)) === 'BLACKLISTED / AWOL / TERMINATED') {
+
+    // Blacklisted is always INACTIVE, regardless of date_separated
+    $status = 'INACTIVE';
+    $hidden = true;
+
+} else if ($isInactiveReason) {
 
     $status = (!$dateSeparatedValue || $dateSeparatedValue < $today)
         ? 'INACTIVE'

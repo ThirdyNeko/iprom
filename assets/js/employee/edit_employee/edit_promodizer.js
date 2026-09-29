@@ -19,6 +19,16 @@ function cleanValue(value) {
   return trimmed.toLowerCase() === "null" || trimmed === "" ? "" : trimmed;
 }
 
+// NEW: Today as YYYY-MM-DD in the browser's LOCAL timezone.
+// Don't use toISOString() here: it's UTC, so in PH (UTC+8) it returns
+// yesterday's date between 12:00 AM and 8:00 AM.
+function getTodayLocalISO() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
 // Formats the stored categories value ("ALL" or "TV,DA,...") into a
 // friendlier display string. Kept for reference/reuse elsewhere,
 // though the edit page's categories field now uses the checkbox
@@ -635,6 +645,16 @@ function toggleDateSeparated() {
     dateSeparatedInput.disabled = !shouldEnable;
     dateSeparatedInput.required = shouldEnable;
     if (!shouldEnable && !isInactive) dateSeparatedInput.value = "";
+
+    // NEW: a blacklisted employee's effectivity date can't be in the
+    // future. The max attribute is applied/removed here, and this
+    // function already runs on every reason change via
+    // runReasonToggles(), so switching reasons clears it again.
+    if (value === "BLACKLISTED / AWOL / TERMINATED") {
+      dateSeparatedInput.max = getTodayLocalISO();
+    } else {
+      dateSeparatedInput.removeAttribute("max");
+    }
   }
 }
 
@@ -1811,6 +1831,21 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   ) {
     return Swal.fire({ icon: "warning", title: "Start Date Required" });
   }
+
+  // NEW: blacklisted effectivity date can't be in the future. The
+  // input's max attribute only greys out dates in the picker — a
+  // typed-in future date still gets through, so it's re-checked here.
+  if (
+    reason === "BLACKLISTED / AWOL / TERMINATED" &&
+    dateSeparated.value > getTodayLocalISO()
+  ) {
+    return Swal.fire({
+      icon: "warning",
+      title: "Invalid Effectivity Date",
+      text: "The effectivity date for a blacklisted employee cannot be in the future.",
+    });
+  }
+
   if (reason === "MATERNITY LEAVE" && !dateReturned.value)
     return Swal.fire({ icon: "warning", title: "End Date Required" });
   if (reason === "EMERGENCY LEAVE" && !dateReturned.value)
