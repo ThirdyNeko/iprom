@@ -159,15 +159,17 @@ $(function () {
       orderable: false,
       className: "fr-actions-col",
       render: (r) => {
-        if (r.status !== "Flagged" || !canUnflagRow(r)) {
-          return `<span class="text-muted">—</span>`;
+        let html = "";
+
+        if (r.status === "Flagged" && canUnflagRow(r)) {
+          html += `<button class="btn btn-outline-danger btn-sm fr-unflag-btn" data-id="${r.id}">Unflag</button> `;
         }
 
-        return `
-                    <button class="btn btn-outline-danger btn-sm fr-unflag-btn" data-id="${r.id}">
-                        Unflag
-                    </button>
-                `;
+        if (CAN_ACTION_FLAGGING_REQUESTS && r.status !== "Blacklisted") {
+          html += `<button class="btn btn-purple btn-sm fr-blacklist-btn" data-id="${r.id}">Blacklist</button>`;
+        }
+
+        return html || `<span class="text-muted">—</span>`;
       },
     });
   }
@@ -191,7 +193,9 @@ $(function () {
     const cls =
       status === "Unflagged"
         ? "status-badge-unflagged"
-        : "status-badge-flagged";
+        : status === "Blacklisted"
+          ? "status-badge-blacklisted"
+          : "status-badge-flagged";
     return `<span class="badge ${cls}">${status}</span>`;
   }
 
@@ -279,6 +283,64 @@ $(function () {
         .then((res) => {
           if (res.success) {
             Swal.fire("Successfully Unflagged", "", "success");
+            table.ajax.reload(null, false);
+          } else {
+            Swal.fire("Error", res.message, "error");
+          }
+        })
+        .catch(() => Swal.fire("Error", "Something went wrong.", "error"));
+    });
+  });
+
+  $("#FRtable").on("click", ".fr-blacklist-btn", function () {
+    const id = $(this).data("id");
+
+    Swal.fire({
+      title: "Blacklist this employee?",
+      text: "This removes linked roving / multi-brand records and adds them to the blacklist. This cannot be undone.",
+      icon: "warning",
+      width: "600px",
+      confirmButtonColor: "#212529",
+      html: `
+      <textarea id="swal-bl-remarks"
+                class="swal2-textarea"
+                maxlength="100"
+                placeholder="Remarks (required)..."
+                style="margin:10px 0 0 0; width:100%; height:100px; font-size:16px; resize:none;"></textarea>
+      <div class="text-end text-muted" style="font-size:12px;">
+        <span id="swal-bl-remarks-count">0</span>/100
+      </div>
+    `,
+      didOpen: () => {
+        const textarea = document.getElementById("swal-bl-remarks");
+        const counter = document.getElementById("swal-bl-remarks-count");
+        textarea.addEventListener("input", () => {
+          counter.textContent = textarea.value.length;
+        });
+        textarea.focus();
+      },
+      preConfirm: () => {
+        const value = document.getElementById("swal-bl-remarks").value.trim();
+        if (!value) {
+          Swal.showValidationMessage("Remarks are required.");
+          return false;
+        }
+        return value;
+      },
+      showCancelButton: true,
+      confirmButtonText: "Blacklist",
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+
+      fetch("functions/blacklist_request.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, remarks: result.value }),
+      })
+        .then((r) => r.json())
+        .then((res) => {
+          if (res.success) {
+            Swal.fire("Employee blacklisted", "", "success");
             table.ajax.reload(null, false);
           } else {
             Swal.fire("Error", res.message, "error");

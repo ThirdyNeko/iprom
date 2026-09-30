@@ -38,7 +38,7 @@ $can_view_flagging_tab = $is_audit || $is_admin || $is_branch_side;
 // regional_manager
 $can_request_flagging = $is_audit || $is_branch_side;
 
-// Approve / reject pending flagging requests
+// Approve / reject pending flagging requests (also gates Blacklist)
 $can_action_flagging_requests = $is_admin;
 ?>
 
@@ -103,8 +103,26 @@ $can_action_flagging_requests = $is_admin;
         color: #333;
     }
 
-    .status-badge-flagged   { background:#dc3545; color:#fff; }
-    .status-badge-unflagged { background:#6c757d; color:#fff; }
+    .btn-purple {
+        background-color: #3c096c;
+        border-color: #3c096c;
+        color: #fff;
+    }
+    .btn-purple:hover,
+    .btn-purple:focus {
+        background-color: #7b2cbf;
+        border-color: #7b2cbf;
+        color: #fff;
+    }
+    .btn-purple:active {
+        background-color: #5a189a !important;
+        border-color: #5a189a !important;
+        color: #fff;
+    }
+
+    .status-badge-flagged     { background:#dc3545; color:#fff; }
+    .status-badge-unflagged   { background:#6c757d; color:#fff; }
+    .status-badge-blacklisted { background:#3c096c; color:#fff; }
 </style>
 
 <?php if ($can_view_flagging_tab): ?>
@@ -139,6 +157,7 @@ $can_action_flagging_requests = $is_admin;
                             <option value="">All</option>
                             <option value="Flagged">Flagged</option>
                             <option value="Unflagged">Unflagged</option>
+                            <option value="Blacklisted">Blacklisted</option>
                         </select>
                     </div>
                 </div>
