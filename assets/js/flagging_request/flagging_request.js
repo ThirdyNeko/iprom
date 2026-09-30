@@ -347,6 +347,15 @@ $(function () {
   let currentViewRequestId = null;
   let currentViewRow = null; // the row object behind the open view modal
 
+  // Falls back to the requester/requested date for rows never updated,
+  // same as getLastUpdater().
+  function renderLastUpdated(r) {
+    const last = getLastUpdater(r);
+    const dt = r.last_updated_date || r.requested_date;
+    $("#vfr_last_updated_by").text(last.name || "—");
+    $("#vfr_last_updated_date").text(dt ? new Date(dt).toLocaleString() : "—");
+  }
+
   function populateViewModal(r) {
     $("#vfr_full_name").text(r.full_name || "—");
     $("#vfr_status_badge").html(statusBadge(r.status));
@@ -361,6 +370,7 @@ $(function () {
     $("#vfr_requested_date").text(
       r.requested_date ? new Date(r.requested_date).toLocaleString() : "—",
     );
+    renderLastUpdated(r);
     $("#vfr_unflagged_by").text(r.unflagged_by || "—");
     $("#vfr_unflagged_date").text(
       r.unflagged_date ? new Date(r.unflagged_date).toLocaleString() : "—",
@@ -573,6 +583,8 @@ $(function () {
           r.attachment_count = res.attachment_count;
           r.last_updated_by = CURRENT_USER_NAME;
           r.last_updated_by_role = CURRENT_ROLE;
+          r.last_updated_date = new Date().toISOString();
+          renderLastUpdated(r);
 
           Swal.fire("Attachments added", "", "success");
 

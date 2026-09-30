@@ -49,6 +49,15 @@
             <div id="vfr_requested_date" class="fw-semibold"></div>
           </div>
 
+          <div class="col-md-6">
+            <label class="form-label text-muted small mb-0">Last Updated by</label>
+            <div id="vfr_last_updated_by" class="fw-semibold">—</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small mb-0">Last Updated Date</label>
+            <div id="vfr_last_updated_date" class="fw-semibold">—</div>
+          </div>
+
           <div class="col-12">
             <label class="form-label text-muted small mb-0">Remarks / Reason</label>
             <div id="vfr_remarks" class="border rounded p-2" style="background:#f8f9fa; min-height:60px;"></div>
