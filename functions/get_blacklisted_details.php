@@ -14,6 +14,31 @@ if (!$id) {
     exit;
 }
 
+/**
+ * Resolve the logged-in user's role from the session.
+ * Tries the common key names; add yours to the list if it isn't there.
+ */
+function get_session_role(): string
+{
+    $candidates = [
+        $_SESSION['user_role']         ?? null,
+        $_SESSION['role']              ?? null,
+        $_SESSION['userRole']          ?? null,
+        $_SESSION['user_type']         ?? null,
+        $_SESSION['access_level']      ?? null,
+        $_SESSION['user']['role']      ?? null,
+        $_SESSION['user']['user_role'] ?? null,
+    ];
+
+    foreach ($candidates as $c) {
+        if ($c !== null && $c !== '') {
+            // "Super Admin" / "super_admin" / "SUPERADMIN" -> "superadmin"
+            return preg_replace('/[\s_\-]+/', '', strtolower(trim((string)$c)));
+        }
+    }
+    return '';
+}
+
 $sql = "SELECT 
             bl.id,
             bl.first_name,
@@ -42,7 +67,22 @@ $stmt->execute();
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row) {
-    echo json_encode(['success' => true, 'data' => $row]);
+    // Only these roles may read the real remarks (already normalized form)
+    $allowedRoles   = ['admin', 'superadmin', 'supervisor', 'assistant_admin', 'audit_manager', 'audit_supervisor'];
+    $userRole       = get_session_role();
+    $canViewRemarks = in_array($userRole, $allowedRoles, true);
+
+    if (!$canViewRemarks && !empty($row['remarks'])) {
+        // One asterisk per character of the real remark
+        $row['remarks'] = str_repeat('*', mb_strlen((string)$row['remarks'], 'UTF-8'));
+    }
+
+    $response = ['success' => true, 'data' => $row];
+
+    // TEMPORARY: uncomment to see what the session holds, then remove
+    // $response['debug'] = ['detected_role' => $userRole, 'session' => $_SESSION];
+
+    echo json_encode($response);
 } else {
     echo json_encode(['success' => false, 'message' => 'Record not found']);
 }

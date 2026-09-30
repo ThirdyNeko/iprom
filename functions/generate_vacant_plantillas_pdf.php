@@ -399,7 +399,7 @@ $pdf->AddPage();
 
 $fitSize = computeFitFontSize($pdf, $combined, $widths);
 $rowH = 5;
-$bottomMargin = 20; // mm reserved at the bottom of every page
+$bottomMargin = 30; // mm reserved at the bottom of every page
 
 $totalRows = count($combined);
 $i = 0;
