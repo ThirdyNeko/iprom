@@ -62,6 +62,7 @@ $(document).ready(function () {
   }
 
   // ---- Uppercase all text inputs as the user types (remarks excluded) ----
+  // Includes #bldh_employment_status (labelled "Position" in the UI).
   $("#addBlacklistedDirectHireForm")
     .find('input[type="text"], textarea')
     .not("#bldh_remarks")
@@ -116,13 +117,76 @@ $(document).ready(function () {
       marital_status: $("#bldh_marital_status").val(),
       branch: $("#bldh_branch").val(),
       brand: "DIRECT HIRE",
-      employment_status: "",
+      // Stored as employment_status, shown to the user as "Position"
+      employment_status: $("#bldh_employment_status").val().trim(),
       end_date: $("#bldh_end_date").val(),
       remarks: $("#bldh_remarks").val().trim(),
     };
   }
 
-  function submitBlacklisted(payload) {
+  function refreshBlacklistedTable() {
+    if (window.blacklistedTable) {
+      window.blacklistedTable.ajax.reload(null, false);
+    } else {
+      location.reload();
+    }
+  }
+
+  // After the blacklist record is saved, ask whether to deactivate the matched user
+  function askDeactivateUser(matchedUser) {
+    const matchedName = [
+      matchedUser.first_name,
+      matchedUser.middle_name,
+      matchedUser.last_name,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    Swal.fire({
+      icon: "question",
+      title: "Make User Inactive?",
+      html: `A user account matches this blacklisted person:<br><b>${matchedName}</b> (${matchedUser.username})<br>Position: ${matchedUser.position || "-"} &nbsp; Branch: ${matchedUser.branch || "-"}<br><br>Do you want to mark this user as <b>INACTIVE</b>?`,
+      showCancelButton: true,
+      confirmButtonText: "Yes, Make Inactive",
+      cancelButtonText: "No, Keep Active",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+      preConfirm: () => {
+        return $.ajax({
+          url: "functions/deactivate_user.php",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({ user_id: matchedUser.id }),
+          dataType: "json",
+        })
+          .then((res) => {
+            if (!res.success) {
+              throw new Error(res.message || "Failed to deactivate user.");
+            }
+            return res;
+          })
+          .catch((xhr) => {
+            const msg =
+              xhr && xhr.message ? xhr.message : getAjaxErrorMessage(xhr);
+            Swal.showValidationMessage(msg);
+          });
+      },
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        Swal.fire({
+          icon: "success",
+          title: "User Deactivated",
+          text: "The user has been marked as INACTIVE.",
+          timer: 1800,
+          showConfirmButton: false,
+        }).then(refreshBlacklistedTable);
+      } else {
+        refreshBlacklistedTable();
+      }
+    });
+  }
+
+  function submitBlacklisted(payload, matchedUser) {
     $("#saveBlacklistedDirectHireBtn").prop("disabled", true).text("Saving...");
 
     $.ajax({
@@ -135,19 +199,23 @@ $(document).ready(function () {
       .done(function (res) {
         if (res.success) {
           $("#addBlacklistedDirectHireModal").modal("hide");
+
+          const userIsActive =
+            matchedUser &&
+            String(matchedUser.status || "").toUpperCase() !== "INACTIVE";
+
+          if (userIsActive) {
+            askDeactivateUser(matchedUser);
+            return;
+          }
+
           Swal.fire({
             icon: "success",
             title: "Added",
             text: "Blacklisted record has been added successfully.",
             timer: 1800,
             showConfirmButton: false,
-          }).then(() => {
-            if (window.blacklistedTable) {
-              window.blacklistedTable.ajax.reload(null, false);
-            } else {
-              location.reload();
-            }
-          });
+          }).then(refreshBlacklistedTable);
         } else {
           Swal.fire("Error", res.message || "Failed to add record.", "error");
         }
@@ -175,17 +243,16 @@ $(document).ready(function () {
       .prop("disabled", true)
       .text("Checking...");
 
+    // Direct Hire match is checked against the `users` table
+    // by first name, middle name, and last name only.
     $.ajax({
-      url: "functions/check_blacklisted_match.php",
+      url: "functions/check_blacklisted_direct_hire_match.php",
       method: "POST",
       contentType: "application/json",
       data: JSON.stringify({
         first_name: payload.first_name,
         middle_name: payload.middle_name,
         last_name: payload.last_name,
-        birthdate: payload.birthdate,
-        branch: payload.branch,
-        brand: payload.brand,
       }),
       dataType: "json",
     })
@@ -195,35 +262,15 @@ $(document).ready(function () {
         if (!res.success) {
           Swal.fire(
             "Error",
-            res.message || "Unable to check for a matching employee.",
+            res.message || "Unable to check for a matching user.",
             "error",
           );
           return;
         }
 
-        if (!res.match) {
-          submitBlacklisted(payload);
-          return;
-        }
-
-        const m = res.match;
-        const matchedName = [m.first_name, m.middle_name, m.last_name]
-          .filter(Boolean)
-          .join(" ");
-
-        Swal.fire({
-          icon: "warning",
-          title: "Matching Employee Found",
-          html: `This matches an existing employee record:<br><b>${matchedName}</b> (${m.employee_id})<br>Branch: ${m.branch} &nbsp; Brand: ${m.brand}<br><br>Continuing will mark that employee as <b>INACTIVE</b> and cascade this blacklist entry. Continue?`,
-          showCancelButton: true,
-          confirmButtonText: "Yes, Continue",
-          cancelButtonText: "No, Let Me Edit",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            submitBlacklisted(payload);
-          }
-          // If cancelled: do nothing — modal stays open, no reload, user can edit fields.
-        });
+        // Save the blacklist record first; if a user matched, the
+        // "Make User Inactive?" prompt appears after a successful save.
+        submitBlacklisted(payload, res.match || null);
       })
       .fail(function (xhr) {
         $("#saveBlacklistedDirectHireBtn").prop("disabled", false).text("Save");

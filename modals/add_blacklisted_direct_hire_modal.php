@@ -103,6 +103,11 @@ try {
             </div>
 
             <div class="col-md-6">
+              <label for="bldh_employment_status" class="form-label">Position <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="bldh_employment_status" required>
+            </div>
+
+            <div class="col-md-6">
               <label class="form-label">End Date <span class="text-danger">*</span></label>
               <input type="date" class="form-control" id="bldh_end_date" required>
             </div>
