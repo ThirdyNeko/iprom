@@ -112,6 +112,12 @@ $categories = ($categories === '') ? null : strtoupper($categories);
 $spouse_last_name = trim($_POST['spouse_last_name'] ?? '');
 $spouse_last_name = ($spouse_last_name === '') ? null : $spouse_last_name;
 
+// ✅ NEW: Middle Name — only meaningful for the UPDATE MIDDLE NAME
+// reason (the client only posts it for that reason). Stored uppercase.
+// Blank stays '' here; the validation below rejects a blank value for
+// UPDATE MIDDLE NAME, and for every other reason it is never used.
+$middle_name = strtoupper(trim($_POST['middle_name'] ?? ''));
+
 // =========================
 // LOA CODE GENERATION
 // Format: EMP-YYYYMMDD-XXXX-123456
@@ -207,6 +213,27 @@ if ($reason_for_update === 'UPDATE BIOMETRIC NUMBER') {
     }
 }
 
+// ✅ NEW: UPDATE MIDDLE NAME — admin / super_admin only, and a
+// non-blank, well-formed value is required (this reason exists to fix
+// a missing/incorrect middle name, so clearing it is not allowed).
+if ($reason_for_update === 'UPDATE MIDDLE NAME') {
+    $userRole = $_SESSION['role'] ?? '';
+    if (!in_array($userRole, ['admin', 'super_admin'], true)) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'You are not authorized to update Middle Name.'
+        ]);
+        exit;
+    }
+    if ($middle_name === '' || !preg_match("/^[A-Z][A-Z .'\-]*$/", $middle_name)) {
+        echo json_encode([
+            'status' => 'danger',
+            'message' => 'Please enter a valid Middle Name.'
+        ]);
+        exit;
+    }
+}
+
 if (
     $reason_for_update === 'UPDATE ADDRESS' &&
     (empty($province) || empty($municipality) || empty($barangay))
@@ -236,6 +263,7 @@ $skipSlotValidation = in_array($reason_for_update, [
     'DECEASED',
     'CLERICAL ERROR',
     'UPDATE BIOMETRIC NUMBER',
+    'UPDATE MIDDLE NAME',
     'UPDATE MARITAL STATUS',
     'UPDATE CONTACT NUMBER',
     'UPDATE ADDRESS',
@@ -680,6 +708,13 @@ try {
         ? $spouse_last_name
         : ($base['spouse_last_name'] ?? null);
 
+    // NEW: middle name is only passed for UPDATE MIDDLE NAME. For every
+    // other reason it is NULL, which update_employee must treat as
+    // "leave middle_name untouched".
+    $middleNameParam = ($reason_for_update === 'UPDATE MIDDLE NAME')
+        ? $middle_name
+        : null;
+
     // =========================
     // UPDATE ORIGINAL ONLY HERE
     // =========================
@@ -720,6 +755,10 @@ try {
     // update_employee to accept a matching @spouse_last_name
     // parameter and an employee_info.spouse_last_name column — add
     // both if they don't already exist.
+    // NEW: added @middle_name parameter. update_employee must accept
+    // a matching @middle_name VARCHAR(100) = NULL parameter and, only
+    // when @reason_for_update = 'UPDATE MIDDLE NAME', update
+    // middle_name on every employee_info row for this employee_id.
     $stmt = $pdo->prepare("
         EXEC update_employee
             @id = :id,
@@ -747,6 +786,7 @@ try {
             @biometric_number = :biometric_number,
             @categories = :categories,
             @spouse_last_name = :spouse_last_name,
+            @middle_name = :middle_name,
             @province = :province,
             @province_name = :province_name,
             @municipality = :municipality,
@@ -788,6 +828,7 @@ try {
         ':biometric_number' => $biometric_number,
         ':categories' => $categoriesParam,
         ':spouse_last_name' => $spouseLastNameParam,
+        ':middle_name' => $middleNameParam,
         ':province' => $province,
         ':province_name' => $province_name,
         ':municipality' => $municipality,

@@ -260,6 +260,8 @@ th {
                             <option value="UPDATE ADDRESS">UPDATE ADDRESS</option>
                             <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'super_admin')): ?>
                                 <option value="UPDATE BIOMETRIC NUMBER">UPDATE BIOMETRIC NUMBER</option>
+                                <!-- NEW: admin / super_admin only -->
+                                <option value="UPDATE MIDDLE NAME">UPDATE MIDDLE NAME</option>
                             <?php endif; ?>
                             <option value="UPDATE CONTACT NUMBER">UPDATE CONTACT NUMBER</option>
                             <option value="UPDATE MARITAL STATUS">UPDATE MARITAL STATUS</option>
@@ -294,7 +296,9 @@ th {
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Middle Name</label>
-                                <input type="text" id="editMiddleName" class="form-control" readonly>
+                                <!-- NEW: was readonly; now editable via UPDATE MIDDLE NAME. The JS
+                                     disables it by default and enables it only for that reason. -->
+                                <input type="text" id="editMiddleName" class="form-control" maxlength="100" autocomplete="off" disabled>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Last Name</label>

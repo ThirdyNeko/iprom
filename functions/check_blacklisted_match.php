@@ -23,6 +23,13 @@ foreach ($required as $field) {
 
 $middleName = trim($input['middle_name'] ?? '');
 
+// NEW: normalize the literal text 'null' to blank, same as
+// dbo.add_blacklisted does, so this check and the real insert always
+// agree on whether an employee matches.
+if (strtolower($middleName) === 'null') {
+    $middleName = '';
+}
+
 try {
     // Mirrors the exact matching logic in dbo.add_blacklisted — read-only,
     // no cascade. Used to confirm with the user before the real insert.

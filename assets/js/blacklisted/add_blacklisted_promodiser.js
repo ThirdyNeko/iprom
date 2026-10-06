@@ -20,6 +20,39 @@ $(document).ready(function () {
     return `Something went wrong (HTTP ${xhr.status || "unknown"}).`;
   }
 
+  // NEW: Returns true if the blacklist may proceed, false if it should
+  // abort. Blank middle name -> ask whether one exists. Yes -> tell them
+  // to ask an admin to edit it and abort. No -> proceed.
+  async function confirmMiddleNameBeforeBlacklist(middleName) {
+    const val = String(middleName ?? "")
+      .trim()
+      .toLowerCase();
+    // Placeholder values (N/A, -, NONE, ...) count as blank.
+    const NO_MIDDLE_NAME = ["", "null", "n/a", "na", "none", "-", "--", "."];
+    if (!NO_MIDDLE_NAME.includes(val)) return true;
+
+    const check = await Swal.fire({
+      icon: "question",
+      title: "No Middle Name on Record",
+      text: "Does this employee have a middle name?",
+      showDenyButton: true,
+      confirmButtonText: "Yes, has one",
+      denyButtonText: "No middle name",
+      allowOutsideClick: false,
+    });
+
+    if (check.isConfirmed) {
+      await Swal.fire({
+        icon: "info",
+        title: "Middle Name Needed",
+        text: "Please ask an admin to update this employee's middle name first, then try again.",
+      });
+      return false;
+    }
+
+    return check.isDenied; // "No" proceeds; Esc/dismiss aborts
+  }
+
   let selectedEmployee = null;
 
   // ---------------------------------------------------------------
@@ -129,6 +162,15 @@ $(document).ready(function () {
     $("#saveBlacklistedPromodiserBtn").prop("disabled", true);
   }
 
+  // NEW: fetch_branch_employees.php returns birthday as MM/DD/YYYY, but a
+  // <input type="date"> only accepts YYYY-MM-DD (it silently blanks
+  // anything else). Convert MM/DD/YYYY, and still accept ISO dates.
+  function toDateInputValue(birthday) {
+    if (!birthday) return "";
+    const m = String(birthday).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return m ? `${m[3]}-${m[1]}-${m[2]}` : String(birthday).split("T")[0];
+  }
+
   function selectEmployee(emp) {
     selectedEmployee = emp;
 
@@ -137,7 +179,7 @@ $(document).ready(function () {
     $("#blp_middle_name").val(emp.middle_name);
     $("#blp_last_name").val(emp.last_name);
     $("#blp_suffix").val(emp.suffix);
-    $("#blp_birthdate").val(emp.birthday ? emp.birthday.split("T")[0] : "");
+    $("#blp_birthdate").val(toDateInputValue(emp.birthday));
     $("#blp_gender").val(emp.gender);
     $("#blp_marital_status").val(emp.marital_status);
     $("#blp_branch_display").val(emp.branch); // display name
@@ -260,7 +302,8 @@ $(document).ready(function () {
   }
 
   // ---- Save ----
-  $("#saveBlacklistedPromodiserBtn").on("click", function () {
+  // NEW: handler is now async so it can await the middle-name prompt.
+  $("#saveBlacklistedPromodiserBtn").on("click", async function () {
     if (!selectedEmployee) return;
 
     if (!$("#blp_end_date").val()) {
@@ -273,6 +316,13 @@ $(document).ready(function () {
         "Please provide a reason for this blacklist entry.",
         "warning",
       );
+      return;
+    }
+
+    // NEW: blank middle name -> confirm it's intentional before saving.
+    if (
+      !(await confirmMiddleNameBeforeBlacklist($("#blp_middle_name").val()))
+    ) {
       return;
     }
 

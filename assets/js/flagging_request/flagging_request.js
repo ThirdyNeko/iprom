@@ -14,6 +14,39 @@ $(function () {
     .map(normCode)
     .filter(Boolean);
 
+  // NEW: Returns true if the blacklist may proceed, false if it should
+  // abort. Blank middle name -> ask whether one exists. Yes -> tell them
+  // to ask an admin to edit it and abort. No -> proceed.
+  async function confirmMiddleNameBeforeBlacklist(middleName) {
+    const val = String(middleName ?? "")
+      .trim()
+      .toLowerCase();
+    // Placeholder values (N/A, -, NONE, ...) count as blank.
+    const NO_MIDDLE_NAME = ["", "null", "n/a", "na", "none", "-", "--", "."];
+    if (!NO_MIDDLE_NAME.includes(val)) return true;
+
+    const check = await Swal.fire({
+      icon: "question",
+      title: "No Middle Name on Record",
+      text: "Does this employee have a middle name?",
+      showDenyButton: true,
+      confirmButtonText: "Yes, has one",
+      denyButtonText: "No middle name",
+      allowOutsideClick: false,
+    });
+
+    if (check.isConfirmed) {
+      await Swal.fire({
+        icon: "info",
+        title: "Middle Name Needed",
+        text: "Please ask an admin to update this employee's middle name first, then try again.",
+      });
+      return false;
+    }
+
+    return check.isDenied; // "No" proceeds; Esc/dismiss aborts
+  }
+
   // Attachment cap for a single request (existing + newly added).
   const MAX_TOTAL_ATTACHMENTS = 3;
 
@@ -292,8 +325,24 @@ $(function () {
     });
   });
 
-  $("#FRtable").on("click", ".fr-blacklist-btn", function () {
+  // NEW: handler is now async so it can await the middle-name prompt.
+  $("#FRtable").on("click", ".fr-blacklist-btn", async function () {
     const id = $(this).data("id");
+
+    // NEW: blank middle name -> confirm it's intentional before the
+    // blacklist dialog. Needs middle_name on the row returned by
+    // fetch_flagging_requests.php; if it's missing the check is skipped
+    // (and a warning is logged) rather than prompting everyone.
+    const rowData = table.row($(this).closest("tr")).data();
+    if (rowData && rowData.middle_name !== undefined) {
+      if (!(await confirmMiddleNameBeforeBlacklist(rowData.middle_name))) {
+        return;
+      }
+    } else {
+      console.warn(
+        "middle_name missing from the flagging request row — add it to get_flagging_requests / fetch_flagging_requests.php",
+      );
+    }
 
     Swal.fire({
       title: "Blacklist this employee?",

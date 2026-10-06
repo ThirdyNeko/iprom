@@ -354,6 +354,8 @@ const editMunicipalityName = document.getElementById("editMunicipalityName");
 const editBarangay = document.getElementById("editBarangay");
 const editBarangayName = document.getElementById("editBarangayName");
 const editStreet = document.getElementById("editStreet");
+// NEW: Middle Name (UPDATE MIDDLE NAME reason, admin / super_admin only)
+const editMiddleName = document.getElementById("editMiddleName");
 
 // NEW: Designated Categories dropdown (CHANGE CATEGORIES reason)
 const editCategoriesInput = document.getElementById("editCategoriesInput");
@@ -709,11 +711,13 @@ function toggleContactAddressEditable() {
   const enableAddress = reason === "UPDATE ADDRESS";
   const enableBiometricNumber = reason === "UPDATE BIOMETRIC NUMBER";
   const enableCategories = reason === "CHANGE CATEGORIES";
+  const enableMiddleName = reason === "UPDATE MIDDLE NAME" && isAdminRole();
 
   if (editMaritalStatus) editMaritalStatus.disabled = !enableMaritalStatus;
   if (editContactNumber) editContactNumber.disabled = !enableContactNumber;
   if (editBiometricNumber)
     editBiometricNumber.disabled = !enableBiometricNumber;
+  if (editMiddleName) editMiddleName.disabled = !enableMiddleName;
 
   if (editProvince) editProvince.disabled = !enableAddress;
   if (editStreet) editStreet.disabled = !enableAddress;
@@ -1803,6 +1807,40 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     }
   }
 
+  // NEW: BLACKLISTED / AWOL / TERMINATED is a terminal state, so make
+  // sure a missing middle name is intentional before saving.
+  if (reason === "BLACKLISTED / AWOL / TERMINATED") {
+    const middleName = cleanValue(
+      document.getElementById("editMiddleName")?.value,
+    );
+
+    if (!middleName) {
+      const middleNameCheck = await Swal.fire({
+        icon: "question",
+        title: "No Middle Name on Record",
+        text: "Does this employee have a middle name?",
+        showDenyButton: true,
+        confirmButtonText: "Yes, has one",
+        denyButtonText: "No middle name",
+        allowOutsideClick: false,
+      });
+
+      if (middleNameCheck.isConfirmed) {
+        await Swal.fire({
+          icon: "info",
+          title: "Middle Name Needed",
+          text: "Please ask an admin to update this employee's middle name first (Reason for Update: UPDATE MIDDLE NAME), then try again.",
+        });
+        return; // abort save
+      }
+
+      // Dismissed (Esc) or anything other than "No" -> abort
+      if (!middleNameCheck.isDenied) return;
+
+      // "No middle name" -> fall through and continue saving
+    }
+  }
+
   const result = await Swal.fire({
     icon: "warning",
     title: "Save Changes?",
@@ -1874,6 +1912,24 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     const spouseInfo = await collectSpouseInfoIfNeeded(reason);
     if (!spouseInfo.proceed) return; // user cancelled a step — abort save
     spouseLastName = spouseInfo.spouseLastName;
+  }
+
+  if (reason === "UPDATE MIDDLE NAME") {
+    const newMiddleName = cleanValue(editMiddleName?.value);
+    if (!newMiddleName) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Missing Data",
+        text: "Please enter a Middle Name.",
+      });
+    }
+    if (!/^[A-Za-z][A-Za-z .'-]*$/.test(newMiddleName)) {
+      return Swal.fire({
+        icon: "warning",
+        title: "Invalid Middle Name",
+        text: "Middle name may only contain letters, spaces, periods, hyphens and apostrophes.",
+      });
+    }
   }
 
   if (reason === "UPDATE CONTACT NUMBER") {
@@ -1996,6 +2052,11 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   // NEW: personal / address fields
   formData.set("marital_status", editMaritalStatus?.value || "");
   formData.set("contact_number", editContactNumber?.value || "");
+
+  // NEW: only sent for UPDATE MIDDLE NAME, so no other save can touch it.
+  if (reason === "UPDATE MIDDLE NAME") {
+    formData.set("middle_name", (editMiddleName?.value || "").trim());
+  }
 
   // NEW: only the spouse's last name is ever sent — first/middle
   // name, suffix, and birthdate captured in the modals above are
@@ -2382,6 +2443,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   editContactNumber?.addEventListener("input", function () {
     this.value = this.value.replace(/\D/g, "").slice(0, 11);
+  });
+
+  // NEW: middle name is stored uppercase, letters/space/.'- only
+  editMiddleName?.addEventListener("input", function () {
+    this.value = this.value.replace(/[^A-Za-z .'-]/g, "").toUpperCase();
   });
 
   editStreet?.addEventListener("input", function () {
