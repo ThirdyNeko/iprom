@@ -98,6 +98,7 @@ $stmt = $pdo->prepare(
                 ei.[reason_for_update] NOT IN ('Clerical Error', 'BLACKLISTED / AWOL / TERMINATED', 'DECEASED')
                 OR ei.[reason_for_update] IS NULL
             )
+            AND ei.[status] = 'Active'
      ) x
      WHERE x.[rn] = 1
      ORDER BY [last_name], [first_name]"

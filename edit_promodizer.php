@@ -544,11 +544,15 @@ th {
             </div>
 
             <div class="card-footer d-flex justify-content-between">
-                <div>                    
+                
+                <div>               
+                    <?php if (isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'super_admin' || $_SESSION['role'] === 'supervisor')): ?>     
                     <button type="button" class="btn btn-danger" id="openPrintModalBtn">
                         Print LOA
                     </button>
+                    <?php endif; ?>
                 </div>
+                
                 <button type="button" class="btn btn-primary" id="saveBtn">
                     Save Changes
                 </button>
