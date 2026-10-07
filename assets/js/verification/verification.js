@@ -364,6 +364,11 @@ $(document).ready(function () {
 
   $("#bulkVerifyCancelBtn").on("click", function () {
     bulkVerifyMode = false;
+
+    // Uncheck all currently rendered selected checkboxes
+    $("#LOAtable tbody .bulkVerifyCheckbox").prop("checked", false);
+
+    // Clear stored selections
     bulkVerifySelected.clear();
     updateBulkVerifyBar();
 
@@ -373,6 +378,7 @@ $(document).ready(function () {
       .addClass("btn-outline-primary");
 
     table.column(0).visible(false);
+
     $("#bulkVerifySelectAll")
       .prop("checked", false)
       .prop("indeterminate", false);
