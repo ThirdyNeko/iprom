@@ -171,12 +171,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (result.found) {
           positionInput.value = (result.position || "").toUpperCase();
           container.dataset.verified = "true";
-          setStatus("✓ Branch manager found.", "text-success");
+          setStatus("✓ Matching record found..", "text-success");
         } else {
           container.dataset.verified = "false";
           positionInput.value = "";
           setStatus(
-            result.message || "No matching branch manager found.",
+            "No matching name found for the selected branch",
             "text-danger",
           );
         }
@@ -566,7 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <a href="${f.url}" download="${f.filename}"
                      class="btn btn-outline-danger btn-sm w-100 loa-download-link"
                      data-index="${i}">
-                    Download LOA — ${f.branchName}
+                    ${f.branchName}
                   </a>
                 </div>
               `,
@@ -577,7 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
             icon: "success",
             title: "LOAs Generated",
             html: `
-              <p class="mb-3">Click each button below to download the LOA for that branch.</p>
+              <p class="mb-3">Select a branch below to download the corresponding LOA.</p>
               ${linksHtml}
             `,
             confirmButtonText: "Done",

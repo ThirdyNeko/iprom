@@ -890,8 +890,8 @@ document.addEventListener("DOMContentLoaded", async function () {
           );
           if (!combo || isComboFull(combo, startDate)) {
             return Swal.fire(
-              "Cannot Save",
-              `Invalid: ${branch} & ${b}`,
+              "Invalid Assignment",
+              `The selected assignment for ${branch}-${b} does not match the branch's assigned plantilla. Please verify and try again.`,
               "error",
             );
           }
@@ -905,8 +905,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
         if (!combo || isComboFull(combo, startDate)) {
           return Swal.fire(
-            "Cannot Save",
-            `Branch & Brand Invalid: ${b} & ${brand}. Choose another.`,
+            "Invalid Assignment",
+            `The selected assignment for ${b}-${brand} does not match the branch's assigned plantilla. Please verify and try again.`,
             "error",
           );
         }

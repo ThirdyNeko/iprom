@@ -241,7 +241,7 @@ $categories = $pdo->query("
                             class="btn btn-primary btn-sm"
                             data-bs-toggle="modal"
                             data-bs-target="#advanceSearchModal">
-                            Advance Search
+                            Advanced Search
                         </button>
                     </div>
 
@@ -255,7 +255,7 @@ $categories = $pdo->query("
 
                         <!-- HEADER -->
                         <div class="modal-header">
-                            <h5 class="modal-title">Advance Search</h5>
+                            <h5 class="modal-title">Advanced Search</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
 

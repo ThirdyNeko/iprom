@@ -418,10 +418,6 @@ $pdf->Cell(0, 7, strtoupper(date('F d, Y', strtotime($endDate))), 1, 1);
 
 $pdf->Ln(2);
 
-$pdf->SetFont('Arial', 'I', 10);
-$pdf->Write(6, 'This document was generated automatically by the system; no signature is required.');
-
-$pdf->Ln(7);
 
 // Status on the left
 $pdf->SetFont('Arial', '', 10);
@@ -470,7 +466,7 @@ $pdf->MultiCell(
     "Likewise, you are directed to conduct orientation on the following:\n\n                1. Brief history of the Company\n                2. Company Mission and Vision\n                3. General Rules and Regulations"
 );
 
-$pdf->Ln(10);
+$pdf->Ln(5);
 
 $pdf->SetX(10);
 
@@ -487,6 +483,10 @@ $pdf->Cell($lineWidth, 6, fpdf_str($issuedBy), 0, 1, 'L');
 $pdf->SetX(10);
 $pdf->SetFont('Arial', '', 11);
 $pdf->Cell($lineWidth, 6, fpdf_str($issuedPosition), 0, 0, 'L');
+$pdf->Ln(10);
+
+$pdf->SetFont('Arial', 'I', 8);
+$pdf->Write(6, 'This document was generated automatically by the system; no signature is required.');
 $pdf->SetFont('Arial', '', 8);
 $pdf->Cell(0, 6, $timestamp, 0, 1, 'R');
 

@@ -215,6 +215,12 @@ th {
 #editRemarksCount.text-danger {
     font-weight: 600;
 }
+
+.recipient-position-multi::placeholder {
+            font-size: 12px;
+            color: #b5b5b5;
+            opacity: 1;
+        }
 </style>
 
 <div class="content">
