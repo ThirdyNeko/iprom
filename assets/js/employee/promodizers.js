@@ -339,7 +339,8 @@ document.getElementById("exportExcel").addEventListener("click", function () {
         if (!proceed.isConfirmed) return;
       }
 
-      const isBranchManager = USER_ROLE === "branch_manager";
+      const isBranchManager =
+        USER_ROLE === "branch_manager" || USER_ROLE === "regional_manager";
 
       // Build headers
       const headers = [

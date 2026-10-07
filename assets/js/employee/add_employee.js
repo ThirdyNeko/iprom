@@ -888,12 +888,13 @@ document.addEventListener("DOMContentLoaded", async function () {
           const combo = branchBrandPairs.find(
             (p) => p.branch_code === branch && p.brand_name === b,
           );
+
           if (!combo || isComboFull(combo, startDate)) {
-            return Swal.fire(
-              "Invalid Assignment",
-              `The selected assignment for ${branch}-${b} does not match the branch's assigned plantilla. Please verify and try again.`,
-              "error",
-            );
+            return Swal.fire({
+              title: "Invalid Assignment",
+              html: `The selected assignment for ${combo?.branch_name || branch} - ${b} does not match the branch's assigned plantilla.<br>Please verify and try again.`,
+              icon: "error",
+            });
           }
         }
       }
@@ -903,12 +904,16 @@ document.addEventListener("DOMContentLoaded", async function () {
         const combo = branchBrandPairs.find(
           (p) => p.branch_code === b && p.brand_name === brand,
         );
+
         if (!combo || isComboFull(combo, startDate)) {
-          return Swal.fire(
-            "Invalid Assignment",
-            `The selected assignment for ${b}-${brand} does not match the branch's assigned plantilla. Please verify and try again.`,
-            "error",
-          );
+          const branchDisplayName =
+            branchBrandPairs.find((p) => p.branch_code === b)?.branch_name || b;
+
+          return Swal.fire({
+            title: "Invalid Assignment",
+            html: `The selected assignment for ${branchDisplayName} - ${brand} does not match the branch's assigned plantilla.<br>Please verify and try again.`,
+            icon: "error",
+          });
         }
       }
 

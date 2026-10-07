@@ -485,9 +485,11 @@ $pdf->SetFont('Arial', '', 11);
 $pdf->Cell($lineWidth, 6, fpdf_str($issuedPosition), 0, 0, 'L');
 $pdf->Ln(10);
 
+$pdf->SetTextColor(62, 62, 62); 
 $pdf->SetFont('Arial', 'I', 8);
 $pdf->Write(6, 'This document was generated automatically by the system; no signature is required.');
 $pdf->SetFont('Arial', '', 8);
 $pdf->Cell(0, 6, $timestamp, 0, 1, 'R');
+$pdf->SetTextColor(0); 
 
 $pdf->Output('I', 'letter_of_advice.pdf');

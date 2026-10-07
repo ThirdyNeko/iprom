@@ -79,6 +79,22 @@ if (!empty($sessionBranches)) {
 }
 
 /* =========================
+   SESSION REGION LOCK
+   regional_manager is scoped by region instead of branches.
+   Independent AND clause, so the client-supplied region/area/branch
+   filters below can only narrow within it. Fails closed: a regional
+   manager with no region in session gets zero rows, not all rows.
+========================= */
+if (($_SESSION['role'] ?? '') === 'regional_manager') {
+    if (!empty($_SESSION['region'])) {
+        $sql .= " AND b.region = :session_region";
+        $params[':session_region'] = $_SESSION['region'];
+    } else {
+        $sql .= " AND 1 = 0";
+    }
+}
+
+/* =========================
    FILTERS
    Always applied, session-locked or not — they can only narrow
    the result set, never escape the session lock above.

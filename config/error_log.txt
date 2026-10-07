@@ -1249,3 +1249,4 @@
 [2026-09-14 13:26:04] Error [2]: include(): Failed opening 'modals/view_flagging_request_modal.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\iprom\flagging_request.php on line 189
 [2026-09-28 10:40:56] Error [2]: Undefined variable $branches in C:\xampp\htdocs\iprom\verification.php on line 131
 [2026-09-28 10:40:56] Error [2]: foreach() argument must be of type array|object, null given in C:\xampp\htdocs\iprom\verification.php on line 131
+[2026-10-07 16:16:37] Error [2]: Undefined variable $sql in C:\xampp\htdocs\iprom\functions\get_promodizers_export.php on line 24
