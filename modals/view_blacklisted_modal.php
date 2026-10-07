@@ -68,6 +68,10 @@
             <label class="form-label text-muted small mb-0">Encoded By</label>
             <div id="vb_encoded_by" class="fw-semibold"></div>
           </div>
+          <div class="col-md-4">
+            <label class="form-label text-muted small mb-0">Date Created</label>
+            <div id="vb_date_added" class="fw-semibold"></div>
+          </div>
 
           <div class="col-12">
             <hr class="my-2">

@@ -55,6 +55,7 @@ $sql = "SELECT
             bl.remarks,
             bl.employee_id,
             bl.encoded_by,
+            CONVERT(VARCHAR(19), bl.date_added, 120) AS date_added,
             br.region
         FROM blacklisted bl
         LEFT JOIN branches br ON br.branch_code = bl.branch
@@ -68,7 +69,7 @@ $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($row) {
     // Only these roles may read the real remarks (already normalized form)
-    $allowedRoles   = ['admin', 'superadmin', 'supervisor', 'assistant_admin', 'audit_manager', 'audit_supervisor'];
+    $allowedRoles   = ['admin', 'superadmin', 'supervisor', 'assistantadmin', 'auditmanager', 'auditsupervisor'];
     $userRole       = get_session_role();
     $canViewRemarks = in_array($userRole, $allowedRoles, true);
 

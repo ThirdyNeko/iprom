@@ -19,7 +19,7 @@ $middleName = trim($_POST['middle_name'] ?? '');
 $lastName   = trim($_POST['last_name'] ?? '');
 $suffix     = trim($_POST['suffix'] ?? '');
 
-$validRoles = ['staff', 'supervisor', 'branch_manager', 'admin', 'super_admin', 'audit_manager', 'audit_supervisor', 'audit_staff'];
+$validRoles = ['staff', 'supervisor', 'branch_manager', 'admin', 'super_admin', 'audit_manager', 'audit_supervisor', 'audit_staff', 'regional_manager'];
 
 if (!$id || !$position || !$firstName || !$lastName || !in_array($role, $validRoles)) {
     echo json_encode(['success' => false, 'message' => 'Invalid input.']);

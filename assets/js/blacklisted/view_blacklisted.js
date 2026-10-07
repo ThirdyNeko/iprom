@@ -11,6 +11,20 @@ function parseSqlDate(value) {
   });
 }
 
+function parseSqlDateTime(value) {
+  if (!value) return "";
+  const normalized = value.replace(" ", "T");
+  const d = new Date(normalized);
+  if (isNaN(d)) return value;
+  return d.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 function fillOrDash(value) {
   return value === null || value === undefined || value === "" ? "—" : value;
 }
@@ -47,6 +61,9 @@ $(document).on("click", "#Blacklistedtable tbody tr", function () {
       $("#vb_employment_status").text(fillOrDash(d.employment_status));
       $("#vb_end_date").text(d.end_date ? parseSqlDate(d.end_date) : "—");
       $("#vb_encoded_by").text(fillOrDash(d.encoded_by));
+      $("#vb_date_added").text(
+        d.date_added ? parseSqlDateTime(d.date_added) : "—",
+      );
       $("#vb_remarks").text(fillOrDash(d.remarks));
 
       const nameParts = [d.first_name, d.middle_name, d.last_name, d.suffix]

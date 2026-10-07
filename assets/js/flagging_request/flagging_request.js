@@ -195,11 +195,11 @@ $(function () {
         let html = "";
 
         if (r.status === "Flagged" && canUnflagRow(r)) {
-          html += `<button class="btn btn-outline-danger btn-sm fr-unflag-btn" data-id="${r.id}">Unflag</button> `;
+          html += `<button class="btn btn-orange btn-sm fr-unflag-btn" style="width:69px" data-id="${r.id}">Unflag</button> `;
         }
 
         if (CAN_ACTION_FLAGGING_REQUESTS && r.status !== "Blacklisted") {
-          html += `<button class="btn btn-purple btn-sm fr-blacklist-btn" data-id="${r.id}">Blacklist</button>`;
+          html += `<button class="btn btn-blacklist btn-sm fr-blacklist-btn" style="width:69px" data-id="${r.id}">Blacklist</button>`;
         }
 
         return html || `<span class="text-muted">—</span>`;
@@ -258,7 +258,7 @@ $(function () {
       text: "This will clear the employee record status.",
       theme: "bootstrap-5",
       width: "600px",
-      confirmButtonColor: "#0d6efd",
+      confirmButtonColor: "#198754",
       html: `
         <textarea id="swal-unflag-remarks"
                   class="swal2-textarea"
@@ -349,7 +349,7 @@ $(function () {
       text: "This removes linked roving / multi-brand records and adds them to the blacklist. This cannot be undone.",
       icon: "warning",
       width: "600px",
-      confirmButtonColor: "#212529",
+      confirmButtonColor: "#dc3545",
       html: `
       <textarea id="swal-bl-remarks"
                 class="swal2-textarea"
@@ -665,7 +665,7 @@ $(function () {
     }
 
     Swal.fire({
-      title: `Upload ${files.length} image${files.length === 1 ? "" : "s"}?`,
+      title: `Upload image?`,
       text: "Attachments can't be removed once added.",
       icon: "question",
       showCancelButton: true,

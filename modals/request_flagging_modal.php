@@ -94,8 +94,7 @@
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="submitFlaggingRequestBtn" class="btn btn-danger" disabled>
+        <button type="button" id="submitFlaggingRequestBtn" class="btn btn-orange" disabled>
           <i class="bi bi-send me-1"></i>Submit Request
         </button>
       </div>

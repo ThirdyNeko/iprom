@@ -1,17 +1,22 @@
 // ─────────────────────────────────────────────────────────────
 // verify_loa.js
 // Handles the "Verify LOA" modal: LOA code check -> ID picture
-// check/upload -> confirm preview -> status finalization
-// (ACTIVE / QUEUED).
+// check/crop -> confirm preview (+ picture upload) -> status
+// finalization (ACTIVE / QUEUED).
 //
 // Flow is 4 steps:
 //   1. LOA Code
-//   2. ID Picture (existing/keep/overwrite or fresh upload + crop)
+//   2. ID Picture (existing/keep/overwrite or fresh pick + crop).
+//      NOTHING is uploaded here -- the cropped picture is only
+//      staged locally in verifyState.pendingBlob.
 //   3. Confirm (shows the picture that will be submitted; user
 //      must explicitly click "Confirm & Submit" -- Back returns
-//      to Step 2 without finalizing anything)
+//      to Step 2 without uploading or finalizing anything).
+//      Clicking "Confirm & Submit" uploads the staged picture
+//      (if a new one was chosen) and, only if that succeeds,
+//      moves on to Step 4.
 //   4. Result (finalize_verification.php is only ever called once
-//      Step 3 is confirmed)
+//      Step 3 is confirmed and the upload, if any, succeeded)
 //
 // Picture storage note: pictures are stored as binary data in
 // [IPROM_TEST].[dbo].[employee_pictures].[id_picture] (not on disk),
@@ -71,6 +76,7 @@ $(document).ready(function () {
       hasExistingPicture: false,
       existingPictureData: null,
       overwrite: false,
+      pendingBlob: null, // cropped picture waiting to be uploaded on Confirm & Submit (Step 3)
       pendingPreviewUrl: null, // objectURL for a freshly cropped picture, revoked on close/reopen
       pendingSource: null, // "existing" | "new" -- what's about to be submitted on Confirm
     };
@@ -234,10 +240,12 @@ $(document).ready(function () {
     else if (currentStep === 3) handleConfirmStep();
   });
 
-  // "Keep Existing" no longer finalizes directly -- it just stages
-  // the existing picture as what Confirm will submit.
+  // "Keep Existing" doesn't finalize or upload anything -- it just
+  // stages the existing picture as what Confirm will submit, and
+  // drops any previously staged crop so a stale one is never uploaded.
   $(document).on("click", "#keepExistingBtn", function () {
     verifyState.overwrite = false;
+    verifyState.pendingBlob = null;
     showConfirmStep({ source: "existing" });
   });
 
@@ -412,7 +420,7 @@ async function handleStep1() {
   }
 }
 
-// ── STEP 2: Check for existing picture, then upload/overwrite ──
+// ── STEP 2: Check for existing picture, then pick/crop ─────────
 async function loadExistingPicture() {
   try {
     const res = await fetch(
@@ -446,6 +454,9 @@ async function loadExistingPicture() {
   }
 }
 
+// Step 2 only validates and crops. Nothing is sent to the server
+// here -- the cropped blob is staged in verifyState.pendingBlob and
+// uploaded later by handleConfirmStep() (Step 3).
 async function handleStep2() {
   const file = document.getElementById("idPictureInput").files[0];
 
@@ -472,9 +483,12 @@ async function handleStep2() {
     return;
   }
 
-  showLoading("Uploading picture...");
-  try {
-    if (file) {
+  $("#pictureError").addClass("d-none");
+
+  if (file) {
+    // New file chosen: crop locally and stage it for Step 3.
+    showLoading("Preparing picture...");
+    try {
       const croppedBlob = await getCroppedBlob();
 
       if (!croppedBlob) {
@@ -486,51 +500,28 @@ async function handleStep2() {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("employee_id", verifyState.employeeId);
-      formData.append("picture", croppedBlob, "id_picture.jpg");
-      formData.append("overwrite", verifyState.hasExistingPicture ? "1" : "0");
-
-      const res = await fetch("functions/upload_employee_picture.php", {
-        method: "POST",
-        body: formData,
-      });
-      const result = await res.json();
-
-      if (!result.success) {
-        Swal.fire(
-          "Upload Failed",
-          result.message || "Could not upload picture.",
-          "error",
-        );
-        return;
-      }
-
-      // Picture is uploaded and saved server-side at this point; go to
-      // Confirm with the just-cropped blob as the preview source.
+      verifyState.pendingBlob = croppedBlob;
       showConfirmStep({ source: "new", blob: croppedBlob });
-    } else {
-      // No new file chosen and we weren't required to have one --
-      // this only happens if hasExistingPicture is true and overwrite
-      // was never toggled on (kept the existing picture implicitly).
-      showConfirmStep({ source: "existing" });
+    } catch (err) {
+      console.error("Crop failed:", err);
+      Swal.fire("Error", "Could not process the image.", "error");
+    } finally {
+      hideLoading();
     }
-  } catch (err) {
-    console.error("Picture upload failed:", err);
-    Swal.fire(
-      "Error",
-      "Something went wrong while uploading the picture.",
-      "error",
-    );
-  } finally {
-    hideLoading();
+  } else {
+    // No new file chosen and we weren't required to have one --
+    // this only happens if hasExistingPicture is true and overwrite
+    // was never toggled on (kept the existing picture implicitly).
+    verifyState.pendingBlob = null;
+    showConfirmStep({ source: "existing" });
   }
 }
 
 // ── STEP 3: Confirm — show the picture that will be submitted ──
-// Nothing is finalized here. The user must click "Confirm & Submit"
-// (the footer Next button, relabeled by goToStep) to proceed, or
-// "Back" to return to Step 2 and pick/crop a different picture.
+// Nothing is uploaded or finalized when this step is shown. The user
+// must click "Confirm & Submit" (the footer Next button, relabeled by
+// goToStep) to upload the picture (if new) and proceed, or "Back" to
+// return to Step 2 and pick/crop a different picture.
 function showConfirmStep(opts) {
   revokeConfirmPreviewUrl();
 
@@ -552,7 +543,52 @@ function showConfirmStep(opts) {
   goToStep(3);
 }
 
-function handleConfirmStep() {
+// Uploads the staged cropped picture. Returns true on success.
+// Called only from Step 3's Confirm & Submit.
+async function uploadPendingPicture() {
+  showLoading("Uploading picture...");
+  try {
+    const formData = new FormData();
+    formData.append("employee_id", verifyState.employeeId);
+    formData.append("picture", verifyState.pendingBlob, "id_picture.jpg");
+    formData.append("overwrite", verifyState.hasExistingPicture ? "1" : "0");
+
+    const res = await fetch("functions/upload_employee_picture.php", {
+      method: "POST",
+      body: formData,
+    });
+    const result = await res.json();
+
+    if (!result.success) {
+      Swal.fire(
+        "Upload Failed",
+        result.message || "Could not upload picture.",
+        "error",
+      );
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Picture upload failed:", err);
+    Swal.fire(
+      "Error",
+      "Something went wrong while uploading the picture.",
+      "error",
+    );
+    return false;
+  } finally {
+    hideLoading();
+  }
+}
+
+async function handleConfirmStep() {
+  // Upload first (only if a new picture was staged). On failure, stay
+  // on Step 3 so the user can retry or go Back.
+  if (verifyState.pendingSource === "new" && verifyState.pendingBlob) {
+    const uploaded = await uploadPendingPicture();
+    if (!uploaded) return;
+  }
+
   goToStep(4);
   finalizeVerification();
 }

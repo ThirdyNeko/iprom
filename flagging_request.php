@@ -103,26 +103,45 @@ $can_action_flagging_requests = $is_admin;
         color: #333;
     }
 
-    .btn-purple {
-        background-color: #3c096c;
-        border-color: #3c096c;
+    .btn-blacklist {
+        background-color: #dc3545;
+        border-color: #dc3545;
         color: #fff;
     }
-    .btn-purple:hover,
-    .btn-purple:focus {
-        background-color: #7b2cbf;
-        border-color: #7b2cbf;
+    .btn-blacklist:hover,
+    .btn-blacklist:focus {
+        background-color: #ad2b38;
+        border-color: #ad2b38;
         color: #fff;
     }
-    .btn-purple:active {
-        background-color: #5a189a !important;
-        border-color: #5a189a !important;
+    .btn-blacklist:active {
+        background-color: #dc3545 !important;
+        border-color: #dc3545 !important;
         color: #fff;
     }
 
-    .status-badge-flagged     { background:#dc3545; color:#fff; }
-    .status-badge-unflagged   { background:#6c757d; color:#fff; }
-    .status-badge-blacklisted { background:#3c096c; color:#fff; }
+    .btn-orange {
+        background-color: #fd7e14;
+        border-color: #fd7e14;
+        color: #fff;
+    }
+    .btn-orange:hover,
+    .btn-orange:focus {
+        background-color: #e06c00;
+        border-color: #e06c00;
+        color: #fff;
+    }
+
+    .btn-orange:disabled {
+        background-color: #fd7e14;
+        border-color: #fd7e14;
+        color: #fff;
+        opacity: 0.65;
+    }
+
+    .status-badge-flagged     { background:#fd7e14; color:#fff; }
+    .status-badge-unflagged   { background:#198754; color:#fff; }
+    .status-badge-blacklisted { background:#dc3545; color:#fff; }
 </style>
 
 <?php if ($can_view_flagging_tab): ?>
@@ -133,7 +152,7 @@ $can_action_flagging_requests = $is_admin;
             <h4 class="fw-bold mb-0">Flagging Request Management</h4>
 
             <?php if ($can_request_flagging): ?>
-                <button type="button" id="openRequestFlaggingBtn" class="btn btn-danger btn-sm">
+                <button type="button" id="openRequestFlaggingBtn" class="btn btn-orange btn-sm">
                     <i class="bi bi-slash-circle me-1"></i>Request Flagging
                 </button>
             <?php endif; ?>
