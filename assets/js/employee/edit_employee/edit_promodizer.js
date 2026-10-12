@@ -170,7 +170,7 @@ function getFormSnapshot({ captureFieldValues = false } = {}) {
 // button off/hidden.
 function updateSaveButtonState() {
   const saveBtn = document.getElementById("saveBtn");
-  if (!saveBtn || isBranchManagerRole()) return;
+  if (!saveBtn || isBranchManagerRole() || isLoaLocked()) return;
   if (initialFormSnapshot === null) return;
 
   let hasChanges = getFormSnapshot() !== initialFormSnapshot;
@@ -280,6 +280,47 @@ function lockPageForBranchManager() {
   if (alertBox) {
     alertBox.innerHTML =
       '<div class="alert alert-danger mt-3 mb-2 py-0" style="font-size: 14px; background-color: #f00000; color: white; border-color: #b11f1f; border-width: 2px;">Note: You have read-only access to this record. Certain fields are hidden for data privacy and security purposes.</div>';
+  }
+}
+
+// NEW: employee already has a Letter of Advice on record
+// (letters_of_advice.employee_id match) -> record is read-only for
+// every role. The backend (update_promodizer.php) enforces this too;
+// this only drives the UI.
+function isLoaLocked() {
+  return window.currentEmployee?.has_loa_record === true;
+}
+
+function lockPageForLoaRecord() {
+  if (!pageEl) return;
+
+  pageEl
+    .querySelectorAll("input, select, textarea, button.form-select")
+    .forEach((el) => {
+      el.disabled = true;
+    });
+
+  pageEl
+    .querySelectorAll(
+      ".btn-add-branch, .btn-add-brand, .btn-remove-branch, .btn-remove-brand",
+    )
+    .forEach((btn) => {
+      btn.style.display = "none";
+    });
+
+  const saveBtn = document.getElementById("saveBtn");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.style.display = "none";
+  }
+
+  const changePicBtn = document.getElementById("changeEmployeePictureBtn");
+  if (changePicBtn) changePicBtn.classList.add("d-none");
+
+  const alertBox = document.getElementById("editAlert");
+  if (alertBox) {
+    alertBox.innerHTML =
+      '<div class="alert alert-danger mt-3 mb-2 py-0" style="font-size: 14px; background-color: #f00000; color: white; border-color: #b11f1f; border-width: 2px;">Note: This employee already has a Letter of Advice on record. Please cancel verification before updating them again</div>';
   }
 }
 
@@ -1361,6 +1402,8 @@ async function loadEmployeePage(id) {
       // needed by rollbackFormChanges()
       roving_branches: p.roving_branches,
       multi_brands: p.multi_brands,
+      // NEW: LOA record exists -> page is locked
+      has_loa_record: Number(p.has_loa_record || 0) === 1,
     };
 
     window.currentEmployee = employee;
@@ -1505,6 +1548,9 @@ async function loadEmployeePage(id) {
       if (isBranchManagerRole()) {
         lockPageForBranchManager();
       }
+      if (isLoaLocked()) {
+        lockPageForLoaRecord();
+      }
     });
 
     // NEW: baseline snapshot for "disable Save when nothing changed".
@@ -1580,6 +1626,11 @@ async function loadEmployeePage(id) {
     if (isBranchManager) {
       maskSensitiveFieldsForBranchManager();
       lockPageForBranchManager();
+    }
+
+    // Must also run last, for the same reason as above.
+    if (isLoaLocked()) {
+      lockPageForLoaRecord();
     }
   } catch (err) {
     console.error(err);
@@ -1758,7 +1809,7 @@ async function collectSpouseInfoIfNeeded(reason) {
 // SAVE BUTTON
 // =========================
 document.getElementById("saveBtn").addEventListener("click", async () => {
-  if (isBranchManagerRole()) return;
+  if (isBranchManagerRole() || isLoaLocked()) return;
   if (document.getElementById("saveBtn").disabled) return; // NEW: no-op if nothing changed
 
   const branch = document.getElementById("editBranch")?.value || "";

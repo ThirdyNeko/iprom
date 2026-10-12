@@ -68,6 +68,27 @@ if (!$current) {
     exit;
 }
 
+// =========================
+// BLOCK UPDATES IF THE EMPLOYEE HAS A LETTER OF ADVICE ON RECORD
+// employee_id is looked up from the DB by the record id, never taken
+// from the POST, so it can't be spoofed.
+// =========================
+$stmtLoa = $pdo->prepare("
+    SELECT TOP 1 1
+    FROM employee_info e
+    INNER JOIN letters_of_advice l ON l.employee_id = e.employee_id
+    WHERE e.id = ?
+");
+$stmtLoa->execute([$id]);
+
+if ($stmtLoa->fetchColumn()) {
+    echo json_encode([
+        'status'  => 'danger',
+        'message' => 'This employee already has a Letter of Advice on record. Updates are not allowed.'
+    ]);
+    exit;
+}
+
 $employee_gender = strtoupper(trim($current['gender'] ?? ''));
 
 // =========================

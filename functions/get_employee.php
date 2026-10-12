@@ -32,6 +32,23 @@ if (!$employee) {
 }
 
 // =========================
+// NEW: LETTER OF ADVICE RECORD CHECK
+// If this employee_id exists in letters_of_advice, the edit page
+// locks itself (and update_promodizer.php rejects the save too).
+// =========================
+$hasLoaRecord = 0;
+
+if (!empty($employee['employee_id'])) {
+    $stmt = $pdo->prepare("
+        SELECT TOP 1 1
+        FROM letters_of_advice
+        WHERE employee_id = :eid
+    ");
+    $stmt->execute([':eid' => $employee['employee_id']]);
+    $hasLoaRecord = $stmt->fetchColumn() ? 1 : 0;
+}
+
+// =========================
 // GET MULTI BRANCH (ROVING)
 // =========================
 $rovingBranches = [];
@@ -78,6 +95,9 @@ $employee['roving_branches'] = $rovingBranches;
 $employee['multi_brands'] = $multiBrands;
 $employee['employee_id'] = $employee['employee_id'] ?? null;
 $employee['loa_code'] = $employee['loa_code'] ?? null;
+
+// NEW: consumed by edit JS (isLoaLocked / lockPageForLoaRecord)
+$employee['has_loa_record'] = $hasLoaRecord;
 
 // personal / address fields (explicit fallback for newly added columns)
 $employee['marital_status']      = $employee['marital_status'] ?? null;
