@@ -148,6 +148,9 @@ FROM (
         -- Branch / brand / agency
         loa.branch_code,
         b.branch AS branch_name,
+        -- Branch deployed flag (1/0). Used by the bulk-verify Select All
+        -- to decide which rows to tick; NULL/missing branch counts as 0.
+        ISNULL(b.deployed, 0) AS deployed,
         ISNULL(loa.roving_branches, '') AS roving_branches,
         loa.brand,
         ISNULL(loa.multi_brands, '') AS multi_brands,
@@ -174,7 +177,7 @@ FROM (
     FROM letters_of_advice AS loa
     LEFT JOIN (
         -- De-duped: exactly one row per branch_code
-        SELECT branch_code, branch,
+        SELECT branch_code, branch, deployed,
                ROW_NUMBER() OVER (PARTITION BY branch_code ORDER BY branch_code) AS rn
         FROM branches
     ) AS b ON b.branch_code = loa.branch_code AND b.rn = 1

@@ -57,11 +57,16 @@ $(document).ready(function () {
           const checked = bulkVerifySelected.has(String(data.loa_id))
             ? "checked"
             : "";
+          // sqlsrv returns BIT as true/false, other drivers as 1/0 -- handle both
+          const isDeployed =
+            data.deployed === true || Number(data.deployed) === 1;
+
           return `<input type="checkbox" class="form-check-input bulkVerifyCheckbox"
                     data-loa-id="${data.loa_id}"
                     data-employee-id="${data.employee_id ?? ""}"
                     data-branch="${data.branch_code ?? ""}"
                     data-effectivity-date="${data.effectivity_date ?? ""}"
+                    data-deployed="${isDeployed ? 1 : 0}"
                     ${checked}>`;
         },
       },
@@ -400,22 +405,29 @@ $(document).ready(function () {
     syncSelectAllCheckboxState();
   });
 
-  // Select all — applies to checkboxes currently rendered (current page only).
-  // Delegated from #LOAtable because DataTables recreates the <th> when the
-  // column's visibility is toggled.
+  // Select all — only ticks rows whose branch is NOT deployed (deployed = 0)
+  // on the current page. Deployed (1) rows are never touched here; they have
+  // to be ticked manually. Delegated from #LOAtable because DataTables
+  // recreates the <th> when the column's visibility is toggled.
   $("#LOAtable").on("change", "#bulkVerifySelectAll", function () {
     const checked = this.checked;
-    $("#LOAtable tbody .bulkVerifyCheckbox").each(function () {
-      $(this).prop("checked", checked).trigger("change");
-    });
+    $("#LOAtable tbody .bulkVerifyCheckbox[data-deployed='0']").each(
+      function () {
+        if (this.checked !== checked) {
+          $(this).prop("checked", checked).trigger("change");
+        }
+      },
+    );
   });
 
-  // Keeps the master checkbox honest against what's selected on the current
-  // page: checked if every row is checked, indeterminate if some are.
+  // Keeps the master checkbox honest against the non-deployed rows on the
+  // current page: checked if all of them are checked, indeterminate if some.
   function syncSelectAllCheckboxState() {
-    const $rowBoxes = $("#LOAtable tbody .bulkVerifyCheckbox");
-    const total = $rowBoxes.length;
-    const checkedCount = $rowBoxes.filter(":checked").length;
+    const $eligible = $(
+      "#LOAtable tbody .bulkVerifyCheckbox[data-deployed='0']",
+    );
+    const total = $eligible.length;
+    const checkedCount = $eligible.filter(":checked").length;
 
     $("#bulkVerifySelectAll")
       .prop("checked", total > 0 && checkedCount === total)
