@@ -178,6 +178,7 @@ $(document).ready(function () {
                   data-remarks="${data.remarks ?? ""}"
                   data-issued-by="${data.issued_by ?? ""}"
                   data-issued-position="${data.issued_position ?? ""}"
+                  data-created-at="${data.created_at ?? ""}"
                   data-updated-at="${data.last_updated ?? ""}">
                   <i class="bi bi-printer me-1"></i>View LOA
                 </button>
@@ -236,6 +237,7 @@ $(document).ready(function () {
       // on the record (from the DB), not the current viewer's session.
       issued_by: btn.data("issued-by"),
       issued_position: btn.data("issued-position"),
+      created_at: btn.data("created-at"), // original creation timestamp for the PDF footer — sourced from the DB row
       // "Last updated" timestamp for the PDF footer — sourced from the DB row.
       updated_at: btn.data("updated-at"),
     };

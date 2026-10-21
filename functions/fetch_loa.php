@@ -172,6 +172,8 @@ FROM (
         ISNULL(loa.issued_by, '')       AS issued_by,
         ISNULL(loa.issued_position, '') AS issued_position,
         -- Last updated timestamp shown on the printed PDF
+        ISNULL(loa.created_at, GETDATE()) AS created_at,
+        -- Last updated timestamp shown on the printed PDF
         ISNULL(loa.updated_at, GETDATE()) AS last_updated,
         ROW_NUMBER() OVER (ORDER BY $orderExpr $orderDir) AS rownum
     FROM letters_of_advice AS loa

@@ -46,9 +46,9 @@ $issuedPosition = $data['issued_position'] ?? $_SESSION['position'] ?? '';
 //   - Brand-new LOAs (pdf.js) never send this field, since the record doesn't
 //     exist yet -- falls back to the current time here, same as the old
 //     hardcoded date('F d, Y h:i:s A') behavior.
-$updatedAt = $data['updated_at'] ?? '';
-$timestamp = !empty($updatedAt)
-    ? date('F d, Y h:i:s A', strtotime($updatedAt))
+$createdAt = $data['created_at'] ?? '';
+$timestamp = !empty($createdAt)
+    ? date('F d, Y h:i:s A', strtotime($createdAt))
     : date('F d, Y h:i:s A');
 
 // Other fields
@@ -351,7 +351,7 @@ $pdf->SetFont('Arial', 'B', 11);
 
 $pdf->Cell(150, 6, fpdf_str($recipientName), 0, 0);
 $pdf->SetFont('Arial', '', 11);
-$pdf->Cell(0, 6, date('F d, Y'), 0, 1, 'R');
+$pdf->Cell(0, 6, !empty($createdAt) ? date('F d, Y', strtotime($createdAt)) : date('F d, Y'), 0, 1, 'R');
 
 $pdf->Cell(120, 6, fpdf_str($recipientPosition), 0, 1);
 $pdf->Cell(120, 6, fpdf_str($headerBranch), 0, 1);
