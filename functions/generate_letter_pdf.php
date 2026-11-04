@@ -332,8 +332,35 @@ if ($existing) {
     ]);
 }
 
-// Header branch for this specific LOA (per-branch when multi-branch, else main branch)
+// Header display: use the recipient's region for Regional Managers;
+// otherwise, use the recipient's assigned branch.
 $headerBranch = $recipientBranchName !== '' ? $recipientBranchName : $branch;
+
+$headerDisplay = $headerBranch;
+
+$normalizedPosition = strtoupper(trim($recipientPosition));
+
+if (in_array($normalizedPosition, ['REGIONAL_MANAGER', 'REGIONAL MANAGER'], true)) {
+
+    $regionStmt = $pdo->prepare("
+        SELECT TOP 1 region
+        FROM users
+        WHERE UPPER(LTRIM(RTRIM(position))) IN ('REGIONAL_MANAGER', 'REGIONAL MANAGER')
+          AND UPPER(LTRIM(RTRIM(first_name + ' ' + last_name))) =
+              UPPER(LTRIM(RTRIM(:recipient_name)))
+          AND UPPER(LTRIM(RTRIM(status))) = 'ACTIVE'
+    ");
+
+    $regionStmt->execute([
+        'recipient_name' => $recipientName
+    ]);
+
+    $regionRow = $regionStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!empty($regionRow['region'])) {
+        $headerDisplay = $regionRow['region'];
+    }
+}
 
 $pdf = new FPDF('P', 'mm', 'Letter');
 $pdf->AddPage();
@@ -354,7 +381,7 @@ $pdf->SetFont('Arial', '', 11);
 $pdf->Cell(0, 6, !empty($createdAt) ? date('F d, Y', strtotime($createdAt)) : date('F d, Y'), 0, 1, 'R');
 
 $pdf->Cell(120, 6, fpdf_str($recipientPosition), 0, 1);
-$pdf->Cell(120, 6, fpdf_str($headerBranch), 0, 1);
+$pdf->Cell(120, 6, fpdf_str($headerDisplay), 0, 1);
 
 $pdf->Ln(10);
 
