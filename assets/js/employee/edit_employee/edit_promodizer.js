@@ -1671,7 +1671,18 @@ async function collectSpouseInfoIfNeeded(reason) {
     return { proceed: true, spouseLastName: null };
   }
 
-  const selectedMaritalStatus = (editMaritalStatus?.value || "").toUpperCase();
+  // If the current (saved) marital status is null/empty, don't show the dialog
+  const currentMaritalStatus = cleanValue(
+    window.currentEmployee?.marital_status,
+  ).toUpperCase();
+
+  if (!currentMaritalStatus) {
+    return { proceed: true, spouseLastName: null };
+  }
+
+  const selectedMaritalStatus = (editMaritalStatus?.value || "")
+    .trim()
+    .toUpperCase();
   const employeeGender = (window.currentEmployee?.gender || "")
     .trim()
     .toUpperCase();

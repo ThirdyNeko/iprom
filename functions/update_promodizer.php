@@ -51,12 +51,13 @@ if (!$id) {
 
 // =========================
 // FETCH CURRENT VALUES (IMPORTANT FIX)
-// NEW: also fetch gender here — needed server-side to independently
-// verify whether the MARRIED + FEMALE spouse-last-name requirement
-// actually applies, instead of trusting the client's gating.
+// Also fetch gender and marital_status here — needed server-side to
+// independently verify whether the MARRIED + FEMALE spouse-last-name
+// requirement actually applies, instead of trusting the client's gating.
 // =========================
+// >>> CHANGED: added marital_status
 $stmt = $pdo->prepare("
-    SELECT roving_group_id, multi_brand_group_id, gender
+    SELECT roving_group_id, multi_brand_group_id, gender, marital_status
     FROM employee_info
     WHERE id = ?
 ");
@@ -90,6 +91,12 @@ if ($stmtLoa->fetchColumn()) {
 }
 
 $employee_gender = strtoupper(trim($current['gender'] ?? ''));
+
+// >>> CHANGED (new block): current (saved) marital status. If it is
+// null/empty, the client skips the spouse dialog, so the server must
+// not require the spouse last name either.
+$current_marital_status = strtoupper(trim($current['marital_status'] ?? ''));
+$hasCurrentMaritalStatus = ($current_marital_status !== '' && $current_marital_status !== 'NULL');
 
 // =========================
 // ALWAYS CONTROLLED
@@ -178,13 +185,16 @@ if ($reason_for_update === 'UPDATE MARITAL STATUS' && empty($marital_status)) {
 }
 
 // ✅ NEW: Spouse Last Name is required, server-independently, when
-// the reason is UPDATE MARITAL STATUS, the submitted marital status
-// is MARRIED, and the employee's actual DB gender is FEMALE. This is
-// re-derived here rather than trusting a client-side flag, since the
-// JS gating (isMarried && isFemale) could otherwise be bypassed by
-// posting directly to this endpoint.
+// the reason is UPDATE MARITAL STATUS, the employee already has a
+// saved marital status, the submitted marital status is MARRIED, and
+// the employee's actual DB gender is FEMALE. This is re-derived here
+// rather than trusting a client-side flag, since the JS gating
+// (isMarried && isFemale) could otherwise be bypassed by posting
+// directly to this endpoint.
+// >>> CHANGED: added $hasCurrentMaritalStatus
 $requiresSpouseLastName = (
     $reason_for_update === 'UPDATE MARITAL STATUS' &&
+    $hasCurrentMaritalStatus &&
     strtoupper(trim($marital_status ?? '')) === 'MARRIED' &&
     $employee_gender === 'FEMALE'
 );
