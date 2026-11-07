@@ -13,7 +13,7 @@ $branchMap = [];
 
 $stmt = $pdo->query("
     SELECT branch_code, branch
-    FROM IPROM_2.dbo.branches
+    FROM IPROM_TEST.dbo.branches
     WHERE status = 1
 ");
 
@@ -31,7 +31,7 @@ $branches = $pdo->query("
         a.branch_name AS branch_code,
         b.branch AS branch
     FROM assignment a
-    LEFT JOIN IPROM.dbo.branches b
+    LEFT JOIN IPROM_TEST.dbo.branches b
         ON a.branch_name = b.branch_code
     ORDER BY b.branch
 ")->fetchAll(PDO::FETCH_ASSOC);

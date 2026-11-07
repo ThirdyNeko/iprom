@@ -56,7 +56,7 @@ $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 // Accepts either the human-readable branch name or the code from the CSV.
 $branchMap = [];
 try {
-    $branchRows = $pdo->query("SELECT [branch], [branch_code] FROM [IPROM].[dbo].[branches]")->fetchAll(PDO::FETCH_ASSOC);
+    $branchRows = $pdo->query("SELECT [branch], [branch_code] FROM [IPROM_TEST].[dbo].[branches]")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($branchRows as $r) {
         $code = strtoupper(trim($r['branch_code']));
         $branchMap[strtoupper(trim($r['branch']))] = $code; // name  → code
@@ -67,7 +67,7 @@ try {
 // Existing assignments: UPPER(branch_code)|UPPER(brand_name) → true  (for duplicate detection)
 $existingSet = [];
 try {
-    $rows = $pdo->query("SELECT [branch_name],[brand_name] FROM [IPROM].[dbo].[assignment]")->fetchAll(PDO::FETCH_ASSOC);
+    $rows = $pdo->query("SELECT [branch_name],[brand_name] FROM [IPROM_TEST].[dbo].[assignment]")->fetchAll(PDO::FETCH_ASSOC);
     foreach ($rows as $r) {
         $key = strtoupper(trim($r['branch_name'])) . '|' . mb_strtoupper(trim($r['brand_name']), 'UTF-8');
         $existingSet[$key] = true;
@@ -142,7 +142,7 @@ $errors          = [];
 $insertedThisRun = [];
 
 $sql = "
-    INSERT INTO [IPROM].[dbo].[assignment] (
+    INSERT INTO [IPROM_TEST].[dbo].[assignment] (
         [branch_name], [brand_name], [required_count],
         [assigned_count], [updated_by],
         [created_at], [updated_at], [timestamp]
