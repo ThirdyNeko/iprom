@@ -1,7 +1,11 @@
 /* ───────────────────────────────────────────
    AUDIT ROLES
 ─────────────────────────────────────────── */
-const VIEW_MODAL_AUDIT_ROLES = ["audit_manager", "audit_supervisor", "audit_staff"];
+const VIEW_MODAL_AUDIT_ROLES = [
+  "audit_manager",
+  "audit_supervisor",
+  "audit_staff",
+];
 
 function isAuditRole(role) {
   return VIEW_MODAL_AUDIT_ROLES.includes((role || "").trim().toLowerCase());
@@ -38,7 +42,10 @@ function sortBranches() {
   });
 
   [...leftPane.querySelectorAll(".branch-item")]
-    .sort((a, b) => (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0))
+    .sort(
+      (a, b) =>
+        (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0),
+    )
     .forEach((el) => leftPane.appendChild(el));
 }
 
@@ -67,7 +74,10 @@ function sortRegions() {
   });
 
   [...leftPane.querySelectorAll(".region-item")]
-    .sort((a, b) => (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0))
+    .sort(
+      (a, b) =>
+        (parseInt(a.dataset.index) || 0) - (parseInt(b.dataset.index) || 0),
+    )
     .forEach((el) => leftPane.appendChild(el));
 }
 
@@ -115,10 +125,11 @@ function isPrivileged(requiredRole) {
 
 /* ───────────────────────────────────────────
    USERNAME GENERATION  (mirrors backend logic)
-   "first last" lowercase, space-separated
+   "FIRST LAST SUFFIX" uppercase, space-separated,
+   suffix optional
 ─────────────────────────────────────────── */
-function generateUsername(first, last) {
-  return [first, last]
+function generateUsername(first, last, suffix) {
+  return [first, last, suffix]
     .map((v) => (v || "").trim())
     .filter(Boolean)
     .join(" ")
@@ -126,20 +137,33 @@ function generateUsername(first, last) {
 }
 
 function syncUsernamePreview() {
-  const first = $("#v_first_name").val();
-  const last = $("#v_last_name").val();
-  $("#v_username").val(generateUsername(first, last));
+  $("#v_username").val(
+    generateUsername(
+      $("#v_first_name").val(),
+      $("#v_last_name").val(),
+      $("#v_suffix").val(),
+    ),
+  );
 }
 
 /* ───────────────────────────────────────────
    CHANGE DETECTION HELPER
 ─────────────────────────────────────────── */
+// case-insensitive compare helper so legacy mixed-case rows don't
+// register as "changed" just because the UI now uppercases everything
+function up(v) {
+  return (v || "").trim().toUpperCase();
+}
+
 function refreshSaveBtn() {
   const $modal = $("#userViewModal");
 
   const origBranches = $modal.data("originalBranches");
   const currentBranches = new Set(
-    $modal.find(".branch-checkbox:checked").map((_, el) => el.value.trim()).get(),
+    $modal
+      .find(".branch-checkbox:checked")
+      .map((_, el) => el.value.trim())
+      .get(),
   );
   const branchChanged =
     !!origBranches &&
@@ -148,7 +172,10 @@ function refreshSaveBtn() {
 
   const origRegions = $modal.data("originalRegions");
   const currentRegions = new Set(
-    $modal.find(".region-checkbox:checked").map((_, el) => el.value.trim()).get(),
+    $modal
+      .find(".region-checkbox:checked")
+      .map((_, el) => el.value.trim())
+      .get(),
   );
   const regionChanged =
     !!origRegions &&
@@ -166,12 +193,15 @@ function refreshSaveBtn() {
     origPos !== undefined &&
     ($("#v_position").val().trim() !== origPos ||
       $("#v_role").val() !== origRole ||
-      $("#v_first_name").val().trim() !== origFirst ||
-      $("#v_middle_name").val().trim() !== origMiddle ||
-      $("#v_last_name").val().trim() !== origLast ||
-      $("#v_suffix").val().trim() !== origSuffix);
+      up($("#v_first_name").val()) !== up(origFirst) ||
+      up($("#v_middle_name").val()) !== up(origMiddle) ||
+      up($("#v_last_name").val()) !== up(origLast) ||
+      up($("#v_suffix").val()) !== up(origSuffix));
 
-  $("#saveChangesBtn").prop("disabled", !branchChanged && !regionChanged && !profileChanged);
+  $("#saveChangesBtn").prop(
+    "disabled",
+    !branchChanged && !regionChanged && !profileChanged,
+  );
 }
 
 /* ───────────────────────────────────────────
@@ -197,7 +227,10 @@ $(document).on("change", "#v_role", function () {
       });
     }
   } else {
-    $("#userViewModal .branch-checkbox").prop({ checked: false, disabled: true });
+    $("#userViewModal .branch-checkbox").prop({
+      checked: false,
+      disabled: true,
+    });
   }
 
   if (allowedRegion) {
@@ -207,7 +240,10 @@ $(document).on("change", "#v_role", function () {
       if (i > 0) $(this).prop("checked", false);
     });
   } else {
-    $("#userViewModal .region-checkbox").prop({ checked: false, disabled: true });
+    $("#userViewModal .region-checkbox").prop({
+      checked: false,
+      disabled: true,
+    });
   }
 
   sortBranches();
@@ -273,7 +309,13 @@ $(document).on("input", "#v_first_name, #v_last_name", function () {
   refreshSaveBtn();
 });
 
-$(document).on("input", "#v_middle_name, #v_suffix", function () {
+$(document).on("input", "#v_middle_name", function () {
+  refreshSaveBtn();
+});
+
+// suffix is a <select> now, so it fires "change" (and affects the username)
+$(document).on("change", "#v_suffix", function () {
+  syncUsernamePreview();
   refreshSaveBtn();
 });
 
@@ -306,7 +348,6 @@ $(document).on("click", ".view-user", function () {
         return;
       }
 
-      const username = data.username;
       const role = (data.role || "").trim().toLowerCase();
       const isAuditUser = isAuditRole(role);
       const isRegionUser = isRegionalRole(role);
@@ -348,12 +389,27 @@ $(document).on("click", ".view-user", function () {
 
       /* ── basic fields ── */
       $("#v_id").val(data.id);
-      $("#v_username").val(username);
 
-      $("#v_first_name").val(data.first_name).prop("readonly", !canEdit);
-      $("#v_middle_name").val(data.middle_name).prop("readonly", !canEdit);
-      $("#v_last_name").val(data.last_name).prop("readonly", !canEdit);
-      $("#v_suffix").val(data.suffix).prop("readonly", !canEdit);
+      $("#v_first_name").val(up(data.first_name)).prop("readonly", !canEdit);
+      $("#v_middle_name").val(up(data.middle_name)).prop("readonly", !canEdit);
+      $("#v_last_name").val(up(data.last_name)).prop("readonly", !canEdit);
+
+      /* ── suffix dropdown ── */
+      const suffixVal = up(data.suffix);
+      const $suffix = $("#v_suffix");
+      // if the stored suffix isn't in the dropdown list, add it so it still displays
+      if (
+        suffixVal &&
+        !$suffix.find("option").filter((_, o) => o.value === suffixVal).length
+      ) {
+        $suffix.append(new Option(suffixVal, suffixVal));
+      }
+      $suffix.val(suffixVal).prop("disabled", !canEdit);
+
+      // username preview uses the same rule as the backend (includes suffix)
+      $("#v_username").val(
+        generateUsername(data.first_name, data.last_name, data.suffix),
+      );
 
       $("#v_created_at").val(formatMDY(data.created_at));
       $("#v_updated_at").val(formatMDY(data.updated_at));
@@ -454,7 +510,9 @@ $(document).on("click", ".view-user", function () {
       const branchRightItems = [];
 
       Object.entries(allBranches).forEach(([code, name], index) => {
-        const checked = normalizedAssignedBranches.includes(String(code).trim());
+        const checked = normalizedAssignedBranches.includes(
+          String(code).trim(),
+        );
         const disabled = !allowsBranchSelection || isReadonly;
 
         const item = `
@@ -525,10 +583,10 @@ $(document).on("click", ".view-user", function () {
       $modal.data("originalRegions", new Set(normalizedAssignedRegions));
       $modal.data("originalPosition", (data.position || "").trim());
       $modal.data("originalRole", data.role);
-      $modal.data("originalFirstName", (data.first_name || "").trim());
-      $modal.data("originalMiddleName", (data.middle_name || "").trim());
-      $modal.data("originalLastName", (data.last_name || "").trim());
-      $modal.data("originalSuffix", (data.suffix || "").trim());
+      $modal.data("originalFirstName", up(data.first_name));
+      $modal.data("originalMiddleName", up(data.middle_name));
+      $modal.data("originalLastName", up(data.last_name));
+      $modal.data("originalSuffix", up(data.suffix));
       $("#saveChangesBtn").prop("disabled", true);
 
       setTimeout(() => {
@@ -551,20 +609,26 @@ $(document).on("click", "#saveChangesBtn", function () {
   const id = $("#v_id").val();
   const position = $("#v_position").val().trim();
   const role = $("#v_role").val();
-  const firstName = $("#v_first_name").val().trim();
-  const middleName = $("#v_middle_name").val().trim();
-  const lastName = $("#v_last_name").val().trim();
-  const suffix = $("#v_suffix").val().trim();
-  const username = generateUsername(firstName, lastName);
+  const firstName = up($("#v_first_name").val());
+  const middleName = up($("#v_middle_name").val());
+  const lastName = up($("#v_last_name").val());
+  const suffix = up($("#v_suffix").val());
+  const username = generateUsername(firstName, lastName, suffix);
 
   const origBranches = $modal.data("originalBranches");
   const currentBranches = new Set(
-    $modal.find(".branch-checkbox:checked").map((_, el) => el.value.trim()).get(),
+    $modal
+      .find(".branch-checkbox:checked")
+      .map((_, el) => el.value.trim())
+      .get(),
   );
 
   const origRegions = $modal.data("originalRegions");
   const currentRegions = new Set(
-    $modal.find(".region-checkbox:checked").map((_, el) => el.value.trim()).get(),
+    $modal
+      .find(".region-checkbox:checked")
+      .map((_, el) => el.value.trim())
+      .get(),
   );
 
   if (role === "branch_manager" && currentBranches.size !== 1) {
@@ -607,10 +671,10 @@ $(document).on("click", "#saveChangesBtn", function () {
     isPrivileged() &&
     (position !== origPos ||
       role !== origRole ||
-      firstName !== origFirst ||
-      middleName !== origMiddle ||
-      lastName !== origLast ||
-      suffix !== origSuffix);
+      firstName !== up(origFirst) ||
+      middleName !== up(origMiddle) ||
+      lastName !== up(origLast) ||
+      suffix !== up(origSuffix));
 
   if (!branchChanged && !regionChanged && !profileChanged) return;
 

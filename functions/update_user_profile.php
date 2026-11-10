@@ -14,10 +14,10 @@ if (!in_array($_SESSION['role'] ?? '', $allowed)) {
 $id         = trim($_POST['id'] ?? '');
 $position   = trim($_POST['position'] ?? '');
 $role       = trim($_POST['role'] ?? '');
-$firstName  = trim($_POST['first_name'] ?? '');
-$middleName = trim($_POST['middle_name'] ?? '');
-$lastName   = trim($_POST['last_name'] ?? '');
-$suffix     = trim($_POST['suffix'] ?? '');
+$firstName  = strtoupper(trim($_POST['first_name'] ?? ''));
+$middleName = strtoupper(trim($_POST['middle_name'] ?? ''));
+$lastName   = strtoupper(trim($_POST['last_name'] ?? ''));
+$suffix     = strtoupper(trim($_POST['suffix'] ?? ''));
 
 $validRoles = ['staff', 'supervisor', 'branch_manager', 'admin', 'super_admin', 'audit_manager', 'audit_supervisor', 'audit_staff', 'regional_manager'];
 
@@ -26,9 +26,12 @@ if (!$id || !$position || !$firstName || !$lastName || !in_array($role, $validRo
     exit;
 }
 
-// Username is always derived server-side from first + last name,
-// never trusted from the client. Format: "FIRST LAST" uppercase.
-$username = strtoupper(trim($firstName . ' ' . $lastName));
+// Username is always derived server-side, never trusted from the client.
+// Format: "FIRST LAST SUFFIX" uppercase (suffix optional).
+$username = strtoupper(implode(' ', array_filter(
+    [$firstName, $lastName, $suffix],
+    fn($v) => $v !== ''
+)));
 
 $defaultPassword = 'Password123';
 

@@ -1,3 +1,20 @@
+<?php
+// Suffix list for the edit dropdown (same source as the create modal).
+// Falls back to opening a connection if $pdo isn't already in scope.
+if (!isset($pdo) && function_exists('qa_db')) {
+    $pdo = qa_db();
+}
+
+$suffixes = [];
+
+try {
+    $stmt = $pdo->prepare("EXEC dbo.get_suffixes");
+    $stmt->execute();
+    $suffixes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Throwable $e) {
+    $suffixes = [];
+}
+?>
 <style>
     #userViewModal .form-label {
         font-weight: 600;
@@ -170,7 +187,12 @@
                             <div class="col-4">
                                 <div class="mb-3">
                                     <label class="form-label">Suffix</label>
-                                    <input type="text" id="v_suffix" class="form-control text-uppercase" readonly>
+                                    <select id="v_suffix" class="form-select" disabled>
+                                        <option value="">NONE</option>
+                                        <?php foreach ($suffixes as $s): ?>
+                                            <option value="<?= htmlspecialchars($s['suffix']) ?>"><?= htmlspecialchars($s['suffix']) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 </div>
                             </div>
                         </div>

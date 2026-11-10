@@ -20,7 +20,6 @@ $pdo = qa_db();
 
 try {
 
-    $username    = strtoupper(trim($_POST['username'] ?? ''));
     $middle_name = strtoupper(trim($_POST['middle_name'] ?? ''));
     $role        = $_POST['role'] ?? null;
 
@@ -33,9 +32,17 @@ try {
 
     $first_name = strtoupper(trim($_POST['first_name'] ?? ''));
     $last_name  = strtoupper(trim($_POST['last_name'] ?? ''));
+    $suffix     = strtoupper(trim($_POST['suffix'] ?? ''));
     $position   = trim($_POST['position'] ?? '');
     $department = strtoupper(trim($_POST['department'] ?? ''));
     $status = "ACTIVE";
+
+    // Username is derived server-side, never trusted from the client.
+    // Format: "FIRST LAST SUFFIX" uppercase (suffix optional).
+    $username = strtoupper(implode(' ', array_filter(
+        [$first_name, $last_name, $suffix],
+        fn($v) => $v !== ''
+    )));
 
     if (!$username || !$role || !$first_name || !$last_name || !$position) {
 
@@ -106,6 +113,7 @@ try {
             first_name,
             middle_name,
             last_name,
+            suffix,
             position,
             department,
             status,
@@ -121,6 +129,7 @@ try {
             :first_name,
             :middle_name,
             :last_name,
+            :suffix,
             :position,
             :department,
             :status,
@@ -138,6 +147,7 @@ try {
         ':first_name'  => $first_name,
         ':middle_name' => $middle_name,
         ':last_name'   => $last_name,
+        ':suffix'      => $suffix,
         ':position'    => $position,
         ':department'  => $department,
         ':status'      => $status
